@@ -24,7 +24,7 @@ setup(
     author="Nathan Martindale, Jason Hite, Scott L. Stewart, Mark Adams",
     author_email="curifactory-help@ornl.gov",
     python_requries=">=3.6",
-    url="https://github.com/ORNL/TX2",
+    url="https://github.com/ORNL/curifactory",
     project_urls={"Documentation": "https://ornl.github.io/curifactory/"},
     classifiers=[
         "Programming Language :: Python :: 3",
