@@ -9,3 +9,5 @@ matplotlib
 pytest
 pytest-mock
 psutil
+twine
+build

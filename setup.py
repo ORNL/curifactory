@@ -22,7 +22,7 @@ setup(
     long_description_content_type="text/markdown",
     long_description=long_description,
     author="Nathan Martindale, Jason Hite, Scott L. Stewart, Mark Adams",
-    author_email="martindalena@ornl.gov",
+    author_email="curifactory-help@ornl.gov",
     python_requries=">=3.6",
     url="https://github.com/ORNL/TX2",
     project_urls={"Documentation": "https://ornl.github.io/curifactory/"},
