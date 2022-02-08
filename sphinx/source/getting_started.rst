@@ -11,37 +11,37 @@ Curifactory can be installed from pip via:
 
     pip install curifactory
 
-Note that for certain reporting features to work, graphviz must be installed. If
-using conda, this can be done with:
+Note that graphviz must be installed for certain reporting features to work.
+In conda, you can do this with:
 
 .. code-block:: bash
 
     conda install python-graphviz
 
 
-Curifactory comes with a CLI :code:`curifactory` runnable, which can be used for
-setting up a curifactory enabled project. Running
+Curifactory comes with a CLI :code:`curifactory` runnable, which can bootstrap a
+curifactory-enabled project directory for you.
 
 .. code-block:: bash
 
     curifactory init
 
-will step you through the process. This command can be run either in a new
-folder or in an existing project, and will create any necessary paths for
+This command will step you through the process. You can run it either in a new
+folder or in an existing project, and it will create any necessary paths for
 curifactory to work. Descriptions of the various folders created in the
-initialization process can be found in the
+initialization process are in the
 :ref:`configuration and directory structure` section.
 
 
 Basic components
 ================
 
-This section follows the `0_BasicComponents <https://github.com/ORNL/curifactory/blob/main/examples/notebook-based/notebooks/0_BasicComponents.ipynb>`_ notebook. This notebook
-introduces the four basic components of curifactory and
-shows how to use them from a live context. (A live context is either a
-notebook, REPL, or non-experiment script)
+This section follows the `0_BasicComponents <https://github.com/ORNL/curifactory/blob/main/examples/notebook-based/notebooks/0_BasicComponents.ipynb>`_ notebook. We first
+introduce the four basic components of curifactory and
+show how to use them from a within a live context. (A live context is either a
+notebook, REPL, or non-experiment script.)
 
-The components that will be introduced are:
+These components are:
 
 * the artifact manager
 * arguments
@@ -60,8 +60,8 @@ representing a session that tracks metadata and generated objects from
 experiment code.
 
 When an artifact manager is instantiated, it creates a new “experiment
-run”, which will have an associated log file and can generate an
-associated report.
+run”, which will have an associated log file and can generate a run-specific
+report.
 
 .. code-block:: ipython3
 
@@ -83,14 +83,16 @@ include in a neural network. By defining and initializing these directly
 in python, we have the ability to dynamically create experiment
 parameter configurations, compose them, etc.
 
-Curifactory comes with an ``ExperimentArgs`` superclass that all args
-classes should inherit from. ``ExperimentArgs`` comes with a ``name``
-parameter, allowing you to associate a label with an args set.
+Curifactory comes with an ``ExperimentArgs`` superclass that all argument
+classes should inherit from. ``ExperimentArgs`` includes a ``name``
+parameter, allowing you to provide a label for an args set.
 
-For best ergonomics, we recommend defining an args class with the python
-``@dataclass`` decorator. This makes it easy to define defaults and
-quickly view your argument definitions simply as a collection of
-parameters.
+.. note::
+
+    For best ergonomics, we recommend defining an args class with the python
+    ``@dataclass`` decorator. This makes it easy to define defaults and
+    quickly view your argument definitions simply as a collection of
+    parameters.
 
 Arg sets can then be initialized, passed around, and used within your
 research code, making it easy to organize and keep track of
@@ -118,11 +120,11 @@ hyperparameters.
 Records
 -------
 
-A **record** is how curifactory keeps track of “state” in an experiment
-run, or the data, objects, and results associated with a set of
+A **record** is how curifactory keeps track of state in an experiment
+run. "State" includes the data, objects, and results associated with a set of
 arguments, e.g. a trained model that came from using a particular
 ``MyArgs`` instance. The ``Record`` class is initialized with the
-current manager as well as the argument set to associate with. Records
+current manager as well as the argument set to use. Records
 have a ``state`` dictionary, which holds intermediate data and objects
 as research code is evaluated.
 
@@ -150,25 +152,25 @@ Stages
 ------
 
 A **stage** represents a small, well-defined abstraction around portions
-of research code to process some set of inputs and create a set of
-outputs. A stage takes some action given a record and the requested
-inputs from that record’s state, evaluates some code, and returns values
+of research code which process some set of inputs and create a set of
+outputs. A stage acts on a given record by taking the requested
+inputs from that record’s state, evaluating some code, and returning values
 that are then stored in the record’s state. This is implemented with a
 ``@stage`` decorator which takes an array of string input names and an
 array of string output names. Functions with the ``@stage`` decorator
 must accept a record as the first argument.
 
-Inside the stage, the passed record can be used to obtain the arguments
+Inside the stage, the record parameter can be used to obtain the arguments
 necessary to parameterize the computation, via the ``record.args``
 attribute.
 
 In the example below, we’ve defined a very simple stage that will store
 a number in the record’s state under the “initial_value” key.
 
-Running a stage works by simply calling the function and passing it the
-desired record. The record itself is changed in-place, but it is also
+Running a stage works by calling the function and passing it the
+ record. The record itself is changed in-place, but it is also
 directly returned from the stage call. This allows functionally chaining
-stages, as will be shown later.
+stages, which we demonstate later on.
 
 .. code-block:: ipython3
 
@@ -199,7 +201,7 @@ the returned ``initial_value`` data.
     experiment code actually runs, taking any necessary inputs from the passed
     record state and storing any returned outputs back into it.
 
-Specifying inputs to the stage decorator tells curifactory to search for
+Specifying inputs on the stage decorator tells curifactory to search for
 those keys in the state of the passed record. Those values are then
 injected into the record call as kwargs. Note that the parameter names
 in the function definition must match the string values of the inputs
@@ -239,21 +241,21 @@ can be functionally chained together:
     Records can be "pipelined" through sequences of stages to create a full
     experiment composed of larger abstract steps.
 
-Records and stages are effectively linear tracks of compute steps, but
-frequently it’s important to be able to compare across multiple pieces
+Records and stages represent linear chains of compute steps, but
+in many cases it’s important to compare results and data across multiple pieces
 of an experiment run (e.g. comparing the scores of an SVM with the
 scores of a logistic regression algorithm.) ``@aggregate`` decorated
-stages are a special kind of stage that take no explicit inputs, but
+functions are a special kind of stage that have no explicit inputs, but
 instead take a collection of records to compute over. Aggregate stages
-still produce outputs and take and return a single record associated
-with it, allowing to chain stages after an aggregate as well.
+still produce outputs and both take and return a single record associated
+with it, meaning additional regular stages can be chained after an aggregate
+stage.
 
-``@aggregate`` decorated stages must take the single associated record
-as the first parameter, and the collection of records to compute over as
-the second.
+``@aggregate`` decorated stages must take a single record
+as the first parameter (like a normal stage,) and the collection of records to compute over as the second.
 
 In the example below, we iterate through the records to create a
-dictionary of all associated ``final_value``\ ’s from each record’s
+dictionary of all associated ``final_value`` entries from each record’s
 state, and then determine the maximum.
 
 .. code-block:: ipython3
@@ -270,11 +272,10 @@ state, and then determine the maximum.
         maximum = max(all_vals.values())
         return all_vals, maximum
 
-Frequently it will not make sense for an aggregate to need its own set
-of arguments. Records can be initialized with ``None`` passed as the
+Sometimes an aggregate doesn't really need its own set of arguments, e.g. if it's
+simply comparing results from other records. In these cases, records can be initialized with ``None`` passed as the
 argset. In the cell below, we manually pass our previous records into
-the stage, but by default if we pass ``None`` for records, it will
-automatically take all existing records in the manager.
+the stage, but note that if we pass ``None`` for records (the default) it will take all existing records in the manager.
 
 .. code-block:: ipython3
 
@@ -305,15 +306,15 @@ state.
 Caching and reporting
 =====================
 
-This section follows the `1_CachingAndReporting <https://github.com/ORNL/curifactory/blob/main/examples/notebook-based/notebooks/1_CachingAndReporting.ipynb>`_ notebook. This notebook demonstrates some features the previously discussed components
-provide. Two major features covered are the ability to easily cache
+This section follows the `1_CachingAndReporting <https://github.com/ORNL/curifactory/blob/main/examples/notebook-based/notebooks/1_CachingAndReporting.ipynb>`_ notebook. Here we demonstrate some features the previously discussed components
+enable. Two major abilities are easily caching
 objects (to short circuit computation of already-computed values) and
-the ability to quickly add graphs and other “reportables” to a jupyter
+quickly adding graphs and other “reportables” to a jupyter
 display or a generated HTML experiment run report.
 
 
-First we create an artifact manager, an args class, and some arg sets, as in
-the previous examples:
+First we create an artifact manager, an args class, and some arg sets like in
+the previous example:
 
 .. code-block:: ipython3
 
@@ -332,10 +333,10 @@ the previous examples:
 Caching
 -------
 
-Caching is done on the stage level, by listing a
+Caching is done at each stage by listing a
 ``curifactory.Cacheable`` subclass for each output. After the stage
-runs, each cacher will save the returned object in the data cache path,
-under a filename including the name of the experiment (the string passed
+runs, each cacher will save the returned object in the data cache path.
+The cached filename includes the name of the experiment (the string passed
 to ``ArtifactManager``, “notebook_example_1” in this case), the hash
 string of the arguments, the name of the stage doing the caching, and
 the name of the output itself.
@@ -345,13 +346,13 @@ their file has already been created, and if it has, they directly load
 the object from file and return it rather than running the stage code.
 
 The ``@stage`` decorator has a ``cachers`` parameter which should be
-passed a list of the appropriate cachers to use for the associated
+given a list of the cachers to use for the associated
 outputs list. Curifactory comes with a set of default cachers you can
 use, including ``JsonCacher``, ``PandasCSVCacher``,
 ``PandasJsonCacher``, and ``PickleCacher``.
 
 In the example below, we define a “long-running compute” stage, to
-demonstrate cachers short-circuiting computation
+demonstrate cachers short-circuiting computation:
 
 .. code-block:: ipython3
 
@@ -369,7 +370,7 @@ demonstrate cachers short-circuiting computation
 
 
 We run a record through our long running stage, and as expected it takes
-5 seconds
+5 seconds:
 
 .. code-block:: ipython3
 
@@ -385,7 +386,7 @@ We run a record through our long running stage, and as expected it takes
 
 
 Inspecting our cache path now, there’s a new json entry for our output,
-which we can load up and see is the output from our stage
+which we can load up and see is the output from our stage:
 
 .. code-block:: ipython3
 
@@ -422,7 +423,7 @@ running the stage code:
 
 
 Using different arguments results in a different cache path, so
-computations using different parameters won’t conflict:
+computations with different parameters won’t conflict:
 
 .. code-block:: ipython3
 
@@ -442,7 +443,7 @@ computations using different parameters won’t conflict:
 Lazy loading
 ------------
 
-One potential issue with caching normally is that it will always load
+One potential pitfall with caching is that it will always load
 the object into memory, even if that object is never used. Projects with
 very large data objects can run into memory problems as a result.
 Curifactory includes a ``Lazy`` class that can wrap around a stage
@@ -482,7 +483,7 @@ earlier stage outputs may never need to load into memory at all.
     48
 
 Note that ``Record.state`` is actually a custom subclass of ``dict``,
-and by default will automatically resolve lazy objects any time it’s
+and by default it will automatically resolve lazy objects any time they're
 accessed on the state. the above cell turns this functionality off (with
 ``state.resolve = False``) to show that what’s actually in memory before
 a resolved access is just the lazy object, which is significantly
@@ -506,13 +507,12 @@ When the record’s state resolve is at it’s default value of ``True``:
 Reporting
 ---------
 
-A major part of experiments for debugging, understanding, as well as
-publishing them, is presenting results and pretty graphs. This can be a
+A major part of experiments for debugging, understanding, and
+publishing them is the ability to present results and pretty graphs! This can be a
 challenge to keep organized, as one tries to manage folders for
 matplotlib graph images, result tables, and so on. Curifactory provides
 shortcuts to easily create ``Reportable`` items from inside stages,
-which the artifact manager can then use to display these results, as
-well as create an entire experiment run report in its own uniquely named
+which the artifact manager can then display inside an experiment run report in its own uniquely named
 run folder, which contains all of the information about the run, all of
 the created reportables, and a map of the stages that were run. Many of
 these report components can be rendered inside a notebook as well.
