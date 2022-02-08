@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Record &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Reporting" href="reporting.html" />
+    <link rel="prev" title="Project" href="project.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and argsets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="args.html">Args</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Record</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/record.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="module-curifactory.record">
+<span id="record"></span><h1>Record<a class="headerlink" href="#module-curifactory.record" title="Permalink to this headline"></a></h1>
+<p>Contains relevant classes for records, objects that track a particular state
+through some set of stages.</p>
+<p><strong>Classes:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.record.ArtifactRepresentation" title="curifactory.record.ArtifactRepresentation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ArtifactRepresentation</span></code></a>(record, name, artifact)</p></td>
+<td><p>This is a shorthand string representation for an artifact stored in a record as well as output cache info.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.record.CacheAwareDict" title="curifactory.record.CacheAwareDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CacheAwareDict</span></code></a>(*args, **kwargs)</p></td>
+<td><p>A normal dictionary that will return resolved versions of Lazy objects when accessed.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.record.Record" title="curifactory.record.Record"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Record</span></code></a>(manager, args[, hide])</p></td>
+<td><p>A single persistent state that’s passed between stages in a single “experiment line”.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt id="curifactory.record.ArtifactRepresentation">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.record.</span></code><code class="sig-name descname"><span class="pre">ArtifactRepresentation</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">artifact</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.record.ArtifactRepresentation" title="Permalink to this definition"></a></dt>
+<dd><p>This is a shorthand string representation for an artifact stored in a record as well
+as output cache info. This is what gets displayed in the detailed experiment map in reports.</p>
+<p>This will try to include helpful information in the string representation, such as pandas/
+numpy shapes, or lengths where applicable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>record</strong> (<a class="reference internal" href="#curifactory.record.Record" title="curifactory.record.Record"><em>Record</em></a>) – The record this artifact is stored in.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – The name of the artifact.</p></li>
+<li><p><strong>artifact</strong> – The artifact itself.</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.record.ArtifactRepresentation.html_safe" title="curifactory.record.ArtifactRepresentation.html_safe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">html_safe</span></code></a>()</p></td>
+<td><p>Removes special characters that’d break html, except it doesn’t actually display correctly.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="curifactory.record.ArtifactRepresentation.html_safe">
+<code class="sig-name descname"><span class="pre">html_safe</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.record.ArtifactRepresentation.html_safe" title="Permalink to this definition"></a></dt>
+<dd><p>Removes special characters that’d break html, except it doesn’t actually display
+correctly.</p>
+<p>(I think this is an issue with how graphviz renders outputs?)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="curifactory.record.CacheAwareDict">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.record.</span></code><code class="sig-name descname"><span class="pre">CacheAwareDict</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.record.CacheAwareDict" title="Permalink to this definition"></a></dt>
+<dd><p>A normal dictionary that will return resolved versions of Lazy objects when accessed.</p>
+<p><strong>Attributes:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.record.CacheAwareDict.resolve" title="curifactory.record.CacheAwareDict.resolve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve</span></code></a></p></td>
+<td><p>A flag for enabling/disabling auto-resolve.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt id="curifactory.record.CacheAwareDict.resolve">
+<code class="sig-name descname"><span class="pre">resolve</span></code><a class="headerlink" href="#curifactory.record.CacheAwareDict.resolve" title="Permalink to this definition"></a></dt>
+<dd><p>A flag for enabling/disabling auto-resolve. If this is False, this works just
+like a normal dictionary. This is necessary in the input checking part of a normal stage, as
+we make state access before determining if stage execution is required or not.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="curifactory.record.Record">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.record.</span></code><code class="sig-name descname"><span class="pre">Record</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hide</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.record.Record" title="Permalink to this definition"></a></dt>
+<dd><p>A single persistent state that’s passed between stages in a single “experiment line”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>manager</strong> (<a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager" title="curifactory.manager.ArtifactManager"><em>ArtifactManager</em></a>) – The artifact manager this record is associated with.</p></li>
+<li><p><strong>args</strong> – The <code class="code docutils literal notranslate"><span class="pre">ExperimentArgs</span></code> instance to apply to any stages this record is run through.</p></li>
+<li><p><strong>hide</strong> (<em>bool</em>) – If <code class="code docutils literal notranslate"><span class="pre">True</span></code>, don’t add this record to the artifact manager.</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Attributes:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.record.Record.args" title="curifactory.record.Record.args"><code class="xref py py-obj docutils literal notranslate"><span class="pre">args</span></code></a></p></td>
+<td><p>The <code class="code docutils literal notranslate"><span class="pre">ExperimentArgs</span></code> to apply to any stages this record is passed through.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.record.Record.input_records" title="curifactory.record.Record.input_records"><code class="xref py py-obj docutils literal notranslate"><span class="pre">input_records</span></code></a></p></td>
+<td><p>A list of any records used as input to this one.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.record.Record.manager" title="curifactory.record.Record.manager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">manager</span></code></a></p></td>
+<td><p>The <code class="code docutils literal notranslate"><span class="pre">ArtifactManager</span></code> associated with this record.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.record.Record.output" title="curifactory.record.Record.output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">output</span></code></a></p></td>
+<td><p>The returned value from the last stage that was run with this record.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.record.Record.stage_inputs" title="curifactory.record.Record.stage_inputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stage_inputs</span></code></a></p></td>
+<td><p>A list of lists per stage with the state inputs that stage requested.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.record.Record.stage_outputs" title="curifactory.record.Record.stage_outputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stage_outputs</span></code></a></p></td>
+<td><p>A list of lists per stage with the state outputs that stage produced.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.record.Record.stages" title="curifactory.record.Record.stages"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stages</span></code></a></p></td>
+<td><p>The list of stage names that this record has run through so far.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.record.Record.state" title="curifactory.record.Record.state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">state</span></code></a></p></td>
+<td><p>The dictionary of all variables created by stages this record is passed through.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.record.Record.state_artifact_reps" title="curifactory.record.Record.state_artifact_reps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_artifact_reps</span></code></a></p></td>
+<td><p>Dictionary mimicking state that keeps an <code class="code docutils literal notranslate"><span class="pre">ArtifactRepresentation</span></code> associated with each variable stored in <code class="code docutils literal notranslate"><span class="pre">self.state</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.record.Record.get_dir" title="curifactory.record.Record.get_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dir</span></code></a>(dir_name_suffix)</p></td>
+<td><p>Returns an args-appropriate cache path with the passed name, (similar to get_path) and creates it as a directory.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.record.Record.get_path" title="curifactory.record.Record.get_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_path</span></code></a>(obj_name)</p></td>
+<td><p>Return an args-appropriate cache path with passed object name.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.record.Record.make_copy" title="curifactory.record.Record.make_copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_copy</span></code></a>([args, add_to_manager])</p></td>
+<td><p>Make a new record that has a deep-copied version of the current state.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.record.Record.report" title="curifactory.record.Record.report"><code class="xref py py-obj docutils literal notranslate"><span class="pre">report</span></code></a>(reportable)</p></td>
+<td><p>Add a reportable associated with this record, this will get added to the experiment run output report.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt id="curifactory.record.Record.args">
+<code class="sig-name descname"><span class="pre">args</span></code><a class="headerlink" href="#curifactory.record.Record.args" title="Permalink to this definition"></a></dt>
+<dd><p>The <code class="code docutils literal notranslate"><span class="pre">ExperimentArgs</span></code> to apply to any stages this record is passed through.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.record.Record.get_dir">
+<code class="sig-name descname"><span class="pre">get_dir</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dir_name_suffix</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.record.Record.get_dir" title="Permalink to this definition"></a></dt>
+<dd><p>Returns an args-appropriate cache path with the passed name, (similar to get_path) and creates it as a directory.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This path does not yet have a mechanism to be auto-stored in the output folder for –store-full runs. This functionality will be implemented later.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dir_name_suffix</strong> (<em>str</em>) – the name to add as a suffix to the created directory name.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.record.Record.get_path">
+<code class="sig-name descname"><span class="pre">get_path</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.record.Record.get_path" title="Permalink to this definition"></a></dt>
+<dd><p>Return an args-appropriate cache path with passed object name.</p>
+<p>This should be equivalent to what a cacher for a stage should get. Note that this
+is calling the manager’s get_path, which will include the stage name. If calling
+this outside of a stage, it will include whatever stage was last run.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This path does not yet have a mechanism to be auto-stored in the output folder for –store-full runs. This functionality will be implemented later.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>obj_name</strong> (<em>str</em>) – the name to associate with the object as the last part of the filename.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.record.Record.input_records">
+<code class="sig-name descname"><span class="pre">input_records</span></code><a class="headerlink" href="#curifactory.record.Record.input_records" title="Permalink to this definition"></a></dt>
+<dd><p>A list of any records used as input to this one. This mostly only occurs when aggregate
+stages are run.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.record.Record.make_copy">
+<code class="sig-name descname"><span class="pre">make_copy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_to_manager</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.record.Record.make_copy" title="Permalink to this definition"></a></dt>
+<dd><p>Make a new record that has a deep-copied version of the current state.</p>
+<p>This is useful for a long running procedure that creates a common dataset for
+many other stages, so that it can be replicated across multiple argsets without
+having to recompute for each argset.</p>
+<p>Note that state is really the only thing transferred to the new record, the stage and
+inputs/outputs lists will be empty.</p>
+<p>Also note that the current record will be added to the <code class="code docutils literal notranslate"><span class="pre">input_records</span></code> of the new
+record, since it may draw on data in its state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> – The new <code class="code docutils literal notranslate"><span class="pre">ExperimentArgs</span></code> argset to apply to the new record. Leave as None
+to retain the same args as the current record.</p></li>
+<li><p><strong>add_to_manager</strong> – Whether to automatically add this record to the current manager or not.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.record.Record.manager">
+<code class="sig-name descname"><span class="pre">manager</span></code><a class="headerlink" href="#curifactory.record.Record.manager" title="Permalink to this definition"></a></dt>
+<dd><p>The <code class="code docutils literal notranslate"><span class="pre">ArtifactManager</span></code> associated with this record.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.record.Record.output">
+<code class="sig-name descname"><span class="pre">output</span></code><a class="headerlink" href="#curifactory.record.Record.output" title="Permalink to this definition"></a></dt>
+<dd><p>The returned value from the last stage that was run with this record.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.record.Record.report">
+<code class="sig-name descname"><span class="pre">report</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reportable</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="reporting.html#curifactory.reporting.Reportable" title="curifactory.reporting.Reportable"><span class="pre">curifactory.reporting.Reportable</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.record.Record.report" title="Permalink to this definition"></a></dt>
+<dd><p>Add a reportable associated with this record, this will get added to the experiment run
+output report.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>reportable</strong> (<a class="reference internal" href="reporting.html#curifactory.reporting.Reportable" title="curifactory.reporting.Reportable"><em>Reportable</em></a>) – The reportable to render on the final experiment report.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.record.Record.stage_inputs">
+<code class="sig-name descname"><span class="pre">stage_inputs</span></code><a class="headerlink" href="#curifactory.record.Record.stage_inputs" title="Permalink to this definition"></a></dt>
+<dd><p>A list of lists per stage with the state inputs that stage requested.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.record.Record.stage_outputs">
+<code class="sig-name descname"><span class="pre">stage_outputs</span></code><a class="headerlink" href="#curifactory.record.Record.stage_outputs" title="Permalink to this definition"></a></dt>
+<dd><p>A list of lists per stage with the state outputs that stage produced.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.record.Record.stages">
+<code class="sig-name descname"><span class="pre">stages</span></code><a class="headerlink" href="#curifactory.record.Record.stages" title="Permalink to this definition"></a></dt>
+<dd><p>The list of stage names that this record has run through so far.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.record.Record.state">
+<code class="sig-name descname"><span class="pre">state</span></code><a class="headerlink" href="#curifactory.record.Record.state" title="Permalink to this definition"></a></dt>
+<dd><p>The dictionary of all variables created by stages this record is passed through. (AKA ‘Artifacts’)
+All <code class="code docutils literal notranslate"><span class="pre">inputs</span></code> from stage decorators are pulled from this dictionary, and all
+<code class="code docutils literal notranslate"><span class="pre">outputs</span></code> are stored here.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.record.Record.state_artifact_reps">
+<code class="sig-name descname"><span class="pre">state_artifact_reps</span></code><a class="headerlink" href="#curifactory.record.Record.state_artifact_reps" title="Permalink to this definition"></a></dt>
+<dd><p>Dictionary mimicking state that keeps an <code class="code docutils literal notranslate"><span class="pre">ArtifactRepresentation</span></code> associated with
+each variable stored in <code class="code docutils literal notranslate"><span class="pre">self.state</span></code>.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="project.html" class="btn btn-neutral float-left" title="Project" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="reporting.html" class="btn btn-neutral float-right" title="Reporting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Nathan Martindale.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

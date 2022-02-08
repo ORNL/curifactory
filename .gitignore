@@ -3,7 +3,7 @@
 **/__pycache__
 data/*
 curifactory.egg-info/*
-docs/build/*
+sphinx/build/*
 **.stats
 test/examples/data/*
 test/examples/logs/*

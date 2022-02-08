@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Store &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Utils" href="utils.html" />
+    <link rel="prev" title="Staging" href="staging.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and argsets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="args.html">Args</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Store</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/store.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="module-curifactory.store">
+<span id="store"></span><h1>Store<a class="headerlink" href="#module-curifactory.store" title="Permalink to this headline"></a></h1>
+<p>Local ‘database’ of runs class.</p>
+<p><strong>Classes:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.store.ManagerStore" title="curifactory.store.ManagerStore"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ManagerStore</span></code></a>(manager_cache_path)</p></td>
+<td><p>Manages the mini database of metadata on previous experiment runs.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt id="curifactory.store.ManagerStore">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.store.</span></code><code class="sig-name descname"><span class="pre">ManagerStore</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager_cache_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.store.ManagerStore" title="Permalink to this definition"></a></dt>
+<dd><p>Manages the mini database of metadata on previous experiment runs. This is how we
+keep track of experiment run numbers etc. A metadata block for each run is stored in
+the manager cache path under <code class="code docutils literal notranslate"><span class="pre">store.json</span></code>.</p>
+<p>Note that the metadata blocks we keep track of for each run follows the following example:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;reference&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;example_experiment_1_2021-06-15-T100003&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;experiment_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;example_experiment&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;run_number&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2021-06-15-T100003&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;commit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;params_files&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;example_params&quot;</span><span class="p">],</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;args&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;example_params&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">&quot;test_params&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;44b5e428e7165975a3e4f0d1674dbe5f&quot;</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="p">},</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;full_store&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;complete&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;cli&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;experiment example_experiment -p example_params&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;hostname&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mycomputer&quot;</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="nt">&quot;notes&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>manager_cache_path</strong> (<em>str</em>) – The path to the directory to keep the <code class="code docutils literal notranslate"><span class="pre">store.json</span></code>.</p>
+</dd>
+</dl>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.store.ManagerStore.add_run" title="curifactory.store.ManagerStore.add_run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_run</span></code></a>(mngr)</p></td>
+<td><p>Add a new metadata block to the store for the passed <code class="code docutils literal notranslate"><span class="pre">ArtifactManager</span></code> instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.store.ManagerStore.get_experiment_runs" title="curifactory.store.ManagerStore.get_experiment_runs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_experiment_runs</span></code></a>(experiment_name)</p></td>
+<td><p>Get all the runs associated with the specified experiment name from the database.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.store.ManagerStore.get_run" title="curifactory.store.ManagerStore.get_run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_run</span></code></a>(ref_name)</p></td>
+<td><p>Get the metadata block for the run with the specified reference name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.store.ManagerStore.load" title="curifactory.store.ManagerStore.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a>()</p></td>
+<td><p>Load the current experiment database from <code class="code docutils literal notranslate"><span class="pre">sore.json</span></code> into <code class="code docutils literal notranslate"><span class="pre">self.runs</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.store.ManagerStore.save" title="curifactory.store.ManagerStore.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>()</p></td>
+<td><p>Save the current database in <code class="code docutils literal notranslate"><span class="pre">self.runs</span></code> into the <code class="code docutils literal notranslate"><span class="pre">store.json</span></code> file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.store.ManagerStore.update_run" title="curifactory.store.ManagerStore.update_run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_run</span></code></a>(mngr)</p></td>
+<td><p>Updates the metadata in the database for the run associated with the passed <code class="code docutils literal notranslate"><span class="pre">ArtifactManager</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Attributes:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.store.ManagerStore.path" title="curifactory.store.ManagerStore.path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path</span></code></a></p></td>
+<td><p>The location to store the <code class="code docutils literal notranslate"><span class="pre">store.json</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.store.ManagerStore.runs" title="curifactory.store.ManagerStore.runs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">runs</span></code></a></p></td>
+<td><p>The list of metadata blocks for each run.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="curifactory.store.ManagerStore.add_run">
+<code class="sig-name descname"><span class="pre">add_run</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mngr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.store.ManagerStore.add_run" title="Permalink to this definition"></a></dt>
+<dd><p>Add a new metadata block to the store for the passed <code class="code docutils literal notranslate"><span class="pre">ArtifactManager</span></code> instance.</p>
+<p>Note that this automatically calls the <code class="code docutils literal notranslate"><span class="pre">save()</span></code> function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mngr</strong> (<a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager" title="curifactory.manager.ArtifactManager"><em>ArtifactManager</em></a>) – The manager to grab run metadata from.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The newly created dictionary (metadata block) for the current manager’s run.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.store.ManagerStore.get_experiment_runs">
+<code class="sig-name descname"><span class="pre">get_experiment_runs</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.store.ManagerStore.get_experiment_runs" title="Permalink to this definition"></a></dt>
+<dd><p>Get all the runs associated with the specified experiment name from the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>experiment_name</strong> (<em>str</em>) – The experiment name to get all run metadata for.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of all dictionaries (metadata blocks) that have the requested experiment name.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.store.ManagerStore.get_run">
+<code class="sig-name descname"><span class="pre">get_run</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.store.ManagerStore.get_run" title="Permalink to this definition"></a></dt>
+<dd><p>Get the metadata block for the run with the specified reference name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ref_name</strong> (<em>str</em>) – The run reference name, following the [experiment_name]_[run_number]_[timestamp] format.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dictionary (metadata block) for the run with the requested reference name, and the
+index of the run within the total list of runs.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.store.ManagerStore.load">
+<code class="sig-name descname"><span class="pre">load</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.store.ManagerStore.load" title="Permalink to this definition"></a></dt>
+<dd><p>Load the current experiment database from <code class="code docutils literal notranslate"><span class="pre">sore.json</span></code> into <code class="code docutils literal notranslate"><span class="pre">self.runs</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.store.ManagerStore.path">
+<code class="sig-name descname"><span class="pre">path</span></code><a class="headerlink" href="#curifactory.store.ManagerStore.path" title="Permalink to this definition"></a></dt>
+<dd><p>The location to store the <code class="code docutils literal notranslate"><span class="pre">store.json</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.store.ManagerStore.runs">
+<code class="sig-name descname"><span class="pre">runs</span></code><a class="headerlink" href="#curifactory.store.ManagerStore.runs" title="Permalink to this definition"></a></dt>
+<dd><p>The list of metadata blocks for each run.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.store.ManagerStore.save">
+<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.store.ManagerStore.save" title="Permalink to this definition"></a></dt>
+<dd><p>Save the current database in <code class="code docutils literal notranslate"><span class="pre">self.runs</span></code> into the <code class="code docutils literal notranslate"><span class="pre">store.json</span></code> file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.store.ManagerStore.update_run">
+<code class="sig-name descname"><span class="pre">update_run</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mngr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.store.ManagerStore.update_run" title="Permalink to this definition"></a></dt>
+<dd><p>Updates the metadata in the database for the run associated with the passed <code class="code docutils literal notranslate"><span class="pre">ArtifactManager</span></code>.</p>
+<p>This is currently just used to update the status and include any error messages if relevant, when an experiment
+finishes running.</p>
+<p>Note that this automatically calls the <code class="code docutils literal notranslate"><span class="pre">save()</span></code> function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mngr</strong> (<a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager" title="curifactory.manager.ArtifactManager"><em>ArtifactManager</em></a>) – The manager to grab run metadata from.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The updated dictionary (metadata block) for the run. It returns None if the experiment isn’t
+found in the database.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="staging.html" class="btn btn-neutral float-left" title="Staging" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="utils.html" class="btn btn-neutral float-right" title="Utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Nathan Martindale.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>
