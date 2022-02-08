@@ -41,17 +41,17 @@ via:
 conda install python-graphviz
 ```
 
+## Documentation
+
+The documentation for the latest version of Curifactory can be found at:
+[https://ornl.github.io/curifactory/latest/index.html](https://ornl.github.io/curifactory/latest/index.html).
+
 ## Examples
 
 Several small example projects can be found in the `examples` folder.
 `examples/notebook-based` includes notebooks demonstrating usage of curifactory
 solely in Jupyter. `examples/minimal` shows a basic single-file experiment
 script.
-
-
-## Documentation
-
-[link]
 
 
 ## Citation
