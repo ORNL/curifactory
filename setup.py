@@ -25,7 +25,9 @@ setup(
     author_email="curifactory-help@ornl.gov",
     python_requries=">=3.6",
     url="https://github.com/ORNL/curifactory",
-    project_urls={"Documentation": "https://ornl.github.io/curifactory/"},
+    project_urls={
+        "Documentation": "https://ornl.github.io/curifactory/latest/index.html"
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: BSD License",
@@ -35,7 +37,7 @@ setup(
         "Intended Audience :: Science/Research",
     ],
     packages=["curifactory"],
-    package_data={"curifactory": ["data/*"]},
+    package_data={"curifactory": ["data/*", "data/.dockerignore"]},
     include_package_data=True,
     entry_points={
         "console_scripts": [
