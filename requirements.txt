@@ -1,0 +1,11 @@
+numpy
+pandas
+sphinx~=3.5.4
+autodocsumm
+sphinx-rtd-theme
+ipynb-py-convert
+graphviz
+matplotlib
+pytest
+pytest-mock
+psutil

@@ -1,11 +1,17 @@
-# Curifactory
+.. Curifactory documentation master file, created by
+   sphinx-quickstart on Tue Jun 22 12:57:24 2021.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
 
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+Curifactory Documentation
+=======================================
+
 
 Curifactory is a library and CLI tool designed to help organize and manage
 research experiments in python.
 
-![](docs/source/images/diagram.png)
+.. figure:: images/diagram.png
+    :align: center
 
 Experiment management requires several aspects, including experiment orchestration,
 parameterization, caching, reproducibility, reporting, and parallelization.
@@ -15,43 +21,62 @@ Curifactory provides a different opinion to these, with a heavier focus on suppo
 research experiment workflows for individuals or small teams working primarily
 in python.
 
-## Features
+
+
+Features
+--------
 
 * Adds a CLI layer on top of your codebase, a single entrypoint for running experiments
-* Automatic caching of intermediate data and lazy loading of stored objects
+* Automatic caching of intermediate data
 * Jupyter notebook output for further exploration of an experiment run
 * Docker container output with copy of codebase, conda environment, full experiment run cache, and jupyter run notebook
 * HTML report output from each run with graphviz-rendered diagram of experiment
 * Easily report plots and values to HTML report
 * Configuration files are python scripts, allowing programmatic definition, parameter composition, and parameter inheritance
+* Companion `cookiecutter project <https://github.com/ORNL/cookiecutter-curifactory>`_
 * Output logs from every run
 * Run experiments directly from CLI or other python code, notebooks, etc.
 
 
-## Installation
+.. toctree::
+    :maxdepth: 2
+    :caption: Usage
 
-```python
-pip install curifactory
-```
-
-Graphviz is required for certain features and can be installed through conda
-via:
-
-```python
-conda install python-graphviz
-```
-
-## Examples
-
-Several small example projects can be found in the `examples` folder.
-`examples/notebook-based` includes notebooks demonstrating usage of curifactory
-solely in Jupyter. `examples/minimal` shows a basic single-file experiment
-script.
+    getting_started.rst
+    components.rst
+    parameters.rst
+    cache.rst
+    reports.rst
+    config.rst
+    cli_guide.rst
+    tips.rst
+    example.rst
 
 
-## Documentation
-
-[link]
 
 
-## Citation
+.. toctree::
+    :maxdepth: 2
+    :caption: API
+
+    args.rst
+    caching.rst
+    docker.rst
+    experiment.rst
+    manager.rst
+    procedure.rst
+    project.rst
+    record.rst
+    reporting.rst
+    staging.rst
+    store.rst
+    utils.rst
+
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

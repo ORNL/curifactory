@@ -1,0 +1,39 @@
+FROM continuumio/miniconda3:latest
+
+WORKDIR /run
+
+# this is where the store-full folder cache is
+ARG run_folder
+ARG conda_env_name
+
+# copy _EVERYTHING_ and delete what's unneeded
+COPY . .
+# don't leave the entire data folder in here, just what we need for this run?
+RUN rm -rf data
+RUN rm -rf .git
+
+# Create the environment:
+COPY $run_folder/environment.yml .
+COPY $run_folder/requirements.txt .
+RUN conda install mamba -c conda-forge
+RUN mamba env update -n base -f environment.yml
+
+# Theoretically makes all future run/cmd commands use the conda env?
+SHELL ["conda", "run", "--no-capture-output", "/bin/bash", "-c"]
+
+RUN mamba install jupyter
+
+# pip installs
+RUN pip install curifactory=={{CF_VERSION}}
+
+# Cached files
+RUN mkdir data
+COPY $run_folder data
+
+# Serve files
+RUN chmod 755 docker/startup.sh
+ENTRYPOINT bash docker/startup.sh
+
+# expose ports
+EXPOSE 8888
+EXPOSE 8000
