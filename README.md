@@ -55,3 +55,6 @@ script.
 
 
 ## Citation
+
+Please see the following DOI if citing this project:
+[10.11578/dc.20220208.1](https://doi.org/10.11578/dc.20220208.1)
