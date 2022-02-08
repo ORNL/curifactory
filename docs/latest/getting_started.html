@@ -120,29 +120,29 @@
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install curifactory
 </pre></div>
 </div>
-<p>Note that for certain reporting features to work, graphviz must be installed. If
-using conda, this can be done with:</p>
+<p>Note that graphviz must be installed for certain reporting features to work.
+In conda, you can do this with:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda install python-graphviz
 </pre></div>
 </div>
-<p>Curifactory comes with a CLI <code class="code docutils literal notranslate"><span class="pre">curifactory</span></code> runnable, which can be used for
-setting up a curifactory enabled project. Running</p>
+<p>Curifactory comes with a CLI <code class="code docutils literal notranslate"><span class="pre">curifactory</span></code> runnable, which can bootstrap a
+curifactory-enabled project directory for you.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curifactory init
 </pre></div>
 </div>
-<p>will step you through the process. This command can be run either in a new
-folder or in an existing project, and will create any necessary paths for
+<p>This command will step you through the process. You can run it either in a new
+folder or in an existing project, and it will create any necessary paths for
 curifactory to work. Descriptions of the various folders created in the
-initialization process can be found in the
+initialization process are in the
 <a class="reference internal" href="config.html#configuration-and-directory-structure"><span class="std std-ref">Configuration and directory structure</span></a> section.</p>
 </div>
 <div class="section" id="basic-components">
 <h2>Basic components<a class="headerlink" href="#basic-components" title="Permalink to this headline"></a></h2>
-<p>This section follows the <a class="reference external" href="https://github.com/ORNL/curifactory/blob/main/examples/notebook-based/notebooks/0_BasicComponents.ipynb">0_BasicComponents</a> notebook. This notebook
-introduces the four basic components of curifactory and
-shows how to use them from a live context. (A live context is either a
-notebook, REPL, or non-experiment script)</p>
-<p>The components that will be introduced are:</p>
+<p>This section follows the <a class="reference external" href="https://github.com/ORNL/curifactory/blob/main/examples/notebook-based/notebooks/0_BasicComponents.ipynb">0_BasicComponents</a> notebook. We first
+introduce the four basic components of curifactory and
+show how to use them from a within a live context. (A live context is either a
+notebook, REPL, or non-experiment script.)</p>
+<p>These components are:</p>
 <ul class="simple">
 <li><p>the artifact manager</p></li>
 <li><p>arguments</p></li>
@@ -158,8 +158,8 @@ notebook, REPL, or non-experiment script)</p>
 representing a session that tracks metadata and generated objects from
 experiment code.</p>
 <p>When an artifact manager is instantiated, it creates a new “experiment
-run”, which will have an associated log file and can generate an
-associated report.</p>
+run”, which will have an associated log file and can generate a run-specific
+report.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">ArtifactManager</span>
 
 <span class="n">manager</span> <span class="o">=</span> <span class="n">ArtifactManager</span><span class="p">(</span><span class="s2">&quot;notebook_example_0&quot;</span><span class="p">)</span> <span class="c1"># we pass in a name to associate with this run.</span>
@@ -177,13 +177,16 @@ define how research code can be parameterized, e.g. how many layers to
 include in a neural network. By defining and initializing these directly
 in python, we have the ability to dynamically create experiment
 parameter configurations, compose them, etc.</p>
-<p>Curifactory comes with an <code class="docutils literal notranslate"><span class="pre">ExperimentArgs</span></code> superclass that all args
-classes should inherit from. <code class="docutils literal notranslate"><span class="pre">ExperimentArgs</span></code> comes with a <code class="docutils literal notranslate"><span class="pre">name</span></code>
-parameter, allowing you to associate a label with an args set.</p>
+<p>Curifactory comes with an <code class="docutils literal notranslate"><span class="pre">ExperimentArgs</span></code> superclass that all argument
+classes should inherit from. <code class="docutils literal notranslate"><span class="pre">ExperimentArgs</span></code> includes a <code class="docutils literal notranslate"><span class="pre">name</span></code>
+parameter, allowing you to provide a label for an args set.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>For best ergonomics, we recommend defining an args class with the python
 <code class="docutils literal notranslate"><span class="pre">&#64;dataclass</span></code> decorator. This makes it easy to define defaults and
 quickly view your argument definitions simply as a collection of
 parameters.</p>
+</div>
 <p>Arg sets can then be initialized, passed around, and used within your
 research code, making it easy to organize and keep track of
 hyperparameters.</p>
@@ -207,11 +210,11 @@ will give us different sets of results in the manager we can compare.</span><a c
 </div>
 <div class="section" id="records">
 <h3>Records<a class="headerlink" href="#records" title="Permalink to this headline"></a></h3>
-<p>A <strong>record</strong> is how curifactory keeps track of “state” in an experiment
-run, or the data, objects, and results associated with a set of
+<p>A <strong>record</strong> is how curifactory keeps track of state in an experiment
+run. “State” includes the data, objects, and results associated with a set of
 arguments, e.g. a trained model that came from using a particular
 <code class="docutils literal notranslate"><span class="pre">MyArgs</span></code> instance. The <code class="docutils literal notranslate"><span class="pre">Record</span></code> class is initialized with the
-current manager as well as the argument set to associate with. Records
+current manager as well as the argument set to use. Records
 have a <code class="docutils literal notranslate"><span class="pre">state</span></code> dictionary, which holds intermediate data and objects
 as research code is evaluated.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">Record</span>
@@ -234,22 +237,24 @@ experiment stuff for each given arg set.</span><a class="headerlink" href="#id3"
 <div class="section" id="stages">
 <h3>Stages<a class="headerlink" href="#stages" title="Permalink to this headline"></a></h3>
 <p>A <strong>stage</strong> represents a small, well-defined abstraction around portions
-of research code to process some set of inputs and create a set of
-outputs. A stage takes some action given a record and the requested
-inputs from that record’s state, evaluates some code, and returns values
+of research code which process some set of inputs and create a set of
+outputs. A stage acts on a given record by taking the requested
+inputs from that record’s state, evaluating some code, and returning values
 that are then stored in the record’s state. This is implemented with a
 <code class="docutils literal notranslate"><span class="pre">&#64;stage</span></code> decorator which takes an array of string input names and an
 array of string output names. Functions with the <code class="docutils literal notranslate"><span class="pre">&#64;stage</span></code> decorator
 must accept a record as the first argument.</p>
-<p>Inside the stage, the passed record can be used to obtain the arguments
+<p>Inside the stage, the record parameter can be used to obtain the arguments
 necessary to parameterize the computation, via the <code class="docutils literal notranslate"><span class="pre">record.args</span></code>
 attribute.</p>
 <p>In the example below, we’ve defined a very simple stage that will store
 a number in the record’s state under the “initial_value” key.</p>
-<p>Running a stage works by simply calling the function and passing it the
-desired record. The record itself is changed in-place, but it is also
-directly returned from the stage call. This allows functionally chaining
-stages, as will be shown later.</p>
+<dl class="simple">
+<dt>Running a stage works by calling the function and passing it the</dt><dd><p>record. The record itself is changed in-place, but it is also</p>
+</dd>
+</dl>
+<p>directly returned from the stage call. This allows functionally chaining
+stages, which we demonstate later on.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">stage</span>
 
 <span class="nd">@stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;initial_value&quot;</span><span class="p">])</span>
@@ -273,7 +278,7 @@ the returned <code class="docutils literal notranslate"><span class="pre">initia
 experiment code actually runs, taking any necessary inputs from the passed
 record state and storing any returned outputs back into it.</span><a class="headerlink" href="#id4" title="Permalink to this image"></a></p>
 </div>
-<p>Specifying inputs to the stage decorator tells curifactory to search for
+<p>Specifying inputs on the stage decorator tells curifactory to search for
 those keys in the state of the passed record. Those values are then
 injected into the record call as kwargs. Note that the parameter names
 in the function definition must match the string values of the inputs
@@ -304,19 +309,19 @@ can be functionally chained together:</p>
 <p class="caption"><span class="caption-text">Records can be “pipelined” through sequences of stages to create a full
 experiment composed of larger abstract steps.</span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
 </div>
-<p>Records and stages are effectively linear tracks of compute steps, but
-frequently it’s important to be able to compare across multiple pieces
+<p>Records and stages represent linear chains of compute steps, but
+in many cases it’s important to compare results and data across multiple pieces
 of an experiment run (e.g. comparing the scores of an SVM with the
 scores of a logistic regression algorithm.) <code class="docutils literal notranslate"><span class="pre">&#64;aggregate</span></code> decorated
-stages are a special kind of stage that take no explicit inputs, but
+functions are a special kind of stage that have no explicit inputs, but
 instead take a collection of records to compute over. Aggregate stages
-still produce outputs and take and return a single record associated
-with it, allowing to chain stages after an aggregate as well.</p>
-<p><code class="docutils literal notranslate"><span class="pre">&#64;aggregate</span></code> decorated stages must take the single associated record
-as the first parameter, and the collection of records to compute over as
-the second.</p>
+still produce outputs and both take and return a single record associated
+with it, meaning additional regular stages can be chained after an aggregate
+stage.</p>
+<p><code class="docutils literal notranslate"><span class="pre">&#64;aggregate</span></code> decorated stages must take a single record
+as the first parameter (like a normal stage,) and the collection of records to compute over as the second.</p>
 <p>In the example below, we iterate through the records to create a
-dictionary of all associated <code class="docutils literal notranslate"><span class="pre">final_value</span></code>’s from each record’s
+dictionary of all associated <code class="docutils literal notranslate"><span class="pre">final_value</span></code> entries from each record’s
 state, and then determine the maximum.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">aggregate</span>
 
@@ -331,11 +336,10 @@ state, and then determine the maximum.</p>
     <span class="k">return</span> <span class="n">all_vals</span><span class="p">,</span> <span class="n">maximum</span>
 </pre></div>
 </div>
-<p>Frequently it will not make sense for an aggregate to need its own set
-of arguments. Records can be initialized with <code class="docutils literal notranslate"><span class="pre">None</span></code> passed as the
+<p>Sometimes an aggregate doesn’t really need its own set of arguments, e.g. if it’s
+simply comparing results from other records. In these cases, records can be initialized with <code class="docutils literal notranslate"><span class="pre">None</span></code> passed as the
 argset. In the cell below, we manually pass our previous records into
-the stage, but by default if we pass <code class="docutils literal notranslate"><span class="pre">None</span></code> for records, it will
-automatically take all existing records in the manager.</p>
+the stage, but note that if we pass <code class="docutils literal notranslate"><span class="pre">None</span></code> for records (the default) it will take all existing records in the manager.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">final_record</span> <span class="o">=</span> <span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 <span class="n">final_record</span> <span class="o">=</span> <span class="n">find_maximum_final_value</span><span class="p">(</span><span class="n">final_record</span><span class="p">,</span> <span class="p">[</span><span class="n">r0</span><span class="p">,</span> <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">])</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">final_record</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
@@ -361,13 +365,13 @@ state.</p>
 </div>
 <div class="section" id="caching-and-reporting">
 <h2>Caching and reporting<a class="headerlink" href="#caching-and-reporting" title="Permalink to this headline"></a></h2>
-<p>This section follows the <a class="reference external" href="https://github.com/ORNL/curifactory/blob/main/examples/notebook-based/notebooks/1_CachingAndReporting.ipynb">1_CachingAndReporting</a> notebook. This notebook demonstrates some features the previously discussed components
-provide. Two major features covered are the ability to easily cache
+<p>This section follows the <a class="reference external" href="https://github.com/ORNL/curifactory/blob/main/examples/notebook-based/notebooks/1_CachingAndReporting.ipynb">1_CachingAndReporting</a> notebook. Here we demonstrate some features the previously discussed components
+enable. Two major abilities are easily caching
 objects (to short circuit computation of already-computed values) and
-the ability to quickly add graphs and other “reportables” to a jupyter
+quickly adding graphs and other “reportables” to a jupyter
 display or a generated HTML experiment run report.</p>
-<p>First we create an artifact manager, an args class, and some arg sets, as in
-the previous examples:</p>
+<p>First we create an artifact manager, an args class, and some arg sets like in
+the previous example:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 <span class="kn">import</span> <span class="nn">curifactory</span> <span class="k">as</span> <span class="nn">cf</span>
 
@@ -383,10 +387,10 @@ the previous examples:</p>
 </div>
 <div class="section" id="caching">
 <h3>Caching<a class="headerlink" href="#caching" title="Permalink to this headline"></a></h3>
-<p>Caching is done on the stage level, by listing a
+<p>Caching is done at each stage by listing a
 <code class="docutils literal notranslate"><span class="pre">curifactory.Cacheable</span></code> subclass for each output. After the stage
-runs, each cacher will save the returned object in the data cache path,
-under a filename including the name of the experiment (the string passed
+runs, each cacher will save the returned object in the data cache path.
+The cached filename includes the name of the experiment (the string passed
 to <code class="docutils literal notranslate"><span class="pre">ArtifactManager</span></code>, “notebook_example_1” in this case), the hash
 string of the arguments, the name of the stage doing the caching, and
 the name of the output itself.</p>
@@ -394,12 +398,12 @@ the name of the output itself.</p>
 their file has already been created, and if it has, they directly load
 the object from file and return it rather than running the stage code.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">&#64;stage</span></code> decorator has a <code class="docutils literal notranslate"><span class="pre">cachers</span></code> parameter which should be
-passed a list of the appropriate cachers to use for the associated
+given a list of the cachers to use for the associated
 outputs list. Curifactory comes with a set of default cachers you can
 use, including <code class="docutils literal notranslate"><span class="pre">JsonCacher</span></code>, <code class="docutils literal notranslate"><span class="pre">PandasCSVCacher</span></code>,
 <code class="docutils literal notranslate"><span class="pre">PandasJsonCacher</span></code>, and <code class="docutils literal notranslate"><span class="pre">PickleCacher</span></code>.</p>
 <p>In the example below, we define a “long-running compute” stage, to
-demonstrate cachers short-circuiting computation</p>
+demonstrate cachers short-circuiting computation:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
 <span class="kn">from</span> <span class="nn">curifactory.caching</span> <span class="kn">import</span> <span class="n">JsonCacher</span>
 
@@ -414,7 +418,7 @@ demonstrate cachers short-circuiting computation</p>
 </pre></div>
 </div>
 <p>We run a record through our long running stage, and as expected it takes
-5 seconds</p>
+5 seconds:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
 <span class="n">r0</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">default_args</span><span class="p">)</span>
 <span class="n">r0</span> <span class="o">=</span> <span class="n">long_compute_step</span><span class="p">(</span><span class="n">r0</span><span class="p">)</span>
@@ -425,7 +429,7 @@ demonstrate cachers short-circuiting computation</p>
 </pre></div>
 </div>
 <p>Inspecting our cache path now, there’s a new json entry for our output,
-which we can load up and see is the output from our stage</p>
+which we can load up and see is the output from our stage:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">&quot;data/cache&quot;</span><span class="p">))</span>
@@ -452,7 +456,7 @@ running the stage code:</p>
 </pre></div>
 </div>
 <p>Using different arguments results in a different cache path, so
-computations using different parameters won’t conflict:</p>
+computations with different parameters won’t conflict:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">r2</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">doubled_args</span><span class="p">)</span>
 <span class="n">r2</span> <span class="o">=</span> <span class="n">long_compute_step</span><span class="p">(</span><span class="n">r2</span><span class="p">)</span>
 
@@ -466,7 +470,7 @@ computations using different parameters won’t conflict:</p>
 </div>
 <div class="section" id="lazy-loading">
 <h3>Lazy loading<a class="headerlink" href="#lazy-loading" title="Permalink to this headline"></a></h3>
-<p>One potential issue with caching normally is that it will always load
+<p>One potential pitfall with caching is that it will always load
 the object into memory, even if that object is never used. Projects with
 very large data objects can run into memory problems as a result.
 Curifactory includes a <code class="docutils literal notranslate"><span class="pre">Lazy</span></code> class that can wrap around a stage
@@ -499,7 +503,7 @@ earlier stage outputs may never need to load into memory at all.</p>
 </pre></div>
 </div>
 <p>Note that <code class="docutils literal notranslate"><span class="pre">Record.state</span></code> is actually a custom subclass of <code class="docutils literal notranslate"><span class="pre">dict</span></code>,
-and by default will automatically resolve lazy objects any time it’s
+and by default it will automatically resolve lazy objects any time they’re
 accessed on the state. the above cell turns this functionality off (with
 <code class="docutils literal notranslate"><span class="pre">state.resolve</span> <span class="pre">=</span> <span class="pre">False</span></code>) to show that what’s actually in memory before
 a resolved access is just the lazy object, which is significantly
@@ -517,13 +521,12 @@ smaller.</p>
 </div>
 <div class="section" id="reporting">
 <h3>Reporting<a class="headerlink" href="#reporting" title="Permalink to this headline"></a></h3>
-<p>A major part of experiments for debugging, understanding, as well as
-publishing them, is presenting results and pretty graphs. This can be a
+<p>A major part of experiments for debugging, understanding, and
+publishing them is the ability to present results and pretty graphs! This can be a
 challenge to keep organized, as one tries to manage folders for
 matplotlib graph images, result tables, and so on. Curifactory provides
 shortcuts to easily create <code class="docutils literal notranslate"><span class="pre">Reportable</span></code> items from inside stages,
-which the artifact manager can then use to display these results, as
-well as create an entire experiment run report in its own uniquely named
+which the artifact manager can then display inside an experiment run report in its own uniquely named
 run folder, which contains all of the information about the run, all of
 the created reportables, and a map of the stages that were run. Many of
 these report components can be rendered inside a notebook as well.</p>
