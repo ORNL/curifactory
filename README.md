@@ -5,7 +5,7 @@
 Curifactory is a library and CLI tool designed to help organize and manage
 research experiments in python.
 
-![](docs/source/images/diagram.png)
+![](sphinx/source/images/diagram.png)
 
 Experiment management requires several aspects, including experiment orchestration,
 parameterization, caching, reproducibility, reporting, and parallelization.
