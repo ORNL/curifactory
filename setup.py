@@ -21,7 +21,7 @@ setup(
     keywords=["research", "experiment", "workflow"],
     long_description_content_type="text/markdown",
     long_description=long_description,
-    author="Nathan Martindale, Scott L. Stewart, Mark Adams, Jason Hite",
+    author="Nathan Martindale, Jason Hite, Scott L. Stewart, Mark Adams",
     author_email="martindalena@ornl.gov",
     python_requries=">=3.6",
     url="https://github.com/ORNL/TX2",
