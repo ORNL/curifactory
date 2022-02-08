@@ -36,7 +36,7 @@ initialization process can be found in the
 Basic components
 ================
 
-This section is modeled after the [LINK] notebook. This notebook
+This section follows the `0_BasicComponents <https://github.com/ORNL/curifactory/blob/main/examples/notebook-based/notebooks/0_BasicComponents.ipynb>`_ notebook. This notebook
 introduces the four basic components of curifactory and
 shows how to use them from a live context. (A live context is either a
 notebook, REPL, or non-experiment script)
@@ -305,7 +305,7 @@ state.
 Caching and reporting
 =====================
 
-This section is modeled after the [LINK] notebook. This notebook demonstrates some features the previously discussed components
+This section follows the `1_CachingAndReporting <https://github.com/ORNL/curifactory/blob/main/examples/notebook-based/notebooks/1_CachingAndReporting.ipynb>`_ notebook. This notebook demonstrates some features the previously discussed components
 provide. Two major features covered are the ability to easily cache
 objects (to short circuit computation of already-computed values) and
 the ability to quickly add graphs and other “reportables” to a jupyter
