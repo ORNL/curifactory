@@ -1,0 +1,53 @@
+/* This file gets copied into each report's directory. */
+
+body {
+    font-family: Tahoma, sans-serif
+}
+
+h2 {
+    border-bottom: 1px solid silver;
+    padding: 5px;
+}
+
+ul li {
+    padding: 2px;
+}
+
+#title {
+    padding: 10px;
+    border-bottom: 1px solid black;
+}
+
+#experiment-info-block {
+    border-left: 2px solid silver;
+    background-color: lightgray;
+    display: inline-block;
+    padding: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
+    margin: 0px;
+    font-family: monospace;
+    font-size: 12pt;
+}
+#experiment-info-block ul {
+    /* margin-left: 10px; */
+    padding-left: 20px;
+}
+
+
+.reportable {
+    background-color: #fefefe;
+    border: 1px solid gray;
+    display: inline-block;
+    vertical-align: top;
+    padding: 5px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    margin: 5px;
+}
+.reportable h3 {
+    margin-top: 5px;
+}
+.reportable p {
+    margin-bottom: 5px;
+}
