@@ -6,20 +6,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- Missing files in git for example projects.
+### Added
+- `FileReferenceCacher` for storing lists of referenced file paths without keeping
+  file contents in memory.
 
 ### Changed
 - Improve getting started documentation.
 
+### Fixed
+- Missing files in git for example projects.
+
+
+
+
 ## [0.5.1] - 2022-02-08
+
+### Changed
+- Auto-redirect for docs index.
 
 ### Fixed
 - `.dockerignore` not correctly included in package data.
 - Setup documentation URL.
 
-### Changed
-- Auto-redirect for docs index.
+
+
 
 ## [0.5.0] - 2022-02-08
 

@@ -9,6 +9,7 @@ import logging
 import os
 import pandas as pd
 import pickle
+from typing import Union, List
 
 
 class Lazy:
@@ -52,7 +53,7 @@ class Cacheable:
         self.path = path + self.extension
         return self.path
 
-    def check(self, args):
+    def check(self, args) -> bool:
         """Check to see if this cacheable needs to be written or not.
 
         Note:
@@ -153,3 +154,73 @@ class PandasCsvCacher(Cacheable):
 
     def save(self, obj):
         obj.to_csv(self.path)
+
+
+class FileReferenceCacher(Cacheable):
+    """Saves a file path or list of file paths generated from a stage as a json file.
+    The :code:`check` function will check existence of all file paths.
+
+    This is useful for instances where there may be a large number of files stored or
+    generated to disk, as it would be unwieldy to return them all (or infeasible to keep them
+    in memory) directly from the stage. When this cacher is checked for pre-existing,
+    it tries to load the json file storing the filenames, and then checks for the existence of
+    each path in that json file. If all of them exist, it will short-circuit computation.
+
+    Using this cacher does mean the user is in charge of loading/saving the file paths correctly,
+    but in some cases that may be desirable.
+
+    This can also be used for storing a reference to a single file outside the normal cache.
+
+    When combined with the :code:`get_dir` call on the record, you can create a cached directory of
+    files similarly to a regular cacher and simply keep a reference to them as part of the actual
+    cacher process.
+
+    Example:
+
+        .. code-block:: python
+
+            @stage(inputs=None, outputs=["many_text_files"], cachers=[FileReferenceCacher])
+            def output_text_files(record):
+                file_path = record.get_dir("my_files")
+                my_file_list = [os.path.join(file_path, f"my_file_{num}") for num in range(20)]
+
+                for file in my_file_list:
+                    with open(file, 'w') as outfile:
+                        outfile.write("test")
+
+                return my_file_list
+    """
+
+    def __init__(self, path_override=None):
+        super().__init__(".json", path_override=path_override)
+
+    def check(self, args) -> bool:
+        # check the file list file exists
+        if not super().check(args):
+            return False
+
+        # load the file list and check each file
+        # NOTE: we don't need to re-check args overwrite because that
+        # would already have applied in the super check
+        with open(self.path, "r") as infile:
+            files = json.load(infile)
+
+        if type(files) == list:
+            for file in files:
+                logging.debug("Checking from file list: '%s'" % file)
+                if not os.path.exists(file):
+                    return False
+        else:
+            if not os.path.exists(files):
+                return False
+
+        return True
+
+    def load(self) -> Union[List[str], str]:
+        with open(self.path, "r") as infile:
+            files = json.load(infile)
+        return files
+
+    def save(self, files: Union[List[str], str]):
+        with open(self.path, "w") as outfile:
+            json.dump(files, outfile, indent=4)
