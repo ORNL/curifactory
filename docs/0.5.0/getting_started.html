@@ -249,11 +249,9 @@ necessary to parameterize the computation, via the <code class="docutils literal
 attribute.</p>
 <p>In the example below, we’ve defined a very simple stage that will store
 a number in the record’s state under the “initial_value” key.</p>
-<dl class="simple">
-<dt>Running a stage works by calling the function and passing it the</dt><dd><p>record. The record itself is changed in-place, but it is also</p>
-</dd>
-</dl>
-<p>directly returned from the stage call. This allows functionally chaining
+<p>Running a stage works by calling the function and passing it the
+record. The record itself is changed in-place, but it is also
+directly returned from the stage call. This allows functionally chaining
 stages, which we demonstate later on.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">stage</span>
 
@@ -624,7 +622,7 @@ to all of the individual reports.</p>
 </div>
 <div class="section" id="experiment-organization">
 <h2>Experiment organization<a class="headerlink" href="#experiment-organization" title="Permalink to this headline"></a></h2>
-<p>While the above sections demonstrate enough to use curifactory in
+<p>While the above sections demonstrate how to use curifactory in
 notebooks or a python shell, most of the power of curifactory comes from its ability to help
 organize experiment scripts and conduct more formal experiment runs with the
 included <code class="code docutils literal notranslate"><span class="pre">experiment</span></code> CLI tool.</p>
@@ -655,7 +653,8 @@ CLI interface for interacting with the experiment runs.)</p>
 python files in the experiment module path (part of curifactory’s configuration
 established with the <code class="code docutils literal notranslate"><span class="pre">curifactory</span> <span class="pre">init</span></code> command, by default this is a folder in
 the project root <code class="code docutils literal notranslate"><span class="pre">experiments/</span></code>, see <a class="reference internal" href="config.html#configuration-and-directory-structure"><span class="std std-ref">Configuration and directory structure</span></a>).</p>
-<p>Experiment scripts must implement the aforementioned <code class="code docutils literal notranslate"><span class="pre">run()</span></code> function, which takes a list of <code class="code docutils literal notranslate"><span class="pre">ExperimentArgs</span></code> subclass instances and an <code class="code docutils literal notranslate"><span class="pre">ArtifactManager</span></code>:</p>
+<p>Experiment scripts must implement the aforementioned <code class="code docutils literal notranslate"><span class="pre">run()</span></code> function, which takes
+a list of <code class="code docutils literal notranslate"><span class="pre">ExperimentArgs</span></code> subclass instances and an <code class="code docutils literal notranslate"><span class="pre">ArtifactManager</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 <span class="kn">import</span> <span class="nn">curifactory</span> <span class="k">as</span> <span class="nn">cf</span>
 
@@ -739,11 +738,10 @@ regression model versus a random forest classifier.</p>
 <div class="section" id="the-experiment-cli">
 <h3>The experiment CLI<a class="headerlink" href="#the-experiment-cli" title="Permalink to this headline"></a></h3>
 <p>Curifactory’s main tool is the <code class="code docutils literal notranslate"><span class="pre">experiment</span></code> CLI. This tool provides an
-easy way to interact with your experiment code and control many different
-aspects of it.</p>
-<p>The <code class="code docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">ls</span></code> subcommand can be used to list out your experiment
-directory and parameter files (discussed later) and ensure it’s detecting
-them correctly.</p>
+easy way to interact with your experiment code and control different
+aspects of the experiment runs.</p>
+<p>The <code class="code docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">ls</span></code> subcommand will list out your experiment
+directory and parameter files (discussed later) and check for any basic errors.</p>
 <p>Running this in our project’s root directory (assuming the above example is in
 the experiment’s directory and named <code class="code docutils literal notranslate"><span class="pre">iris.py</span></code>) we should get:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ experiment ls
@@ -760,7 +758,8 @@ PARAMS:
 <p>We can execute an experiment by running <code class="code docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">[EXPERIMENT_NAME]</span> <span class="pre">-p</span>
 <span class="pre">[PARAMS_NAME]</span></code></p>
 <p>In our case, the <code class="code docutils literal notranslate"><span class="pre">iris.py</span></code> file has both functions (and appears under both
-sections for <code class="code docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">ls</span></code>), so we can execute it with</p>
+sections for <code class="code docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">ls</span></code>), so we can execute it with: (note you do not
+include the file extension, you’re providing it as a module name.)</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment iris -p iris
 </pre></div>
 </div>
@@ -769,7 +768,7 @@ sections for <code class="code docutils literal notranslate"><span class="pre">e
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment iris
 </pre></div>
 </div>
-<p>which curifactory will then assume means <code class="code docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">[EXPERIMENT_NAME]</span> <span class="pre">-p</span>
+<p>which curifactory will internally expand to <code class="code docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">[EXPERIMENT_NAME]</span> <span class="pre">-p</span>
 <span class="pre">[EXPERIMENT_NAME]</span></code></p>
 <p>The CLI has a large collection of flags to alter and control an experiment run,
 see the <a class="reference internal" href="cli_guide.html#cli-guide"><span class="std std-ref">CLI Guide</span></a> for more information.</p>
@@ -777,16 +776,14 @@ see the <a class="reference internal" href="cli_guide.html#cli-guide"><span clas
 <div class="section" id="parameter-files">
 <h3>Parameter files<a class="headerlink" href="#parameter-files" title="Permalink to this headline"></a></h3>
 <p>As shown so far, for simplicity, experiments can have their own
-<code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> function, but frequently you may want to define multiple
+<code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> function. However, frequently you may want to define multiple
 different sets of parameters and selectively include them in an experiment, or
 define sets that could be shared across multiple experiment scripts. One option
-is to simply explicitly refer to the experiment file that has the
+is to simply explicitly refer to a previous experiment file that has the
 <code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> you want, e.g. with <code class="code docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">iris_updated</span> <span class="pre">-p</span> <span class="pre">iris</span></code>.</p>
-<p>The other option is to create separate parameter files, or distinct files in the
-params module path, (by default <code class="code docutils literal notranslate"><span class="pre">params/</span></code> in the project root) that
-each contain a <code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> function. This parameters folder is where
-curifactory checks first for <code class="code docutils literal notranslate"><span class="pre">-p</span></code> entries, falling back to the experiments
-directory if no matching filename is found.</p>
+<p>The other option is to create separate parameter scripts, or distinct files in the
+params module path, (by default <code class="code docutils literal notranslate"><span class="pre">params/</span></code> in the project root.) These
+files should each contain a <code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> function.</p>
 <p>Importantly, you can specify multiple <code class="code docutils literal notranslate"><span class="pre">-p</span></code> flags to the experiment CLI, like:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment iris -p params_file1 -p params_file2 -p iris
 </pre></div>
@@ -805,7 +802,7 @@ to apply across experiments</span><a class="headerlink" href="#id6" title="Perma
 <p>The structure and organization of experiments, parameters, and stages are
 relatively flexible, intended to allow the researcher to organize these however
 best to suit the needs of the project they’re working on.</p>
-<p>The only primary organization <strong>constraints</strong> include:</p>
+<p>The only organization <strong>constraints</strong> include:</p>
 <ul class="simple">
 <li><p>Formal experiment scripts with <code class="code docutils literal notranslate"><span class="pre">run()</span></code> functions <strong>must</strong> go in the experiment module folder. (<code class="code docutils literal notranslate"><span class="pre">experiments/</span></code> by default.)</p></li>
 <li><p>Formal argument set creation with <code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> functions <strong>must</strong> either

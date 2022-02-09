@@ -13,11 +13,11 @@ research experiments in python.
 .. figure:: images/diagram.png
     :align: center
 
-Experiment management requires several aspects, including experiment orchestration,
+Experiment management must fulfill several tasks, including experiment orchestration,
 parameterization, caching, reproducibility, reporting, and parallelization.
 Existing projects such as MLFlow, MetaFlow, Luigi, and Pachyderm
-support these aspects in several different ways and to various degrees.
-Curifactory provides a different opinion to these, with a heavier focus on supporting general
+support these tasks in several different ways and to various degrees.
+Curifactory provides a different opinion, with a heavier focus on supporting general
 research experiment workflows for individuals or small teams working primarily
 in python.
 

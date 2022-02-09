@@ -168,7 +168,7 @@ In the example below, we’ve defined a very simple stage that will store
 a number in the record’s state under the “initial_value” key.
 
 Running a stage works by calling the function and passing it the
- record. The record itself is changed in-place, but it is also
+record. The record itself is changed in-place, but it is also
 directly returned from the stage call. This allows functionally chaining
 stages, which we demonstate later on.
 
@@ -626,7 +626,7 @@ For more information on reports, see the :ref:`Reports` section.
 Experiment organization
 =======================
 
-While the above sections demonstrate enough to use curifactory in
+While the above sections demonstrate how to use curifactory in
 notebooks or a python shell, most of the power of curifactory comes from its ability to help
 organize experiment scripts and conduct more formal experiment runs with the
 included :code:`experiment` CLI tool.
@@ -663,7 +663,8 @@ python files in the experiment module path (part of curifactory's configuration
 established with the :code:`curifactory init` command, by default this is a folder in
 the project root :code:`experiments/`, see :ref:`configuration and directory structure`).
 
-Experiment scripts must implement the aforementioned :code:`run()` function, which takes a list of :code:`ExperimentArgs` subclass instances and an :code:`ArtifactManager`:
+Experiment scripts must implement the aforementioned :code:`run()` function, which takes
+a list of :code:`ExperimentArgs` subclass instances and an :code:`ArtifactManager`:
 
 .. code-block:: python
 
@@ -757,12 +758,11 @@ The experiment CLI
 ------------------
 
 Curifactory's main tool is the :code:`experiment` CLI. This tool provides an
-easy way to interact with your experiment code and control many different
-aspects of it.
+easy way to interact with your experiment code and control different
+aspects of the experiment runs.
 
-The :code:`experiment ls` subcommand can be used to list out your experiment
-directory and parameter files (discussed later) and ensure it's detecting
-them correctly.
+The :code:`experiment ls` subcommand will list out your experiment
+directory and parameter files (discussed later) and check for any basic errors.
 
 Running this in our project's root directory (assuming the above example is in
 the experiment's directory and named :code:`iris.py`) we should get:
@@ -784,7 +784,8 @@ We can execute an experiment by running :code:`experiment [EXPERIMENT_NAME] -p
 [PARAMS_NAME]`
 
 In our case, the :code:`iris.py` file has both functions (and appears under both
-sections for :code:`experiment ls`), so we can execute it with
+sections for :code:`experiment ls`), so we can execute it with: (note you do not
+include the file extension, you're providing it as a module name.)
 
 .. code-block:: bash
 
@@ -797,7 +798,7 @@ Curifactory has a shortcut for when an experiment file also has its own
 
     experiment iris
 
-which curifactory will then assume means :code:`experiment [EXPERIMENT_NAME] -p
+which curifactory will internally expand to :code:`experiment [EXPERIMENT_NAME] -p
 [EXPERIMENT_NAME]`
 
 The CLI has a large collection of flags to alter and control an experiment run,
@@ -807,17 +808,15 @@ Parameter files
 ---------------
 
 As shown so far, for simplicity, experiments can have their own
-:code:`get_params()` function, but frequently you may want to define multiple
+:code:`get_params()` function. However, frequently you may want to define multiple
 different sets of parameters and selectively include them in an experiment, or
 define sets that could be shared across multiple experiment scripts. One option
-is to simply explicitly refer to the experiment file that has the
+is to simply explicitly refer to a previous experiment file that has the
 :code:`get_params()` you want, e.g. with :code:`experiment iris_updated -p iris`.
 
-The other option is to create separate parameter files, or distinct files in the
-params module path, (by default :code:`params/` in the project root) that
-each contain a :code:`get_params()` function. This parameters folder is where
-curifactory checks first for :code:`-p` entries, falling back to the experiments
-directory if no matching filename is found.
+The other option is to create separate parameter scripts, or distinct files in the
+params module path, (by default :code:`params/` in the project root.) These
+files should each contain a :code:`get_params()` function.
 
 Importantly, you can specify multiple :code:`-p` flags to the experiment CLI, like:
 
@@ -843,7 +842,7 @@ The structure and organization of experiments, parameters, and stages are
 relatively flexible, intended to allow the researcher to organize these however
 best to suit the needs of the project they're working on.
 
-The only primary organization **constraints** include:
+The only organization **constraints** include:
 
 * Formal experiment scripts with :code:`run()` functions **must** go in the experiment module folder. (:code:`experiments/` by default.)
 * Formal argument set creation with :code:`get_params()` functions **must** either
