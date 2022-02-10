@@ -47,20 +47,19 @@ class Cacheable:
             setting it."""
         if self.path_override is not None:
             self.path = self.path_override
+        self.record = None
+        """Record: the current record this cacheable is caching under. This can be used to get a copy of the current args instance."""
 
     def set_path(self, path: str):
         """Changes the :code:`path` to the passed value."""
         self.path = path + self.extension
         return self.path
 
-    def check(self, args) -> bool:
+    def check(self) -> bool:
         """Check to see if this cacheable needs to be written or not.
 
         Note:
             This function will always return False if the args are :code:`None`.
-
-        Args:
-            args: The :code:`ExperimentArgs` to use to check for any overwrite flags.
 
         Returns:
             True if we find the cached file and the current :code:`Args`
@@ -68,7 +67,11 @@ class Cacheable:
         """
         logging.debug("Searching for cached file at %s...", self.path)
         if os.path.exists(self.path):
-            if args is not None and not args.overwrite:
+            if (
+                self.record is not None
+                and self.record.args is not None
+                and not self.record.args.overwrite
+            ):
                 logging.info("Cached object '%s' found", self.path)
                 return True
             else:
@@ -194,9 +197,9 @@ class FileReferenceCacher(Cacheable):
     def __init__(self, path_override=None):
         super().__init__(".json", path_override=path_override)
 
-    def check(self, args) -> bool:
+    def check(self) -> bool:
         # check the file list file exists
-        if not super().check(args):
+        if not super().check():
             return False
 
         # load the file list and check each file

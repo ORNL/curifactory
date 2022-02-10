@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Improve getting started documentation.
+- Cacheables are now given a copy of the current record by the stages. This can
+  be used to access the current argset and even directly get record state within
+  the save/load implementation.
 
 ### Fixed
 - Missing files in git for example projects.

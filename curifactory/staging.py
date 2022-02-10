@@ -265,6 +265,8 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                     cacher = cachers[i]
                     if type(cacher) == type:
                         cachers[i] = cacher()
+                    # set the active record on the cacher
+                    cachers[i].record = record
 
             # check for cached outputs and lazy load inputs if needed
             pre_cache_time_start = time.perf_counter()  # time to load from cache
@@ -513,6 +515,8 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                     cacher = cachers[i]
                     if type(cacher) == type:
                         cachers[i] = cacher()
+                    # set the active record on the cacher
+                    cachers[i].record = record
 
             pre_cache_time_start = time.perf_counter()  # time to load from cache
             record.manager.lock()
@@ -662,7 +666,7 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
         cache_valid = True
         function_outputs = []
         for i in range(len(paths)):
-            if cachers[i].check(record.args):
+            if cachers[i].check():
 
                 # handle lazy objects by setting the cacher but not actually loading yet.
                 if type(outputs[i]) == Lazy:
