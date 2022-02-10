@@ -29,7 +29,9 @@ def test_stage_integration_basic(
     configured_test_manager,
 ):
     """The stage should be calling manager's get_path with the correct parameters."""
-    mock = mocker.patch.object(configured_test_manager, "get_path")
+    mock = mocker.patch.object(
+        configured_test_manager, "get_path", return_value="test_path"
+    )
 
     @stage([], ["test_output"], [FakeCacher])
     def do_thing(record):
@@ -46,7 +48,9 @@ def test_stage_integration_path_override(
     configured_test_manager,
 ):
     """The stage should be calling manager's get_path with the correct parameters when using a path override in a cacher."""
-    mock = mocker.patch.object(configured_test_manager, "get_path")
+    mock = mocker.patch.object(
+        configured_test_manager, "get_path", return_value="test_path"
+    )
 
     @stage([], ["test_output"], [FakeCacher(path_override="test/examples/WHAT")])
     def do_thing(record):
@@ -66,7 +70,9 @@ def test_stage_integration_storefull(
 ):
     """The stage should be calling manager's get_path twice with the correct parameters."""
     configured_test_manager.store_entire_run = True
-    mock = mocker.patch.object(configured_test_manager, "get_path")
+    mock = mocker.patch.object(
+        configured_test_manager, "get_path", return_value="test_path"
+    )
 
     @stage([], ["test_output"], [FakeCacher])
     def do_thing(record):

@@ -273,6 +273,9 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             pre_cache_time_start = time.perf_counter()  # time to load from cache
             record.manager.lock()
             cache_valid = _check_cached_outputs(name, record, outputs, cachers)
+            if cache_valid:
+                # get previous reportables if available
+                _check_cached_reportables(name, record)
 
             # check each input for Lazy objects and load them if we know we have to execute this stage
             if not cache_valid:
@@ -326,6 +329,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             post_cache_time_start = time.perf_counter()
             record.manager.lock()
             _store_outputs(name, record, outputs, cachers, function_outputs)
+            _store_reportables(name, record)
             record.manager.unlock()
             post_cache_time_end = time.perf_counter()
 
@@ -522,6 +526,9 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             pre_cache_time_start = time.perf_counter()  # time to load from cache
             record.manager.lock()
             cache_valid = _check_cached_outputs(name, record, outputs, cachers, records)
+            if cache_valid:
+                # get previous reportables if available
+                _check_cached_reportables(name, record, records)
             record.manager.unlock()
             pre_cache_time_end = time.perf_counter()
 
@@ -560,6 +567,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             post_cache_time_start = time.perf_counter()
             record.manager.lock()
             _store_outputs(name, record, outputs, cachers, function_outputs, records)
+            _store_reportables(name, record, records)
             record.manager.unlock()
             post_cache_time_end = time.perf_counter()
 
@@ -724,11 +732,31 @@ def _add_output_artifact(record, object, outputs, index):
     return artifact
 
 
-def _store_reportables(function_name, record, aggregate_records=None):
+def _check_cached_reportables(stage_name, record, aggregate_records=None):
+    reportables_list_cacher = FileReferenceCacher()
+    reportables_list_cacher.record = record
+    reportables_list_cacher.set_path(
+        record.manager.get_path(
+            "reportables_file_list", record, aggregate_records=aggregate_records
+        )
+    )
+    if reportables_list_cacher.check():
+        paths = reportables_list_cacher.load()
+        for path in paths:
+            with open(path, "rb"):
+                logging.debug("Reusing cached reportable '%s'" % path)
+                reportable = pickle.load(path)
+                record.report(reportable)
+        return True
+    # the return of this function is simply used to determine if we need to store again?
+    return False
+
+
+def _store_reportables(stage_name, record, aggregate_records=None):
     # get all reportables from the manager for this record and stage name
     reportables = []
     for reportable in record.manager.reportables:
-        if reportable.record == record and reportable.stage == function_name:
+        if reportable.record == record and reportable.stage == stage_name:
             reportables.append(reportable)
 
     if len(reportables) == 0:
@@ -737,21 +765,24 @@ def _store_reportables(function_name, record, aggregate_records=None):
     # pickle each one and store it. (we'll have to handle store-full the same way as outputs below I think)
     # TODO: (02/10/2022) like record get_dir and get_path normally, _this does not transfer into a store-full
     # run.
+    paths = []
     reportables_path = record.get_dir("reportables")
     for reportable in reportables:
         reportable_path = os.path.join(reportables_path, reportable.name, ".pkl")
+        paths.append(reportable_path)
         logging.debug("Caching reportable '%s'" % reportable_path)
         with open(reportable_path, "wb") as outfile:
             pickle.dump(reportable, outfile)
 
     # write a cache file out containing the reportables path names. This is a...file reference cacher...can we re-use the logic?
     reportables_list_cacher = FileReferenceCacher()
+    reportables_list_cacher.record = record
     reportables_list_cacher.set_path(
         record.manager.get_path(
             "reportables_file_list", record, aggregate_records=aggregate_records
         )
     )
-    reportables_list_cacher.save(reportables_path)
+    reportables_list_cacher.save(paths)
     # NOTE: unnecessary because the reportables don't get copied over anyway, see todo note above.
     # (we should get this for free without needing this code when we add extra path tracking to the manager.)
     # if record.manager.store_entire_run:

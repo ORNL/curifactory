@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `FileReferenceCacher` for storing lists of referenced file paths without keeping
   file contents in memory.
+- Automatic reportable caching. Stages with reportables that short-circuit will
+  still reload and display in the report.
 
 ### Changed
 - Improve getting started documentation.

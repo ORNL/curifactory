@@ -50,7 +50,7 @@ def configured_test_manager(
     mock = mocker.patch("curifactory.utils.get_configuration")
     mock.return_value = configuration
 
-    yield ArtifactManager("test")
+    yield ArtifactManager("test", live_log_debug=True)
     shutil.rmtree("test/examples/data", ignore_errors=True)
 
 
