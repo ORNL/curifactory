@@ -13,4 +13,4 @@ from curifactory.procedure import Procedure
 from curifactory.args import ExperimentArgs
 from curifactory.caching import Lazy
 
-__version__ = "0.5.1"
+__version__ = "0.6.0"
