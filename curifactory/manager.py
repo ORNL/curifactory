@@ -136,12 +136,6 @@ class ArtifactManager:
         self.config = {}
         """The manager configuration loaded from the curifactory config file if present."""
 
-        # STRT: (01/25/2022) don't do it this way, use actual os path concat
-        # if self.cache_path[-1] != "/":
-        #     self.cache_path += "/"
-        # if self.runs_path[-1] != "/":
-        #     self.runs_path += "/"
-
         self.records = []
         """The list of records currently managed by this manager."""
         self.store_entire_run: bool = store_entire_run
