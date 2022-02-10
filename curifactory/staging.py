@@ -743,9 +743,9 @@ def _check_cached_reportables(stage_name, record, aggregate_records=None):
     if reportables_list_cacher.check():
         paths = reportables_list_cacher.load()
         for path in paths:
-            with open(path, "rb"):
+            with open(path, "rb") as infile:
                 logging.debug("Reusing cached reportable '%s'" % path)
-                reportable = pickle.load(path)
+                reportable = pickle.load(infile)
                 record.report(reportable)
         return True
     # the return of this function is simply used to determine if we need to store again?
@@ -768,7 +768,7 @@ def _store_reportables(stage_name, record, aggregate_records=None):
     paths = []
     reportables_path = record.get_dir("reportables")
     for reportable in reportables:
-        reportable_path = os.path.join(reportables_path, reportable.name, ".pkl")
+        reportable_path = os.path.join(reportables_path, f"{reportable.name}.pkl")
         paths.append(reportable_path)
         logging.debug("Caching reportable '%s'" % reportable_path)
         with open(reportable_path, "wb") as outfile:
