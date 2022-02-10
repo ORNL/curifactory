@@ -3,6 +3,7 @@ input/output passing through record state between stages."""
 
 import logging
 import os
+import pickle
 import psutil
 
 import shutil
@@ -11,7 +12,7 @@ from typing import List, Union
 from functools import wraps
 
 from curifactory.record import Record, ArtifactRepresentation
-from curifactory.caching import Lazy, PickleCacher
+from curifactory.caching import Lazy, PickleCacher, FileReferenceCacher
 from curifactory import utils
 
 
@@ -721,6 +722,48 @@ def _add_output_artifact(record, object, outputs, index):
     record.stage_outputs[-1].append(new_index)
     record.state_artifact_reps[str(outputs[index])] = new_index
     return artifact
+
+
+def _store_reportables(function_name, record, aggregate_records=None):
+    # get all reportables from the manager for this record and stage name
+    reportables = []
+    for reportable in record.manager.reportables:
+        if reportable.record == record and reportable.stage == function_name:
+            reportables.append(reportable)
+
+    if len(reportables) == 0:
+        return
+
+    # pickle each one and store it. (we'll have to handle store-full the same way as outputs below I think)
+    # TODO: (02/10/2022) like record get_dir and get_path normally, _this does not transfer into a store-full
+    # run.
+    reportables_path = record.get_dir("reportables")
+    for reportable in reportables:
+        reportable_path = os.path.join(reportables_path, reportable.name, ".pkl")
+        logging.debug("Caching reportable '%s'" % reportable_path)
+        with open(reportable_path, "wb") as outfile:
+            pickle.dump(reportable, outfile)
+
+    # write a cache file out containing the reportables path names. This is a...file reference cacher...can we re-use the logic?
+    reportables_list_cacher = FileReferenceCacher()
+    reportables_list_cacher.set_path(
+        record.manager.get_path(
+            "reportables_file_list", record, aggregate_records=aggregate_records
+        )
+    )
+    reportables_list_cacher.save(reportables_path)
+    # NOTE: unnecessary because the reportables don't get copied over anyway, see todo note above.
+    # (we should get this for free without needing this code when we add extra path tracking to the manager.)
+    # if record.manager.store_entire_run:
+    #     reportables_list_cacher.set_path(
+    #         record.manager.get_path(
+    #             "reportables_file_list",
+    #             record,
+    #             output=True,
+    #             aggregate_records=aggregate_records,
+    #         )
+    #     )
+    # reportables_list_cacher.save(reportables_path)
 
 
 def _store_outputs(
