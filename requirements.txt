@@ -12,3 +12,4 @@ pytest-cov
 psutil
 twine
 build
+dataclasses
