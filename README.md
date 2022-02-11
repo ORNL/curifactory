@@ -2,6 +2,7 @@
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![PyPI version](https://badge.fury.io/py/curifactory.svg)](https://badge.fury.io/py/curifactory)
+[![tests](https://github.com/ORNL/curifactory/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/ORNL/curifactory/actions/workflows/tests.yml)
 
 Curifactory is a library and CLI tool designed to help organize and manage
 research experiments in python.
