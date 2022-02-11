@@ -225,9 +225,6 @@ def test_write_run_env_output(configured_test_manager):
         f"test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts}/requirements.txt"
     )
     assert os.path.exists(
-        f"test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts}/environment.yml"
-    )
-    assert os.path.exists(
         f"test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts}/environment_meta.txt"
     )
     assert os.path.exists(

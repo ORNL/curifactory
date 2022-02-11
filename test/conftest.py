@@ -58,6 +58,8 @@ def configured_test_manager(
 def clear_proj_root():
     yield
     shutil.rmtree("reports", ignore_errors=True)
+    shutil.rmtree("test/examples/logs", ignore_errors=True)
+    shutil.rmtree("test/examples/reports", ignore_errors=True)
     shutil.rmtree("test/examples/data", ignore_errors=True)
 
 
