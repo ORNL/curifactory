@@ -1,6 +1,7 @@
 """Testing the decorators to help orchestrate caching and
 input/output passing through record state between stages."""
 
+import copy
 import logging
 import os
 import pickle
@@ -768,11 +769,16 @@ def _store_reportables(stage_name, record, aggregate_records=None):
     paths = []
     reportables_path = record.get_dir("reportables")
     for reportable in reportables:
+        # make a copy of the reportable without the record, because that seems to break the mp.lock
+        # when in parallel mode.
+        # NOTE: do NOT use a deepcopy below, runs into same issue.
+        reportable_copy = copy.copy(reportable)
+        reportable_copy.record = None
         reportable_path = os.path.join(reportables_path, f"{reportable.name}.pkl")
         paths.append(reportable_path)
         logging.debug("Caching reportable '%s'" % reportable_path)
         with open(reportable_path, "wb") as outfile:
-            pickle.dump(reportable, outfile)
+            pickle.dump(reportable_copy, outfile)
 
     # write a cache file out containing the reportables path names. This is a...file reference cacher...can we re-use the logic?
     reportables_list_cacher = FileReferenceCacher()
