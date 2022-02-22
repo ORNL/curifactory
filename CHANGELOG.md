@@ -6,9 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Newsgroups example experiment code (see `examples/minimal/experiments/newsgroups.py`.)
+
 ### Changed
 - Parallel mode will automatically be set in a distributed pytorch scenario for
-  all processes that aren't local/node rank 0
+  all processes that aren't local/node rank 0.
 
 ### Fixed
 - Parallel mode causing crash if global args indices are not specified.
