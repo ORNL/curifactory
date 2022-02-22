@@ -15,6 +15,15 @@ def sample_args():
     return ExperimentArgs(name="sample_args", hash="sample_hash")
 
 
+@pytest.fixture()
+def clear_rank_env_vars():
+    yield
+    if "LOCAL_RANK" in os.environ:
+        os.environ.pop("LOCAL_RANK")
+    if "NODE_RANK" in os.environ:
+        os.environ.pop("NODE_RANK")
+
+
 @pytest.fixture(autouse=True)
 def configuration_file(configuration):
     with open("curifactory_config.json", "w") as outfile:

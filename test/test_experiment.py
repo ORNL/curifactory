@@ -29,6 +29,20 @@ from curifactory.manager import ArtifactManager
             ),
         ),
         (
+            dict(experiment_name="test", parameters_list=[]),
+            dict(
+                store_entire_run=False,
+                dry=False,
+                dry_cache=False,
+                custom_name=None,
+                run_line="experiment test",
+                parallel_lock=None,
+                parallel_mode=False,
+                lazy=False,
+                ignore_lazy=False,
+            ),
+        ),
+        (
             dict(
                 experiment_name="test",
                 parameters_list=["params1"],
@@ -147,6 +161,54 @@ def test_manager_integration(
         pass
     mock.assert_called_once_with(
         "test", **expected_manager_params, status_override=None, notes=None
+    )
+
+
+@pytest.mark.parametrize(
+    "local_rank,node_rank,expect_parallel",
+    [
+        (None, None, False),
+        (0, None, False),
+        (1, None, True),
+        (0, 0, False),
+        (1, 0, True),
+        (0, 1, True),
+        (1, 1, True),
+    ],
+)
+def test_rank_manager_integration(
+    mocker,  # noqa: F811 -- mocker has to be passed in as fixture
+    local_rank,
+    node_rank,
+    expect_parallel,
+    clear_rank_env_vars,
+):
+    """Experiment should use parallel mode if RANK env vars are set and indicate not rank 0."""
+    if local_rank is not None:
+        os.environ["LOCAL_RANK"] = str(local_rank)
+    if node_rank is not None:
+        os.environ["NODE_RANK"] = str(node_rank)
+
+    mock = mocker.patch.object(ArtifactManager, "__init__", return_value=None)
+    try:
+        run_experiment(experiment_name="test", parameters_list=["params1"])
+    except AttributeError:
+        # NOTE: I'm not actually sure a better way around this, all I want to test is that
+        # manager was initialized with what I expect
+        pass
+    mock.assert_called_once_with(
+        "test",
+        store_entire_run=False,
+        dry=False,
+        dry_cache=False,
+        custom_name=None,
+        run_line="experiment test -p params1",
+        parallel_lock=None,
+        parallel_mode=expect_parallel,
+        lazy=False,
+        ignore_lazy=False,
+        status_override=None,
+        notes=None,
     )
 
 

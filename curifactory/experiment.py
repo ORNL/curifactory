@@ -174,9 +174,9 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     # distributed run check, automatically set parallel mode if we're not rank 0
     # this was added because of issues with pytorch distributed compute
     if "LOCAL_RANK" in os.environ:
-        if os.getenv("LOCAL_RANK") != 0:
+        if os.getenv("LOCAL_RANK") != "0":
             parallel_mode = True
-        elif "NODE_RANK" in os.environ and os.getenv("NODE_RANK") != 0:
+        elif "NODE_RANK" in os.environ and os.getenv("NODE_RANK") != "0":
             parallel_mode = True
 
     # get the experiment run notes if requested
