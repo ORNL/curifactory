@@ -171,6 +171,14 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     # NOTE: this allows a project root /params /experiments to work, but unfortunately doesn't automagically work if you have nested folders (you need to put __init__.py in each dir)
     sys.path.append(os.getcwd())
 
+    # distributed run check, automatically set parallel mode if we're not rank 0
+    # this was added because of issues with pytorch distributed compute
+    if "LOCAL_RANK" in os.environ:
+        if os.getenv("LOCAL_RANK") != 0:
+            parallel_mode = True
+        elif "NODE_RANK" in os.environ and os.getenv("NODE_RANK") != 0:
+            parallel_mode = True
+
     # get the experiment run notes if requested
     if notes == "":
         notes_file = "temp_run_notes_content.txt"
@@ -252,7 +260,10 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     if log:
         log_name = mngr.get_reference_name()
         if parallel_mode:
-            log_name += f"_{str(global_args_indices[0])}"
+            if global_args_indices is not None:
+                log_name += f"_{str(global_args_indices[0])}"
+            else:
+                log_name += f"_p{str(os.getpid())}"
         log_path = os.path.join(mngr.logs_path, f"{log_name}.log")
 
         if dry:
@@ -964,6 +975,7 @@ def main():
 
     # fix any missing quotes in run line
     command_parts = sys.argv[1:]
+
     fixed_parts = []
     for index, part in enumerate(command_parts):
         if " " in part and not part.startswith('"') and not part.endswith('"'):
