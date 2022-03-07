@@ -101,7 +101,6 @@ def initialize_project():
         if gitfile_yn == "" or gitfile_yn.lower() == "y":
             valid_gitfile_choice = True
 
-            # TODO: append to gitignore
             print("Appending to .gitignore...")
             with open(".gitignore", "a") as outfile:
                 outfile.write(

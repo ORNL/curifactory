@@ -1,10 +1,12 @@
 """Testing the `curifactory init` command."""
 
+import json
 import os
 import pytest
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
 from curifactory.project import initialize_project
+from curifactory.utils import get_configuration
 
 
 @pytest.mark.noautofixt
@@ -36,7 +38,8 @@ def test_project_init_defaults(
 def test_project_init_input_nondefaults(
     mocker, project_folder  # noqa: F811 -- mocker has to be passed in as fixture
 ):
-    """Passing a different value to one of the inputs should change the directory and config."""
+    """Passing a different value to one of the inputs should change the
+    directory and config."""
 
     prompt_number = 0
 
@@ -79,5 +82,51 @@ def test_project_init_input_nondefaults(
     assert os.path.exists("myparams")
     assert not os.path.exists("reports")
     assert os.path.exists("myreports")
+    assert os.path.exists("myreports/style.css")
     assert not os.path.exists(".gitignore")
+    assert os.path.exists("curifactory_config.json")
+
+    # TODO: (03/07/2022) assert that config is correct
+
+
+@pytest.mark.noautofixt
+def test_project_init_preexisting(
+    mocker, project_folder  # noqa: F811 -- mocker has to be passed in as fixture
+):
+    """A pre-existing curifactory config should correctly propagate values
+    during init."""
+
+    def actual_readline():
+        return "\n"
+
+    config = get_configuration()
+    config["experiments_module_name"] = "myexperiments"
+    config["params_module_name"] = "myparams"
+    config["manager_cache_path"] = "mydata/"
+    config["cache_path"] = "mydata/cache"
+    config["runs_path"] = "mydata/runs"
+    config["logs_path"] = "mylogs"
+    config["notebooks_path"] = "mynotebooks/"
+    config["reports_path"] = "myreports/"
+    config["reports_css_path"] = "myreports/style.css"
+
+    with open("curifactory_config.json", "w") as outfile:
+        json.dump(config, outfile)
+
+    mocker.patch("sys.stdin.readline", actual_readline)
+    initialize_project()
+
+    assert not os.path.exists("experiments")
+    assert os.path.exists("myexperiments")
+    assert not os.path.exists("data")
+    assert os.path.exists("mydata")
+    assert not os.path.exists("logs")
+    assert os.path.exists("mylogs")
+    assert not os.path.exists("notebooks")
+    assert os.path.exists("mynotebooks")
+    assert os.path.exists("mynotebooks/experiments")
+    assert not os.path.exists("params")
+    assert os.path.exists("myparams")
+    assert not os.path.exists("reports")
+    assert os.path.exists("myreports")
     assert os.path.exists("curifactory_config.json")
