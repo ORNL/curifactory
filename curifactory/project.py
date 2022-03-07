@@ -101,8 +101,17 @@ def initialize_project():
         if gitfile_yn == "" or gitfile_yn.lower() == "y":
             valid_gitfile_choice = True
 
+            newline_needed = False
+            if os.path.exists(".gitignore"):
+                with open(".gitignore", "r") as infile:
+                    lines = infile.readlines()
+                    if len(lines) > 0 and lines[-1] != "\n":
+                        newline_needed = True
+
             print("Appending to .gitignore...")
             with open(".gitignore", "a") as outfile:
+                if newline_needed:
+                    outfile.write("\n")
                 outfile.write(
                     "\n".join(
                         [

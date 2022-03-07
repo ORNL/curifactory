@@ -130,3 +130,71 @@ def test_project_init_preexisting(
     assert not os.path.exists("reports")
     assert os.path.exists("myreports")
     assert os.path.exists("curifactory_config.json")
+
+
+@pytest.mark.noautofixt
+def test_empty_gitignore_no_blank_line(
+    mocker, project_folder  # noqa: F811 -- mocker has to be passed in as fixture
+):
+    """A blank or nonexisting gitignore should not have a blank line added
+    before the curifactory section."""
+
+    def actual_readline():
+        return "\n"
+
+    mocker.patch("sys.stdin.readline", actual_readline)
+    initialize_project()
+
+    with open(".gitignore", "r") as infile:
+        lines = infile.readlines()
+
+    assert lines[0] == "# curifactory paths\n"
+
+
+@pytest.mark.noautofixt
+def test_nonempty_gitignore_has_blank_line(
+    mocker, project_folder  # noqa: F811 -- mocker has to be passed in as fixture
+):
+    """If there's a pre-existing gitignore, the .gitignore append on init should
+    add a blank line before the curifactory paths, for optimal neatness."""
+
+    def actual_readline():
+        return "\n"
+
+    with open(".gitignore", "w") as outfile:
+        outfile.writelines(["stuff\n"])
+
+    mocker.patch("sys.stdin.readline", actual_readline)
+    initialize_project()
+
+    with open(".gitignore", "r") as infile:
+        lines = infile.readlines()
+
+    assert lines[0] == "stuff\n"
+    assert lines[1] == "\n"
+    assert lines[2] == "# curifactory paths\n"
+
+
+@pytest.mark.noautofixt
+def test_nonempty_gitignore_has_only_one_blank_line(
+    mocker, project_folder  # noqa: F811 -- mocker has to be passed in as fixture
+):
+    """If there's a pre-existing gitignore, the .gitignore append on init should
+    add a blank line before the curifactory paths, for optimal neatness, unless
+    there's already a blank line there."""
+
+    def actual_readline():
+        return "\n"
+
+    with open(".gitignore", "w") as outfile:
+        outfile.writelines(["stuff\n\n"])
+
+    mocker.patch("sys.stdin.readline", actual_readline)
+    initialize_project()
+
+    with open(".gitignore", "r") as infile:
+        lines = infile.readlines()
+
+    assert lines[0] == "stuff\n"
+    assert lines[1] == "\n"
+    assert lines[2] == "# curifactory paths\n"
