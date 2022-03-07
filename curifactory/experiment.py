@@ -519,8 +519,9 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         # TODO details file for any meta information (if it errored or not)
 
     if build_notebook and not dry and not parallel_mode:
+        notebook_loc = os.path.join(mngr.notebooks_path, "experiments")
         try:
-            os.mkdir("notebooks/experiments")
+            os.makedirs(notebook_loc, exist_ok=True)
         # TODO: Handle exceptions better
         except:  # noqa: E722
             pass
@@ -529,7 +530,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             parameters_list,
             argsets,
             mngr,
-            path="notebooks/experiments/" + mngr.get_reference_name(),
+            path=os.path.join(notebook_loc, mngr.get_reference_name()),
             use_global_cache=None,
             errored=error_thrown,
         )

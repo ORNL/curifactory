@@ -54,6 +54,7 @@ def initialize_project():
     os.makedirs(config["runs_path"], exist_ok=True)
     os.makedirs(config["logs_path"], exist_ok=True)
     os.makedirs(config["notebooks_path"], exist_ok=True)
+    os.makedirs(os.path.join(config["notebooks_path"], "experiments"), exist_ok=True)
     os.makedirs(config["reports_path"], exist_ok=True)
 
     # copy in style sheet for reports
