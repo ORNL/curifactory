@@ -25,7 +25,11 @@ def clear_rank_env_vars():
 
 
 @pytest.fixture(autouse=True)
-def configuration_file(configuration):
+def configuration_file(request, configuration):
+    if "noautofixt" in request.keywords:
+        yield
+        return
+
     with open("curifactory_config.json", "w") as outfile:
         json.dump(configuration, outfile)
     yield
@@ -35,7 +39,19 @@ def configuration_file(configuration):
         pass
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
+def project_folder():
+    project_dir = "test/testprojects/myproject"
+
+    current_dir = os.getcwd()
+    os.makedirs(project_dir, exist_ok=True)
+    os.chdir(project_dir)
+    yield project_dir
+    os.chdir(current_dir)
+    shutil.rmtree(project_dir)
+
+
+@pytest.fixture()
 def configuration():
     config = {
         "experiments_module_name": "test.examples.experiments",
@@ -60,6 +76,7 @@ def configured_test_manager(
     mock.return_value = configuration
 
     yield ArtifactManager("test", live_log_debug=True)
+
     shutil.rmtree("test/examples/data", ignore_errors=True)
 
 
