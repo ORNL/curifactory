@@ -45,7 +45,6 @@ class Record:
         """The :code:`ArtifactManager` associated with this record."""
         self.args = args
         """The :code:`ExperimentArgs` to apply to any stages this record is passed through."""
-        # self.state = {}
         self.state = CacheAwareDict()
         """The dictionary of all variables created by stages this record is passed through. (AKA 'Artifacts')
         All :code:`inputs` from stage decorators are pulled from this dictionary, and all
@@ -134,7 +133,7 @@ class Record:
         Args:
             obj_name (str): the name to associate with the object as the last part of the filename.
         """
-        # TODO: (02/02/2022) at some point this should keep track of these paths so that store-full can automatically grab them too.
+        # STRT: (02/02/2022) at some point this should keep track of these paths so that store-full can automatically grab them too.
         return self.manager.get_path(obj_name=obj_name, record=self)
 
     def get_dir(self, dir_name_suffix: str) -> str:

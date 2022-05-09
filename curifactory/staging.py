@@ -157,6 +157,8 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                 )
             pre_mem_usage = psutil.Process().memory_info().rss
             record.manager.current_stage_name = name
+            record.manager.current_stage_is_aggregate = False
+            record.manager.current_stage_aggregate_records = None
             record.stages.append(name)
             record.stage_outputs.append([])
             record.stage_inputs.append([])
@@ -446,6 +448,12 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             else:
                 utils.set_logging_prefix("")
 
+            if records is None:
+                # if no explicit request for a specific set of records given,
+                # use all previous records
+                records = record.manager.records
+            record.input_records = records
+
             name = function.__name__
             logging.info("-----")
             logging.info("Stage (aggregate) %s", name)
@@ -456,6 +464,8 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 )
             pre_mem_usage = psutil.Process().memory_info().rss
             record.manager.current_stage_name = name
+            record.manager.current_stage_is_aggregate = True
+            record.manager.current_stage_aggregate_records = records
             record.stages.append(name)
             record.stage_outputs.append([])
             record.stage_inputs.append([])
@@ -502,12 +512,6 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                     if type(output) == Lazy:
                         logging.debug("Disabling lazy cache for '%s'" % output)
                         outputs[index] = output.name
-
-            if records is None:
-                # if no explicit request for a specific set of records given,
-                # use all previous records
-                records = record.manager.records
-            record.input_records = records
 
             if cachers is not None and len(cachers) != len(outputs):
                 raise CachersMismatchError(
@@ -764,8 +768,9 @@ def _store_reportables(stage_name, record, aggregate_records=None):
         return
 
     # pickle each one and store it. (we'll have to handle store-full the same way as outputs below I think)
-    # TODO: (02/10/2022) like record get_dir and get_path normally, _this does not transfer into a store-full
+    # STRT: (02/10/2022) like record get_dir and get_path normally, _this does not transfer into a store-full
     # run.
+    # NOTE: so wait, this actually does transfer, but why? Is filerefcacher already handling this?
     paths = []
     reportables_path = record.get_dir("reportables")
     for reportable in reportables:
@@ -780,7 +785,7 @@ def _store_reportables(stage_name, record, aggregate_records=None):
         with open(reportable_path, "wb") as outfile:
             pickle.dump(reportable_copy, outfile)
 
-    # write a cache file out containing the reportables path names. This is a...file reference cacher...can we re-use the logic?
+    # write a cache file out containing the reportables path names.
     reportables_list_cacher = FileReferenceCacher()
     reportables_list_cacher.record = record
     reportables_list_cacher.set_path(

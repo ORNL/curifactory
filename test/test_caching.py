@@ -1,4 +1,6 @@
 import curifactory as cf
+from curifactory.caching import PickleCacher
+from curifactory.reporting import JsonReporter
 import json
 import os
 import pytest
@@ -102,3 +104,77 @@ def test_filerefcacher_runs_when_file_missing(configured_test_manager, clear_sta
     r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
     filerefcacher_stage_multifile(r1)
     assert os.path.exists(ran_path)
+
+
+def test_reportables_are_cached(configured_test_manager):
+    """Running a stage with a reportable should cache the reportable and a list of reportable cache files."""
+
+    @cf.stage(None, ["test_output"], [PickleCacher])
+    def basic_reportable(record):
+        record.report(JsonReporter({"test": "hello world"}))
+        return "test"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    basic_reportable(r0)
+
+    list_path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_basic_reportable_reportables_file_list.json",
+    )
+
+    reportable_path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_basic_reportable_reportables/test_basic_reportable_0.pkl",
+    )
+
+    assert os.path.exists(list_path)
+
+    with open(list_path, "r") as infile:
+        paths = json.load(infile)
+
+    assert len(paths) == 1
+    assert paths[0] == reportable_path
+    assert os.path.exists(reportable_path)
+
+
+def test_aggregate_reportables_are_cached(configured_test_manager):
+    """Running an aggregate stage with a reportable should cache the reportable and a list of reportable cache files."""
+
+    @cf.aggregate(["test_output"], [PickleCacher])
+    def basic_agg_reportable(record, records):
+        record.report(JsonReporter({"test": "hello world"}))
+        return "test"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    print("hash", r0.args.hash)
+    basic_agg_reportable(r0)
+    print("hash", r0.args.hash)
+    assert r0.args.hash is not None
+
+    list_path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_basic_agg_reportable_reportables_file_list.json",
+    )
+
+    reportable_path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_basic_agg_reportable_reportables/(Aggregate)_test_basic_agg_reportable_0.pkl",
+    )
+
+    print([thing for thing in os.listdir(configured_test_manager.cache_path)])
+    print("---")
+    print(list_path)
+    print(reportable_path)
+
+    assert os.path.exists(list_path)
+
+    with open(list_path, "r") as infile:
+        paths = json.load(infile)
+
+    assert len(paths) == 1
+    assert paths[0] == reportable_path
+    assert os.path.exists(reportable_path)
+
+
+# def test_reportables_are_cached_with_store_full(configured_test_manager):
+#     pass

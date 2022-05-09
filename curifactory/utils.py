@@ -406,11 +406,10 @@ def args_hash(args, registry_path: str, store_in_registry: bool = False) -> str:
         with open(registry_path, "w") as outfile:
             json.dump(registry, outfile, indent=4, default=stringify)
 
+    print("regular hash called", hash_str)
     return hash_str
 
 
-# hash_list should _not_ have the active hash in it
-# def add_args_combo_hash(hash_str, active_hash, hash_list, registry_path: str):
 def add_args_combo_hash(
     active_record, records_list, registry_path: str, store_in_registry: bool = False
 ):
@@ -459,6 +458,7 @@ def add_args_combo_hash(
         registry[hash_str] = {"active": active_key, "arg_list": hashes}
         with open(registry_path, "w") as outfile:
             json.dump(registry, outfile, indent=4, default=lambda x: str(x))
+    print("combo hash called", hash_str)
     return hash_str
 
 

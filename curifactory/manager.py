@@ -88,6 +88,11 @@ class ArtifactManager:
     ):
         self.current_stage_name = ""
         """The name of the stage currently executing."""
+        self.current_stage_is_aggregate = False
+        """Whether the currently executing stage is aggregate or not."""
+        self.current_stage_aggregate_records = None
+        """The list of records the current aggregate stage is aggregating. Note that this will be
+        `None` if the current stage is not aggregate."""
 
         self.experiment_name = experiment_name
         """The name of the experiment and/or the prefix used for caching."""

@@ -3,7 +3,7 @@
 import os
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
-from curifactory import stage, Record
+from curifactory import stage, aggregate, Record, ExperimentArgs
 from curifactory.caching import Cacheable, Lazy, PickleCacher
 
 
@@ -297,3 +297,28 @@ def test_cache_aware_dict_no_resolve(configured_test_manager):
     assert type(record.state["tester"]) == Lazy
     assert record.state["tester"].name == "tester"
     assert type(record.state["tester"].cacher) == PickleCacher
+
+
+# -----------------------------------------
+# hash-setting tests
+# -----------------------------------------
+
+# TODO: (05/09/2022) with and without an agg of None args
+def test_aggregate_stage_record_uses_combo_hash(configured_test_manager):
+    @stage(None, ["normal_hash"])
+    def normal_stage(record):
+        return record.args.hash
+
+    @aggregate(["agg_hash"])
+    def agg_stage(record, records):
+        return record.args.hash
+
+    r0 = Record(configured_test_manager, ExperimentArgs(name="test"))
+    r0 = normal_stage(r0)
+
+    # r1 = Record(configured_test_manager, None)
+    r1 = Record(configured_test_manager, ExperimentArgs(name="test"))
+    r1 = agg_stage(r1, [r0])
+
+    assert r1.args.hash is not None
+    assert r1.args.hash != r0.args.hash
