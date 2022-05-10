@@ -138,7 +138,8 @@ def test_reportables_are_cached(configured_test_manager):
 
 
 def test_aggregate_reportables_are_cached(configured_test_manager):
-    """Running an aggregate stage with a reportable should cache the reportable and a list of reportable cache files."""
+    """Running an aggregate stage with a reportable should cache the reportable and a list of reportable cache files.
+    (using the record's aggregate combo hash)"""
 
     @cf.aggregate(["test_output"], [PickleCacher])
     def basic_agg_reportable(record, records):
@@ -153,12 +154,12 @@ def test_aggregate_reportables_are_cached(configured_test_manager):
 
     list_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_basic_agg_reportable_reportables_file_list.json",
+        f"test_{r0.combo_hash}_basic_agg_reportable_reportables_file_list.json",
     )
 
     reportable_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_basic_agg_reportable_reportables/(Aggregate)_test_basic_agg_reportable_0.pkl",
+        f"test_{r0.combo_hash}_basic_agg_reportable_reportables/(Aggregate)_test_basic_agg_reportable_0.pkl",
     )
 
     print([thing for thing in os.listdir(configured_test_manager.cache_path)])
@@ -172,8 +173,12 @@ def test_aggregate_reportables_are_cached(configured_test_manager):
         paths = json.load(infile)
 
     assert len(paths) == 1
+    print("PATHS:", paths)
     assert paths[0] == reportable_path
     assert os.path.exists(reportable_path)
+
+
+# TODO: test that those reportables are correctly reloaded when re-run
 
 
 # def test_reportables_are_cached_with_store_full(configured_test_manager):

@@ -157,8 +157,6 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                 )
             pre_mem_usage = psutil.Process().memory_info().rss
             record.manager.current_stage_name = name
-            record.manager.current_stage_is_aggregate = False
-            record.manager.current_stage_aggregate_records = None
             record.stages.append(name)
             record.stage_outputs.append([])
             record.stage_inputs.append([])
@@ -464,8 +462,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 )
             pre_mem_usage = psutil.Process().memory_info().rss
             record.manager.current_stage_name = name
-            record.manager.current_stage_is_aggregate = True
-            record.manager.current_stage_aggregate_records = records
+            record.set_aggregate(records)
             record.stages.append(name)
             record.stage_outputs.append([])
             record.stage_inputs.append([])

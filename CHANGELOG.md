@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Args hashes are now set from within the record constructor to avoid edge cases
+  where hashes changed and broke aggregate hashing.
+- Aggregate combo hashes are set on the record directly now, done to track a
+  combo hash throughout a record's lifespan that started with an aggregate,
+  without breaking the aggregate record's potential args hash as well.
 
 
 
@@ -13,11 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.6.3] - 2022-03-07
 
 ### Added
-- Project `curifactory` command tests
+- Project `curifactory` command tests.
 
 ### Changed
 - Project init .gitignore handling to check for/add a blank line before adding
-  the curfiactory section
+  the curfiactory section.
 
 ### Fixed
 - Notebook experiment folder not being created on init and from experiment.

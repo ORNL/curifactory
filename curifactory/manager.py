@@ -88,11 +88,6 @@ class ArtifactManager:
     ):
         self.current_stage_name = ""
         """The name of the stage currently executing."""
-        self.current_stage_is_aggregate = False
-        """Whether the currently executing stage is aggregate or not."""
-        self.current_stage_aggregate_records = None
-        """The list of records the current aggregate stage is aggregating. Note that this will be
-        `None` if the current stage is not aggregate."""
 
         self.experiment_name = experiment_name
         """The name of the experiment and/or the prefix used for caching."""
@@ -255,6 +250,9 @@ class ArtifactManager:
         if self.report_css_path is None:
             self.report_css_path = self.config["report_css_path"]
 
+    def _ensure_current_args_hash(self, current_record):
+        """Sets the hash of the."""
+
     def store(self):
         """Update the ManagerStore with this manager's run metadata."""
         if self.dry:
@@ -344,7 +342,7 @@ class ArtifactManager:
         """Get an appropriate full path/filename for a given object name and record.
 
         This is used by the cachers, it automatically handles generating a filename
-        using appropriate experiment name prefixing etc.
+        using appropriate experiment name prefixing etc. **NOTE:** This function sets the record's args hash if it is None, or if an aggregate stage is involved.
 
         Args:
             obj_name (str): The name to associate with the object as the last part of the filename.
@@ -362,26 +360,12 @@ class ArtifactManager:
         """
         args_hash = "None"
 
-        # compute args hash if necessary
         if record.args is not None:
-            record.args.hash = utils.args_hash(
-                record.args, self.manager_cache_path, self.dry
-            )
             args_hash = record.args.hash
-            object_path = f"{self.experiment_name}_{record.args.hash}_{self.current_stage_name}_{obj_name}"
-
-            if self.store_entire_run:
-                utils.args_hash(record.args, self.get_run_output_path(), self.dry)
 
         # set the hash to the hashed version of all args hashes from passed records if applicable
-        if aggregate_records is not None:
-            args_hash = utils.add_args_combo_hash(
-                record, aggregate_records, self.manager_cache_path, not self.dry
-            )  # TODO: uses not here, but doesn't up above?
-            if self.store_entire_run:
-                utils.add_args_combo_hash(
-                    record, aggregate_records, self.get_run_output_path(), not self.dry
-                )
+        if record.is_aggregate:
+            args_hash = record.combo_hash
 
         object_path = (
             f"{self._get_name()}_{args_hash}_{self.current_stage_name}_{obj_name}"

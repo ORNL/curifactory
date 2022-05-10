@@ -3,8 +3,8 @@
 import os
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
-from curifactory import stage, aggregate, Record, ExperimentArgs
-from curifactory.caching import Cacheable, Lazy, PickleCacher
+from curifactory import stage, aggregate, Record, ExperimentArgs, utils
+from curifactory.caching import Cacheable, Lazy, PickleCacher, JsonCacher
 
 
 class FakeCacher(Cacheable):
@@ -166,7 +166,7 @@ def test_get_path_no_args(configured_test_manager):
     path = configured_test_manager.get_path(
         "test_output", record, aggregate_records=None
     )
-    assert path == "test/examples/data/cache/test_None__test_output"
+    assert path == f"test/examples/data/cache/test_{record.combo_hash}__test_output"
 
 
 # -----------------------------------------
@@ -305,6 +305,8 @@ def test_cache_aware_dict_no_resolve(configured_test_manager):
 
 # TODO: (05/09/2022) with and without an agg of None args
 def test_aggregate_stage_record_uses_combo_hash(configured_test_manager):
+    """A combo hash for an aggregate should be stored on the record."""
+
     @stage(None, ["normal_hash"])
     def normal_stage(record):
         return record.args.hash
@@ -320,5 +322,36 @@ def test_aggregate_stage_record_uses_combo_hash(configured_test_manager):
     r1 = Record(configured_test_manager, ExperimentArgs(name="test"))
     r1 = agg_stage(r1, [r0])
 
-    assert r1.args.hash is not None
-    assert r1.args.hash != r0.args.hash
+    assert r1.combo_hash is not None
+    assert r1.combo_hash != r0.args.hash
+    # TODO: move this to test_record
+
+
+def test_stage_hash_after_aggregate_with_no_args(configured_test_manager):
+    """Outputs from a normal stage after an aggregate stage with None arguments should be cached under the combo hash."""
+
+    @aggregate(["testing"], [JsonCacher])
+    def agg_stage(record, records):
+        return "test"
+
+    @stage(["testing"], ["testing2"], [JsonCacher])
+    def normal_stage(record, testing):
+        return "test2"
+
+    r0 = Record(configured_test_manager, None)
+    r1 = Record(configured_test_manager, ExperimentArgs(name="test"))
+
+    r0 = normal_stage(agg_stage(r0, [r1]))
+
+    combo_hash = utils.add_args_combo_hash(r0, [r1], "", False)
+    output_path_agg = os.path.join(
+        configured_test_manager.cache_path, f"test_{combo_hash}_agg_stage_testing.json"
+    )
+    output_path_normal = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{combo_hash}_normal_stage_testing2.json",
+    )
+
+    assert os.path.exists(output_path_agg)
+    assert os.path.exists(output_path_normal)
+    # TODO: move this to test_record?

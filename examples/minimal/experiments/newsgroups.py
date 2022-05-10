@@ -46,7 +46,7 @@ def train_model(record, training_data):
     return clf
 
 
-@cf.aggregate(outputs=["scores"], cachers=None)
+@cf.aggregate(outputs=["scores"], cachers=[PickleCacher])
 def test_models(record, records):
     scores = {}
 

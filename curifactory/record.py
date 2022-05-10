@@ -5,6 +5,7 @@ import copy
 import logging
 import os
 
+from curifactory import utils
 from curifactory.caching import Lazy
 from curifactory.reporting import Reportable
 
@@ -63,9 +64,48 @@ class Record:
         self.input_records = []
         """A list of any records used as input to this one. This mostly only occurs when aggregate
         stages are run."""
+        self.is_aggregate = False
+        """If this record runs an aggregate stage, we flip this flag to true to know we need to use the
+        combo hash rather than the individual args hash."""
+        self.combo_hash = None
+        """This gets set on records that run an aggregate stage. This is set from utils.add_args_combo_hash."""
 
+        self.set_hash()
         if not hide:
             self.manager.records.append(self)
+
+    def set_hash(self):
+        """Establish the hash for the current args (and set it on the args instance)."""
+        # NOTE: we used to set this directly in manager's get_path, but there's potentially weird effects and it's an
+        # odd place to establish a hash that more correctly indicates a record than the args themselves (e.g. like with
+        # aggregate combo hashes)
+        if self.args is not None and self.args.hash is None:
+            self.args.hash = utils.args_hash(
+                self.args, self.manager.manager_cache_path, not self.manager.dry
+            )
+
+            if self.manager.store_entire_run:
+                utils.args_hash(
+                    self.args, self.manager.get_run_output_path(), not self.manager.dry
+                )
+
+    def set_aggregate(self, aggregate_records):
+        """Mark this record as starting with an aggregate stage, meaning the hash of all cached outputs produced
+        within this record need to reflect the combo hash of all records going into it."""
+        self.is_aggregate = True
+        self.combo_hash = utils.add_args_combo_hash(
+            self,
+            aggregate_records,
+            self.manager.manager_cache_path,
+            not self.manager.dry,
+        )
+        if self.manager.store_entire_run:
+            utils.add_args_combo_hash(
+                self,
+                aggregate_records,
+                self.manager.get_run_output_path(),
+                not self.manager.dry,
+            )
 
     def report(self, reportable: Reportable):
         """Add a reportable associated with this record, this will get added to the experiment run
@@ -77,10 +117,13 @@ class Record:
         reportable.record = self
         reportable.stage = self.stages[-1]
 
+        name = ""
+        if reportable.record.is_aggregate:
+            name = "(Aggregate)_"
         if reportable.record.args is not None:
-            name = f"{reportable.record.args.name}_{reportable.stage}_"
-        else:
-            name = f"(Aggregate)_{reportable.stage}_"
+            name += f"{reportable.record.args.name}_"
+        name += f"{reportable.stage}_"
+
         if reportable.name is None:
             name += str(len(self.manager.reportables))
         else:
