@@ -250,9 +250,6 @@ class ArtifactManager:
         if self.report_css_path is None:
             self.report_css_path = self.config["report_css_path"]
 
-    def _ensure_current_args_hash(self, current_record):
-        """Sets the hash of the."""
-
     def store(self):
         """Update the ManagerStore with this manager's run metadata."""
         if self.dry:

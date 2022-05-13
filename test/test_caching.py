@@ -183,3 +183,181 @@ def test_aggregate_reportables_are_cached(configured_test_manager):
 
 # def test_reportables_are_cached_with_store_full(configured_test_manager):
 #     pass
+
+
+def test_aggregate_args_no_records_loads_cache(configured_test_manager):
+    """Calling an aggregate stage with valid args, twice, should load from cache and not execute."""
+    call_count = 0
+
+    @cf.aggregate(["test_output"], [PickleCacher])
+    def test_agg(record, records):
+        nonlocal call_count
+        call_count += 1
+        return "hello world!"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = test_agg(r0, [])
+    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = test_agg(r1, [])
+
+    assert call_count == 1
+    assert r1.state["test_output"] == "hello world!"
+
+
+def test_aggregate_args_records_loads_cache(configured_test_manager):
+    """Calling an aggregate stage with valid args, twice, with other non-overwrite records involved
+    should load from cache and not execute."""
+    call_count = 0
+
+    @cf.aggregate(["test_output"], [PickleCacher])
+    def test_agg(record, records):
+        nonlocal call_count
+        call_count += 1
+        return "hello world!"
+
+    rA = cf.Record(configured_test_manager, cf.ExperimentArgs(name="testA"))
+    rB = cf.Record(configured_test_manager, cf.ExperimentArgs(name="testB"))
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = test_agg(r0, [rA, rB])
+    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = test_agg(r1, [rA, rB])
+
+    assert call_count == 1
+    assert r1.state["test_output"] == "hello world!"
+
+
+def test_aggregate_args_overwrite_no_records_doesnot_load_cache(
+    configured_test_manager
+):
+    """Calling an aggregate stage with valid args with overwrite specified, twice, should NOT load
+    from cache and execute."""
+    call_count = 0
+
+    @cf.aggregate(["test_output"], [PickleCacher])
+    def test_agg(record, records):
+        nonlocal call_count
+        call_count += 1
+        return "hello world!"
+
+    r0 = cf.Record(
+        configured_test_manager, cf.ExperimentArgs(name="test", overwrite=True)
+    )
+    r0 = test_agg(r0, [])
+    r1 = cf.Record(
+        configured_test_manager, cf.ExperimentArgs(name="test", overwrite=True)
+    )
+    r1 = test_agg(r1, [])
+
+    assert call_count == 2
+
+
+def test_aggregate_args_records_overwrite_doesnot_load_cache(configured_test_manager):
+    """Calling an aggregate stage with valid args, twice, with other records with overwrite
+    should NOT load from cache and execute.
+
+    Running with the experiment CLI should ensure this doesn't happen (since --overwrite
+    will apply to all args, it's set on an artifactmanager-level. However, edge cases with this
+    in a notebook where the manager isn't set with overwrite could occur, and if any involved records
+    require overwrite, we can assume an aggregate using them also needs to overwrite.
+    """
+    call_count = 0
+
+    @cf.aggregate(["test_output"], [PickleCacher])
+    def test_agg(record, records):
+        nonlocal call_count
+        call_count += 1
+        return "hello world!"
+
+    rA = cf.Record(
+        configured_test_manager, cf.ExperimentArgs(name="testA", overwrite=True)
+    )
+    rB = cf.Record(configured_test_manager, cf.ExperimentArgs(name="testB"))
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = test_agg(r0, [rA, rB])
+    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = test_agg(r1, [rA, rB])
+
+    assert call_count == 2
+
+
+def test_aggregate_no_args_no_records_doesnot_load_cache(configured_test_manager):
+    """Calling an aggregate stage with no args, twice, should NOT load from cache and execute.
+
+    This is a relatively pointless situation, but just to cover the bases and establish expected functionality,
+    a no args situation should not use the cache when no other records present, as we have no reasonable
+    combo hash and no information about whether overwrite is specified on anything else or not.
+    """
+    call_count = 0
+
+    @cf.aggregate(["test_output"], [PickleCacher])
+    def test_agg(record, records):
+        nonlocal call_count
+        call_count += 1
+        return "hello world!"
+
+    r0 = cf.Record(configured_test_manager, None)
+    r0 = test_agg(r0, [])
+    r1 = cf.Record(configured_test_manager, None)
+    r1 = test_agg(r1, [])
+
+    assert call_count == 2
+
+
+def test_aggregate_no_args_records_loads_cache(configured_test_manager):
+    """Calling an aggregate stage with no args, twice, with other records should load from cache and not execute.
+
+    Even though there's no args, we can establish a re-execution based on the combohash of the passed records, so
+    allow cache usage.
+    """
+    call_count = 0
+
+    @cf.aggregate(["test_output"], [PickleCacher])
+    def test_agg(record, records):
+        nonlocal call_count
+        call_count += 1
+        return "hello world!"
+
+    rA = cf.Record(configured_test_manager, cf.ExperimentArgs(name="testA"))
+    rB = cf.Record(configured_test_manager, cf.ExperimentArgs(name="testB"))
+
+    r0 = cf.Record(configured_test_manager, None)
+    r0 = test_agg(r0, [rA, rB])
+    r1 = cf.Record(configured_test_manager, None)
+    r1 = test_agg(r1, [rA, rB])
+
+    assert call_count == 1
+    assert r1.state["test_output"] == "hello world!"
+
+
+# TODO: (05/13/2022) what about stages after such an agg? Without global overwrite specified, they won't overwrite, since
+# it's not part of an args. This is the same problem as giving an --overwrite-stage though, so unsure that this needs to be
+# handled. The below test case can really only apply if you're manually doing weird things outside of experiment CLI
+def test_aggregate_no_args_records_overwrite_doesnot_load_cache(
+    configured_test_manager
+):
+    """Calling an aggregate stage with no args, twice, with other records with overwrite should NOT load from
+    cache and execute.
+
+    If at least one of the associated records has overwrite specified, that should carry through into
+    """
+    call_count = 0
+
+    @cf.aggregate(["test_output"], [PickleCacher])
+    def test_agg(record, records):
+        nonlocal call_count
+        call_count += 1
+        return "hello world!"
+
+    rA = cf.Record(
+        configured_test_manager, cf.ExperimentArgs(name="testA", overwrite=True)
+    )
+    rB = cf.Record(configured_test_manager, cf.ExperimentArgs(name="testB"))
+
+    r0 = cf.Record(configured_test_manager, None)
+    r0 = test_agg(r0, [rA, rB])
+    r1 = cf.Record(configured_test_manager, None)
+    r1 = test_agg(r1, [rA, rB])
+
+    assert call_count == 2
