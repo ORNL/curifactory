@@ -69,6 +69,30 @@ class Cacheable:
         if os.path.exists(self.path):
             if (
                 self.record is not None
+                and self.record.args is None
+                and self.record.is_aggregate
+                and len(self.record.input_records) > 0
+            ):
+                logging.debug(
+                    "Aggregate stage has no args, checking input records to determine overwrite"
+                )
+
+                # TODO: (05/16/2022) in principle we could have a function to do an
+                # overwrite check on the record itself, that way it could be "recursive"
+                # if we reach back through previous records that are aggregate as well
+
+                # if it's an aggregate stage with no provided args, we check
+                # to see if any of the associated records are set to overwrite
+                for record in self.record.input_records:
+                    if record.args is not None and record.args.overwrite:
+                        logging.debug("Record with overwrite found")
+                        return False
+                # we made it through each record and they weren't overwrite, we're good
+                logging.debug("No records had overwrite, will use cache")
+                logging.info("Cached object '%s' found", self.path)
+                return True
+            elif (
+                self.record is not None
                 and self.record.args is not None
                 and not self.record.args.overwrite
             ):

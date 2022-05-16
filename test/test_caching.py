@@ -252,14 +252,19 @@ def test_aggregate_args_overwrite_no_records_doesnot_load_cache(
     assert call_count == 2
 
 
-def test_aggregate_args_records_overwrite_doesnot_load_cache(configured_test_manager):
+def test_aggregate_args_records_overwrite_loads_cache(configured_test_manager):
     """Calling an aggregate stage with valid args, twice, with other records with overwrite
-    should NOT load from cache and execute.
+    should still load from cache and not execute.
 
-    Running with the experiment CLI should ensure this doesn't happen (since --overwrite
-    will apply to all args, it's set on an artifactmanager-level. However, edge cases with this
-    in a notebook where the manager isn't set with overwrite could occur, and if any involved records
-    require overwrite, we can assume an aggregate using them also needs to overwrite.
+    This is a weird edge case, running with the experiment CLI should ensure this doesn't happen
+    (since --overwrite will apply to all args, it's set on an artifactmanager-level.) This could in
+    principle only happen in a live context (like a notebook).
+
+    The expected behavior, given that we have no intelligent-DAG-based-overwrites yet, is to use the
+    cache anyway. The only reason we check the input records in other cases is when the agg stage record
+    has no arguments of its own and so overwrite must be inferred. In this case however, we have an actual
+    set of arguments to use, so there's no way to distinguish between whether an overwrite of False is
+    "default" or intentional, so we just assume we trust that the args are correct.
     """
     call_count = 0
 
@@ -279,7 +284,7 @@ def test_aggregate_args_records_overwrite_doesnot_load_cache(configured_test_man
     r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
     r1 = test_agg(r1, [rA, rB])
 
-    assert call_count == 2
+    assert call_count == 1
 
 
 def test_aggregate_no_args_no_records_doesnot_load_cache(configured_test_manager):

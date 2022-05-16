@@ -168,7 +168,7 @@ class ArtifactManager:
         self.overwrite_stages = []
         """The list of individual stages for which to ignore the cache."""
         self.overwrite = False
-        """For live session managers where you don't wish to set overwrite on individual args, you can universely set the manager to overwrite by changing this flag to True."""  # TODO: (01/27/2022) take this into consideration in staging.
+        """For live session managers where you don't wish to set overwrite on individual args, you can universely set the manager to overwrite by changing this flag to True."""
 
         self.error_thrown = False
         """A flag indicating whether an error was thrown by the experiment."""
