@@ -69,6 +69,11 @@ class Record:
         combo hash rather than the individual args hash."""
         self.combo_hash = None
         """This gets set on records that run an aggregate stage. This is set from utils.add_args_combo_hash."""
+        self.additional_tracked_paths = []
+        """Paths obtained with get_path/get_dir that should be copied to a full
+        store folder. The last executed stage should manage copying anything
+        listed here and then clearing it. This is a list of tuples: (obj_name,
+        path)""" 
 
         self.set_hash()
         if not hide:
@@ -163,7 +168,7 @@ class Record:
 
         return new_record
 
-    def get_path(self, obj_name: str) -> str:
+    def get_path(self, obj_name: str, track: bool = True) -> str:
         """Return an args-appropriate cache path with passed object name.
 
         This should be equivalent to what a cacher for a stage should get. Note that this
@@ -177,9 +182,12 @@ class Record:
             obj_name (str): the name to associate with the object as the last part of the filename.
         """
         # STRT: (02/02/2022) at some point this should keep track of these paths so that store-full can automatically grab them too.
-        return self.manager.get_path(obj_name=obj_name, record=self)
+        path = self.manager.get_path(obj_name=obj_name, record=self)
+        if track: 
+            self.additional_tracked_paths.append((obj_name, path))
+        return path
 
-    def get_dir(self, dir_name_suffix: str) -> str:
+    def get_dir(self, dir_name_suffix: str, track: bool = True) -> str:
         """Returns an args-appropriate cache path with the passed name, (similar to get_path) and creates it as a directory.
 
         Warning:
@@ -191,6 +199,8 @@ class Record:
 
         # TODO: (02/02/2022) at some point this should keep track of these paths so that store-full can automatically grab them too.
         dir_path = self.manager.get_path(obj_name=dir_name_suffix, record=self)
+        if track:
+            self.additional_tracked_paths.append((dir_name_suffix, dir_path))
 
         os.makedirs(dir_path, exist_ok=True)
         return dir_path

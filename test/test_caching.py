@@ -1,4 +1,5 @@
 import curifactory as cf
+import logging # TODO: remove
 from curifactory.caching import PickleCacher
 from curifactory.reporting import JsonReporter
 import json
@@ -414,18 +415,17 @@ def test_get_dir_folder_included_in_full_store(configured_test_manager):
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
     custom_output(r0)
 
-    full_store_path = "{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}"
+    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}"
 
     regular_custom_output_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_dir"
+        f"test_{r0.args.hash}_custom_output_my_extra_dir/"
         "testfile.txt"
     )
     full_store_custom_output_path = os.path.join(
         full_store_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_dir"
+        f"test_{r0.args.hash}_custom_output_my_extra_dir/"
         "testfile.txt"
     )
     assert os.path.exists(regular_custom_output_path)
     assert os.path.exists(full_store_custom_output_path)
-    

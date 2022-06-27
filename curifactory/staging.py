@@ -859,3 +859,16 @@ def _store_outputs(
         # if specified as lazy, be sure to populate the cacher
         if type(outputs[index]) == Lazy:
             outputs[index].cacher = cachers[index]
+
+    # store any additionally tracked paths as needed
+    if record.manager.store_entire_run:
+        for obj_name, path in record.additional_tracked_paths:
+            full_store_path = record.manager.get_path(obj_name, record=record,
+                output=True, aggregate_records=records)
+            logging.debug("Copying tracked path '%s' to '%s'..." % (path,
+                full_store_path))
+            if os.path.isdir(path):
+                shutil.copytree(path, full_store_path)
+            else:
+                shutil.copy(path, full_store_path)
+    record.additional_tracked_paths = []
