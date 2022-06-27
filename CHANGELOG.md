@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Paths returned from record's `get_path` and `get_dir` are now tracked and copied
+  into a store full run.
+
 ### Changed
 - Args hashes are now set from within the record constructor to avoid edge cases
   where hashes changed and broke aggregate hashing.
