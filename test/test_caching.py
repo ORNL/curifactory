@@ -366,3 +366,66 @@ def test_aggregate_no_args_records_overwrite_doesnot_load_cache(
     r1 = test_agg(r1, [rA, rB])
 
     assert call_count == 2
+
+
+def test_get_path_file_included_in_full_store(configured_test_manager):
+    """A file manually saved within a stage using get_path should correctly be
+    copied to the run folder in a full-store run."""
+    configured_test_manager.store_entire_run = True
+
+    @cf.stage(None, ["other_output"], [PickleCacher])
+    def custom_output(record):
+        path = record.get_path("my_extra_file.txt")
+        with open(path, 'w') as outfile:
+            outfile.write("Hello world!")
+
+        return 13
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    custom_output(r0)
+
+    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}"
+
+    regular_custom_output_path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_custom_output_my_extra_file.txt"
+    )
+    full_store_custom_output_path = os.path.join(
+        full_store_path,
+        f"test_{r0.args.hash}_custom_output_my_extra_file.txt"
+    )
+    assert os.path.exists(regular_custom_output_path)
+    assert os.path.exists(full_store_custom_output_path)
+
+
+def test_get_dir_folder_included_in_full_store(configured_test_manager):
+    """File(s) manually saved within a stage using get_dir should correctly be
+    copied to the run folder in a full-store run."""
+    configured_test_manager.store_entire_run = True
+
+    @cf.stage(None, ["other_output"], [PickleCacher])
+    def custom_output(record):
+        path = record.get_dir("my_extra_dir")
+        with open(f"{path}/testfile.txt", 'w') as outfile:
+            outfile.write("Hello world!")
+
+        return 13
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    custom_output(r0)
+
+    full_store_path = "{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}"
+
+    regular_custom_output_path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_custom_output_my_extra_dir"
+        "testfile.txt"
+    )
+    full_store_custom_output_path = os.path.join(
+        full_store_path,
+        f"test_{r0.args.hash}_custom_output_my_extra_dir"
+        "testfile.txt"
+    )
+    assert os.path.exists(regular_custom_output_path)
+    assert os.path.exists(full_store_custom_output_path)
+    
