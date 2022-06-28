@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Paths returned from record's `get_path` and `get_dir` are now tracked and copied
   into a store full run.
+- `PandasCSVCacher` and `PandasJSONCacher` argument dictionaries to pass into pandas
+  to/read calls.
 
 ### Changed
 - Args hashes are now set from within the record constructor to avoid edge cases
@@ -17,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   combo hash throughout a record's lifespan that started with an aggregate,
   without breaking the aggregate record's potential args hash as well.
 
+### Fixed
+- `PandasCSVCacher` `read_csv` not appropriately handling index column by default.
 
 
 

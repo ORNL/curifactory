@@ -1,9 +1,9 @@
 import curifactory as cf
-import logging # TODO: remove
-from curifactory.caching import PickleCacher
+from curifactory.caching import PickleCacher, PandasCsvCacher
 from curifactory.reporting import JsonReporter
 import json
 import os
+import pandas as pd
 import pytest
 
 from stages.cache_stages import filerefcacher_stage, filerefcacher_stage_multifile
@@ -229,7 +229,7 @@ def test_aggregate_args_records_loads_cache(configured_test_manager):
 
 
 def test_aggregate_args_overwrite_no_records_doesnot_load_cache(
-    configured_test_manager
+    configured_test_manager,
 ):
     """Calling an aggregate stage with valid args with overwrite specified, twice, should NOT load
     from cache and execute."""
@@ -341,7 +341,7 @@ def test_aggregate_no_args_records_loads_cache(configured_test_manager):
 # it's not part of an args. This is the same problem as giving an --overwrite-stage though, so unsure that this needs to be
 # handled. The below test case can really only apply if you're manually doing weird things outside of experiment CLI
 def test_aggregate_no_args_records_overwrite_doesnot_load_cache(
-    configured_test_manager
+    configured_test_manager,
 ):
     """Calling an aggregate stage with no args, twice, with other records with overwrite should NOT load from
     cache and execute.
@@ -377,7 +377,7 @@ def test_get_path_file_included_in_full_store(configured_test_manager):
     @cf.stage(None, ["other_output"], [PickleCacher])
     def custom_output(record):
         path = record.get_path("my_extra_file.txt")
-        with open(path, 'w') as outfile:
+        with open(path, "w") as outfile:
             outfile.write("Hello world!")
 
         return 13
@@ -389,11 +389,10 @@ def test_get_path_file_included_in_full_store(configured_test_manager):
 
     regular_custom_output_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_file.txt"
+        f"test_{r0.args.hash}_custom_output_my_extra_file.txt",
     )
     full_store_custom_output_path = os.path.join(
-        full_store_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_file.txt"
+        full_store_path, f"test_{r0.args.hash}_custom_output_my_extra_file.txt"
     )
     assert os.path.exists(regular_custom_output_path)
     assert os.path.exists(full_store_custom_output_path)
@@ -407,7 +406,7 @@ def test_get_dir_folder_included_in_full_store(configured_test_manager):
     @cf.stage(None, ["other_output"], [PickleCacher])
     def custom_output(record):
         path = record.get_dir("my_extra_dir")
-        with open(f"{path}/testfile.txt", 'w') as outfile:
+        with open(f"{path}/testfile.txt", "w") as outfile:
             outfile.write("Hello world!")
 
         return 13
@@ -419,13 +418,11 @@ def test_get_dir_folder_included_in_full_store(configured_test_manager):
 
     regular_custom_output_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_dir/"
-        "testfile.txt"
+        f"test_{r0.args.hash}_custom_output_my_extra_dir/" "testfile.txt",
     )
     full_store_custom_output_path = os.path.join(
         full_store_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_dir/"
-        "testfile.txt"
+        f"test_{r0.args.hash}_custom_output_my_extra_dir/" "testfile.txt",
     )
     assert os.path.exists(regular_custom_output_path)
     assert os.path.exists(full_store_custom_output_path)
@@ -439,7 +436,7 @@ def test_get_path_file_excluded_in_full_store_when_not_tracked(configured_test_m
     @cf.stage(None, ["other_output"], [PickleCacher])
     def custom_output(record):
         path = record.get_path("my_extra_file.txt", False)
-        with open(path, 'w') as outfile:
+        with open(path, "w") as outfile:
             outfile.write("Hello world!")
 
         return 13
@@ -451,17 +448,18 @@ def test_get_path_file_excluded_in_full_store_when_not_tracked(configured_test_m
 
     regular_custom_output_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_file.txt"
+        f"test_{r0.args.hash}_custom_output_my_extra_file.txt",
     )
     full_store_custom_output_path = os.path.join(
-        full_store_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_file.txt"
+        full_store_path, f"test_{r0.args.hash}_custom_output_my_extra_file.txt"
     )
     assert os.path.exists(regular_custom_output_path)
     assert not os.path.exists(full_store_custom_output_path)
 
 
-def test_get_dir_folder_excluded_in_full_store_when_not_tracked(configured_test_manager):
+def test_get_dir_folder_excluded_in_full_store_when_not_tracked(
+    configured_test_manager,
+):
     """File(s) manually saved within a stage using get_dir should NOT be
     copied to the run folder in a full-store run when not tracked."""
     configured_test_manager.store_entire_run = True
@@ -469,7 +467,7 @@ def test_get_dir_folder_excluded_in_full_store_when_not_tracked(configured_test_
     @cf.stage(None, ["other_output"], [PickleCacher])
     def custom_output(record):
         path = record.get_dir("my_extra_dir", False)
-        with open(f"{path}/testfile.txt", 'w') as outfile:
+        with open(f"{path}/testfile.txt", "w") as outfile:
             outfile.write("Hello world!")
 
         return 13
@@ -481,13 +479,36 @@ def test_get_dir_folder_excluded_in_full_store_when_not_tracked(configured_test_
 
     regular_custom_output_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_dir/"
-        "testfile.txt"
+        f"test_{r0.args.hash}_custom_output_my_extra_dir/" "testfile.txt",
     )
     full_store_custom_output_path = os.path.join(
         full_store_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_dir/"
-        "testfile.txt"
+        f"test_{r0.args.hash}_custom_output_my_extra_dir/" "testfile.txt",
     )
     assert os.path.exists(regular_custom_output_path)
     assert not os.path.exists(full_store_custom_output_path)
+
+
+def test_pandas_csv_cacher_with_df_with_comma(configured_test_manager):
+    """The PandasCSVCacher shouldn't fail when given a dataframe containing a comma."""
+
+    @cf.stage(None, ["output"], [PandasCsvCacher])
+    def save_comma_df(record):
+        data = {
+            "col1": ["things, with commas"],
+            "col2": ['other "possible breaking," things'],
+        }
+        df = pd.DataFrame(data=data)
+        return df
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    save_comma_df(r0)
+
+    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    save_comma_df(r1)
+
+    df1 = r0.state["output"]
+    df2 = r1.state["output"]
+
+    assert list(df1.columns) == list(df2.columns)
+    assert df1.to_dict() == df2.to_dict()

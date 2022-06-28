@@ -73,7 +73,7 @@ class Record:
         """Paths obtained with get_path/get_dir that should be copied to a full
         store folder. The last executed stage should manage copying anything
         listed here and then clearing it. This is a list of tuples: (obj_name,
-        path)""" 
+        path)"""
 
         self.set_hash()
         if not hide:
@@ -183,7 +183,7 @@ class Record:
         """
         # STRT: (02/02/2022) at some point this should keep track of these paths so that store-full can automatically grab them too.
         path = self.manager.get_path(obj_name=obj_name, record=self)
-        if track: 
+        if track:
             self.additional_tracked_paths.append((obj_name, path))
         return path
 

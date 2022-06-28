@@ -9,7 +9,7 @@ import logging
 import os
 import pandas as pd
 import pickle
-from typing import Union, List
+from typing import Union, List, Dict
 
 
 class Lazy:
@@ -160,27 +160,41 @@ class PickleCacher(Cacheable):
 class PandasJsonCacher(Cacheable):
     """Saves a pandas dataframe to JSON."""
 
-    def __init__(self, path_override=None):
+    def __init__(
+        self,
+        path_override: str = None,
+        to_json_args: Dict = {},
+        read_json_args: Dict = {},
+    ):
+        self.read_json_args = read_json_args
+        self.to_json_args = to_json_args
         super().__init__(".json", path_override=path_override)
 
     def load(self):
-        return pd.read_json(self.path)
+        return pd.read_json(self.path, **self.read_csv_args)
 
     def save(self, obj):
-        obj.to_json(self.path)
+        obj.to_json(self.path, **self.to_json_args)
 
 
 class PandasCsvCacher(Cacheable):
     """Saves a pandas dataframe to CSV."""
 
-    def __init__(self, path_override=None):
+    def __init__(
+        self,
+        path_override: str = None,
+        to_csv_args: Dict = {},
+        read_csv_args: Dict = {"index_col": 0},
+    ):
+        self.read_csv_args = read_csv_args
+        self.to_csv_args = to_csv_args
         super().__init__(".csv", path_override=path_override)
 
     def load(self):
-        return pd.read_csv(self.path)
+        return pd.read_csv(self.path, **self.read_csv_args)
 
     def save(self, obj):
-        obj.to_csv(self.path)
+        obj.to_csv(self.path, **self.to_csv_args)
 
 
 class FileReferenceCacher(Cacheable):

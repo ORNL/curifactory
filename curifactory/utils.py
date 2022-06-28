@@ -125,15 +125,15 @@ def human_readable_mem_usage(byte_count: int) -> str:
         byte_count *= -1
 
     suffix = "B"
-    if byte_count > 10 ** 9:
+    if byte_count > 10**9:
         suffix = "GB"
-        byte_count /= 10 ** 9
-    elif byte_count > 10 ** 6:
+        byte_count /= 10**9
+    elif byte_count > 10**6:
         suffix = "MB"
-        byte_count /= 10 ** 6
-    elif byte_count > 10 ** 3:
+        byte_count /= 10**6
+    elif byte_count > 10**3:
         suffix = "KB"
-        byte_count /= 10 ** 3
+        byte_count /= 10**3
 
     if negative:
         return "-%.2f%s" % (byte_count, suffix)
@@ -162,13 +162,13 @@ def human_readable_time(seconds: float) -> str:
         converted /= 60
     elif seconds < 0.0000001:
         suffix = "ns"
-        converted *= 10 ** 9
+        converted *= 10**9
     elif seconds < 0.0001:
         suffix = "us"
-        converted *= 10 ** 6
+        converted *= 10**6
     elif seconds < 0.1:
         suffix = "ms"
-        converted *= 10 ** 3
+        converted *= 10**3
 
     return "%.2f%s" % (converted, suffix)
 
