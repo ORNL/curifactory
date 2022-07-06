@@ -331,7 +331,9 @@ def render_report_head(manager) -> List[str]:
     ]
 
 
-def render_report_info_block(manager) -> List[str]:
+def render_report_info_block(  # noqa: C901 -- TODO: yeaaaaah break it up at some point
+    manager,
+) -> List[str]:
     """Generate the header and block of metadata at the top of the report."""
 
     html_lines = []
@@ -353,6 +355,11 @@ def render_report_info_block(manager) -> List[str]:
     if manager.interactive:
         status_line += " - (interactive session)"
 
+    commit_line = "Git commit: "
+    if manager.git_workdir_dirty:
+        commit_line += "<span style='color: darkorange'><b>*</b></span>"
+    commit_line += f"{manager.git_commit_hash}"
+
     html_lines.append(
         f"<h1 id='title'>Report: {manager.experiment_name} - {manager.experiment_run_number}</h1>"
     )
@@ -365,12 +372,13 @@ def render_report_info_block(manager) -> List[str]:
             f"Reference: <b>{manager.get_reference_name()}</b></br>",
             f"Hostname: <b>{manager.hostname}</b></br>",
             f"Run status: {status_line}</br>",
-            f"Git commit: {manager.git_commit_hash}</br>",
+            f"{commit_line}</br>",
             f"Params files: {str(manager.experiment_args_file_list)}</br></p>",
-            "<ul>",
         ]
     )
+
     # output the list of parameters used and assoc hashes
+    html_lines.append("<ul>")
     handled_hashes = []
     for key in manager.experiment_args:
         html_lines.append(f"<li>{key} <ul>")
@@ -391,6 +399,11 @@ def render_report_info_block(manager) -> List[str]:
         html_lines.append("</ul></li>")
 
     html_lines.append("</ul></div>")
+
+    if manager.git_workdir_dirty:
+        html_lines.append(
+            "<p><span style='color: orange;'><b>*WARNING - </b></span>Uncommited changes.</p>"
+        )
 
     if manager.status == "LIVE":
         # TODO: (37/26/2022) allow suppression if notebook=true passed so can render in notebook without error?
@@ -985,7 +998,11 @@ def _get_run_index_line(run):
     elif run["status"] == "LIVE":
         desc_line += "<span style='background-color: cyan'>&nbsp;&nbsp;</span>"
 
-    desc_line += f" <a href='{run['reference']}/index.html'>{run['reference']}</a> "
+    desc_line += f" <a href='{run['reference']}/index.html'>{run['reference']}</a>"
+
+    if "workdir_dirty" in run and run["workdir_dirty"]:
+        desc_line += "<span style='color: orange'><b>*</b></span>"
+    desc_line += " "
 
     if "hostname" in run:
         desc_line += f"[{run['hostname']}] "
