@@ -158,13 +158,20 @@ class PickleCacher(Cacheable):
 
 
 class PandasJsonCacher(Cacheable):
-    """Saves a pandas dataframe to JSON."""
+    """Saves a pandas dataframe to JSON.
+
+    Warning:
+
+        Using this cacher is inadvisable for floating point data, as precision
+        will be lost, creating the potential for different results when using
+        cached values with this cacher as opposed to the first non-cached run.
+    """
 
     def __init__(
         self,
         path_override: str = None,
-        to_json_args: Dict = {},
-        read_json_args: Dict = {},
+        to_json_args: Dict = dict(double_precision=15),
+        read_json_args: Dict = dict(),
     ):
         self.read_json_args = read_json_args
         self.to_json_args = to_json_args
@@ -183,8 +190,8 @@ class PandasCsvCacher(Cacheable):
     def __init__(
         self,
         path_override: str = None,
-        to_csv_args: Dict = {},
-        read_csv_args: Dict = {"index_col": 0},
+        to_csv_args: Dict = dict(),
+        read_csv_args: Dict = dict(index_col=0),
     ):
         self.read_csv_args = read_csv_args
         self.to_csv_args = to_csv_args

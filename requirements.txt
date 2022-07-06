@@ -1,6 +1,7 @@
 numpy
 pandas
 sphinx~=3.5.4
+jinja2<3.1
 autodocsumm
 sphinx-rtd-theme
 ipynb-py-convert

@@ -1,7 +1,8 @@
 import curifactory as cf
-from curifactory.caching import PickleCacher, PandasCsvCacher
+from curifactory.caching import PickleCacher, PandasCsvCacher, PandasJsonCacher
 from curifactory.reporting import JsonReporter
 import json
+import numpy as np
 import os
 import pandas as pd
 import pytest
@@ -512,3 +513,28 @@ def test_pandas_csv_cacher_with_df_with_comma(configured_test_manager):
 
     assert list(df1.columns) == list(df2.columns)
     assert df1.to_dict() == df2.to_dict()
+
+
+def test_pandas_json_cacher_with_df_no_recursion_error(configured_test_manager):
+    """Regression test for weird bug in #3, caching a df with 17+ cols and 5+
+    rows with the pandasjsoncacher shouldn't crash with a maximum recursion
+    level reached."""
+
+    data = np.random.rand(18, 6)
+
+    @cf.stage(None, ["output"], [PandasJsonCacher])
+    def save_large_df(record):
+        df = pd.DataFrame(data)
+        return df
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    save_large_df(r0)
+
+    path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_save_large_df_output.json",
+    )
+
+    assert os.path.exists(path)
+    df = pd.read_json(path)
+    np.testing.assert_almost_equal(df.values, data)
