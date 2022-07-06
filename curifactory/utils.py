@@ -216,6 +216,14 @@ def get_current_commit() -> str:
     return get_command_output(["git", "rev-parse", "HEAD"])
 
 
+def check_git_dirty_workingdir() -> str:
+    """Checks if git working directory is dirty or not. This is used to indicate
+    potential reproducibility problems in the report and console output."""
+    if get_command_output(["git", "diff", "--stat"]) != "":
+        return True
+    return False
+
+
 def get_pip_freeze() -> str:
     """Returns printed output from running :code:`pip freeze` command."""
     return get_command_output(["pip", "freeze"])

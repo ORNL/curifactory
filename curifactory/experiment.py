@@ -275,6 +275,10 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         utils.init_logging(log_path, level, log_errors, include_process=parallel_mode)
 
     logging.info("Running experiment %s" % experiment_name)
+    if mngr.git_workdir_dirty:
+        logging.warning(
+            "Git working directory contains uncommited changes. Reproduction may not be exact."
+        )
 
     # insert an implied parameter file that is the same as the experiment file, if no parameters were explicitly listed
     if parameters_list is None or len(parameters_list) == 0:
@@ -295,7 +299,6 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             logging.debug("Trying to load params module '%s'" % param_module_string)
             param_module = importlib.import_module(param_module_string)
         except ModuleNotFoundError:
-            # TODO:
             try:
                 logging.debug(
                     "Module not found, trying '%s'" % experiment_module_string

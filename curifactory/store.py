@@ -105,6 +105,7 @@ class ManagerStore:
         else:
             mngr.experiment_run_number = prev_runs[-1]["run_number"] + 1
         mngr.git_commit_hash = utils.get_current_commit()
+        mngr.git_workdir_dirty = utils.check_git_dirty_workingdir()
 
         # create the metadata block
         run = {
@@ -113,6 +114,7 @@ class ManagerStore:
             "run_number": mngr.experiment_run_number,
             "timestamp": mngr.get_str_timestamp(),
             "commit": mngr.git_commit_hash,
+            "workdir_dirty": mngr.git_workdir_dirty,
             "params_files": mngr.experiment_args_file_list,
             "args": mngr.experiment_args,
             "full_store": mngr.store_entire_run,

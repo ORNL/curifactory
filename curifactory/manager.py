@@ -104,6 +104,8 @@ class ArtifactManager:
         metadata blocks in ManagerStore.)"""
         self.git_commit_hash = ""
         """The current commit hash if a git repo is in use."""
+        self.git_workdir_dirty = False
+        """Whether there are uncommited changes in the git repo or not."""
         self.pip_freeze = ""
         """The output from a :code:`pip freeze` command."""
         self.conda_env = ""
