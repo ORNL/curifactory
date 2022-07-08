@@ -4,13 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.7.0] - 2022-07-08
 
 ### Added
 - Paths returned from record's `get_path` and `get_dir` are now tracked and copied
   into a store full run.
 - `PandasCSVCacher` and `PandasJSONCacher` argument dictionaries to pass into pandas
   to/read calls.
+- Dirty git worktree warning in output log and indicator to output reports.
 
 ### Changed
 - Args hashes are now set from within the record constructor to avoid edge cases

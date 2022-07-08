@@ -165,6 +165,12 @@ class PandasJsonCacher(Cacheable):
         Using this cacher is inadvisable for floating point data, as precision
         will be lost, creating the potential for different results when using
         cached values with this cacher as opposed to the first non-cached run.
+
+    Args:
+        to_json_args (Dict): Dictionary of arguments to use in the pandas
+            :code:`to_json()` call.
+        read_json_args (Dict): Dictionary of arguments to use in the pandas
+            :code:`read_json()` call.
     """
 
     def __init__(
@@ -185,7 +191,14 @@ class PandasJsonCacher(Cacheable):
 
 
 class PandasCsvCacher(Cacheable):
-    """Saves a pandas dataframe to CSV."""
+    """Saves a pandas dataframe to CSV.
+
+    Args:
+        to_csv_args (Dict): Dictionary of arguments to use in the pandas
+            :code:`to_csv()` call.
+        read_csv_args (Dict): Dictionary of arguments to use in the pandas
+            :code:`read_csv()` call.
+    """
 
     def __init__(
         self,

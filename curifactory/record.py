@@ -175,13 +175,12 @@ class Record:
         is calling the manager's get_path, which will include the stage name. If calling
         this outside of a stage, it will include whatever stage was last run.
 
-        Warning:
-            This path does not yet have a mechanism to be auto-stored in the output folder for --store-full runs. This functionality will be implemented later.
-
         Args:
             obj_name (str): the name to associate with the object as the last part of the filename.
+            track (bool): whether to include returned path in a store full copy
+                or not. This will only work if the returned path is not altered
+                by a stage before saving something to it.
         """
-        # STRT: (02/02/2022) at some point this should keep track of these paths so that store-full can automatically grab them too.
         path = self.manager.get_path(obj_name=obj_name, record=self)
         if track:
             self.additional_tracked_paths.append((obj_name, path))
@@ -190,14 +189,12 @@ class Record:
     def get_dir(self, dir_name_suffix: str, track: bool = True) -> str:
         """Returns an args-appropriate cache path with the passed name, (similar to get_path) and creates it as a directory.
 
-        Warning:
-            This path does not yet have a mechanism to be auto-stored in the output folder for --store-full runs. This functionality will be implemented later.
-
         Args:
             dir_name_suffix (str): the name to add as a suffix to the created directory name.
+            track (bool): whether to include returned path in a store full copy
+                or not. This will only work if the returned path is not altered
+                by a stage before saving something to it.
         """
-
-        # TODO: (02/02/2022) at some point this should keep track of these paths so that store-full can automatically grab them too.
         dir_path = self.manager.get_path(obj_name=dir_name_suffix, record=self)
         if track:
             self.additional_tracked_paths.append((dir_name_suffix, dir_path))
