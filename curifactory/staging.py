@@ -156,7 +156,13 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                     resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
                 )
             pre_mem_usage = psutil.Process().memory_info().rss
+            if record.manager.stage_active:
+                logging.warn(
+                    "Stage '%s' executed while another stage ('%s') was already running. Directly executing a stage from another stage is not advised."
+                    % (name, record.manager.current_stage_name)
+                )
             record.manager.current_stage_name = name
+            record.manager.stage_active = True
             record.stages.append(name)
             record.stage_outputs.append([])
             record.stage_inputs.append([])
@@ -312,6 +318,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                     post_footprint,
                 )
                 utils.set_logging_prefix("")
+                record.manager.stage_active = False
                 return record
 
             # run the function
@@ -392,6 +399,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
 
             record.output = cleaned_function_outputs
             utils.set_logging_prefix("")
+            record.manager.stage_active = False
             return record
 
         return wrapper
@@ -461,6 +469,11 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                     resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
                 )
             pre_mem_usage = psutil.Process().memory_info().rss
+            if record.manager.stage_active:
+                logging.warn(
+                    "Stage '%s' executed while another stage ('%s') was already running. Directly executing a stage from another stage is not advised."
+                    % (name, record.manager.current_stage_name)
+                )
             record.manager.current_stage_name = name
             record.set_aggregate(records)
             record.stages.append(name)
@@ -555,6 +568,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                     post_footprint,
                 )
                 utils.set_logging_prefix("")
+                record.manager.stage_active = False
                 return record
 
             # run the function
@@ -631,6 +645,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
 
             record.output = cleaned_function_outputs
             utils.set_logging_prefix("")
+            record.manager.stage_active = False
             return record
 
         return wrapper

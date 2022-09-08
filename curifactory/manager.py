@@ -88,6 +88,10 @@ class ArtifactManager:
     ):
         self.current_stage_name = ""
         """The name of the stage currently executing."""
+        self.stage_active = False
+        """Flag indicating whether a stage is actively running or not, used to
+        detect if a stage has directly called another stage. (Technically not
+        disallowed but a big no-no/prohibits any DAG features.)"""
 
         self.experiment_name = experiment_name
         """The name of the experiment and/or the prefix used for caching."""
