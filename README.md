@@ -17,6 +17,9 @@ Curifactory provides a different opinion, with a heavier focus on supporting gen
 research experiment workflows for individuals or small teams working primarily
 in python.
 
+You can read more about these design principles in our paper in the [SciPy 2022
+proceedings](https://conference.scipy.org/proceedings/scipy2022/nathan_martindale.html).
+
 ## Features
 
 * Adds a CLI layer on top of your codebase, a single entrypoint for running experiments

@@ -20,7 +20,7 @@ import traceback
 from typing import List
 
 from curifactory.manager import ArtifactManager
-from curifactory import utils, docker
+from curifactory import utils, docker, reporting
 
 CONFIGURATION_FILE = "curifactory_config.json"
 
@@ -976,6 +976,12 @@ def main():
         default="127.0.0.1",
         help="Only used for 'experiment reports', specifies which hostname to run the simple server on.",
     )
+    parser.add_argument(
+        "--update",
+        dest="update",
+        action="store_true",
+        help="Only used for 'experiment reports', updates the report index with all exisiting reports in the reports file. This is to handle if you pull in reports from other machines.",
+    )
 
     # fix any missing quotes in run line
     command_parts = sys.argv[1:]
@@ -1010,6 +1016,13 @@ def main():
         exit()
 
     elif args.experiment_name == "reports":
+        if args.update:
+            config = utils.get_configuration()
+            utils.init_logging(None)
+            reporting.update_report_index(
+                config["experiments_module_name"], config["reports_path"]
+            )
+            exit()
         os.chdir("reports")
         utils.run_command(
             ["python", "-m", "http.server", str(args.port), "--bind", args.host]
