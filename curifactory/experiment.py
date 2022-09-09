@@ -16,8 +16,16 @@ import shutil
 import subprocess
 import sys
 import traceback
-
 from typing import List
+
+from rich.progress import (
+    Progress,
+    TextColumn,
+    BarColumn,
+    TimeRemainingColumn,
+    TimeElapsedColumn,
+    SpinnerColumn,
+)
 
 from curifactory.manager import ArtifactManager
 from curifactory import utils, docker, reporting
@@ -480,18 +488,64 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             % str(global_args_indices)
         )
 
+    # TODO: just testing for now
+
     # run the experiment
     error_thrown = False
     experiment_module = importlib.import_module(
         f"{mngr.config['experiments_module_name']}.{experiment_name}"
     )
     try:
+
+        # TODO: add check for not doing map mode
+        if not parallel_mode:
+            logging.info("Pre-mapping stages and records")
+            mngr.map_mode = True
+            experiment_module.run(argsets, mngr)
+            mngr.map_mode = False
+            logging.debug("Constructing record map")
+            mngr.map_records()
+            logging.info("Stage map collected")
+            # TODO: now add the progress bars
+
+            mngr.map_progress = Progress(
+                TextColumn("{task.completed}/{task.total}"),
+                BarColumn(bar_width=60, pulse_style="cyan"),
+                TextColumn("[progress.description]{task.description}"),
+                TimeRemainingColumn(),
+                TimeElapsedColumn(),
+                SpinnerColumn(),
+                TextColumn("{task.fields[name]}"),
+            )
+            for record in mngr.map:
+                name = record.args.name if record.args is not None else "None"
+                # logging.debug("LENGTH %s" % len(record.stages))
+                taskid = mngr.map_progress.add_task(
+                    f"Record {name}",
+                    total=len(record.stages),
+                    start=False,
+                    visible=True,
+                    name="",
+                )
+                record.taskid = taskid
+            overalltaskid = mngr.map_progress.add_task(
+                "Total", total=len(mngr.map), visible=True, name=""
+            )
+            mngr.map_progress_overall_task_id = overalltaskid
+
+            mngr.map_progress.start()
+
         results = experiment_module.run(argsets, mngr)
+
+        if not parallel_mode:
+            mngr.map_progress.stop()
 
         # don't change status if we logged an error from a parallel process
         if not mngr.error_thrown:
             mngr.status = "complete"
     except Exception as e:
+        if not parallel_mode:
+            mngr.map_progress.stop()
         results = None
         error_thrown = True
         logging.error(e)

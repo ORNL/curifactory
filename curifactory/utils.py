@@ -12,6 +12,8 @@ import subprocess
 import sys
 from typing import Dict
 
+from rich.logging import RichHandler
+
 TIMESTAMP_FORMAT = "%Y-%m-%d-T%H%M%S"
 """The datetime format string used for timestamps in experiment run reference names."""
 CONFIGURATION_FILE = "curifactory_config.json"
@@ -325,18 +327,20 @@ def init_logging(
     if include_process:
         # NOTE: taking out %(filename)s because it takes up space and makes the beginning of the log entries "jagged"
         log_formatter = logging.Formatter(
-            "%(asctime)s [%(levelname)s] {PID:%(process)s} - %(prefix)s%(message)s"
+            # "%(asctime)s [%(levelname)s] {PID:%(process)s} - %(prefix)s%(message)s"
+            "{PID:%(process)s} - %(prefix)s%(message)s"
         )
     else:
         log_formatter = logging.Formatter(
-            "%(asctime)s [%(levelname)s] - %(prefix)s%(message)s"
+            # "%(asctime)s [%(levelname)s] - %(prefix)s%(message)s"
+            "%(prefix)s%(message)s"
         )
     root_logger = logging.getLogger()
     root_logger.setLevel(level)
     root_logger.propagate = False
     root_logger.handlers = []
 
-    logging.addLevelName(logging.DEBUG, "DBUG")
+    # logging.addLevelName(logging.DEBUG, "DBUG")
 
     set_logging_prefix("")
 
@@ -345,9 +349,18 @@ def init_logging(
         file_handler.setFormatter(log_formatter)
         root_logger.addHandler(file_handler)
 
-    console_handler = logging.StreamHandler(sys.stdout)
+    # console_handler = logging.StreamHandler(sys.stdout)
+    console_handler = RichHandler(
+        show_time=True,
+        show_level=True,
+        show_path=True,
+        rich_tracebacks=True,
+        tracebacks_show_locals=True,
+        log_time_format="%X",
+        keywords=["-----", "(aggregate)"],
+    )
     console_handler.setFormatter(log_formatter)
-    root_logger.addHandler(console_handler)
+    root_logger.addHandler(console_handler)  # TODO: have a --no-log to hide log
 
     # https://stackoverflow.com/questions/27538879/how-to-disable-loggers-from-other-modules
     # disable all loggers except ours (TODO: may want to config this at some point)

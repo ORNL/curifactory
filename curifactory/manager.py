@@ -202,6 +202,15 @@ class ArtifactManager:
         """A flag indicting if the default report's graphs/reportables folders exist, this helps prevent live displays from breaking if multiple display functions called."""
         self.live_report_paths = None
 
+        self.map_mode = False
+        """If we're in map mode, don't actually execute any stages, we're only
+        recording the 'DAG' (really just the set of stages associated with each
+        record)"""
+        self.map: List[Record] = None
+
+        self.map_progress = None
+        self.map_progress_overall_task_id = None
+
         self._load_config()
 
         if not self.dry and not self.dry_cache:
@@ -237,6 +246,63 @@ class ArtifactManager:
             if self.dry:
                 log_path = None
             utils.init_logging(log_path, level, False)
+
+    def map_records(self):
+        """Run through every record currently stored and grab the stage and
+        stage i/o list and store it. Then clean the records."""
+        self.map = []
+
+        for record in self.records:
+            mapped_record = Record(self, record.args, hide=True)
+            mapped_record.stages = record.stages
+            mapped_record.stage_inputs = record.stage_inputs
+            mapped_record.stage_outputs = record.stage_outputs
+            mapped_record.is_aggregate = record.is_aggregate
+            self.map.append(mapped_record)
+            # TODO: input_records?
+            # TODO: hash?
+
+        self.records.clear()
+
+    # update_type can either be "start" or "continue"
+    # start type means "stage start", not record start, though we could check if
+    # it hasn't been started yet.
+    # TODO: support taking in string name as well
+    def update_map_progress(self, record, update_type: str = ""):
+        if self.map_progress is not None and not self.map_mode:
+            # self.map_progress.update(self.map_progress.task_ids[0], advance=1)
+            # find appropriate record
+            # TODO: use aggregate (or non) hash as the way to find the correct
+            # record.
+            taskid = -1
+            name = record.args.name if record.args is not None else "None"
+            for map_record in self.map:
+                map_name = (
+                    map_record.args.name if map_record.args is not None else "None"
+                )
+                if map_name == name:
+                    taskid = map_record.taskid
+
+            map_task = None
+            for task in self.map_progress.tasks:
+                if task.id == taskid:
+                    map_task = task
+
+            # TODO: detect task completion and update the overalltask
+            # TODO: set "extra" column for overall task based on record name, no matter what update type is
+            if update_type == "continue":
+                self.map_progress.update(taskid, advance=1, visible=True)
+                if map_task.completed == map_task.total:
+                    self.map_progress.update(
+                        self.map_progress_overall_task_id, advance=1
+                    )
+            elif update_type == "start":
+                self.map_progress.update(taskid, visible=True)
+                if not map_task.started:
+                    self.map_progress.start_task(taskid)
+                self.map_progress.update(
+                    self.map_progress_overall_task_id, name=f"Executing record {name}"
+                )
 
     def _load_config(self):
         """Populate any non-pre-existing path values with config values."""

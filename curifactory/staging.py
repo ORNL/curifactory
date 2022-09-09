@@ -148,8 +148,11 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                 utils.set_logging_prefix("")
 
             name = function.__name__
-            logging.info("-----")
-            logging.info("Stage %s", name)
+            if record.manager.map_mode:
+                logging.debug("Mapping stage %s", name)
+            else:
+                logging.info("-----")
+                logging.info("Stage %s", name)
             pre_footprint = 0
             if os.name != "nt":
                 pre_footprint = (
@@ -166,6 +169,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             record.stages.append(name)
             record.stage_outputs.append([])
             record.stage_inputs.append([])
+            record.manager.update_map_progress(record, "start")
 
             # apply consistent handling
             nonlocal inputs, outputs, cachers
@@ -239,14 +243,14 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                 # input was added - this shouldn't inherently cause a problem unless the
                 # output would be wrong.
                 if function_input not in record.state:
-                    if suppress_missing_inputs:
+                    if suppress_missing_inputs and not record.manager.map_mode:
                         logging.warning(
                             "Suppressed missing inputs, will expect function signature default value for '%s' or a direct argument pass on the stage function call..."
                             % function_input
                         )
                         # function_inputs[function_input] = None
                         # NOTE: we don't actually need to pass in None, we can expect the user to implement whatever defaults they want for optional parameters. If they don't specify a default, this will fail as normal.
-                    elif function_input not in kwargs:
+                    elif function_input not in kwargs and not record.manager.map_mode:
                         raise KeyError(
                             "Stage '%s' input '%s' not found in record state and not passed to function call. Set 'suppress_missing_inputs=True' on the stage and give a default value in the function signature if this should run anyway."
                             % (name, function_input)
@@ -262,6 +266,12 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                     function_inputs[function_input] = record.state[function_input]
             function_inputs.update(kwargs)
             record.state.resolve = True
+
+            # at this point we've grabbed all information we would need if we're
+            # just mapping out the stages, so return at this point.
+            if record.manager.map_mode:
+                record.manager.stage_active = False
+                return record
 
             # note to future self and anyone else who's IDE says this is repeated code (with aggregate below)
             # no, you cannot abstract this into _check_cached_outputs - if you try to reassign to cachers from
@@ -319,6 +329,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                 )
                 utils.set_logging_prefix("")
                 record.manager.stage_active = False
+                record.manager.update_map_progress(record, "continue")
                 return record
 
             # run the function
@@ -400,6 +411,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             record.output = cleaned_function_outputs
             utils.set_logging_prefix("")
             record.manager.stage_active = False
+            record.manager.update_map_progress(record, "continue")
             return record
 
         return wrapper
@@ -461,8 +473,11 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             record.input_records = records
 
             name = function.__name__
-            logging.info("-----")
-            logging.info("Stage (aggregate) %s", name)
+            if record.manager.map_mode:
+                logging.debug("Mapping aggregate stage %s", name)
+            else:
+                logging.info("-----")
+                logging.info("Stage (aggregate) %s", name)
             pre_footprint = 0
             if os.name != "nt":
                 pre_footprint = (
@@ -479,6 +494,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             record.stages.append(name)
             record.stage_outputs.append([])
             record.stage_inputs.append([])
+            record.manager.update_map_progress(record, "start")
 
             # apply consistent handling
             nonlocal outputs, cachers
@@ -528,6 +544,12 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                     f"Stage '{name}' - the number of cachers does not match the number of outputs to cache"
                 )
 
+            # at this point we've grabbed all information we would need if we're
+            # just mapping out the stages, so return at this point.
+            if record.manager.map_mode:
+                record.manager.stage_active = False
+                return record
+
             # see note in stage
             if cachers is not None:
                 # instantiate cachers if not already
@@ -569,6 +591,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 )
                 utils.set_logging_prefix("")
                 record.manager.stage_active = False
+                record.manager.update_map_progress(record, "continue")
                 return record
 
             # run the function
@@ -646,6 +669,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             record.output = cleaned_function_outputs
             utils.set_logging_prefix("")
             record.manager.stage_active = False
+            record.manager.update_map_progress(record, "continue")
             return record
 
         return wrapper
