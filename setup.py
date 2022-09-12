@@ -53,5 +53,6 @@ setup(
         "matplotlib",
         "psutil",
         "dataclasses",  # for compatibility with python 3.6
+        "rich",
     ],
 )
