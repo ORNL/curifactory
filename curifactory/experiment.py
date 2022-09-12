@@ -59,6 +59,9 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     run_ts_override: datetime.datetime = None,
     lazy: bool = False,
     ignore_lazy: bool = False,
+    no_map: bool = False,
+    no_color: bool = False,
+    quiet: bool = False,
     notes: str = None,
 ):
     """The experiment entrypoint function. This executes the given experiment
@@ -121,6 +124,11 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             handle pickle serialization correctly may cause errors.
         ignore_lazy (bool): Run the experiment disabling any lazy object caching/keeping everything in memory.
             This can save time when memory is less of an issue.
+        no_map (bool): Prevent pre-execution mapping of experiment records and stages. Recommended if doing
+            anything fancy with records like dynamically creating them based on results of previous records.
+            Mapping is done by running the experiment but skipping all stage execution.
+        no_color (bool): Suppress fancy colors in console output.
+        quiet (bool): Suppress all console log output.
         notes (str): A git-log-like message to store in the run info for the current run. If this is an
             empty string, query the user for an input string.
 
@@ -171,6 +179,12 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             run_string += " --lazy"
         if ignore_lazy:
             run_string += " --ignore-lazy"
+        if no_map:
+            run_string += " --no-map"
+        if no_color:
+            run_string += " --no-color"
+        if quiet:
+            run_string += " --quiet"
 
         # TODO: remainder of flags
 
@@ -281,7 +295,14 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         level = logging.INFO
         if log_debug:
             level = logging.DEBUG
-        utils.init_logging(log_path, level, log_errors, include_process=parallel_mode)
+        utils.init_logging(
+            log_path,
+            level,
+            log_errors,
+            include_process=parallel_mode,
+            quiet=quiet,
+            no_color=no_color,
+        )
 
     logging.info("Running experiment %s" % experiment_name)
     if mngr.git_workdir_dirty:
@@ -459,6 +480,9 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     mngr.run_timestamp,
                     lazy,
                     ignore_lazy,
+                    no_map,
+                    no_color,
+                    quiet,
                 ),
             )
             logging.info(
@@ -495,8 +519,6 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             % str(global_args_indices)
         )
 
-    # TODO: just testing for now
-
     # run the experiment
     error_thrown = False
     experiment_module = importlib.import_module(
@@ -504,8 +526,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     )
     try:
 
-        # TODO: add check for not doing map mode
-        if not parallel_mode:
+        # run experiment mapping and set up progress bars
+        if not parallel_mode and not no_map:
             logging.info("Pre-mapping stages and records")
             mngr.map_mode = True
             experiment_module.run(argsets, mngr)
@@ -518,18 +540,20 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             # mapped record.
             mngr.map_progress = Progress(
                 TextColumn("{task.completed}/{task.total}"),
-                BarColumn(bar_width=40, pulse_style="cyan"),
+                BarColumn(bar_width=30, pulse_style="cyan"),
                 TextColumn("[progress.description]{task.description}"),
                 TimeElapsedColumn(),
                 TextColumn("{task.fields[name]}"),
             )
-            for record in mngr.map:
+            for i, record in enumerate(mngr.map):
                 name = record.args.name if record.args is not None else "None"
-                hash_big = ""
-                hash_cut = ""
+                if record.is_aggregate:
+                    name += " (aggregate)"
+                hash_big = record.get_hash()
+                hash_cut = record.get_hash()[:8]
                 # logging.debug("LENGTH %s" % len(record.stages))
                 taskid = mngr.map_progress.add_task(
-                    f"Args: {name}, Hash: {hash_cut}",
+                    f"Record {i}, args: {name}, hash: {hash_cut}",
                     total=len(record.stages),
                     start=False,
                     visible=True,
@@ -1051,6 +1075,21 @@ def main():
         action="store_true",
         help="Only used for 'experiment reports', updates the report index with all exisiting reports in the reports file. This is to handle if you pull in reports from other machines.",
     )
+    parser.add_argument(
+        "--no-map",
+        dest="no_map",
+        action="store_true",
+        help="Specifying will prevent the pre - execution mapping of the experiment records and stages. If doing non - DAG or creating dynamic records based on results of previous ones (where the map will be incorrect) use this flag.",
+    )
+    parser.add_argument(
+        "--quiet",
+        dest="quiet",
+        action="store_true",
+        help="Suppress all log output to console.",
+    )
+    parser.add_argument(
+        "--no-color", dest="no_color", action="store_true", help="Less fancy colors."
+    )
 
     # fix any missing quotes in run line
     command_parts = sys.argv[1:]
@@ -1099,9 +1138,8 @@ def main():
         os.chdir("..")
         exit()
 
-    # todo: verify names exist
-    # todo: ensure folders exist (logs)
-    # todo: add cache overwrite option
+    # TODO: verify names exist
+    # TODO: ensure folders exist (logs)
 
     log = True
     if args.no_log:
@@ -1137,6 +1175,9 @@ def main():
         parallel_mode=args.parallel_mode,
         lazy=args.lazy,
         ignore_lazy=args.ignore_lazy,
+        no_map=args.no_map,
+        no_color=args.no_color,
+        quiet=args.quiet,
         notes=args.notes,
     )
 

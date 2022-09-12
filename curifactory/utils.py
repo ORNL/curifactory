@@ -13,6 +13,7 @@ import sys
 from typing import Dict
 
 from rich.logging import RichHandler
+from rich import get_console, reconfigure
 
 TIMESTAMP_FORMAT = "%Y-%m-%d-T%H%M%S"
 """The datetime format string used for timestamps in experiment run reference names."""
@@ -311,7 +312,12 @@ def set_logging_prefix(prefix):
 
 
 def init_logging(
-    log_path=None, level=logging.INFO, log_errors=False, include_process=False
+    log_path=None,
+    level=logging.INFO,
+    log_errors=False,
+    include_process=False,
+    no_color=False,
+    quiet=False,
 ):
     """Sets up logging configuration, including the associated file output.
 
@@ -323,6 +329,8 @@ def init_logging(
         include_process (bool): Whether to include the PID prefix value in the logger.
             This is mostly only used for when the :code:`--parallel` flag is used, to
             help track which log message is from which process.
+        no_color (bool): Suppress colors in console output.
+        quiet (bool): Suppress all console log output.
     """
     if include_process:
         # NOTE: taking out %(filename)s because it takes up space and makes the beginning of the log entries "jagged"
@@ -350,17 +358,25 @@ def init_logging(
         root_logger.addHandler(file_handler)
 
     # console_handler = logging.StreamHandler(sys.stdout)
-    console_handler = RichHandler(
-        show_time=True,
-        show_level=True,
-        show_path=True,
-        rich_tracebacks=True,
-        tracebacks_show_locals=True,
-        log_time_format="%X",
-        keywords=["-----", "(aggregate)"],
-    )
-    console_handler.setFormatter(log_formatter)
-    root_logger.addHandler(console_handler)  # TODO: have a --no-log to hide log
+    # TODO: this doesn't make much sense only here. This is effecting the
+    # progress bars because if this check is _within_ the not quiet check, the
+    # progress bars ignore the no-color
+    if no_color:
+        reconfigure(no_color=True)
+    if not quiet:
+        # console = Console(no_color=no_color)
+        console_handler = RichHandler(
+            console=get_console(),
+            show_time=True,
+            show_level=True,
+            show_path=True,
+            rich_tracebacks=True,
+            tracebacks_show_locals=True,
+            log_time_format="%X",
+            keywords=["-----", "(aggregate)"],
+        )
+        console_handler.setFormatter(log_formatter)
+        root_logger.addHandler(console_handler)  # TODO: have a --no-log to hide log
 
     # https://stackoverflow.com/questions/27538879/how-to-disable-loggers-from-other-modules
     # disable all loggers except ours (TODO: may want to config this at some point)

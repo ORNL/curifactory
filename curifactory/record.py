@@ -94,6 +94,15 @@ class Record:
                     self.args, self.manager.get_run_output_path(), not self.manager.dry
                 )
 
+    def get_hash(self) -> str:
+        """Returns either the hash of the args, or the combo hash if this record is an aggregate."""
+        if self.is_aggregate:
+            return self.combo_hash
+        elif self.args is not None:
+            return self.args.hash
+        else:
+            return "None"
+
     def set_aggregate(self, aggregate_records):
         """Mark this record as starting with an aggregate stage, meaning the hash of all cached outputs produced
         within this record need to reflect the combo hash of all records going into it."""

@@ -258,16 +258,15 @@ class ArtifactManager:
             mapped_record.stage_inputs = record.stage_inputs
             mapped_record.stage_outputs = record.stage_outputs
             mapped_record.is_aggregate = record.is_aggregate
+            mapped_record.combo_hash = record.combo_hash
             self.map.append(mapped_record)
             # TODO: input_records?
-            # TODO: hash?
 
         self.records.clear()
 
     # update_type can either be "start" or "continue"
     # start type means "stage start", not record start, though we could check if
     # it hasn't been started yet.
-    # TODO: support taking in string name as well
     def update_map_progress(self, record, update_type: str = ""):
         if self.map_progress is not None and not self.map_mode:
             # self.map_progress.update(self.map_progress.task_ids[0], advance=1)
@@ -276,34 +275,43 @@ class ArtifactManager:
             # record.
             taskid = -1
             name = record.args.name if record.args is not None else "None"
-            for map_record in self.map:
-                map_name = (
-                    map_record.args.name if map_record.args is not None else "None"
-                )
-                if map_name == name:
+            record_hash = record.get_hash()
+            record_index = -1
+            for i, map_record in enumerate(self.map):
+                map_record_hash = map_record.get_hash()
+                # map_name = (
+                #     map_record.args.name if map_record.args is not None else "None"
+                # )
+                if map_record_hash == record_hash:
                     taskid = map_record.taskid
+                    record_index = i
 
             map_task = None
             for task in self.map_progress.tasks:
                 if task.id == taskid:
                     map_task = task
 
-            # TODO: detect task completion and update the overalltask
-            # TODO: set "extra" column for overall task based on record name, no matter what update type is
+            # continue is called when a stage/aggregate is complete and about to
+            # return
             if update_type == "continue":
                 self.map_progress.update(taskid, advance=1, visible=True, name="")
                 if map_task.completed == map_task.total:
                     self.map_progress.update(
                         self.map_progress_overall_task_id, advance=1
                     )
+                    self.map_progress.update(self.map_progress_overall_task_id, name="")
+
+            # start gets called at the beginning of a stage or aggregate
+            # decorator
             elif update_type == "start":
                 self.map_progress.update(
-                    taskid, visible=True, name=f"Executing stage {record.stages[-1]}"
+                    taskid, visible=True, name=f"Stage {record.stages[-1]}"
                 )
                 if not map_task.started:
                     self.map_progress.start_task(taskid)
                 self.map_progress.update(
-                    self.map_progress_overall_task_id, name=f"Executing record {name}"
+                    self.map_progress_overall_task_id,
+                    name=f"Record {record_index} ({name})",
                 )
 
     def _load_config(self):
@@ -429,15 +437,7 @@ class ArtifactManager:
         Returns:
             A string filepath that an object can be written to.
         """
-        args_hash = "None"
-
-        if record.args is not None:
-            args_hash = record.args.hash
-
-        # set the hash to the hashed version of all args hashes from passed records if applicable
-        if record.is_aggregate:
-            args_hash = record.combo_hash
-
+        args_hash = record.get_hash()
         object_path = (
             f"{self._get_name()}_{args_hash}_{self.current_stage_name}_{obj_name}"
         )
