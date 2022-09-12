@@ -16,7 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Warn if calling a stage from within another stage - this breaks experiment mapping.
 - Rich library dependency, terminal logging is now fancy with colors and
   progress bars!
-- Log notification if distributed run detected.
+- Logging notification if distributed run detected.
+- Display control flags: `--no-color`, `--quiet`.
+
+### Changed
+- Improved CLI help messages.
 
 
 
