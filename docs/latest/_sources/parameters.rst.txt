@@ -64,6 +64,18 @@ the above :code:`Args` class might look like:
     As :code:`Args` is a completely user-defined class, you can technically name this class whatever you
     choose. The rest of this documentation is written under the assumption it is named "Args".
 
+
+.. warning::
+
+   While the arguments in your dataclass can be arbitrary types, weird issues
+   can sometimes arise if you include non-serializable objects. We've run into
+   problems with things like including a pytorch distributed strategy object as
+   an argument, as it can end up in a weird recursive serialization loop when
+   curifactory tries to get a serialized JSON string representation of the
+   corresponding arguments.
+
+
+
 Programmatic definition
 -----------------------
 

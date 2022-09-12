@@ -354,6 +354,11 @@ connections.
 
     experiment reports --host 0.0.0.0
 
+Note that if you run experiments on multiple machines and transfer all of the
+reports to the same folder, the report index will not accurately reflect them.
+You can use :code:`experiment reports --update` to regenerate this index based
+on all discovered folders in your reports directory.
+
 
 Full reference
 --------------
@@ -503,6 +508,32 @@ Include debug logs (:code:`-v`, :code:`--verbose`)
 
 Include debug messages in the output logs if specified.
 
+
+Suppress experiment mapping (:code:`--no-map`)
+..................................................
+
+Experiment mapping is a pre-experiment-execution step that technically runs all
+of your experiment code, but every stage automatically shortcuts. This gives the
+manager a list of records and stages, which is used for calculating progress in
+the experiment. This will not be correct in experiments with fancy record
+mechanics, such as dynamically created records conditionally based on the
+results from previous stages. To disable the map (and consequently the progress
+bars), use :code:`--no-map`.
+
+Suppress console log output (:code:`--quiet`)
+.............................................
+
+Make the output a little less busy and don't include logging messages. Note that
+this will still render the progress bars, unless you also specify
+:code:`--no-map`.
+
+Suppress terminal colors in case of unrecognized non-support (:code:`--no-color`)
+.................................................................................
+
+Not all terminals support color well, and the output is full of fun colors from
+Rich. Suppress them with this flag.
+
+
 Suppress all file output (:code:`--dry`)
 ........................................
 
@@ -587,8 +618,9 @@ live exploration of the states.
 Note that this requires an environment with :code:`ipynb-py-convert` accessible from the command line,
 which should come with any jupyter installation.
 
-Serve HTML reports on a specified port (:code:`--port`)
-.......................................................
+Serve HTML reports on a specified port and host (:code:`--port`, :code:`--host`)
+................................................................................
 
-This flag only applies to the :code:`experiment reports` command, specifying which port to
-serve the HTML reports on. See :ref:`Hosting HTML Reports`.
+These flags only applies to the :code:`experiment reports` command, specifying which port to
+serve the HTML reports on and what addresses to accept connectiosn from. See
+:ref:`Hosting HTML Reports`.
