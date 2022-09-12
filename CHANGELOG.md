@@ -9,7 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Command flag to regenerate the report index, useful for when importing run
-  from another machine. (run via `experiment reports --update`)
+  from another machine. (run via `experiment reports --update`.)
+- Add experiment mapping step before execution - steps through experiment code
+  without executing stage bodies and records a list of all records and stages
+  they call.
+- Warn if calling a stage from within another stage - this breaks experiment mapping.
+- Rich library dependency, terminal logging is now fancy with colors and
+  progress bars!
+- Log notification if distributed run detected.
 
 
 

@@ -70,3 +70,5 @@ def test_record_gets_combo_hash_for_aggregate(configured_test_manager):
 
 
 # TODO: test_record_with_aggregate_doesnot_change_args_hash (do a normal stage with those args and an agg stage with those args)
+
+# TODO: check that record make_copy works

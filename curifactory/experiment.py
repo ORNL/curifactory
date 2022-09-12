@@ -22,9 +22,7 @@ from rich.progress import (
     Progress,
     TextColumn,
     BarColumn,
-    TimeRemainingColumn,
     TimeElapsedColumn,
-    SpinnerColumn,
 )
 
 from curifactory.manager import ArtifactManager
@@ -181,11 +179,14 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
     # distributed run check, automatically set parallel mode if we're not rank 0
     # this was added because of issues with pytorch distributed compute
+    distributed_mode_detected = False
     if "LOCAL_RANK" in os.environ:
         if os.getenv("LOCAL_RANK") != "0":
-            parallel_mode = True
+            distributed_mode_detected = True
         elif "NODE_RANK" in os.environ and os.getenv("NODE_RANK") != "0":
-            parallel_mode = True
+            distributed_mode_detected = True
+    if distributed_mode_detected:
+        parallel_mode = True
 
     # get the experiment run notes if requested
     if notes == "":
@@ -295,6 +296,12 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             % experiment_name
         )
         parameters_list = [experiment_name]
+
+    # let the user know if we detected a distributed run
+    if distributed_mode_detected:
+        logging.info(
+            "A distributed run was detected from environment variables - automatically using --parallel-mode on non-rank-0 processes."
+        )
 
     # load params files
     argsets = []
@@ -506,30 +513,38 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             logging.debug("Constructing record map")
             mngr.map_records()
             logging.info("Stage map collected")
-            # TODO: now add the progress bars
 
+            # create a (rich) progress bar and the associated tasks for each
+            # mapped record.
             mngr.map_progress = Progress(
                 TextColumn("{task.completed}/{task.total}"),
-                BarColumn(bar_width=60, pulse_style="cyan"),
+                BarColumn(bar_width=40, pulse_style="cyan"),
                 TextColumn("[progress.description]{task.description}"),
-                TimeRemainingColumn(),
                 TimeElapsedColumn(),
-                SpinnerColumn(),
                 TextColumn("{task.fields[name]}"),
             )
             for record in mngr.map:
                 name = record.args.name if record.args is not None else "None"
+                hash_big = ""
+                hash_cut = ""
                 # logging.debug("LENGTH %s" % len(record.stages))
                 taskid = mngr.map_progress.add_task(
-                    f"Record {name}",
+                    f"Args: {name}, Hash: {hash_cut}",
                     total=len(record.stages),
                     start=False,
                     visible=True,
                     name="",
+                    hash_big=hash_big,
+                    hash_cut=hash_cut,
                 )
                 record.taskid = taskid
             overalltaskid = mngr.map_progress.add_task(
-                "Total", total=len(mngr.map), visible=True, name=""
+                f"Total ({mngr.get_reference_name()})",
+                total=len(mngr.map),
+                visible=True,
+                name="",
+                hash_big="",
+                hash_cut="",
             )
             mngr.map_progress_overall_task_id = overalltaskid
 

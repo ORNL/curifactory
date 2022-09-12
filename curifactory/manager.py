@@ -291,13 +291,15 @@ class ArtifactManager:
             # TODO: detect task completion and update the overalltask
             # TODO: set "extra" column for overall task based on record name, no matter what update type is
             if update_type == "continue":
-                self.map_progress.update(taskid, advance=1, visible=True)
+                self.map_progress.update(taskid, advance=1, visible=True, name="")
                 if map_task.completed == map_task.total:
                     self.map_progress.update(
                         self.map_progress_overall_task_id, advance=1
                     )
             elif update_type == "start":
-                self.map_progress.update(taskid, visible=True)
+                self.map_progress.update(
+                    taskid, visible=True, name=f"Executing stage {record.stages[-1]}"
+                )
                 if not map_task.started:
                     self.map_progress.start_task(taskid)
                 self.map_progress.update(
