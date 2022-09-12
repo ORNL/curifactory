@@ -250,9 +250,10 @@ def test_parallel_calls_count_correct(
     mock_queue = mocker.patch("multiprocessing.Queue")
     mock_queue.return_value.get = lambda: [None, "success"]
     run_experiment("basic", ["params1", "params2"], parallel=3)
-    assert mock.call_args_list[0].kwargs["args"][-9] == ["0-1"]
-    assert mock.call_args_list[1].kwargs["args"][-9] == ["1-2"]
-    assert mock.call_args_list[2].kwargs["args"][-9] == ["2-3"]
+    # ensure index_range is correct
+    assert mock.call_args_list[0].kwargs["args"][-12] == ["0-1"]
+    assert mock.call_args_list[1].kwargs["args"][-12] == ["1-2"]
+    assert mock.call_args_list[2].kwargs["args"][-12] == ["2-3"]
     assert mock.call_count == 3
 
 
@@ -266,9 +267,10 @@ def test_parallel_calls_count_correct_limits_threads(
     mock_queue = mocker.patch("multiprocessing.Queue")
     mock_queue.return_value.get = lambda: [None, "success"]
     run_experiment("basic", ["params1", "params2"], parallel=4)
-    assert mock.call_args_list[0].kwargs["args"][-9] == ["0-1"]
-    assert mock.call_args_list[1].kwargs["args"][-9] == ["1-2"]
-    assert mock.call_args_list[2].kwargs["args"][-9] == ["2-3"]
+    # ensure index_range is correct
+    assert mock.call_args_list[0].kwargs["args"][-12] == ["0-1"]
+    assert mock.call_args_list[1].kwargs["args"][-12] == ["1-2"]
+    assert mock.call_args_list[2].kwargs["args"][-12] == ["2-3"]
     assert mock.call_count == 3
 
 
