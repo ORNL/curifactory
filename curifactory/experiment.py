@@ -62,6 +62,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     no_map: bool = False,
     no_color: bool = False,
     quiet: bool = False,
+    progress: bool = False,
+    plain: bool = False,
     notes: str = None,
 ):
     """The experiment entrypoint function. This executes the given experiment
@@ -129,6 +131,9 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             Mapping is done by running the experiment but skipping all stage execution.
         no_color (bool): Suppress fancy colors in console output.
         quiet (bool): Suppress all console log output.
+        progress (bool): Display fancy rich progress bars for each record.
+        plain (bool): Use normal text log output rather than rich log. Note that
+            this negates progress.
         notes (str): A git-log-like message to store in the run info for the current run. If this is an
             empty string, query the user for an input string.
 
@@ -302,6 +307,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             include_process=parallel_mode,
             quiet=quiet,
             no_color=no_color,
+            plain=plain,
         )
 
     logging.info("Running experiment %s" % experiment_name)
@@ -483,6 +489,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     no_map,
                     no_color,
                     quiet,
+                    progress,
+                    plain,
                 ),
             )
             logging.info(
@@ -538,52 +546,53 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
             # create a (rich) progress bar and the associated tasks for each
             # mapped record.
-            mngr.map_progress = Progress(
-                TextColumn("{task.completed}/{task.total}"),
-                BarColumn(bar_width=30, pulse_style="cyan"),
-                TextColumn("[progress.description]{task.description}"),
-                TimeElapsedColumn(),
-                TextColumn("{task.fields[name]}"),
-            )
-            for i, record in enumerate(mngr.map):
-                name = record.args.name if record.args is not None else "None"
-                if record.is_aggregate:
-                    name += " (aggregate)"
-                hash_big = record.get_hash()
-                hash_cut = record.get_hash()[:8]
-                # logging.debug("LENGTH %s" % len(record.stages))
-                taskid = mngr.map_progress.add_task(
-                    f"Record {i}, args: {name}, hash: {hash_cut}",
-                    total=len(record.stages),
-                    start=False,
+            if progress:
+                mngr.map_progress = Progress(
+                    TextColumn("{task.completed}/{task.total}"),
+                    BarColumn(bar_width=30, pulse_style="cyan"),
+                    TextColumn("[progress.description]{task.description}"),
+                    TimeElapsedColumn(),
+                    TextColumn("{task.fields[name]}"),
+                )
+                for i, record in enumerate(mngr.map):
+                    name = record.args.name if record.args is not None else "None"
+                    if record.is_aggregate:
+                        name += " (aggregate)"
+                    hash_big = record.get_hash()
+                    hash_cut = record.get_hash()[:8]
+                    # logging.debug("LENGTH %s" % len(record.stages))
+                    taskid = mngr.map_progress.add_task(
+                        f"Record {i}, args: {name}, hash: {hash_cut}",
+                        total=len(record.stages),
+                        start=False,
+                        visible=True,
+                        name="",
+                        hash_big=hash_big,
+                        hash_cut=hash_cut,
+                    )
+                    record.taskid = taskid
+                overalltaskid = mngr.map_progress.add_task(
+                    f"Total ({mngr.get_reference_name()})",
+                    total=len(mngr.map),
                     visible=True,
                     name="",
-                    hash_big=hash_big,
-                    hash_cut=hash_cut,
+                    hash_big="",
+                    hash_cut="",
                 )
-                record.taskid = taskid
-            overalltaskid = mngr.map_progress.add_task(
-                f"Total ({mngr.get_reference_name()})",
-                total=len(mngr.map),
-                visible=True,
-                name="",
-                hash_big="",
-                hash_cut="",
-            )
-            mngr.map_progress_overall_task_id = overalltaskid
+                mngr.map_progress_overall_task_id = overalltaskid
 
-            mngr.map_progress.start()
+                mngr.map_progress.start()
 
         results = experiment_module.run(argsets, mngr)
 
-        if not parallel_mode:
+        if not parallel_mode and not no_map and progress:
             mngr.map_progress.stop()
 
         # don't change status if we logged an error from a parallel process
         if not mngr.error_thrown:
             mngr.status = "complete"
     except Exception as e:
-        if not parallel_mode:
+        if not parallel_mode and not no_map and progress:
             mngr.map_progress.stop()
         results = None
         error_thrown = True
@@ -1096,6 +1105,18 @@ Examples:
     display_group.add_argument(
         "--no-color", dest="no_color", action="store_true", help="Less fancy colors."
     )
+    display_group.add_argument(
+        "--progress",
+        dest="progress",
+        action="store_true",
+        help="Display fancy progress bars! Note that this uses rich live and can break existing tqdm progress bars and other things.",
+    )
+    display_group.add_argument(
+        "--plain",
+        dest="plain",
+        action="store_true",
+        help="Print normal logging rather than rich colored logs. This will output the exact same text printed into the file log.",
+    )
 
     # ---- PARALLEL ----
     parallel_group.add_argument(
@@ -1218,6 +1239,8 @@ Examples:
         no_map=args.no_map,
         no_color=args.no_color,
         quiet=args.quiet,
+        progress=args.progress,
+        plain=args.plain,
         notes=args.notes,
     )
 

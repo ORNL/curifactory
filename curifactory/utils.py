@@ -318,6 +318,7 @@ def init_logging(
     include_process=False,
     no_color=False,
     quiet=False,
+    plain=False,
 ):
     """Sets up logging configuration, including the associated file output.
 
@@ -331,52 +332,59 @@ def init_logging(
             help track which log message is from which process.
         no_color (bool): Suppress colors in console output.
         quiet (bool): Suppress all console log output.
+        plain (bool): Output plain text log rather than rich output.
     """
     if include_process:
         # NOTE: taking out %(filename)s because it takes up space and makes the beginning of the log entries "jagged"
-        log_formatter = logging.Formatter(
-            # "%(asctime)s [%(levelname)s] {PID:%(process)s} - %(prefix)s%(message)s"
+        plain_log_formatter = logging.Formatter(
+            "%(asctime)s [%(levelname)s] {PID:%(process)s} - %(prefix)s%(message)s"
+        )
+        rich_log_formatter = logging.Formatter(
             "{PID:%(process)s} - %(prefix)s%(message)s"
         )
     else:
-        log_formatter = logging.Formatter(
-            # "%(asctime)s [%(levelname)s] - %(prefix)s%(message)s"
-            "%(prefix)s%(message)s"
+        plain_log_formatter = logging.Formatter(
+            "%(asctime)s [%(levelname)s] - %(prefix)s%(message)s"
         )
+        rich_log_formatter = logging.Formatter("%(prefix)s%(message)s")
     root_logger = logging.getLogger()
     root_logger.setLevel(level)
     root_logger.propagate = False
     root_logger.handlers = []
 
-    # logging.addLevelName(logging.DEBUG, "DBUG")
+    if plain:
+        # 4 characters so that it lines up all nice
+        logging.addLevelName(logging.DEBUG, "DBUG")
 
     set_logging_prefix("")
 
     if log_path is not None:
         file_handler = logging.FileHandler(log_path)
-        file_handler.setFormatter(log_formatter)
+        file_handler.setFormatter(plain_log_formatter)
         root_logger.addHandler(file_handler)
 
-    # console_handler = logging.StreamHandler(sys.stdout)
-    # TODO: this doesn't make much sense only here. This is effecting the
-    # progress bars because if this check is _within_ the not quiet check, the
-    # progress bars ignore the no-color
-    if no_color:
-        reconfigure(no_color=True)
-    if not quiet:
-        # console = Console(no_color=no_color)
-        console_handler = RichHandler(
-            console=get_console(),
-            show_time=True,
-            show_level=True,
-            show_path=True,
-            rich_tracebacks=True,
-            tracebacks_show_locals=True,
-            log_time_format="%X",
-            keywords=["-----", "(aggregate)"],
-        )
-        console_handler.setFormatter(log_formatter)
-        root_logger.addHandler(console_handler)  # TODO: have a --no-log to hide log
+    if plain and not quiet:
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setFormatter(plain_log_formatter)
+        root_logger.addHandler(console_handler)
+
+    if not plain:
+        if no_color:
+            reconfigure(no_color=True)
+        if not quiet:
+            # console = Console(no_color=no_color)
+            console_handler = RichHandler(
+                console=get_console(),
+                show_time=True,
+                show_level=True,
+                show_path=True,
+                rich_tracebacks=True,
+                tracebacks_show_locals=True,
+                log_time_format="%X",
+                keywords=["-----", "(aggregate)"],
+            )
+            console_handler.setFormatter(rich_log_formatter)
+            root_logger.addHandler(console_handler)
 
     # https://stackoverflow.com/questions/27538879/how-to-disable-loggers-from-other-modules
     # disable all loggers except ours (TODO: may want to config this at some point)

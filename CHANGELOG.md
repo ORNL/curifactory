@@ -5,6 +5,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.8.1] - 2022-09-13
+
+### Added
+- Ability to revert to plain log output (instead of rich logging handler) with
+  `--plain`.
+
+### Changed
+- Rich progress bars are no longer used by default. They can be enabled with
+  the `--progress` CLI flag.
+
+### Fixed
+- Bug where the end of an experiment attempts to stop a rich progress bar even
+  if one had not been started.
+
+
+
+
 ## [0.8.0] - 2022-09-12
 
 ### Added
