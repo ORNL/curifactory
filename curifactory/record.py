@@ -86,12 +86,16 @@ class Record:
         # aggregate combo hashes)
         if self.args is not None and self.args.hash is None:
             self.args.hash = utils.args_hash(
-                self.args, self.manager.manager_cache_path, not self.manager.dry
+                self.args,
+                self.manager.manager_cache_path,
+                not (self.manager.dry or self.manager.parallel_mode),
             )
 
             if self.manager.store_entire_run:
                 utils.args_hash(
-                    self.args, self.manager.get_run_output_path(), not self.manager.dry
+                    self.args,
+                    self.manager.get_run_output_path(),
+                    not (self.manager.dry or self.manager.parallel_mode),
                 )
 
     def get_hash(self) -> str:
@@ -111,14 +115,14 @@ class Record:
             self,
             aggregate_records,
             self.manager.manager_cache_path,
-            not self.manager.dry,
+            not (self.manager.dry or self.manager.parallel_mode),
         )
         if self.manager.store_entire_run:
             utils.add_args_combo_hash(
                 self,
                 aggregate_records,
                 self.manager.get_run_output_path(),
-                not self.manager.dry,
+                not (self.manager.dry or self.manager.parallel_mode),
             )
 
     def report(self, reportable: Reportable):

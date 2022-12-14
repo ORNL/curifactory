@@ -13,7 +13,6 @@ pytest-cov
 psutil
 twine
 build
-dataclasses
 rich
 
 black
