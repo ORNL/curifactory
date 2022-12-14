@@ -2,9 +2,10 @@
 
 import json
 import os
+
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
-from curifactory import aggregate, Record, utils, ExperimentArgs
+from curifactory import ExperimentArgs, Record, aggregate, utils
 
 
 def test_record_sets_hash(configured_test_manager):
@@ -29,7 +30,7 @@ def test_record_stores_hash_when_not_dry(configured_test_manager):
     reg_path = os.path.join(
         configured_test_manager.manager_cache_path, "params_registry.json"
     )
-    with open(reg_path, "r") as infile:
+    with open(reg_path) as infile:
         reg = json.load(infile)
 
     keys = list(reg.keys())

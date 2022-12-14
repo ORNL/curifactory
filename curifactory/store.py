@@ -50,7 +50,7 @@ class ManagerStore:
     def load(self):
         """Load the current experiment database from :code:`sore.json` into :code:`self.runs`."""
         if os.path.exists(self.path):
-            with open(self.path, "r") as infile:
+            with open(self.path) as infile:
                 self.runs = json.load(infile)
 
     def save(self):

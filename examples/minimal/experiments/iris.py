@@ -1,13 +1,14 @@
 from dataclasses import dataclass
 
+from sklearn.base import ClassifierMixin
+from sklearn.datasets import load_iris
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+
 import curifactory as cf
 from curifactory.caching import PickleCacher
 from curifactory.reporting import JsonReporter
-from sklearn.base import ClassifierMixin
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
 
 
 @dataclass

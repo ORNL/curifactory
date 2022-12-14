@@ -7,8 +7,9 @@ This file contains a :code:`__name__ == "__main__"` and can be run directly.
 import argparse
 import json
 import os
-import pkg_resources
 import shutil
+
+import pkg_resources
 
 import curifactory as cf
 from curifactory import utils
@@ -74,7 +75,7 @@ def initialize_project():
             dockerfile_path = pkg_resources.resource_filename(
                 "curifactory", "data/dockerfile"
             )
-            with open(dockerfile_path, "r") as infile:
+            with open(dockerfile_path) as infile:
                 contents = infile.read()
                 contents.replace("{{CF_VERSION}}", cf.__version__)
             with open("docker/dockerfile", "w") as outfile:
@@ -103,7 +104,7 @@ def initialize_project():
 
             newline_needed = False
             if os.path.exists(".gitignore"):
-                with open(".gitignore", "r") as infile:
+                with open(".gitignore") as infile:
                     lines = infile.readlines()
                     if len(lines) > 0 and lines[-1] != "\n":
                         newline_needed = True

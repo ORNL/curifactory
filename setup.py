@@ -1,16 +1,17 @@
-from setuptools import setup
 import re
+
+from setuptools import setup
 
 
 def get_property(prop):
     result = re.search(
-        r'{}\s*=\s*[\'"]([^\'"]*)[\'"]'.format(prop),
+        rf'{prop}\s*=\s*[\'"]([^\'"]*)[\'"]',
         open("curifactory/__init__.py").read(),
     )
     return result.group(1)
 
 
-with open("README.md", "r", encoding="utf-8") as infile:
+with open("README.md", encoding="utf-8") as infile:
     long_description = infile.read()
 
 

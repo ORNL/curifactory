@@ -1,12 +1,13 @@
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
+
+from sklearn.datasets import fetch_20newsgroups_vectorized
+from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPClassifier
 
 import curifactory as cf
 from curifactory.caching import PickleCacher
 from curifactory.reporting import JsonReporter, LinePlotReporter
-from sklearn.datasets import fetch_20newsgroups_vectorized
-from sklearn.model_selection import train_test_split
-from sklearn.neural_network import MLPClassifier
 
 
 @dataclass

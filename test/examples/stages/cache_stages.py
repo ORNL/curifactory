@@ -1,6 +1,7 @@
+import os
+
 import curifactory as cf
 from curifactory.caching import FileReferenceCacher
-import os
 
 
 @cf.stage(None, ["output_paths"], [FileReferenceCacher])

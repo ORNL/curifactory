@@ -1,4 +1,4 @@
-from curifactory import stage, Record
+from curifactory import Record, stage
 
 
 @stage([], ["data"])

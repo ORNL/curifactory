@@ -7,9 +7,10 @@ cacher class extends it.
 import json
 import logging
 import os
-import pandas as pd
 import pickle
-from typing import Union, List, Dict
+from typing import Dict, List, Union
+
+import pandas as pd
 
 
 class Lazy:
@@ -132,7 +133,7 @@ class JsonCacher(Cacheable):
         super().__init__(".json", path_override=path_override)
 
     def load(self):
-        with open(self.path, "r") as infile:
+        with open(self.path) as infile:
             obj = json.load(infile)
         return obj
 
@@ -263,7 +264,7 @@ class FileReferenceCacher(Cacheable):
         # load the file list and check each file
         # NOTE: we don't need to re-check args overwrite because that
         # would already have applied in the super check
-        with open(self.path, "r") as infile:
+        with open(self.path) as infile:
             files = json.load(infile)
 
         if type(files) == list:
@@ -278,7 +279,7 @@ class FileReferenceCacher(Cacheable):
         return True
 
     def load(self) -> Union[List[str], str]:
-        with open(self.path, "r") as infile:
+        with open(self.path) as infile:
             files = json.load(infile)
         return files
 

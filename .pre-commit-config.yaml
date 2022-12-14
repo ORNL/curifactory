@@ -1,12 +1,43 @@
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v2.3.0
+  rev: v4.4.0
   hooks:
+  - id: check-added-large-files
+  - id: check-merge-conflict
+  - id: check-ast
+  - id: check-json
+  - id: check-toml
   - id: check-yaml
   - id: end-of-file-fixer
   - id: trailing-whitespace
-  - id: flake8
 - repo: https://github.com/psf/black
-  rev: 22.8.0
+  rev: 22.12.0
   hooks:
   - id: black
+- repo: https://github.com/PyCQA/flake8
+  rev: 6.0.0
+  hooks:
+  - id: flake8
+- repo: https://github.com/PyCQA/isort
+  rev: 5.11.2
+  hooks:
+  - id: isort
+- repo: https://github.com/asottile/pyupgrade  # update python syntax
+  rev: v3.3.1
+  hooks:
+  - id: pyupgrade
+    args: [--py38-plus]
+- repo: local
+  hooks:
+  - id: test
+    name: test
+    entry: make
+    args: ["test"]
+    language: system
+    pass_filenames: false
+  - id: clean
+    name: clean
+    entry: make
+    args: ["clean"]
+    language: system
+    pass_filenames: false

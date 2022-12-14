@@ -1,7 +1,7 @@
+from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
+
 import curifactory.utils
 from curifactory import docker
-
-from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
 
 def test_build_docker(mocker):  # noqa: F811 -- mocker has to be passed in as fixture

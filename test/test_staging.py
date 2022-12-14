@@ -1,15 +1,15 @@
 import pytest
+
 from curifactory import (
-    stage,
-    aggregate,
-    Record,
+    CachersMismatchError,
+    EmptyCachersError,
     InputSignatureError,
     OutputSignatureError,
-    EmptyCachersError,
-    CachersMismatchError,
+    Record,
+    aggregate,
+    stage,
 )
-from curifactory.caching import PickleCacher, Lazy
-
+from curifactory.caching import Lazy, PickleCacher
 
 # --------------------------
 # @stage tests

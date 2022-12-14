@@ -2,9 +2,10 @@ import sys
 
 sys.path.append("../")
 
-from curifactory.procedure import Procedure
-from curifactory.manager import ArtifactManager
 from stages.basic_stages import get_data, sum_data
+
+from curifactory.manager import ArtifactManager
+from curifactory.procedure import Procedure
 
 
 def run(argsets, manager: ArtifactManager):

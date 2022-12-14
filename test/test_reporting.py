@@ -1,7 +1,8 @@
-import curifactory as cf
-from curifactory.reporting import JsonReporter
-from curifactory.caching import JsonCacher
 import os
+
+import curifactory as cf
+from curifactory.caching import JsonCacher
+from curifactory.reporting import JsonReporter
 
 
 def test_reportables_cached(configured_test_manager):

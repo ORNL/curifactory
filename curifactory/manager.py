@@ -1,18 +1,18 @@
 """Contains the relevant classes for experiment state, namely the artifact manager and
 record classes, as well as experiment store/parameter store management."""
 
-from datetime import datetime
 import json
 import logging
 import multiprocessing as mp
 import os
-from socket import gethostname
 import sys
-from typing import List, Dict
+from datetime import datetime
+from socket import gethostname
+from typing import Dict, List
 
-from curifactory import utils, reporting
-from curifactory.reporting import Reportable
+from curifactory import reporting, utils
 from curifactory.record import Record
+from curifactory.reporting import Reportable
 from curifactory.store import ManagerStore
 
 

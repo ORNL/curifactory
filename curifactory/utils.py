@@ -1,7 +1,5 @@
 """ Helper and utility functions for the library. """
 
-from copy import deepcopy
-from dataclasses import asdict
 import hashlib
 import json
 import logging
@@ -10,10 +8,12 @@ import platform
 import shutil
 import subprocess
 import sys
+from copy import deepcopy
+from dataclasses import asdict
 from typing import Dict
 
-from rich.logging import RichHandler
 from rich import get_console, reconfigure
+from rich.logging import RichHandler
 
 TIMESTAMP_FORMAT = "%Y-%m-%d-T%H%M%S"
 """The datetime format string used for timestamps in experiment run reference names."""
@@ -70,7 +70,7 @@ def get_configuration() -> Dict[str, str]:
 
     # get config file
     if os.path.exists(f"{prefix}{CONFIGURATION_FILE}"):
-        with open(f"{prefix}{CONFIGURATION_FILE}", "r") as infile:
+        with open(f"{prefix}{CONFIGURATION_FILE}") as infile:
             config = json.load(infile)
 
         # in case of any values that don't exist in explicit config
@@ -139,8 +139,8 @@ def human_readable_mem_usage(byte_count: int) -> str:
         byte_count /= 10**3
 
     if negative:
-        return "-%.2f%s" % (byte_count, suffix)
-    return "%.2f%s" % (byte_count, suffix)
+        return f"-{byte_count:.2f}{suffix}"
+    return f"{byte_count:.2f}{suffix}"
 
 
 def human_readable_time(seconds: float) -> str:
@@ -173,7 +173,7 @@ def human_readable_time(seconds: float) -> str:
         suffix = "ms"
         converted *= 10**3
 
-    return "%.2f%s" % (converted, suffix)
+    return f"{converted:.2f}{suffix}"
 
 
 def get_command_output(cmd, silent=False) -> str:
@@ -444,7 +444,7 @@ def args_hash(args, registry_path: str, store_in_registry: bool = False) -> str:
         registry = {}
 
         if os.path.exists(registry_path):
-            with open(registry_path, "r") as infile:
+            with open(registry_path) as infile:
                 registry = json.load(infile)
 
         registry[hash_str] = asdict(args)
@@ -496,7 +496,7 @@ def add_args_combo_hash(
         registry = {}
 
         if os.path.exists(registry_path):
-            with open(registry_path, "r") as infile:
+            with open(registry_path) as infile:
                 registry = json.load(infile)
 
         registry[hash_str] = {"active": active_key, "arg_list": hashes}
@@ -506,7 +506,7 @@ def add_args_combo_hash(
 
 
 # https://stackoverflow.com/questions/19425736/how-to-redirect-stdout-and-stderr-to-logger-in-python
-class StreamToLogger(object):
+class StreamToLogger:
     def __init__(self, level):
         # self.logger = logger
         self.level = level

@@ -5,23 +5,21 @@ This is handled through a base :code:`Reportable` class, and each reporter class
 extends it.
 """
 
-from dataclasses import asdict
 import datetime
 import json
 import logging
 import os
 import shutil
+from dataclasses import asdict
 from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
-
+import pandas as pd
 from graphviz import Digraph
 from graphviz.backend import ExecutableNotFound
-import pandas as pd
 
 from curifactory import utils
-
 
 COLORS = [
     "darkseagreen2",  # #b4eeb4
@@ -746,7 +744,7 @@ def update_report_index(experiments_path, reports_root_dir):
             continue
 
         if os.path.exists(f"{full_filename}/run_info.json"):
-            with open(f"{full_filename}/run_info.json", "r") as infile:
+            with open(f"{full_filename}/run_info.json") as infile:
                 info = json.load(infile)
 
                 info["order_timestamp"] = datetime.datetime.strptime(
@@ -760,9 +758,7 @@ def update_report_index(experiments_path, reports_root_dir):
                     # try to get comment on experiment
                     comment = ""
                     try:
-                        with open(
-                            f"{experiments_path}/{experiment_name}.py", "r"
-                        ) as infile:
+                        with open(f"{experiments_path}/{experiment_name}.py") as infile:
                             lines = infile.readlines()
                             comment = utils.get_py_opening_comment(lines)
                     except:  # noqa: E722 -- there's not really any need to handle this, either we get the comment or we don't.

@@ -3,9 +3,8 @@ import sys
 sys.path.append("test/examples")
 
 from experiments import basic
-from stages.basic_stages import get_data, sum_data
 from params.basic import Args
-
+from stages.basic_stages import get_data, sum_data
 
 from curifactory.manager import ArtifactManager
 from curifactory.procedure import Procedure

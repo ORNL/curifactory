@@ -1,13 +1,14 @@
 import json
 import os
-import pytest
 import shutil
 
+import pytest
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
+
+from curifactory.args import ExperimentArgs
 
 # import curifactory.experiment  # noqa: F401 -- flake8 doesn't see it's used in mock
 from curifactory.manager import ArtifactManager
-from curifactory.args import ExperimentArgs
 
 
 @pytest.fixture()

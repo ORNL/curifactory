@@ -1,10 +1,11 @@
 """Testing pathing functions on the manager."""
 
 import os
+
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
-from curifactory import stage, aggregate, Record, ExperimentArgs, utils
-from curifactory.caching import Cacheable, Lazy, PickleCacher, JsonCacher
+from curifactory import ExperimentArgs, Record, aggregate, stage, utils
+from curifactory.caching import Cacheable, JsonCacher, Lazy, PickleCacher
 
 
 class FakeCacher(Cacheable):

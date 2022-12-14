@@ -5,17 +5,16 @@ import copy
 import logging
 import os
 import pickle
-import psutil
-
 import shutil
 import time
-from typing import List, Union
 from functools import wraps
+from typing import List, Union
 
-from curifactory.record import Record, ArtifactRepresentation
-from curifactory.caching import Lazy, PickleCacher, FileReferenceCacher
+import psutil
+
 from curifactory import utils
-
+from curifactory.caching import FileReferenceCacher, Lazy, PickleCacher
+from curifactory.record import ArtifactRepresentation, Record
 
 # NOTE: resource only exists on unix systems
 if os.name != "nt":
@@ -877,9 +876,7 @@ def _store_outputs(
             and not record.manager.dry
             and not record.manager.dry_cache
         ):
-            logging.debug(
-                "Caching %s to '%s'..." % (outputs[index], cachers[index].path)
-            )
+            logging.debug(f"Caching {outputs[index]} to '{cachers[index].path}'...")
             cachers[index].save(output)
             artifact.file = cachers[index].path
 
@@ -890,9 +887,7 @@ def _store_outputs(
                         outputs[index], record, output=True, aggregate_records=records
                     )
                 )
-                logging.debug(
-                    "Caching %s to '%s'..." % (outputs[index], cachers[index].path)
-                )
+                logging.debug(f"Caching {outputs[index]} to '{cachers[index].path}'...")
                 cachers[index].save(output)
 
         # if specified as lazy, be sure to populate the cacher
@@ -905,9 +900,7 @@ def _store_outputs(
             full_store_path = record.manager.get_path(
                 obj_name, record=record, output=True, aggregate_records=records
             )
-            logging.debug(
-                "Copying tracked path '%s' to '%s'..." % (path, full_store_path)
-            )
+            logging.debug(f"Copying tracked path '{path}' to '{full_store_path}'...")
             if os.path.isdir(path):
                 shutil.copytree(path, full_store_path)
             else:

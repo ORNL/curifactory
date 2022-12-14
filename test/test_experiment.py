@@ -1,12 +1,12 @@
 """These are integration and unit tests for the overall experiment calls."""
 
 import os
+
 import pytest
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
 from curifactory.experiment import run_experiment
 from curifactory.manager import ArtifactManager
-
 
 # TODO: need to test that specifying no params will default to experiment_name
 

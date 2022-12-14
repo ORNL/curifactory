@@ -2,6 +2,7 @@
 
 import json
 import os
+
 import pytest
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
@@ -145,7 +146,7 @@ def test_empty_gitignore_no_blank_line(
     mocker.patch("sys.stdin.readline", actual_readline)
     initialize_project()
 
-    with open(".gitignore", "r") as infile:
+    with open(".gitignore") as infile:
         lines = infile.readlines()
 
     assert lines[0] == "# curifactory paths\n"
@@ -167,7 +168,7 @@ def test_nonempty_gitignore_has_blank_line(
     mocker.patch("sys.stdin.readline", actual_readline)
     initialize_project()
 
-    with open(".gitignore", "r") as infile:
+    with open(".gitignore") as infile:
         lines = infile.readlines()
 
     assert lines[0] == "stuff\n"
@@ -192,7 +193,7 @@ def test_nonempty_gitignore_has_only_one_blank_line(
     mocker.patch("sys.stdin.readline", actual_readline)
     initialize_project()
 
-    with open(".gitignore", "r") as infile:
+    with open(".gitignore") as infile:
         lines = infile.readlines()
 
     assert lines[0] == "stuff\n"

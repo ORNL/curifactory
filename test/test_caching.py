@@ -1,13 +1,14 @@
-import curifactory as cf
-from curifactory.caching import PickleCacher, PandasCsvCacher, PandasJsonCacher
-from curifactory.reporting import JsonReporter
 import json
-import numpy as np
 import os
+
+import numpy as np
 import pandas as pd
 import pytest
-
 from stages.cache_stages import filerefcacher_stage, filerefcacher_stage_multifile
+
+import curifactory as cf
+from curifactory.caching import PandasCsvCacher, PandasJsonCacher, PickleCacher
+from curifactory.reporting import JsonReporter
 
 
 # TODO: necessary? configured_test_manager already does this
@@ -44,7 +45,6 @@ def test_filerefcacher_stores_multiple_paths(configured_test_manager, clear_stag
             configured_test_manager.cache_path,
             f"test_{argshash}_filerefcacher_stage_multifile_output_paths.json",
         ),
-        "r",
     ) as infile:
         filelist = json.load(infile)
         assert filelist == expected_list
@@ -68,7 +68,6 @@ def test_filerefcacher_stores_single_path(configured_test_manager, clear_stage_r
             configured_test_manager.cache_path,
             f"test_{argshash}_filerefcacher_stage_output_path.json",
         ),
-        "r",
     ) as infile:
         filelist = json.load(infile)
         assert filelist == expected_path
@@ -131,7 +130,7 @@ def test_reportables_are_cached(configured_test_manager):
 
     assert os.path.exists(list_path)
 
-    with open(list_path, "r") as infile:
+    with open(list_path) as infile:
         paths = json.load(infile)
 
     assert len(paths) == 1
@@ -171,7 +170,7 @@ def test_aggregate_reportables_are_cached(configured_test_manager):
 
     assert os.path.exists(list_path)
 
-    with open(list_path, "r") as infile:
+    with open(list_path) as infile:
         paths = json.load(infile)
 
     assert len(paths) == 1

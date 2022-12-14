@@ -1,6 +1,6 @@
 """Convenience class for grouping stages and automatically passing a record between them."""
 
-from curifactory.manager import Record, ArtifactManager
+from curifactory.manager import ArtifactManager, Record
 
 
 class Procedure:

@@ -6,8 +6,8 @@ This file contains a :code:`__name__ == "__main__"` and can be run directly.
 
 import argparse
 import datetime
-import importlib
 import glob
+import importlib
 import logging
 import multiprocessing as mp
 import os
@@ -18,15 +18,10 @@ import sys
 import traceback
 from typing import List
 
-from rich.progress import (
-    Progress,
-    TextColumn,
-    BarColumn,
-    TimeElapsedColumn,
-)
+from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
+from curifactory import docker, reporting, utils
 from curifactory.manager import ArtifactManager
-from curifactory import utils, docker, reporting
 
 CONFIGURATION_FILE = "curifactory_config.json"
 
@@ -222,7 +217,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         os.system(f"{utils.get_editor()} {notes_file}")
 
         # get the content
-        with open(notes_file, "r") as infile:
+        with open(notes_file) as infile:
             lines = [line for line in infile.readlines() if not line.startswith("#")]
         notes = "".join(lines).strip("\n")
 
@@ -866,7 +861,7 @@ def regex_lister(path, regex):
     for filename in os.scandir(path):
         # iterate every python file
         if filename.path.endswith(".py"):
-            with open(filename.path, "r") as infile:
+            with open(filename.path) as infile:
                 lines = infile.readlines()
                 # check for a run() method
                 results = [re.findall(regex, line) for line in lines]
