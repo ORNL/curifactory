@@ -5,7 +5,7 @@ import os
 
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
-from curifactory import ExperimentArgs, Record, aggregate, utils
+from curifactory import ExperimentArgs, Record, aggregate, stage, utils
 
 
 def test_record_sets_hash(configured_test_manager):
@@ -104,4 +104,21 @@ def test_record_gets_combo_hash_for_aggregate(configured_test_manager):
 
 # TODO: test_record_with_aggregate_doesnot_change_args_hash (do a normal stage with those args and an agg stage with those args)
 
-# TODO: check that record make_copy works
+
+def test_record_make_copy_retains_state(configured_test_manager):
+    """When a record is copied, the resulting record should have the same values in state
+    as the source record."""
+
+    @stage([], outputs=["test"])
+    def output_stage(record):
+        return "hello world"
+
+    r0 = Record(
+        configured_test_manager, ExperimentArgs(name="test1")
+    )  # TODO: include args
+    r0 = output_stage(r0)
+
+    r1 = r0.make_copy(ExperimentArgs(name="test2"))
+    assert "test" in r1.state
+    assert r1.state["test"] == "hello world"
+    assert r1.args.name == "test2"
