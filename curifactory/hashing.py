@@ -8,7 +8,6 @@ from dataclasses import asdict, field, is_dataclass
 from typing import Callable, Dict, Union
 
 
-# TODO: (3/5/2023) - allow passing in a dict directly as well
 def set_hash_functions(*args, **kwargs):
     """Convenience function for easily setting the hashing_functions dictionary
     with the appropriate dataclass field. Parameters passed to this function should
@@ -103,7 +102,6 @@ def compute_args_hash(args, dry: bool = False) -> Union[str, Dict]:
                 if dry:
                     hashes[key] = "SKIPPED: set to None in hashing_functions"
                 continue
-            # TODO: will need to have several types of hashing functions to handle what is getting passed in?
             if dry:
                 hashes[
                     key
@@ -111,7 +109,7 @@ def compute_args_hash(args, dry: bool = False) -> Union[str, Dict]:
             else:
                 hashes[key] = args.hashing_functions[key](args, value)
 
-        # if the value of the argument itargs is none, ignore it. This is so that we can default
+        # if the value of the argument is none, ignore it. This is so that we can default
         # arguments to not be included without setting the hash function for it, and may allow
         # fancier mechanisms in the future to better allow reproducing old experiments using an
         # args class that has since been added to.
@@ -149,11 +147,13 @@ def compute_args_hash(args, dry: bool = False) -> Union[str, Dict]:
     # individually compute a hash for each item, and add the integer values up, turning the final number into a hash.
     # this ensures that the order in which things are hashed won't change the hash as long as the values themselves
     # are the same.
+    # Note that we concatenate the string of the value with the hash key, otherwise if two parameters had eachother's
+    # values in another args instance, they'd compute the same hash which is decidedly not correct.
     for hash_key, hash_value in hashes.items():
         hash_hex = hashlib.md5((hash_key + str(hash_value)).encode()).hexdigest()
         hash_total += int(hash_hex, 16)
 
-    final_hash = hex(hash_total)[2:]
+    final_hash = hex(hash_total)[2:]  # don't include the "0x"
     return final_hash
 
 
