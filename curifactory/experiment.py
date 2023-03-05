@@ -20,7 +20,7 @@ from typing import List
 
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
-from curifactory import docker, reporting, utils
+from curifactory import docker, hashing, reporting, utils
 from curifactory.manager import ArtifactManager
 
 CONFIGURATION_FILE = "curifactory_config.json"
@@ -370,16 +370,21 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                 if index not in args_indices_resolved:
                     continue
 
-            argset.hash = utils.args_hash(
-                argset, mngr.manager_cache_path, (not dry and not parallel_mode)
+            argset.hash = hashing.args_hash(
+                argset,
+                store_in_registry=(not dry and not parallel_mode),
+                registry_path=mngr.manager_cache_path,
             )
             mngr.experiment_args[params].append((argset.name, argset.hash))
             # TODO: (01/24/2022) I have no idea what the point of this args_hash is...
             # it's not storing anything, and args_hash has no side-effects, so unclear
             # on why this matters.
+            # NOTE: (3/5/2023) is it just so that the hash is computed and stored
+            # on the args? Unclear exactly why that's necessary but that is technically
+            # a side-effect
             if store_entire_run:
-                utils.args_hash(
-                    argset, None, False
+                hashing.args_hash(
+                    argset, store_in_registry=False
                 )  # don't try to store because get_run_output_path does not exist yet
             argsets_to_add.append(argset)
 
@@ -402,8 +407,10 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     # TODO: is this already being done in manager get_path?
     if store_entire_run:
         for argset in argsets:
-            utils.args_hash(
-                argset, mngr.get_run_output_path(), (not dry and not parallel_mode)
+            hashing.args_hash(
+                argset,
+                store_in_registry=(not dry and not parallel_mode),
+                registry_path=mngr.get_run_output_path(),
             )
 
     # note that nothing is being cached or stored

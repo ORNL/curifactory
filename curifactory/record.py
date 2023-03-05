@@ -5,7 +5,7 @@ import copy
 import logging
 import os
 
-from curifactory import utils
+from curifactory import hashing
 from curifactory.caching import Lazy
 from curifactory.reporting import Reportable
 
@@ -85,17 +85,19 @@ class Record:
         # odd place to establish a hash that more correctly indicates a record than the args themselves (e.g. like with
         # aggregate combo hashes)
         if self.args is not None and self.args.hash is None:
-            self.args.hash = utils.args_hash(
+            self.args.hash = hashing.args_hash(
                 self.args,
-                self.manager.manager_cache_path,
-                not (self.manager.dry or self.manager.parallel_mode),
+                store_in_registry=not (self.manager.dry or self.manager.parallel_mode),
+                registry_path=self.manager.manager_cache_path,
             )
 
             if self.manager.store_entire_run:
-                utils.args_hash(
+                hashing.args_hash(
                     self.args,
-                    self.manager.get_run_output_path(),
-                    not (self.manager.dry or self.manager.parallel_mode),
+                    store_in_registry=not (
+                        self.manager.dry or self.manager.parallel_mode
+                    ),
+                    registry_path=self.manager.get_run_output_path(),
                 )
 
     def get_hash(self) -> str:
@@ -111,14 +113,14 @@ class Record:
         """Mark this record as starting with an aggregate stage, meaning the hash of all cached outputs produced
         within this record need to reflect the combo hash of all records going into it."""
         self.is_aggregate = True
-        self.combo_hash = utils.add_args_combo_hash(
+        self.combo_hash = hashing.add_args_combo_hash(
             self,
             aggregate_records,
             self.manager.manager_cache_path,
             not (self.manager.dry or self.manager.parallel_mode),
         )
         if self.manager.store_entire_run:
-            utils.add_args_combo_hash(
+            hashing.add_args_combo_hash(
                 self,
                 aggregate_records,
                 self.manager.get_run_output_path(),

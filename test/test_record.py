@@ -5,7 +5,7 @@ import os
 
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
-from curifactory import ExperimentArgs, Record, aggregate, stage, utils
+from curifactory import ExperimentArgs, Record, aggregate, hashing, stage
 
 
 def test_record_sets_hash(configured_test_manager):
@@ -94,7 +94,7 @@ def test_record_gets_combo_hash_for_aggregate(configured_test_manager):
     r0 = Record(configured_test_manager, None)
     r1 = Record(configured_test_manager, ExperimentArgs(name="test"))
     r0 = agg_stage(r0, [r1])
-    combo_hash = utils.add_args_combo_hash(
+    combo_hash = hashing.add_args_combo_hash(
         r0, [r1], "", False
     )  # TODO: what about when None passed in? Empty array?
 

@@ -4,7 +4,7 @@ import os
 
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
-from curifactory import ExperimentArgs, Record, aggregate, stage, utils
+from curifactory import ExperimentArgs, Record, aggregate, hashing, stage
 from curifactory.caching import Cacheable, JsonCacher, Lazy, PickleCacher
 
 
@@ -344,7 +344,7 @@ def test_stage_hash_after_aggregate_with_no_args(configured_test_manager):
 
     r0 = normal_stage(agg_stage(r0, [r1]))
 
-    combo_hash = utils.add_args_combo_hash(r0, [r1], "", False)
+    combo_hash = hashing.add_args_combo_hash(r0, [r1], "", False)
     output_path_agg = os.path.join(
         configured_test_manager.cache_path, f"test_{combo_hash}_agg_stage_testing.json"
     )
