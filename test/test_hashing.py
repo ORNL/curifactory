@@ -100,6 +100,53 @@ def test_parameter_name_included_in_hash():
     args2 = MyExperimentArgs(a=6, b=5)
     assert args1.args_hash() != args2.args_hash()
 
+
+def test_custom_hashing_composed_dataclasses():
+    """Composing multiple dataclasses into an experimentargs class should allow setting
+    hashing functions on the other dataclasses."""
+
+    @dataclass
+    class NormalDC:
+        c: int = 5
+        d: int = 6
+
+        hashing_functions: dict = cf.set_hash_functions(d=None)
+
+    @dataclass
+    class MyExperimentArgs(cf.ExperimentArgs):
+        a: int = 0
+        b: int = 1
+        others: NormalDC = NormalDC()
+
+    args1 = MyExperimentArgs()
+    args2 = MyExperimentArgs(others=NormalDC(d=7))
+    assert args1.args_hash() == args2.args_hash()
+    assert type(args1.args_hash(True)["others"]) == dict
+    assert (
+        args1.args_hash(True)["others"]["d"]
+        == "SKIPPED: set to None in hashing_functions"
+    )
+
+
+def test_composed_dataclasses_diff():
+    """Composing multiple dataclasses into an experimentargs class should correctly
+    change the hash if those sub arguments are different."""
+
+    @dataclass
+    class NormalDC:
+        c: int = 5
+        d: int = 6
+
+    @dataclass
+    class MyExperimentArgs(cf.ExperimentArgs):
+        a: int = 0
+        b: int = 1
+        others: NormalDC = NormalDC()
+
+    args1 = MyExperimentArgs()
+    args2 = MyExperimentArgs(others=NormalDC(d=7))
+    assert args1.args_hash() != args2.args_hash()
+
     """Subclassing an args class with hashing functions set and including additional
     hashing functions in the subclass should add/use the hashing functions of both."""
 

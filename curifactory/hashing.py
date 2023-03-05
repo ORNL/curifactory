@@ -4,7 +4,7 @@ import hashlib
 import json
 import os
 from copy import deepcopy
-from dataclasses import asdict, field
+from dataclasses import asdict, field, is_dataclass
 from typing import Callable, Dict, Union
 
 
@@ -78,7 +78,8 @@ def compute_args_hash(args, dry: bool = False) -> Union[str, Dict]:
 
     # TODO: probably need a try/except here, iirc non-picklable things fail because of an asdict somewhere?
     hashing_dict = asdict(args)
-    for key, value in hashing_dict.items():
+    for key in hashing_dict.keys():
+        value = getattr(args, key)
         # skip things we apriori know we don't want included
         if key in blacklist:
             if dry:
@@ -110,9 +111,11 @@ def compute_args_hash(args, dry: bool = False) -> Union[str, Dict]:
 
         # -- some sane default hashing mechanisms --
 
-        # if it's another experiment args subclass, make sure to call its' args_hash
-        elif hasattr(value, "args_hash"):
-            hashes[key] = value.args_hash(dry)
+        # if it's a dataclass, recursively call compute_args_hash on it, this allows
+        # user to separate out subsets of args and still set custom hashing functions
+        # on those subsets if they want.
+        elif is_dataclass(value):
+            hashes[key] = compute_args_hash(value, dry)
 
         # use the function name if it's a callable, rather than a pointer address
         elif isinstance(value, Callable):
@@ -135,7 +138,6 @@ def compute_args_hash(args, dry: bool = False) -> Union[str, Dict]:
     # individually compute a hash for each item, and add the integer values up, turning the final number into a hash.
     # this ensures that the order in which things are hashed won't change the hash as long as the values themselves
     # are the same.
-    # TODO: (3/5/2023) I think I need to concatenate the hash_key and str(hash_value)
     for hash_key, hash_value in hashes.items():
         hash_hex = hashlib.md5((hash_key + str(hash_value)).encode()).hexdigest()
         hash_total += int(hash_hex, 16)
