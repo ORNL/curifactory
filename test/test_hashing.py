@@ -53,7 +53,7 @@ def test_none_hashing_function_same_when_vals_diff():
     @dataclass
     class MyExperimentArgs(cf.ExperimentArgs):
         a: int = 0
-        b: int = None
+        b: int = 5
 
         hashing_functions: dict = cf.set_hash_functions(a=None)
 

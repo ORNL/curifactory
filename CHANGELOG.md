@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [unreleased]
+
+### Changed
+- Argument hashing to allow user to specify `hashing_functions` on their
+  parameter dataclasses. This allows them to (optionally) provide a function
+  for each individual parameter that will return a custom value to be hashed
+  rather than simply the default string representation. This also allows
+  completely ignoring parameters as part of their hash, by setting their hashing
+  function to `None`.
+- Arguments whose value is `None` are not included as part of the hash.
+
+
+
 
 ## [0.8.2] - 2022-12-14
 
