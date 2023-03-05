@@ -9,10 +9,15 @@ from typing import Callable, Dict, Union
 
 
 # TODO: (3/5/2023) - allow passing in a dict directly as well
-def set_hash_functions(**kwargs):
+def set_hash_functions(*args, **kwargs):
     """Convenience function for easily setting the hashing_functions dictionary
     with the appropriate dataclass field. Parameters passed to this function should
     be the same as the parameter name in the args class itself.
+
+    You can either call this function and pass in a dictionary with the hashing functions,
+    or pass each hashing function as a kwarg. If you pass in both a dictionary as the first
+    positional arg and specify kwargs, the kwarg hashing functions will be added to the
+    dictionary.
 
     Example:
         .. code-block:: python
@@ -31,6 +36,12 @@ def set_hash_functions(**kwargs):
                     b = None  # this means that b will _not be included in the hash_.
                 )
     """
+    if len(args) > 0:
+        if type(args[0]) != dict:
+            raise ValueError(
+                "If providing a positional arg to set_hash_functions, it must be a dictionary."
+            )
+        return field(default_factory=lambda: {**(args[0]), **kwargs}, repr=False)
     return field(default_factory=lambda: dict(**kwargs), repr=False)
 
 

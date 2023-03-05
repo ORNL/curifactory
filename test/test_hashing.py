@@ -147,6 +147,61 @@ def test_composed_dataclasses_diff():
     args2 = MyExperimentArgs(others=NormalDC(d=7))
     assert args1.args_hash() != args2.args_hash()
 
+
+def test_set_hash_functions_with_kwargs():
+    """calling set_hash_functions with kwargs should set a dictionary with the
+    args as keys."""
+
+    @dataclass
+    class MyExperimentArgs(cf.ExperimentArgs):
+        a: int = 0
+        b: int = None
+
+        hashing_functions: dict = cf.set_hash_functions(a=None, b=None)
+
+    args = MyExperimentArgs()
+    assert "a" in args.hashing_functions
+    assert "b" in args.hashing_functions
+
+
+def test_set_hash_functions_with_dict_arg():
+    """calling set_hash_functions with a single dictionary should directly set
+    the hashing_functions."""
+
+    @dataclass
+    class MyExperimentArgs(cf.ExperimentArgs):
+        a: int = 0
+        b: int = None
+
+        hashing_functions: dict = cf.set_hash_functions({"a": None, "b": None})
+
+    args = MyExperimentArgs()
+    assert "a" in args.hashing_functions
+    assert "b" in args.hashing_functions
+
+
+def test_set_hash_functions_with_dict_and_kwargs():
+    """calling set_hash_functions with both a dictionary and kwargs should create
+    a merged dictionary."""
+
+    @dataclass
+    class MyExperimentArgs(cf.ExperimentArgs):
+        a: int = 0
+        b: int = None
+        c: int = 5
+
+        hashing_functions: dict = cf.set_hash_functions(
+            {"a": None, "b": None}, b="something else", c=None
+        )
+
+    args = MyExperimentArgs()
+    assert "a" in args.hashing_functions
+    assert "b" in args.hashing_functions
+    assert "c" in args.hashing_functions
+
+    # kwargs should override what was in possitional arg
+    assert args.hashing_functions["b"] is not None
+
     """Subclassing an args class with hashing functions set and including additional
     hashing functions in the subclass should add/use the hashing functions of both."""
 
