@@ -5,7 +5,7 @@ import json
 import os
 from copy import deepcopy
 from dataclasses import asdict, field, is_dataclass
-from typing import Callable, Dict, Union
+from typing import Any, Callable, Dict, Tuple, Union
 
 
 def set_hash_functions(*args, **kwargs):
@@ -44,6 +44,148 @@ def set_hash_functions(*args, **kwargs):
     return field(default_factory=lambda: dict(**kwargs), repr=False)
 
 
+# DONE: we could probably extract out a 'get_parameter_hash_value', which returns the dry tuple of strategy and results of strategy
+# DONE: rename compute_args_hash to 'get_parameters_hash_values' which computes the full dictionary of dry tuples for the passed args (takes blacklist?)
+#   (using get_parameter_hash_value)
+# DONE: extract a compute_hash function which takes a dictionary of dry tuples and does the md5 hash
+# TODO: function like compute_args_hash chains together the above two.
+
+# TODO: possibly rename "hashing_functions" to "hashable_representations"?
+
+
+def get_parameter_hash_value(param_set, param_name: str) -> Tuple[str, Any]:
+    """Determines which hashing representation mechanism to use, computes the result
+    of the mechanism, and returns both.
+
+    This function takes any overriding ``hashing_functions`` into account. The list of mechanisms
+    it attempts to use to get a hashable representation of the parameter in order are:
+
+    1. Skip any blacklisted internal curifactory parameters that shouldn't affect the hash.
+    2. If the value of the parameter is ``None``, skip it. This allows default-ignoring
+        new parameters.
+    3. If there's an associated hashing function in ``hashing_functions``, call that,
+        passing in the entire parameter set and the current value of the parameter to
+        be hashed
+    4. If a parameter is another dataclass, recursively ``compute_args_hash`` on it.
+        Note that if this is unintended functionality, and you need the default
+        dataclass ``repr`` for any reason, you can override it with the following:
+
+        .. code-block:: python
+
+            import curifactory as cf
+
+            @dataclass
+            class Args(cf.ExperimentArgs):
+                some_other_dataclass: OtherDataclass = None
+
+                hashing_functions = cf.set_hash_functions(
+                    some_other_dataclass = lambda self, obj: repr(obj)
+                )
+                ...
+
+    5. If a parameter is a callable, by default it might turn up a pointer address
+        (we found this occurs with torch modules), so use the ``__qualname__``
+        instead.
+    6. Otherwise just use the normal ``repr``.
+
+    Args:
+        parameter_set: The parameter set (dataclass instance) to get the requested parameter from.
+        parameter_name (str): The name of the parameter to get the hashable representation of.
+
+    Returns:
+        A tuple where the first element is the strategy used to compute the hashable representation,
+        and the second element is that computed representation.
+    """
+    blacklist = [
+        "hash",
+        "overwrite",
+        "hashing_functions",
+    ]  # curifactory experimentargs things we know we don't want
+    value = getattr(param_set, param_name)
+
+    # 1. skip things we apriori know we don't want included
+    if param_name in blacklist:
+        return ("SKIPPED: blacklist", None)
+
+    # 2. see if user has specified how to handle the hash representation
+    if (
+        hasattr(param_set, "hashing_functions")
+        and param_name in param_set.hashing_functions
+    ):
+        if param_set.hashing_functions[param_name] is None:
+            return ("SKIPPED: set to None in hashing_functions", None)
+        return (
+            f"param_set.hashing_functions['{param_name}'](param_set, param_set.{param_name})",
+            param_set.hashing_functions[param_name](param_set, value),
+        )
+
+    # 3. if the value of the argument is none, ignore it. This is so that we can default
+    # arguments to not be included without setting the hash function for it, and may allow
+    # fancier mechanisms in the future to better allow reproducing old experiments using an
+    # args class that has since been added to.
+    elif value is None:
+        return ("SKIPPED: value is None", None)
+
+    # -- some sane default hashing mechanisms --
+
+    # 4. if it's a dataclass, recursively call get_parameters_hash_values on it, this allows
+    # user to separate out subsets of args and still set custom hashing functions
+    # on those subsets if they want.
+    elif is_dataclass(value):
+        return (
+            f"get_parameters_hash_values(param_set, {param_name})",
+            get_parameters_hash_values(value),
+        )
+
+    # 5. use the function name if it's a callable, rather than a pointer address
+    elif isinstance(value, Callable):
+        return ("value.__qualname__", value.__qualname__)
+
+    # 6. otherwise just use the default representation!
+    return (f"repr(param_set.{param_name})", repr(value))
+
+
+def get_parameters_hash_values(param_set) -> Dict[str, Tuple[str, Any]]:
+    """Collect the hash representations from every parameter in the passed parameter set.
+
+    This essentially just calls ``get_parameter_hash_value`` on every parameter.
+
+    Returns:
+        A dictionary keyed by the string parameter names, and the value the dry tuple result
+        from ``get_parameter_hash_value``.
+    """
+    hash_representations = {}
+    for param_name in asdict(param_set):
+        hash_representations[param_name] = get_parameter_hash_value(
+            param_set, param_name
+        )
+    return hash_representations
+
+
+def compute_hash(hash_representations: Dict[str, Tuple[str, Any]]) -> str:
+    """Returns a combined order-independent md5 hash of the passed representations.
+
+    We do this by individually computing a hash for each item, and add the integer values up,
+    turning the final number into a hash string.  this ensures that the order in which
+    things are hashed won't change the hash as long as the values themselves are
+    the same.
+    """
+    hash_total = 0
+
+    # Note that we concatenate the string of the value with the hash key, otherwise if two parameters had eachother's
+    # values in another args instance, they'd compute the same hash which is decidedly not correct.
+    for hash_key, hash_rep in hash_representations.items():
+        hash_rep_value = hash_rep[1]
+        if hash_rep_value is None:
+            continue
+        hash_hex = hashlib.md5((hash_key + str(hash_rep_value)).encode()).hexdigest()
+        hash_total += int(hash_hex, 16)
+
+    final_hash = hex(hash_total)[2:]  # don't include the "0x"
+    return final_hash
+
+
+# TODO: rename
 def compute_args_hash(args, dry: bool = False) -> Union[str, Dict]:
     """The actual mechanisms for calculating the hash of an ExperimentArgs class.
 
@@ -80,86 +222,33 @@ def compute_args_hash(args, dry: bool = False) -> Union[str, Dict]:
             output from that hashing function code. Useful for debugging custom
             hashing functions.
     """
-    blacklist = [
-        "hash",
-        "overwrite",
-        "hashing_functions",
-    ]  # curifactory experimentargs things we know we don't want
-    hashes = {}
-
-    # TODO: probably need a try/except here, iirc non-picklable things fail because of an asdict somewhere?
-    hashing_dict = asdict(args)
-    for key in hashing_dict.keys():
-        value = getattr(args, key)
-        # skip things we apriori know we don't want included
-        if key in blacklist:
-            if dry:
-                hashes[key] = (f"SKIPPED: curifactory blacklist: {blacklist}", None)
-            continue
-
-        # first check if we've specified how to handle the hash
-        if hasattr(args, "hashing_functions") and key in args.hashing_functions:
-            if args.hashing_functions[key] is None:
-                if dry:
-                    hashes[key] = ("SKIPPED: set to None in hashing_functions", None)
-                continue
-            if dry:
-                hashes[key] = (
-                    f"{args.hashing_functions[key]}(args, {value})",
-                    args.hashing_functions[key](args, value),
-                )
-            else:
-                hashes[key] = args.hashing_functions[key](args, value)
-
-        # if the value of the argument is none, ignore it. This is so that we can default
-        # arguments to not be included without setting the hash function for it, and may allow
-        # fancier mechanisms in the future to better allow reproducing old experiments using an
-        # args class that has since been added to.
-        elif value is None:
-            if dry:
-                hashes[key] = ("SKIPPED: value is None", None)
-            continue
-
-        # -- some sane default hashing mechanisms --
-
-        # if it's a dataclass, recursively call compute_args_hash on it, this allows
-        # user to separate out subsets of args and still set custom hashing functions
-        # on those subsets if they want.
-        elif is_dataclass(value):
-            hashes[key] = (
-                "compute_args_hash(value, dry=True)",
-                compute_args_hash(value, dry),
-            )
-
-        # use the function name if it's a callable, rather than a pointer address
-        elif isinstance(value, Callable):
-            if dry:
-                hashes[key] = ("value.__qualname__", value.__qualname__)
-            else:
-                hashes[key] = value.__qualname__
-
-        # otherwise just use the default representation!
-        else:
-            if dry:
-                hashes[key] = ("repr(value)", repr(value))
-            else:
-                hashes[key] = repr(value)
-
+    hash_reps = get_parameters_hash_values(args)
     if dry:
-        return hashes
+        return hash_reps
+    else:
+        return compute_hash(hash_reps)
 
-    hash_total = 0
-    # individually compute a hash for each item, and add the integer values up, turning the final number into a hash.
-    # this ensures that the order in which things are hashed won't change the hash as long as the values themselves
-    # are the same.
-    # Note that we concatenate the string of the value with the hash key, otherwise if two parameters had eachother's
-    # values in another args instance, they'd compute the same hash which is decidedly not correct.
-    for hash_key, hash_value in hashes.items():
-        hash_hex = hashlib.md5((hash_key + str(hash_value)).encode()).hexdigest()
-        hash_total += int(hash_hex, 16)
 
-    final_hash = hex(hash_total)[2:]  # don't include the "0x"
-    return final_hash
+def parameters_string_hash_representation(param_set) -> Dict[str, str]:
+    """Get the hash representation of a parameter set into a json-dumpable dictionary.
+
+    This is used both in the output report as well as in the params registry.
+    """
+    hash_reps = get_parameters_hash_values(param_set)
+    rep_dictionary = {}
+    skipped = []
+    for key, rep_tuple in hash_reps.items():
+        if key == "name":
+            rep_dictionary[key] = param_set.name
+        elif rep_tuple[1] is not None:
+            rep_dictionary[key] = str(rep_tuple[1])
+        elif key in ["hashing_functions", "overwrite", "hash"]:
+            continue
+        else:
+            skipped.append(key)
+    if len(skipped) > 0:
+        rep_dictionary["IGNORED_PARAMS"] = skipped
+    return rep_dictionary
 
 
 def args_hash(
@@ -193,13 +282,6 @@ def args_hash(
     else:
         hash_str = compute_args_hash(args, dry=False)
 
-    def stringify(x):
-        # NOTE: at some point it may be worth doing fancier logic here. Objects
-        # that don't have __str__ implemented will return a string with a pointer,
-        # which will always be different regardless
-        return str(x)
-
-    # TODO: (3/5/2023) need to rethink how this will be done in light of the hashing functions.
     if store_in_registry and registry_path is not None:
         registry_path = os.path.join(registry_path, "params_registry.json")
         registry = {}
@@ -208,9 +290,9 @@ def args_hash(
             with open(registry_path) as infile:
                 registry = json.load(infile)
 
-        registry[hash_str] = asdict(args)
+        registry[hash_str] = parameters_string_hash_representation(args)
         with open(registry_path, "w") as outfile:
-            json.dump(registry, outfile, indent=4, default=stringify)
+            json.dump(registry, outfile, indent=4, default=lambda x: str(x))
 
     return hash_str
 

@@ -16,15 +16,13 @@ def test_args_subclass_hash_includes_all_sub_params():
 
     args1 = MyExperimentArgs(name="test", a=6, b=7)
     dry_hash_dict = args1.args_hash(dry=True)
-    assert dry_hash_dict["name"] == ("repr(value)", "'test'")
-    assert dry_hash_dict["a"] == ("repr(value)", "6")
-    assert dry_hash_dict["b"] == ("repr(value)", "7")
+    assert dry_hash_dict["name"] == ("repr(param_set.name)", "'test'")
+    assert dry_hash_dict["a"] == ("repr(param_set.a)", "6")
+    assert dry_hash_dict["b"] == ("repr(param_set.b)", "7")
 
     # make sure we correctly don't hash everything in the blacklist
     for should_skip in ["hash", "overwrite", "hashing_functions"]:
-        assert dry_hash_dict[should_skip][0].startswith(
-            "SKIPPED: curifactory blacklist"
-        )
+        assert dry_hash_dict[should_skip][0] == "SKIPPED: blacklist"
 
     # double check that different args with different params is in fact
     # a different hash
