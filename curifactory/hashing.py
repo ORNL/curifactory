@@ -4,8 +4,12 @@ import hashlib
 import json
 import os
 from copy import deepcopy
-from dataclasses import asdict, field, is_dataclass
+from dataclasses import field, fields, is_dataclass
 from typing import Any, Callable, Dict, Tuple, Union
+
+PARAMETERS_BLACKLIST = ["hash", "overwrite", "hashing_functions"]
+"""The default parameters on the ExperimentArgs class that we always
+ignore as part of the hash."""
 
 
 def set_hash_functions(*args, **kwargs):
@@ -96,15 +100,10 @@ def get_parameter_hash_value(param_set, param_name: str) -> Tuple[str, Any]:
         A tuple where the first element is the strategy used to compute the hashable representation,
         and the second element is that computed representation.
     """
-    blacklist = [
-        "hash",
-        "overwrite",
-        "hashing_functions",
-    ]  # curifactory experimentargs things we know we don't want
     value = getattr(param_set, param_name)
 
     # 1. skip things we apriori know we don't want included
-    if param_name in blacklist:
+    if param_name in PARAMETERS_BLACKLIST:
         return ("SKIPPED: blacklist", None)
 
     # 2. see if user has specified how to handle the hash representation
@@ -154,12 +153,11 @@ def get_parameters_hash_values(param_set) -> Dict[str, Tuple[str, Any]]:
         A dictionary keyed by the string parameter names, and the value the dry tuple result
         from ``get_parameter_hash_value``.
     """
-    hash_representations = {}
-    for param_name in asdict(param_set):
-        hash_representations[param_name] = get_parameter_hash_value(
-            param_set, param_name
-        )
-    return hash_representations
+    # TODO: raise_error if param_set is not a dataclass?
+    return {
+        param.name: get_parameter_hash_value(param_set, param.name)
+        for param in fields(param_set)
+    }
 
 
 def compute_hash(hash_representations: Dict[str, Tuple[str, Any]]) -> str:
@@ -174,14 +172,13 @@ def compute_hash(hash_representations: Dict[str, Tuple[str, Any]]) -> str:
 
     # Note that we concatenate the string of the value with the hash key, otherwise if two parameters had eachother's
     # values in another args instance, they'd compute the same hash which is decidedly not correct.
-    for hash_key, hash_rep in hash_representations.items():
-        hash_rep_value = hash_rep[1]
+    for hash_key, (hash_rep, hash_rep_value) in hash_representations.items():
         if hash_rep_value is None:
             continue
-        hash_hex = hashlib.md5((hash_key + str(hash_rep_value)).encode()).hexdigest()
+        hash_hex = hashlib.md5(f"{hash_key}{hash_rep_value}".encode()).hexdigest()
         hash_total += int(hash_hex, 16)
 
-    final_hash = hex(hash_total)[2:]  # don't include the "0x"
+    final_hash = f"{hash_total:x}"  # convert to a hexadecimal hash string
     return final_hash
 
 
@@ -242,7 +239,7 @@ def parameters_string_hash_representation(param_set) -> Dict[str, str]:
             rep_dictionary[key] = param_set.name
         elif rep_tuple[1] is not None:
             rep_dictionary[key] = str(rep_tuple[1])
-        elif key in ["hashing_functions", "overwrite", "hash"]:
+        elif key in PARAMETERS_BLACKLIST:
             continue
         else:
             skipped.append(key)
