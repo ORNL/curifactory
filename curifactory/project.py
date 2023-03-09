@@ -15,7 +15,7 @@ import curifactory as cf
 from curifactory import utils
 
 
-def initialize_project():
+def initialize_project():  # noqa: C901 yeaaaah break up into sub functions
     print("Initializing curifactory project...")
     print(
         "Enter paths for configuration file, default values shown in '[]' (leave entry blank to use default)"
@@ -98,6 +98,24 @@ def initialize_project():
             valid_docker_choice = True
         if not valid_docker_choice:
             print("Invalid entry, please enter 'y' or 'n', or leave blank for default.")
+
+    # if this isn't being run in a git repository, ask the user if they want to git init
+    if not os.path.exists(".git"):
+        print(
+            "No .git folder found. Curifactoy expects to run from within a git repository."
+        )
+        valid_gitinit_choice = False
+        while not valid_gitinit_choice:
+            gitinit_yn = input("Run `git init`? [y/N]")
+            if gitinit_yn.lower() == "y":
+                valid_gitinit_choice = True
+                utils.run_command(["git", "init"])
+            elif gitinit_yn == "" or gitinit_yn.lower() == "n":
+                valid_gitinit_choice = True
+            if not valid_gitinit_choice:
+                print(
+                    "Invalid entry, please enter 'y' or 'n', or leave blank for default."
+                )
 
     # handle gitignore
     valid_gitfile_choice = False
