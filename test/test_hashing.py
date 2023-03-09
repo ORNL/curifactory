@@ -210,6 +210,24 @@ def test_set_hash_functions_with_dict_and_kwargs():
     where conflicting."""
 
 
+def test_set_hash_functions_on_args_instance():
+    """Setting the hashing functions directly on an instance of a parameter
+    set should change that parameter's hash, but not of any other instance of
+    those same parameters."""
+
+    @dataclass
+    class MyExperimentArgs(cf.ExperimentArgs):
+        a: int = 0
+        b: int = None
+        c: int = 5
+
+    args0 = MyExperimentArgs()
+    args1 = MyExperimentArgs()
+
+    args0.hashing_functions["c"] = None
+    assert args0.args_hash() != args1.args_hash()
+
+
 # TODO: (3/9/2023) I'm still unclear on if this should actually be the intended functionality
 def test_hash_stays_same_after_param_change():
     """If you hash a parameter set, and then change a parameter the hash shouldn't change."""
