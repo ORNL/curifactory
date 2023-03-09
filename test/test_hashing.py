@@ -2,8 +2,6 @@
 
 from dataclasses import dataclass
 
-import pytest
-
 import curifactory as cf
 
 
@@ -212,7 +210,7 @@ def test_set_hash_functions_with_dict_and_kwargs():
     where conflicting."""
 
 
-@pytest.mark.skip
+# TODO: (3/9/2023) I'm still unclear on if this should actually be the intended functionality
 def test_hash_stays_same_after_param_change():
     """If you hash a parameter set, and then change a parameter the hash shouldn't change."""
 
@@ -224,11 +222,30 @@ def test_hash_stays_same_after_param_change():
 
     args = MyExperimentArgs()
     hash0 = args.args_hash()
+    args.hash = hash0  # this emulates what run_experiment is doing.
     assert args.hash == hash0
 
     args.c = 3
     hash1 = args.args_hash()
     assert hash1 == hash0
 
+
+def test_hash_changes_after_param_change_and_hash_set_to_none():
     """If you hash a parameter set, change a parameter, and set the .hash to `None`, the
     hash should recompute and then change."""
+
+    @dataclass
+    class MyExperimentArgs(cf.ExperimentArgs):
+        a: int = 0
+        b: int = None
+        c: int = 5
+
+    args = MyExperimentArgs()
+    hash0 = args.args_hash()
+    args.hash = hash0  # this emulates what run_experiment is doing.
+    assert args.hash == hash0
+
+    args.c = 3
+    args.hash = None
+    hash1 = args.args_hash()
+    assert hash1 != hash0
