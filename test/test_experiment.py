@@ -212,6 +212,57 @@ def test_rank_manager_integration(
     )
 
 
+@pytest.mark.parametrize(
+    "local_rank,node_rank,expect_parallel,expect_store_full",
+    [
+        (0, None, False, True),
+        (1, None, True, False),
+        (0, 0, False, True),
+        (1, 0, True, False),
+        (0, 1, True, False),
+        (1, 1, True, False),
+    ],
+)
+def test_rank_manager_store_full_integration(
+    mocker,  # noqa: F811 -- mocker has to be passed in as fixture
+    local_rank,
+    node_rank,
+    expect_parallel,
+    expect_store_full,
+    clear_rank_env_vars,
+):
+    """A rank-zero process in a distributed run with store full should still set
+    'store_entire_run' on manager."""
+    if local_rank is not None:
+        os.environ["LOCAL_RANK"] = str(local_rank)
+    if node_rank is not None:
+        os.environ["NODE_RANK"] = str(node_rank)
+
+    mock = mocker.patch.object(ArtifactManager, "__init__", return_value=None)
+    try:
+        run_experiment(
+            experiment_name="test", parameters_list=["params1"], store_entire_run=True
+        )
+    except AttributeError:
+        # NOTE: I'm not actually sure a better way around this, all I want to test is that
+        # manager was initialized with what I expect
+        pass
+    mock.assert_called_once_with(
+        "test",
+        store_entire_run=expect_store_full,
+        dry=False,
+        dry_cache=False,
+        custom_name=None,
+        run_line="experiment test -p params1 --store-full",
+        parallel_lock=None,
+        parallel_mode=expect_parallel,
+        lazy=False,
+        ignore_lazy=False,
+        status_override=None,
+        notes=None,
+    )
+
+
 def test_basic_params_get_loaded():
     """Loading from the two example parameter files (params1 and params2) should load a total of 3 args instances."""
     results, mngr = run_experiment("basic", ["params1", "params2"], dry=True)

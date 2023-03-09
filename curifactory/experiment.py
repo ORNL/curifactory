@@ -194,6 +194,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     # distributed run check, automatically set parallel mode if we're not rank 0
     # this was added because of issues with pytorch distributed compute
     distributed_mode_detected = False
+    warn_store_full_during_distributed = False
     if "LOCAL_RANK" in os.environ:
         if os.getenv("LOCAL_RANK") != "0":
             distributed_mode_detected = True
@@ -201,6 +202,16 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             distributed_mode_detected = True
     if distributed_mode_detected:
         parallel_mode = True
+
+        # if we're in a distributed run, we need to make sure to _not_ do
+        # a store full on the non-rank-0 processes, otherwise each process
+        # outputs a full copy into a full store folder that isn't even labeled
+        # correctly (doesn't have run info with run num.) We throw a warning
+        # to ensure the user knows any full store caching they do (really all
+        # caching) needs to be handled by the rank 0 process.
+        if store_entire_run:
+            warn_store_full_during_distributed = True
+            store_entire_run = False
 
     # get the experiment run notes if requested
     if notes == "":
@@ -323,6 +334,13 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     if distributed_mode_detected:
         logging.info(
             "A distributed run was detected from environment variables - automatically using --parallel-mode on non-rank-0 processes."
+        )
+
+    # if the user was doing a full store distributed run, let them know the non-rank-zero processes
+    # won't be storing anything in the full store directory
+    if warn_store_full_during_distributed:
+        logging.warning(
+            "Full store was requested for a distributed run - full store has been disabled on all non-rank-zero processes to prevent data duplication. Ensure that any necessary data for a full store is handled in rank zero."
         )
 
     # load params files

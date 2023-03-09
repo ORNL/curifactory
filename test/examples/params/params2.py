@@ -1,4 +1,4 @@
-from params.basic import Args
+from test.examples.params.basic import Args
 
 
 def get_params():

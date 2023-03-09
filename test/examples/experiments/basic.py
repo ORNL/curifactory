@@ -2,7 +2,7 @@ import sys
 
 sys.path.append("../")
 
-from stages.basic_stages import get_data, sum_data
+from test.examples.stages.basic_stages import get_data, sum_data
 
 from curifactory.manager import ArtifactManager
 from curifactory.procedure import Procedure
