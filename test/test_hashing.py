@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass
 
+import pytest
+
 import curifactory as cf
 
 
@@ -208,3 +210,25 @@ def test_set_hash_functions_with_dict_and_kwargs():
     """Subclassing an args class with hashing functions set and including hashing
     functions in the subclass for the same parameter name should 'override' parent
     where conflicting."""
+
+
+@pytest.mark.skip
+def test_hash_stays_same_after_param_change():
+    """If you hash a parameter set, and then change a parameter the hash shouldn't change."""
+
+    @dataclass
+    class MyExperimentArgs(cf.ExperimentArgs):
+        a: int = 0
+        b: int = None
+        c: int = 5
+
+    args = MyExperimentArgs()
+    hash0 = args.args_hash()
+    assert args.hash == hash0
+
+    args.c = 3
+    hash1 = args.args_hash()
+    assert hash1 == hash0
+
+    """If you hash a parameter set, change a parameter, and set the .hash to `None`, the
+    hash should recompute and then change."""
