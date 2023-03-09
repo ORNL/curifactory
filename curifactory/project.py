@@ -62,6 +62,10 @@ def initialize_project():
     style_path = pkg_resources.resource_filename("curifactory", "data/style.css")
     shutil.copyfile(style_path, config["report_css_path"])
 
+    # copy in debug.py for easier IDE debugging entrypoint
+    debug_file_path = pkg_resources.resource_filename("curifactory", "data/debug.py")
+    shutil.copyfile(debug_file_path, "debug.py")
+
     # handle docker folder and dockerfile
     valid_docker_choice = False
     while not valid_docker_choice:
