@@ -259,8 +259,17 @@ class ArtifactManager:
             mapped_record.stage_outputs = record.stage_outputs
             mapped_record.is_aggregate = record.is_aggregate
             mapped_record.combo_hash = record.combo_hash
+            # mapped_record.input_records = record.input_records
             self.map.append(mapped_record)
-            # TODO: input_records?
+
+        # go through and add input_records now (can't directly add
+        # inside previous loop because we have to add references to
+        # the corresponding mapped_record instances rather than the
+        # self.records instances which are about to be deleted)
+        for i, record in enumerate(self.records):
+            for input_record in record.input_records:
+                input_record_index = self.records.index(input_record)
+                self.map[i].input_records.append(self.map[input_record_index])
 
         self.records.clear()
 
