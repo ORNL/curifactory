@@ -311,7 +311,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                 post_footprint = 0
                 if os.name != "nt":
                     post_footprint = (
-                        resource.getrusage(resource.RUSAGE_THREAD).ru_maxrss * 1024
+                        resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
                     )
                 _log_stats(
                     record,
@@ -389,7 +389,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             post_footprint = 0
             if os.name != "nt":
                 post_footprint = (
-                    resource.getrusage(resource.RUSAGE_THREAD).ru_maxrss * 1024
+                    resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
                 )
             post_mem_usage = psutil.Process().memory_info().rss
 
@@ -573,7 +573,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 post_footprint = 0
                 if os.name != "nt":
                     post_footprint = (
-                        resource.getrusage(resource.RUSAGE_THREAD).ru_maxrss * 1024
+                        resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
                     )
                 _log_stats(
                     record,
@@ -647,7 +647,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             post_footprint = 0
             if os.name != "nt":
                 post_footprint = (
-                    resource.getrusage(resource.RUSAGE_THREAD).ru_maxrss * 1024
+                    resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
                 )
             post_mem_usage = psutil.Process().memory_info().rss
 
