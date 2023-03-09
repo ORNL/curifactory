@@ -16,13 +16,15 @@ def test_args_subclass_hash_includes_all_sub_params():
 
     args1 = MyExperimentArgs(name="test", a=6, b=7)
     dry_hash_dict = args1.args_hash(dry=True)
-    assert dry_hash_dict["name"] == "repr(value) - 'test'"
-    assert dry_hash_dict["a"] == "repr(value) - 6"
-    assert dry_hash_dict["b"] == "repr(value) - 7"
+    assert dry_hash_dict["name"] == ("repr(value)", "'test'")
+    assert dry_hash_dict["a"] == ("repr(value)", "6")
+    assert dry_hash_dict["b"] == ("repr(value)", "7")
 
     # make sure we correctly don't hash everything in the blacklist
     for should_skip in ["hash", "overwrite", "hashing_functions"]:
-        assert dry_hash_dict[should_skip].startswith("SKIPPED: curifactory blacklist")
+        assert dry_hash_dict[should_skip][0].startswith(
+            "SKIPPED: curifactory blacklist"
+        )
 
     # double check that different args with different params is in fact
     # a different hash
@@ -60,7 +62,9 @@ def test_none_hashing_function_same_when_vals_diff():
     args1 = MyExperimentArgs()
     args2 = MyExperimentArgs(a=6)
     assert args1.args_hash() == args2.args_hash()
-    assert args1.args_hash(dry=True)["a"] == "SKIPPED: set to None in hashing_functions"
+    assert (
+        args1.args_hash(dry=True)["a"][0] == "SKIPPED: set to None in hashing_functions"
+    )
 
 
 def test_none_value_not_hashed():
@@ -84,7 +88,7 @@ def test_none_value_not_hashed():
     args2 = MyExperimentArgs2()
 
     assert args1.args_hash() == args2.args_hash()
-    assert args1.args_hash(dry=True)["b"] == "SKIPPED: value is None"
+    assert args1.args_hash(dry=True)["b"][0] == "SKIPPED: value is None"
 
 
 def test_parameter_name_included_in_hash():
@@ -121,9 +125,9 @@ def test_custom_hashing_composed_dataclasses():
     args1 = MyExperimentArgs()
     args2 = MyExperimentArgs(others=NormalDC(d=7))
     assert args1.args_hash() == args2.args_hash()
-    assert type(args1.args_hash(True)["others"]) == dict
+    assert type(args1.args_hash(True)["others"][1]) == dict
     assert (
-        args1.args_hash(True)["others"]["d"]
+        args1.args_hash(True)["others"][1]["d"][0]
         == "SKIPPED: set to None in hashing_functions"
     )
 

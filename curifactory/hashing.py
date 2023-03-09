@@ -75,8 +75,9 @@ def compute_args_hash(args, dry: bool = False) -> Union[str, Dict]:
     4. Otherwise just use the normal ``repr``.
 
     Args:
-        dry (bool): Return a dictionary with each value as the "code" that will be
-            used to compute the actual md5 hash. Useful for debugging custom
+        dry (bool): Return a dictionary with each value as the tuple that contains
+            the strategy used to compute the values to be hashed as well as the
+            output from that hashing function code. Useful for debugging custom
             hashing functions.
     """
     blacklist = [
@@ -93,19 +94,20 @@ def compute_args_hash(args, dry: bool = False) -> Union[str, Dict]:
         # skip things we apriori know we don't want included
         if key in blacklist:
             if dry:
-                hashes[key] = f"SKIPPED: curifactory blacklist: {blacklist}"
+                hashes[key] = (f"SKIPPED: curifactory blacklist: {blacklist}", None)
             continue
 
         # first check if we've specified how to handle the hash
         if hasattr(args, "hashing_functions") and key in args.hashing_functions:
             if args.hashing_functions[key] is None:
                 if dry:
-                    hashes[key] = "SKIPPED: set to None in hashing_functions"
+                    hashes[key] = ("SKIPPED: set to None in hashing_functions", None)
                 continue
             if dry:
-                hashes[
-                    key
-                ] = f"{args.hashing_functions[key]}(args, {value}) - {args.hashing_functions[key](args, value)}"
+                hashes[key] = (
+                    f"{args.hashing_functions[key]}(args, {value})",
+                    args.hashing_functions[key](args, value),
+                )
             else:
                 hashes[key] = args.hashing_functions[key](args, value)
 
@@ -115,7 +117,7 @@ def compute_args_hash(args, dry: bool = False) -> Union[str, Dict]:
         # args class that has since been added to.
         elif value is None:
             if dry:
-                hashes[key] = "SKIPPED: value is None"
+                hashes[key] = ("SKIPPED: value is None", None)
             continue
 
         # -- some sane default hashing mechanisms --
@@ -124,19 +126,22 @@ def compute_args_hash(args, dry: bool = False) -> Union[str, Dict]:
         # user to separate out subsets of args and still set custom hashing functions
         # on those subsets if they want.
         elif is_dataclass(value):
-            hashes[key] = compute_args_hash(value, dry)
+            hashes[key] = (
+                "compute_args_hash(value, dry=True)",
+                compute_args_hash(value, dry),
+            )
 
         # use the function name if it's a callable, rather than a pointer address
         elif isinstance(value, Callable):
             if dry:
-                hashes[key] = f"{value}.__qualname__ - {value.__qualname__}"
+                hashes[key] = ("value.__qualname__", value.__qualname__)
             else:
                 hashes[key] = value.__qualname__
 
         # otherwise just use the default representation!
         else:
             if dry:
-                hashes[key] = f"repr(value) - {repr(value)}"
+                hashes[key] = ("repr(value)", repr(value))
             else:
                 hashes[key] = repr(value)
 
