@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Store full distributed run creating a full store folder for every distributed process.
   Store entire run now auto disabled on all non-rank-zero distributed processes
+- `curifactory init` not extracting `debug.py`
 
 
 
