@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [unreleased]
+
+### Fixed
+- Store full distributed run creating a full store folder for every distributed process.
+  Store entire run now auto disabled on all non-rank-zero distributed processes
+
+
+
+
 ## [0.8.2] - 2022-12-14
 
 ### Fixed
