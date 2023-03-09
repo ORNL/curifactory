@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+- Git init prompt on `curifactory init`, if run in a folder that doesn't contain a `.git`
+
 ### Changed
 - Argument hashing to allow user to specify `hashing_functions` on their
   parameter dataclasses. This allows them to (optionally) provide a function
@@ -19,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Store full distributed run creating a full store folder for every distributed process.
   Store entire run now auto disabled on all non-rank-zero distributed processes
+- `curifactory init` not extracting `debug.py`
 
 
 
