@@ -14,7 +14,7 @@ import psutil
 
 from curifactory import utils
 from curifactory.caching import FileReferenceCacher, Lazy, PickleCacher
-from curifactory.record import ArtifactRepresentation, Record
+from curifactory.record import ArtifactRepresentation, MapArtifactRepresentation, Record
 
 # NOTE: resource only exists on unix systems
 if os.name != "nt":
@@ -266,12 +266,6 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             function_inputs.update(kwargs)
             record.state.resolve = True
 
-            # at this point we've grabbed all information we would need if we're
-            # just mapping out the stages, so return at this point.
-            if record.manager.map_mode:
-                record.manager.stage_active = False
-                return record
-
             # note to future self and anyone else who's IDE says this is repeated code (with aggregate below)
             # no, you cannot abstract this into _check_cached_outputs - if you try to reassign to cachers from
             # another function, because of the deep voodoo black magic sorcery that is decorators with arguments,
@@ -284,6 +278,28 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                         cachers[i] = cacher()
                     # set the active record on the cacher
                     cachers[i].record = record
+
+            # at this point we've grabbed all information we would need if we're
+            # just mapping out the stages, so return at this point.
+            # TODO: 3/8/2023 - not true, we're not getting outputs
+            if record.manager.map_mode:
+                record.manager.stage_active = False
+                output_statuses = _check_outputs_cache_status(
+                    record, outputs, cachers, None
+                )
+
+                # in order to get a more detailed map that accurately shows input/output names,
+                # we need to create pseudo-state-artifact-representations for the outputs. Since
+                # we obviously can't add the actual artifacts (there are none without running!),
+                # we just add the string key and a name, so record __repr__ has something to use
+
+                for index, output in enumerate(outputs):
+                    record.state_artifact_reps[output] = MapArtifactRepresentation(
+                        name=output, cached=output_statuses[index]
+                    )
+                    record.stage_outputs[-1].append(record.state_artifact_reps[output])
+
+                return record
 
             # check for cached outputs and lazy load inputs if needed
             pre_cache_time_start = time.perf_counter()  # time to load from cache
@@ -543,12 +559,6 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                     f"Stage '{name}' - the number of cachers does not match the number of outputs to cache"
                 )
 
-            # at this point we've grabbed all information we would need if we're
-            # just mapping out the stages, so return at this point.
-            if record.manager.map_mode:
-                record.manager.stage_active = False
-                return record
-
             # see note in stage
             if cachers is not None:
                 # instantiate cachers if not already
@@ -558,6 +568,28 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                         cachers[i] = cacher()
                     # set the active record on the cacher
                     cachers[i].record = record
+
+            # at this point we've grabbed all information we would need if we're
+            # just mapping out the stages, so return at this point.
+            # TODO: 3/8/2023 - not true, we're not getting outputs
+            if record.manager.map_mode:
+                record.manager.stage_active = False
+                output_statuses = _check_outputs_cache_status(
+                    record, outputs, cachers, records
+                )
+
+                # in order to get a more detailed map that accurately shows input/output names,
+                # we need to create pseudo-state-artifact-representations for the outputs. Since
+                # we obviously can't add the actual artifacts (there are none without running!),
+                # we just add the string key and a name, so record __repr__ has something to use
+
+                for index, output in enumerate(outputs):
+                    record.state_artifact_reps[output] = MapArtifactRepresentation(
+                        name=output, cached=output_statuses[index]
+                    )
+                    record.stage_outputs[-1].append(record.state_artifact_reps[output])
+
+                return record
 
             pre_cache_time_start = time.perf_counter()  # time to load from cache
             record.manager.lock()
@@ -676,16 +708,11 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
     return decorator
 
 
-def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
-    if cachers == []:
-        raise EmptyCachersError(
-            "Do not use '[]' for cachers. This will always short-circuit because there is nothing that isn't cached."
-        )
-
-    cache_valid = False
+def _set_cacher_paths(record: Record, outputs: List[str], cachers, records=None):
+    """Go through each instantiated cacher and assign the path based on the manager."""
+    paths = []
     if cachers is not None:
         # set the path for every instantiated cacher
-        paths = []
         for index, arg in enumerate(outputs):
             if cachers[index].path_override is None:
                 # the str(arg) will handle Lazy objects
@@ -706,6 +733,35 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
                 )
             path = cachers[index].set_path(path)
             paths.append(path)
+    return paths
+
+
+def _check_outputs_cache_status(record, outputs, cachers, records=None) -> List[bool]:
+    """Check if the requested outputs are cached but do not load them, simply return
+    a list of statuses for found."""
+    statuses = None
+    if cachers is not None:
+        statuses = []
+        paths = _set_cacher_paths(record, outputs, cachers, records)
+        for i in range(len(paths)):
+            statuses.append(cachers[i].check())
+
+    elif outputs is not None and len(outputs) > 0:
+        statuses = [False] * len(outputs)
+    return statuses
+
+
+def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
+    """Check if the requested outputs are cached and load them if so."""
+    if cachers == []:
+        raise EmptyCachersError(
+            "Do not use '[]' for cachers. This will always short-circuit because there is nothing that isn't cached."
+        )
+
+    cache_valid = False
+    if cachers is not None:
+        # set the path for every instantiated cacher
+        paths = _set_cacher_paths(record, outputs, cachers, records)
 
         # NOTE: we put this here because the cachers still need to be set up
         if stage_name in record.manager.overwrite_stages or record.manager.overwrite:

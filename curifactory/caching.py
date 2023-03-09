@@ -35,7 +35,7 @@ class Cacheable:
     Args:
         extension (str): The filetype extension to add at the end of the path.
         path_override (str): Use a specific path for the cacheable, rather than
-            automatically setting it.
+            automatically setting it. Note that this is the DIRECTORY
     """
 
     def __init__(self, extension: str, path_override=None):
@@ -90,14 +90,20 @@ class Cacheable:
                         return False
                 # we made it through each record and they weren't overwrite, we're good
                 logging.debug("No records had overwrite, will use cache")
-                logging.info("Cached object '%s' found", self.path)
+                if self.record.manager.map_mode:
+                    logging.debug("Cached object '%s' found", self.path)
+                else:
+                    logging.info("Cached object '%s' found", self.path)
                 return True
             elif (
                 self.record is not None
                 and self.record.args is not None
                 and not self.record.args.overwrite
             ):
-                logging.info("Cached object '%s' found", self.path)
+                if self.record.manager.map_mode:
+                    logging.debug("Cached object '%s' found", self.path)
+                else:
+                    logging.info("Cached object '%s' found", self.path)
                 return True
             else:
                 logging.debug("Object found, but overwrite specified in args")

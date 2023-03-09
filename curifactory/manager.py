@@ -1,6 +1,7 @@
 """Contains the relevant classes for experiment state, namely the artifact manager and
 record classes, as well as experiment store/parameter store management."""
 
+import copy
 import json
 import logging
 import multiprocessing as mp
@@ -259,7 +260,13 @@ class ArtifactManager:
             mapped_record.stage_outputs = record.stage_outputs
             mapped_record.is_aggregate = record.is_aggregate
             mapped_record.combo_hash = record.combo_hash
-            # mapped_record.input_records = record.input_records
+
+            # NOTE: the state artifact representations are _not_ the actual state artifact representaitons (obviously)
+            # instead we're just directly using the string names
+            mapped_record.state_artifact_reps = copy.deepcopy(
+                record.state_artifact_reps
+            )
+
             self.map.append(mapped_record)
 
         # go through and add input_records now (can't directly add

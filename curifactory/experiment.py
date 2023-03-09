@@ -55,6 +55,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     lazy: bool = False,
     ignore_lazy: bool = False,
     no_map: bool = False,
+    map_only: bool = False,
     no_color: bool = False,
     quiet: bool = False,
     progress: bool = False,
@@ -124,6 +125,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         no_map (bool): Prevent pre-execution mapping of experiment records and stages. Recommended if doing
             anything fancy with records like dynamically creating them based on results of previous records.
             Mapping is done by running the experiment but skipping all stage execution.
+        map_only (bool): Runs the pre-execution mapping of an experiment and immediately exits, printing the
+            map to stdout. **Note that setting this to True automatically sets dry.**
         no_color (bool): Suppress fancy colors in console output.
         quiet (bool): Suppress all console log output.
         progress (bool): Display fancy rich progress bars for each record.
@@ -142,6 +145,11 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             mngr = ArtifactManager()
             experiment.run_experiment('exp_name', ['params1', 'params2'], mngr=mngr, dry=True)
     """
+
+    # if we request a map only run, make sure we don't impact any files, so
+    # automatically set "dry"
+    if map_only:
+        dry = True
 
     if run_string is None:
         run_string = f"experiment {experiment_name}"
@@ -181,6 +189,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             run_string += " --ignore-lazy"
         if no_map:
             run_string += " --no-map"
+        if map_only:
+            run_string += " --map-only"
         if no_color:
             run_string += " --no-color"
         if quiet:
@@ -318,6 +328,12 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             % experiment_name
         )
         parameters_list = [experiment_name]
+
+    # let the user that using "map-only" implies dry
+    if map_only:
+        logging.info(
+            "Using 'map-only' mode - note that this implies --dry and no cache or store files will be modified."
+        )
 
     # let the user know if we detected a distributed run
     if distributed_mode_detected:
@@ -482,6 +498,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     lazy,
                     ignore_lazy,
                     no_map,
+                    map_only,
                     no_color,
                     quiet,
                     progress,
@@ -538,6 +555,14 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             logging.debug("Constructing record map")
             mngr.map_records()
             logging.info("Stage map collected")
+
+            if map_only:
+                experiment_map = mngr.map
+                for record in experiment_map:
+                    print(record.map_view())
+                # print(experiment_map)
+                logging.info("Map-only mode, skipping remainder of experiment.")
+                return experiment_map, mngr
 
             # create a (rich) progress bar and the associated tasks for each
             # mapped record.
@@ -1092,6 +1117,12 @@ Examples:
         help="Specifying will prevent the pre - execution mapping of the experiment records and stages. If doing non - DAG or creating dynamic records based on results of previous ones (where the map will be incorrect) use this flag.",
     )
     display_group.add_argument(
+        "--map-only",
+        dest="map_only",
+        action="store_true",
+        help="Specifying this runs _only_ the pre-execution record/stage mapping and then immediately exits. Specifying this flag implies --dry as well.",
+    )
+    display_group.add_argument(
         "--quiet",
         dest="quiet",
         action="store_true",
@@ -1232,6 +1263,7 @@ Examples:
         lazy=args.lazy,
         ignore_lazy=args.ignore_lazy,
         no_map=args.no_map,
+        map_only=args.map_only,
         no_color=args.no_color,
         quiet=args.quiet,
         progress=args.progress,

@@ -79,6 +79,38 @@ class Record:
         if not hide:
             self.manager.records.append(self)
 
+    def map_view(self):
+        """A string representation of record's 'path', used in text map rendering"""
+        output = "==== Record ===="
+        output += "\n-- "
+        if self.args is not None:
+            output += f"{self.args.name} - ({self.get_hash()})"
+        else:
+            output += "None"
+        output += " --"
+        for index, stage in enumerate(self.stages):
+            output += "\nStage: " + stage
+            output += "\n\tInputs:"
+            for stage_input in self.stage_inputs[index]:
+                if stage_input != -1:
+                    output += f"\n\t\t{stage_input.name}"
+                    if stage_input.cached:
+                        output += " (cached)"
+            output += "\n\tOutputs:"
+            for stage_output in self.stage_outputs[index]:
+                output += f"\n\t\t{stage_output.name}"
+                if stage_output.cached:
+                    output += " (cached)"
+            output += "\n\tInput records:"
+            for input_record in self.input_records:
+                if input_record.args is not None:
+                    output += (
+                        f"\n\t\t{input_record.args.name} - ({input_record.get_hash()})"
+                    )
+                else:
+                    output += "\n\t\tNone"
+        return output
+
     def set_hash(self):
         """Establish the hash for the current args (and set it on the args instance)."""
         # NOTE: we used to set this directly in manager's get_path, but there's potentially weird effects and it's an
@@ -214,6 +246,12 @@ class Record:
 
         os.makedirs(dir_path, exist_ok=True)
         return dir_path
+
+
+class MapArtifactRepresentation:
+    def __init__(self, name: str, cached: bool):
+        self.name = name
+        self.cached = cached
 
 
 class ArtifactRepresentation:

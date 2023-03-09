@@ -1,10 +1,13 @@
 import json
 import os
+from test.examples.stages.cache_stages import (
+    filerefcacher_stage,
+    filerefcacher_stage_multifile,
+)
 
 import numpy as np
 import pandas as pd
 import pytest
-from stages.cache_stages import filerefcacher_stage, filerefcacher_stage_multifile
 
 import curifactory as cf
 from curifactory.caching import PandasCsvCacher, PandasJsonCacher, PickleCacher
@@ -537,3 +540,32 @@ def test_pandas_json_cacher_with_df_no_recursion_error(configured_test_manager):
     assert os.path.exists(path)
     df = pd.read_json(path)
     np.testing.assert_almost_equal(df.values, data)
+
+
+# TODO: it is unclear how exactly path_override is _supposed_ to be used.
+# Right now it's really just a per-output cache directory override, but it doesn't
+# affect the filename. This needs to be hammered out (prob an option for either,
+# currently this allows still doing a store full I think?)
+
+# def test_pickle_cacher_path_override_is_used(configured_test_manager):
+#     """If using a cacher with a path_override specified, that path is where it should appera"""
+
+#     good_path = os.path.join(
+#         configured_test_manager.cache_path,
+#         f"MYTEST.pkl",
+#     )
+
+#     @cf.stage(None, ["output"], [PickleCacher(path_override=good_path)])
+#     def output_thing(record):
+#         return "hello there!"
+
+#     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+#     output_thing(r0)
+
+#     bad_path = os.path.join(
+#         configured_test_manager.cache_path,
+#         f"test_{r0.args.hash}_output_thing_output.pkl.gz",
+#     )
+
+#     assert not os.path.exists(bad_path)
+#     assert os.path.exists(good_path)
