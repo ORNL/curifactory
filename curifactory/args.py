@@ -40,6 +40,8 @@ class ExperimentArgs:
     """Whether to overwrite pre-cached values. Curifactory automatically sets this based
         on command line flags."""
 
+    # NOTE: may be able to take parent classes' hashing functions into account as well
+    # https://stackoverflow.com/questions/10091957/get-parent-class-name
     hash_representations: Dict[str, Union[None, Callable]] = field(
         default_factory=dict, repr=False
     )
@@ -57,15 +59,6 @@ class ExperimentArgs:
         of GPU's or processes to run on, where you would not want changing that to invalidate
         the existing cached values.)
     """
-
-    # NOTE: may be able to take parent classes' hashing functions into account as well
-    # https://stackoverflow.com/questions/10091957/get-parent-class-name
-    hash_representations: Dict[str, Union[None, Callable]] = field(
-        default_factory=dict, repr=False
-    )
-    """Assigning these allows overriding how the hash for a specific argument is computed.
-        Every key should be assigned a value of either None or a function that takes self
-        (the entire args instance) and the value of the named parameter to be hashed."""
 
     # TODO: implement __eq__ based on args_hash
 
