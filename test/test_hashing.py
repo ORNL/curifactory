@@ -21,7 +21,7 @@ def test_args_subclass_hash_includes_all_sub_params():
     assert dry_hash_dict["b"] == ("repr(param_set.b)", "7")
 
     # make sure we correctly don't hash everything in the blacklist
-    for should_skip in ["hash", "overwrite", "hashing_functions"]:
+    for should_skip in ["hash", "overwrite", "hash_representations"]:
         assert dry_hash_dict[should_skip][0] == "SKIPPED: blacklist"
 
     # double check that different args with different params is in fact
@@ -39,7 +39,7 @@ def test_static_hashing_function_same_when_vals_diff():
         a: int = 0
         b: int = None
 
-        hashing_functions: dict = cf.set_hash_functions(a=lambda self, obj: 5)
+        hash_representations: dict = cf.set_hash_functions(a=lambda self, obj: 5)
 
     args1 = MyExperimentArgs()
     args2 = MyExperimentArgs(a=6)
@@ -55,13 +55,14 @@ def test_none_hashing_function_same_when_vals_diff():
         a: int = 0
         b: int = 5
 
-        hashing_functions: dict = cf.set_hash_functions(a=None)
+        hash_representations: dict = cf.set_hash_functions(a=None)
 
     args1 = MyExperimentArgs()
     args2 = MyExperimentArgs(a=6)
     assert args1.args_hash() == args2.args_hash()
     assert (
-        args1.args_hash(dry=True)["a"][0] == "SKIPPED: set to None in hashing_functions"
+        args1.args_hash(dry=True)["a"][0]
+        == "SKIPPED: set to None in hash_representations"
     )
 
 
@@ -112,7 +113,7 @@ def test_custom_hashing_composed_dataclasses():
         c: int = 5
         d: int = 6
 
-        hashing_functions: dict = cf.set_hash_functions(d=None)
+        hash_representations: dict = cf.set_hash_functions(d=None)
 
     @dataclass
     class MyExperimentArgs(cf.ExperimentArgs):
@@ -126,7 +127,7 @@ def test_custom_hashing_composed_dataclasses():
     assert type(args1.args_hash(True)["others"][1]) == dict
     assert (
         args1.args_hash(True)["others"][1]["d"][0]
-        == "SKIPPED: set to None in hashing_functions"
+        == "SKIPPED: set to None in hash_representations"
     )
 
 
@@ -159,27 +160,27 @@ def test_set_hash_functions_with_kwargs():
         a: int = 0
         b: int = None
 
-        hashing_functions: dict = cf.set_hash_functions(a=None, b=None)
+        hash_representations: dict = cf.set_hash_functions(a=None, b=None)
 
     args = MyExperimentArgs()
-    assert "a" in args.hashing_functions
-    assert "b" in args.hashing_functions
+    assert "a" in args.hash_representations
+    assert "b" in args.hash_representations
 
 
 def test_set_hash_functions_with_dict_arg():
     """calling set_hash_functions with a single dictionary should directly set
-    the hashing_functions."""
+    the hash_representations."""
 
     @dataclass
     class MyExperimentArgs(cf.ExperimentArgs):
         a: int = 0
         b: int = None
 
-        hashing_functions: dict = cf.set_hash_functions({"a": None, "b": None})
+        hash_representations: dict = cf.set_hash_functions({"a": None, "b": None})
 
     args = MyExperimentArgs()
-    assert "a" in args.hashing_functions
-    assert "b" in args.hashing_functions
+    assert "a" in args.hash_representations
+    assert "b" in args.hash_representations
 
 
 def test_set_hash_functions_with_dict_and_kwargs():
@@ -192,17 +193,17 @@ def test_set_hash_functions_with_dict_and_kwargs():
         b: int = None
         c: int = 5
 
-        hashing_functions: dict = cf.set_hash_functions(
+        hash_representations: dict = cf.set_hash_functions(
             {"a": None, "b": None}, b="something else", c=None
         )
 
     args = MyExperimentArgs()
-    assert "a" in args.hashing_functions
-    assert "b" in args.hashing_functions
-    assert "c" in args.hashing_functions
+    assert "a" in args.hash_representations
+    assert "b" in args.hash_representations
+    assert "c" in args.hash_representations
 
     # kwargs should override what was in possitional arg
-    assert args.hashing_functions["b"] is not None
+    assert args.hash_representations["b"] is not None
 
     """Subclassing an args class with hashing functions set and including additional
     hashing functions in the subclass should add/use the hashing functions of both."""
@@ -226,7 +227,7 @@ def test_set_hash_functions_on_args_instance():
     args0 = MyExperimentArgs()
     args1 = MyExperimentArgs()
 
-    args0.hashing_functions["c"] = None
+    args0.hash_representations["c"] = None
     assert args0.args_hash() != args1.args_hash()
 
 

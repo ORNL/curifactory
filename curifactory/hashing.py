@@ -7,13 +7,13 @@ from copy import deepcopy
 from dataclasses import field, fields, is_dataclass
 from typing import Any, Callable, Dict, Tuple, Union
 
-PARAMETERS_BLACKLIST = ["hash", "overwrite", "hashing_functions"]
+PARAMETERS_BLACKLIST = ["hash", "overwrite", "hash_representations"]
 """The default parameters on the ExperimentArgs class that we always
 ignore as part of the hash."""
 
 
 def set_hash_functions(*args, **kwargs):
-    """Convenience function for easily setting the hashing_functions dictionary
+    """Convenience function for easily setting the hash_representations dictionary
     with the appropriate dataclass field. Parameters passed to this function should
     be the same as the parameter name in the args class itself.
 
@@ -34,7 +34,7 @@ def set_hash_functions(*args, **kwargs):
                 a: int = 0
                 b: int = 0
 
-                hashing_functions: dict = set_hash_functions(
+                hash_representations: dict = set_hash_functions(
                     a = lambda self, obj: str(a)
                     b = None  # this means that b will _not be included in the hash_.
                 )
@@ -61,13 +61,13 @@ def get_parameter_hash_value(param_set, param_name: str) -> Tuple[str, Any]:
     """Determines which hashing representation mechanism to use, computes the result
     of the mechanism, and returns both.
 
-    This function takes any overriding ``hashing_functions`` into account. The list of mechanisms
+    This function takes any overriding ``hash_representations`` into account. The list of mechanisms
     it attempts to use to get a hashable representation of the parameter in order are:
 
     1. Skip any blacklisted internal curifactory parameters that shouldn't affect the hash.
     2. If the value of the parameter is ``None``, skip it. This allows default-ignoring
         new parameters.
-    3. If there's an associated hashing function in ``hashing_functions``, call that,
+    3. If there's an associated hashing function in ``hash_representations``, call that,
         passing in the entire parameter set and the current value of the parameter to
         be hashed
     4. If a parameter is another dataclass, recursively ``compute_args_hash`` on it.
@@ -82,8 +82,8 @@ def get_parameter_hash_value(param_set, param_name: str) -> Tuple[str, Any]:
             class Args(cf.ExperimentArgs):
                 some_other_dataclass: OtherDataclass = None
 
-                hashing_functions = cf.set_hash_functions(
-                    some_other_dataclass = lambda self, obj: repr(obj)
+                hash_representations = cf.set_hash_functions(
+                    some_other_dataclass = lambda self, obj: obj.__class__
                 )
                 ...
 
@@ -108,14 +108,14 @@ def get_parameter_hash_value(param_set, param_name: str) -> Tuple[str, Any]:
 
     # 2. see if user has specified how to handle the hash representation
     if (
-        hasattr(param_set, "hashing_functions")
-        and param_name in param_set.hashing_functions
+        hasattr(param_set, "hash_representations")
+        and param_name in param_set.hash_representations
     ):
-        if param_set.hashing_functions[param_name] is None:
-            return ("SKIPPED: set to None in hashing_functions", None)
+        if param_set.hash_representations[param_name] is None:
+            return ("SKIPPED: set to None in hash_representations", None)
         return (
-            f"param_set.hashing_functions['{param_name}'](param_set, param_set.{param_name})",
-            param_set.hashing_functions[param_name](param_set, value),
+            f"param_set.hash_representations['{param_name}'](param_set, param_set.{param_name})",
+            param_set.hash_representations[param_name](param_set, value),
         )
 
     # 3. if the value of the argument is none, ignore it. This is so that we can default
@@ -182,11 +182,11 @@ def compute_hash(hash_representations: Dict[str, Tuple[str, Any]]) -> str:
     return final_hash
 
 
-# TODO: rename
+# TODO: rename, fix docs
 def compute_args_hash(args, dry: bool = False) -> Union[str, Dict]:
     """The actual mechanisms for calculating the hash of an ExperimentArgs class.
 
-    This function takes any overriding ``hashing_functions`` into account, otherwise
+    This function takes any overriding ``hash_representations`` into account, otherwise
     for any members on the dataclass it tries to go through sane defaults:
 
     1. If the value of the member is ``None``, skip it. This allows default-ignoring
