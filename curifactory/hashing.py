@@ -48,15 +48,6 @@ def set_hash_functions(*args, **kwargs):
     return field(default_factory=lambda: dict(**kwargs), repr=False)
 
 
-# DONE: we could probably extract out a 'get_parameter_hash_value', which returns the dry tuple of strategy and results of strategy
-# DONE: rename compute_args_hash to 'get_parameters_hash_values' which computes the full dictionary of dry tuples for the passed args (takes blacklist?)
-#   (using get_parameter_hash_value)
-# DONE: extract a compute_hash function which takes a dictionary of dry tuples and does the md5 hash
-# TODO: function like compute_args_hash chains together the above two.
-
-# TODO: possibly rename "hashing_functions" to "hashable_representations"?
-
-
 def get_parameter_hash_value(param_set, param_name: str) -> Tuple[str, Any]:
     """Determines which hashing representation mechanism to use, computes the result
     of the mechanism, and returns both.
@@ -70,7 +61,7 @@ def get_parameter_hash_value(param_set, param_name: str) -> Tuple[str, Any]:
     3. If there's an associated hashing function in ``hash_representations``, call that,
         passing in the entire parameter set and the current value of the parameter to
         be hashed
-    4. If a parameter is another dataclass, recursively ``compute_args_hash`` on it.
+    4. If a parameter is another dataclass, recursively ``hash_paramset`` on it.
         Note that if this is unintended functionality, and you need the default
         dataclass ``repr`` for any reason, you can override it with the following:
 
@@ -182,36 +173,11 @@ def compute_hash(hash_representations: Dict[str, Tuple[str, Any]]) -> str:
     return final_hash
 
 
-# TODO: rename, fix docs
-def compute_args_hash(args, dry: bool = False) -> Union[str, Dict]:
-    """The actual mechanisms for calculating the hash of an ExperimentArgs class.
-
-    This function takes any overriding ``hash_representations`` into account, otherwise
-    for any members on the dataclass it tries to go through sane defaults:
-
-    1. If the value of the member is ``None``, skip it. This allows default-ignoring
-        new parameters.
-    2. If a member is another dataclass, recursively ``compute_args_hash`` on it.
-        Note that if this is unintended functionality, and you need the default
-        dataclass ``repr`` for any reason, you can override it with the following:
-
-        .. code-block:: python
-
-            import curifactory as cf
-
-            @dataclass
-            class Args(cf.ExperimentArgs):
-                some_other_dataclass: OtherDataclass = None
-
-                hashing_functions = cf.set_hash_functions(
-                    some_other_dataclass = lambda self, obj: repr(obj)
-                )
-                ...
-
-    3. If a member is a callable, by default it might turn up a pointer address
-        (we found this occurs with torch modules), so use the ``__qualname__``
-        instead.
-    4. Otherwise just use the normal ``repr``.
+# TODO: (3/10/2023) unclear how necessary this is, it's only used in this file
+# and the logic is simple enough it could directly be included in ``args_hash``
+def hash_parameterset(args, dry: bool = False) -> Union[str, Dict]:
+    """Run all of the hashing mechanisms for the parameter set and either
+    return the hash or, if ``dry`` is ``True`` return the dictionary of representations.
 
     Args:
         dry (bool): Return a dictionary with each value as the tuple that contains
@@ -226,6 +192,7 @@ def compute_args_hash(args, dry: bool = False) -> Union[str, Dict]:
         return compute_hash(hash_reps)
 
 
+# TODO: (3/10/2023) allow flag to still at least show the values of ignored parameters
 def parameters_string_hash_representation(param_set) -> Dict[str, str]:
     """Get the hash representation of a parameter set into a json-dumpable dictionary.
 
@@ -269,15 +236,15 @@ def args_hash(
 
     Returns:
         The hash string computed from the arguments, or the dictionary of hashing functions
-        if ``dry`` is ``True``. (The output from ``compute_args_hash``)
+        if ``dry`` is ``True``. (The output from ``get_parameters_hash_values``)
     """
     if dry:
-        return compute_args_hash(args, dry=True)
+        return hash_parameterset(args, dry=True)
 
     if args.hash is not None:
         hash_str = args.hash
     else:
-        hash_str = compute_args_hash(args, dry=False)
+        hash_str = hash_parameterset(args, dry=False)
 
     if store_in_registry and registry_path is not None:
         registry_path = os.path.join(registry_path, "params_registry.json")
