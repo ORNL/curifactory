@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Git init prompt on `curifactory init`, if run in a folder that doesn't contain a `.git`
 
+### Changed
+- Argument hashing to allow user to specify `hashing_functions` on their
+  parameter dataclasses. This allows them to (optionally) provide a function
+  for each individual parameter that will return a custom value to be hashed
+  rather than simply the default string representation. This also allows
+  completely ignoring parameters as part of their hash, by setting their hashing
+  function to `None`.
+- Arguments whose value is `None` are not included as part of the hash.
+
 ### Fixed
 - Store full distributed run creating a full store folder for every distributed process.
   Store entire run now auto disabled on all non-rank-zero distributed processes

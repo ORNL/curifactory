@@ -10,7 +10,6 @@ import json
 import logging
 import os
 import shutil
-from dataclasses import asdict
 from typing import List
 
 import matplotlib.pyplot as plt
@@ -19,7 +18,7 @@ import pandas as pd
 from graphviz import Digraph
 from graphviz.backend import ExecutableNotFound
 
-from curifactory import utils
+from curifactory import hashing, utils
 
 COLORS = [
     "darkseagreen2",  # #b4eeb4
@@ -564,10 +563,7 @@ def render_report_argset_dump(manager) -> List[str]:
             # make html-safe
             return str(x).replace("<", "&lt;").replace(">", "&gt;")
 
-        argset_data = asdict(argset)
-        del argset_data["name"]
-        del argset_data["overwrite"]
-        del argset_data["hash"]
+        argset_data = hashing.parameters_string_hash_representation(argset)
         html_lines.append(json.dumps(argset_data, indent=2, default=stringify))
         html_lines.append("</pre>")
 
