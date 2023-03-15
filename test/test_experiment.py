@@ -178,6 +178,7 @@ def test_manager_integration(
 )
 def test_rank_manager_integration(
     mocker,  # noqa: F811 -- mocker has to be passed in as fixture
+    # global_rank,
     local_rank,
     node_rank,
     expect_parallel,
@@ -188,6 +189,8 @@ def test_rank_manager_integration(
         os.environ["LOCAL_RANK"] = str(local_rank)
     if node_rank is not None:
         os.environ["NODE_RANK"] = str(node_rank)
+    # if global_rank is not None:
+    #     os.environ["RANK"] = str(node_rank)
 
     mock = mocker.patch.object(ArtifactManager, "__init__", return_value=None)
     try:

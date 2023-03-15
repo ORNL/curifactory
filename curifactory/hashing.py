@@ -200,7 +200,7 @@ def parameters_string_hash_representation(param_set) -> Dict[str, str]:
     """
     hash_reps = get_parameters_hash_values(param_set)
     rep_dictionary = {}
-    skipped = []
+    skipped = {}
     for key, rep_tuple in hash_reps.items():
         if key == "name":
             rep_dictionary[key] = param_set.name
@@ -209,7 +209,10 @@ def parameters_string_hash_representation(param_set) -> Dict[str, str]:
         elif key in PARAMETERS_BLACKLIST:
             continue
         else:
-            skipped.append(key)
+            try:
+                skipped[key] = str(getattr(param_set, key))
+            except:  # noqa: E722
+                skipped[key] = None
     if len(skipped) > 0:
         rep_dictionary["IGNORED_PARAMS"] = skipped
     return rep_dictionary

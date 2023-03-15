@@ -195,11 +195,12 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     # this was added because of issues with pytorch distributed compute
     distributed_mode_detected = False
     warn_store_full_during_distributed = False
-    if "LOCAL_RANK" in os.environ:
-        if os.getenv("LOCAL_RANK") != "0":
-            distributed_mode_detected = True
-        elif "NODE_RANK" in os.environ and os.getenv("NODE_RANK") != "0":
-            distributed_mode_detected = True
+    if "LOCAL_RANK" in os.environ and os.getenv("LOCAL_RANK") != "0":
+        distributed_mode_detected = True
+    elif "NODE_RANK" in os.environ and os.getenv("NODE_RANK") != "0":
+        distributed_mode_detected = True
+    elif "RANK" in os.environ and os.getenv("RANK") != "0":
+        distributed_mode_detected = True
     if distributed_mode_detected:
         parallel_mode = True
 
@@ -377,7 +378,6 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         # TODO: if param_argsets is not of type List, throw exception and advise
         # compute the hash of every argset and store the params
         for index, argset in enumerate(param_argsets):
-
             # if specific names requested, just grab those
             if args_names is not None:
                 if argset.name not in args_names:
@@ -553,7 +553,6 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         f"{mngr.config['experiments_module_name']}.{experiment_name}"
     )
     try:
-
         # run experiment mapping and set up progress bars
         if not parallel_mode and not no_map:
             logging.info("Pre-mapping stages and records")
@@ -1194,7 +1193,6 @@ Examples:
     params_list = args.parameters_name
 
     if args.experiment_name == "ls":
-
         sys.path.append(os.getcwd())
         print("EXPERIMENTS:")
         for experiment in list_experiments():

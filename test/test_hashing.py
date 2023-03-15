@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 import curifactory as cf
+from curifactory.hashing import parameters_string_hash_representation
 
 
 def test_args_subclass_hash_includes_all_sub_params():
@@ -270,3 +271,20 @@ def test_hash_changes_after_param_change_and_hash_set_to_none():
     args.hash = None
     hash1 = args.args_hash()
     assert hash1 != hash0
+
+
+def test_none_hashing_function_includes_val_in_str_rep():
+    """The string hash representation of an ignored parameter should still include the value
+    in a sub IGNORED_PARAMS dictionary."""
+
+    @dataclass
+    class MyExperimentArgs(cf.ExperimentArgs):
+        a: int = 0
+        b: int = 5
+
+        hash_representations: dict = cf.set_hash_functions(a=None)
+
+    args = MyExperimentArgs(a=6)
+    rep = parameters_string_hash_representation(args)
+    assert "a" in rep["IGNORED_PARAMS"]
+    assert rep["IGNORED_PARAMS"]["a"] == "6"
