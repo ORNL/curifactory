@@ -5,9 +5,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [unreleased]
+
+### Fixed
+- String hash representation not recursively getting a string hash
+  representation from any parameter sub-dataclasses.
+
+
+
+
 ## [0.9.1] - 2023-03-15
 
-## Fixed
+### Changed
+- String representation of hashed arguments will include the actual value of
+  the parameters in `IGNORED_PARAMS` for reporting purposes.
+
+### Fixed
 - Distributed run detection not checking `RANK` env variable.
 
 

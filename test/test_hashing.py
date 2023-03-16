@@ -288,3 +288,53 @@ def test_none_hashing_function_includes_val_in_str_rep():
     rep = parameters_string_hash_representation(args)
     assert "a" in rep["IGNORED_PARAMS"]
     assert rep["IGNORED_PARAMS"]["a"] == "6"
+
+
+def test_subdataclass_val_in_str_rep_correct():
+    """The string hash rep of a dataclass with sub-dataclasses should correctly
+    represent the sub dataclasses the same way."""
+
+    @dataclass
+    class NormalDC:
+        c: int = 5
+        d: int = 6
+
+        hash_representations: dict = cf.set_hash_functions(d=None)
+
+    @dataclass
+    class MyExperimentArgs(cf.ExperimentArgs):
+        a: int = 0
+        b: int = 1
+        others: NormalDC = NormalDC()
+
+    args = MyExperimentArgs(others=NormalDC(d=7))
+    rep = parameters_string_hash_representation(args)
+    assert rep["others"]["c"] == "5"
+    assert "d" in rep["others"]["IGNORED_PARAMS"]
+    assert rep["others"]["IGNORED_PARAMS"]["d"] == "7"
+
+
+def test_none_hash_subdataclass_val_in_str_rep_correct():
+    """The string hash rep of a dataclass with sub-dataclasses should correctly
+    represent the sub dataclasses the same way even if the sub dataclass is in the
+    ignored parameters."""
+
+    @dataclass
+    class NormalDC:
+        c: int = 5
+        d: int = 6
+
+        hash_representations: dict = cf.set_hash_functions(d=None)
+
+    @dataclass
+    class MyExperimentArgs(cf.ExperimentArgs):
+        a: int = 0
+        b: int = 1
+        others: NormalDC = NormalDC()
+        hash_representations: dict = cf.set_hash_functions(others=None)
+
+    args = MyExperimentArgs(others=NormalDC(d=7))
+    rep = parameters_string_hash_representation(args)
+    assert "others" in rep["IGNORED_PARAMS"]
+    assert "d" in rep["IGNORED_PARAMS"]["others"]["IGNORED_PARAMS"]
+    assert rep["IGNORED_PARAMS"]["others"]["IGNORED_PARAMS"]["d"] == "7"

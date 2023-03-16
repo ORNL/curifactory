@@ -204,13 +204,24 @@ def parameters_string_hash_representation(param_set) -> Dict[str, str]:
     for key, rep_tuple in hash_reps.items():
         if key == "name":
             rep_dictionary[key] = param_set.name
+        # check for a sub-dataclass, which might have ignored params of its own
+        elif rep_tuple[0].startswith("get_parameters_hash_values"):
+            rep_dictionary[key] = parameters_string_hash_representation(
+                getattr(param_set, key)
+            )
         elif rep_tuple[1] is not None:
             rep_dictionary[key] = str(rep_tuple[1])
         elif key in PARAMETERS_BLACKLIST:
             continue
         else:
             try:
-                skipped[key] = str(getattr(param_set, key))
+                # separately handle a sub-dataclass, since we won't get the right strategy if it was skipped
+                if is_dataclass(getattr(param_set, key)):
+                    skipped[key] = parameters_string_hash_representation(
+                        getattr(param_set, key)
+                    )
+                else:
+                    skipped[key] = str(getattr(param_set, key))
             except:  # noqa: E722
                 skipped[key] = None
     if len(skipped) > 0:
