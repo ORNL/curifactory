@@ -22,7 +22,7 @@ class CacheAwareDict(dict):
 
     def __getitem__(self, key):
         item = super().__getitem__(key)
-        if type(item) == Lazy and self.resolve:
+        if type(item) == Lazy and self.resolve and item.resolve:
             logging.debug("Auto-resolving lazy object '%s'..." % key)
             return item.cacher.load()
         else:
@@ -111,7 +111,8 @@ class Record:
 
     def set_aggregate(self, aggregate_records):
         """Mark this record as starting with an aggregate stage, meaning the hash of all cached outputs produced
-        within this record need to reflect the combo hash of all records going into it."""
+        within this record need to reflect the combo hash of all records going into it.
+        """
         self.is_aggregate = True
         self.combo_hash = hashing.add_args_combo_hash(
             self,

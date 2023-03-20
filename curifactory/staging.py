@@ -50,7 +50,6 @@ def _log_stats(
     pre_max_footprint=0,
     post_max_footprint=0,
 ):
-
     pre_cache_time = pre_cache_time_end - pre_cache_time_start
     exec_time = exec_time_end - exec_time_start
     post_cache_time = post_cache_time_end - post_cache_time_start
@@ -296,7 +295,10 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             # check each input for Lazy objects and load them if we know we have to execute this stage
             if not cache_valid:
                 for function_input in function_inputs:
-                    if type(function_inputs[function_input]) == Lazy:
+                    if (
+                        type(function_inputs[function_input]) == Lazy
+                        and function_inputs[function_input].resolve
+                    ):
                         logging.debug(
                             "Resolving lazy load object '%s'" % function_input
                         )
@@ -716,7 +718,6 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
         function_outputs = []
         for i in range(len(paths)):
             if cachers[i].check():
-
                 # handle lazy objects by setting the cacher but not actually loading yet.
                 if type(outputs[i]) == Lazy:
                     outputs[i].cacher = cachers[i]

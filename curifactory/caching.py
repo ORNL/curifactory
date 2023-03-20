@@ -16,11 +16,33 @@ import pandas as pd
 class Lazy:
     """A class to indicate a stage output as a lazy-cache object - curifactory will
     attempt to keep this out of memory as much as possible, immediately caching and deleting,
-    and loading back into memeory only when needed."""
+    and loading back into memeory only when needed.
 
-    def __init__(self, name: str):
+    This object is used by "wrapping" a stage output string with the class.
+
+    Example:
+        .. code-block:: python
+
+            @stage(inputs=None, outputs=["small_output", cf.Lazy("large_output")], cachers=[PickleCacher]*2)
+            def some_stage(record: Record):
+                ...
+
+    Args:
+        name (str): the name of the output to put into state.
+        resolve (bool): Whether this lazy object should automatically reload the initial
+            object when accessed from state. By default this is ``True`` - when a stage specifies
+            the string name as an input and this object is requested from the record state, it
+            loads and passes in the originally stored object. If set to ``False``, the stage
+            input will instead be populated with the lazy object itself, giving the inner stage
+            code direct access to the cacher. This is useful if you need to keep objects out of
+            memory and just want to refer to the cacher path (e.g. to send this path along
+            to an external CLI/script.)
+    """
+
+    def __init__(self, name: str, resolve: bool = True):
         self.name = name
         self.cacher: Cacheable = None
+        self.resolve = resolve
 
     def load(self):
         return self.cacher.load()
