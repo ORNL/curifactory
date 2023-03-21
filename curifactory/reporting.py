@@ -6,6 +6,7 @@ extends it.
 """
 
 import datetime
+import html
 import json
 import logging
 import os
@@ -559,12 +560,8 @@ def render_report_argset_dump(manager) -> List[str]:
         html_lines.append(f"<h4>{name} - {args_hash}</h4>")
         html_lines.append("<pre>")
 
-        def stringify(x):
-            # make html-safe
-            return str(x).replace("<", "&lt;").replace(">", "&gt;")
-
         argset_data = hashing.parameters_string_hash_representation(argset)
-        html_lines.append(json.dumps(argset_data, indent=2, default=stringify))
+        html_lines.append(html.escape(json.dumps(argset_data, indent=2, default=str)))
         html_lines.append("</pre>")
 
     return html_lines
@@ -750,7 +747,6 @@ def update_report_index(experiments_path, reports_root_dir):
                 runs.append(info)
                 experiment_name = info["experiment_name"]
                 if experiment_name not in experiment_runs:
-
                     # try to get comment on experiment
                     comment = ""
                     try:
