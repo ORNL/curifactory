@@ -871,6 +871,15 @@ def _store_outputs(
             cachers[index].save(output)
             artifact.file = cachers[index].path
 
+            # TODO: (3/20/2023) with cacher refactoring, up to this point this is fine,
+            # we would still call save on the cacher normally, and additionally
+            # save a metadata file here (which we'd run the same record.get_path for,
+            # taking the exact same object names as were usedi n the cacher)
+            # NOTE: this means that the stage's get_path will need to also track
+            # what paths were added through it, since 1. we may not be tracking, and 2.
+            # by time it hits the record additional tracked paths, we lose info about
+            # where it came from.
+
             # check if we store an additional run output copy
             # TODO: (3/20/2023) can get rid of entirely if we manage via tracked paths
             if record.manager.store_entire_run:
