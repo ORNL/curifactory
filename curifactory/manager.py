@@ -416,7 +416,6 @@ class ArtifactManager:
         record: Record,
         output: bool = False,
         base_path: str = None,
-        aggregate_records: List[Record] = None,
     ) -> str:
         """Get an appropriate full path/filename for a given object name and record.
 
@@ -430,9 +429,6 @@ class ArtifactManager:
             output (bool): Set this to true if the path needs to be based in a --store-full run folder.
             base_path (str): If a specific path override is needed, pass it in here. (Otherwise the
                 manager's cache_path is used.)
-            aggregate_records (List[Record]): If a list of records is passed (not none), prefix the
-                path filename with the hash of arg hashes of all the passed records. This is used for
-                paths for cached objects of aggregate stages.
 
         Returns:
             A string filepath that an object can be written to.

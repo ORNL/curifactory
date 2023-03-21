@@ -50,7 +50,6 @@ def _log_stats(
     pre_max_footprint=0,
     post_max_footprint=0,
 ):
-
     pre_cache_time = pre_cache_time_end - pre_cache_time_start
     exec_time = exec_time_end - exec_time_start
     post_cache_time = post_cache_time_end - post_cache_time_start
@@ -689,9 +688,7 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
         for index, arg in enumerate(outputs):
             if cachers[index].path_override is None:
                 # the str(arg) will handle Lazy objects
-                path = record.manager.get_path(
-                    str(arg), record, aggregate_records=records
-                )
+                path = record.manager.get_path(str(arg), record)
             elif str.endswith(cachers[index].extension, cachers[index].path_override):
                 # if the path override includes the extension they provided a full file name
                 # NOTE: this is useful if there's a static file that won't change across diff
@@ -702,7 +699,6 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
                     arg,
                     record,
                     base_path=cachers[index].path,
-                    aggregate_records=records,
                 )
             path = cachers[index].set_path(path)
             paths.append(path)
@@ -716,7 +712,6 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
         function_outputs = []
         for i in range(len(paths)):
             if cachers[i].check():
-
                 # handle lazy objects by setting the cacher but not actually loading yet.
                 if type(outputs[i]) == Lazy:
                     outputs[i].cacher = cachers[i]
@@ -737,9 +732,7 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
                     # eat the memory costs of reloading and resaving.)
                     previous_path = cachers[i].path
                     cachers[i].set_path(
-                        record.manager.get_path(
-                            outputs[i], record, output=True, aggregate_records=records
-                        )
+                        record.manager.get_path(outputs[i], record, output=True)
                     )
                     if type(outputs[i]) == Lazy:
                         shutil.copyfile(previous_path, cachers[i].path)
@@ -773,12 +766,11 @@ def _add_output_artifact(record, object, outputs, index):
 
 
 def _check_cached_reportables(stage_name, record, aggregate_records=None):
+    # TODO: (3/20/2023) clean up with single line (will need to be able to pass record)
     reportables_list_cacher = FileReferenceCacher()
     reportables_list_cacher.record = record
     reportables_list_cacher.set_path(
-        record.manager.get_path(
-            "reportables_file_list", record, aggregate_records=aggregate_records
-        )
+        record.manager.get_path("reportables_file_list", record)
     )
     if reportables_list_cacher.check():
         paths = reportables_list_cacher.load()
@@ -821,12 +813,11 @@ def _store_reportables(stage_name, record, aggregate_records=None):
             pickle.dump(reportable_copy, outfile)
 
     # write a cache file out containing the reportables path names.
+    # TODO: (3/20/2023) clean up with single line (will need to be able to pass record)
     reportables_list_cacher = FileReferenceCacher()
     reportables_list_cacher.record = record
     reportables_list_cacher.set_path(
-        record.manager.get_path(
-            "reportables_file_list", record, aggregate_records=aggregate_records
-        )
+        record.manager.get_path("reportables_file_list", record)
     )
     reportables_list_cacher.save(paths)
     # NOTE: unnecessary because the reportables don't get copied over anyway, see todo note above.
@@ -881,11 +872,10 @@ def _store_outputs(
             artifact.file = cachers[index].path
 
             # check if we store an additional run output copy
+            # TODO: (3/20/2023) can get rid of entirely if we manage via tracked paths
             if record.manager.store_entire_run:
                 cachers[index].set_path(
-                    record.manager.get_path(
-                        outputs[index], record, output=True, aggregate_records=records
-                    )
+                    record.manager.get_path(outputs[index], record, output=True)
                 )
                 logging.debug(f"Caching {outputs[index]} to '{cachers[index].path}'...")
                 cachers[index].save(output)
@@ -898,7 +888,7 @@ def _store_outputs(
     if record.manager.store_entire_run:
         for obj_name, path in record.additional_tracked_paths:
             full_store_path = record.manager.get_path(
-                obj_name, record=record, output=True, aggregate_records=records
+                obj_name, record=record, output=True
             )
             logging.debug(f"Copying tracked path '{path}' to '{full_store_path}'...")
             if os.path.isdir(path):

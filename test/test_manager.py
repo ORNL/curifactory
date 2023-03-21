@@ -40,7 +40,7 @@ def test_stage_integration_basic(
 
     record = Record(configured_test_manager, sample_args)
     do_thing(record)
-    mock.assert_called_once_with("test_output", record, aggregate_records=None)
+    mock.assert_called_once_with("test_output", record)
 
 
 def test_stage_integration_path_override(
@@ -59,9 +59,7 @@ def test_stage_integration_path_override(
 
     record = Record(configured_test_manager, sample_args)
     do_thing(record)
-    mock.assert_called_once_with(
-        "test_output", record, base_path="test/examples/WHAT", aggregate_records=None
-    )
+    mock.assert_called_once_with("test_output", record, base_path="test/examples/WHAT")
 
 
 def test_stage_integration_storefull(
@@ -84,9 +82,9 @@ def test_stage_integration_storefull(
 
     assert len(mock.call_args_list) == 2
     assert mock.call_args_list[0].args == ("test_output", record)
-    assert mock.call_args_list[0].kwargs == dict(aggregate_records=None)
+    assert mock.call_args_list[0].kwargs == dict()
     assert mock.call_args_list[1].args == ("test_output", record)
-    assert mock.call_args_list[1].kwargs == dict(output=True, aggregate_records=None)
+    assert mock.call_args_list[1].kwargs == dict(output=True)
 
 
 # -----------------------------------------
@@ -97,9 +95,7 @@ def test_stage_integration_storefull(
 def test_get_path_basic(sample_args, configured_test_manager):
     """Calling get_path with a basic set of args should return the expected path."""
     record = Record(configured_test_manager, sample_args)
-    path = configured_test_manager.get_path(
-        "test_output", record, aggregate_records=None
-    )
+    path = configured_test_manager.get_path("test_output", record)
     assert path == "test/examples/data/cache/test_sample_hash__test_output"
 
 
@@ -107,9 +103,7 @@ def test_get_path_basic_w_stagename(sample_args, configured_test_manager):
     """Calling get_path with a basic set of args and a valid stage name should return the expected path."""
     record = Record(configured_test_manager, sample_args)
     configured_test_manager.current_stage_name = "somestage"
-    path = configured_test_manager.get_path(
-        "test_output", record, aggregate_records=None
-    )
+    path = configured_test_manager.get_path("test_output", record)
     assert path == "test/examples/data/cache/test_sample_hash_somestage_test_output"
 
 
@@ -117,7 +111,7 @@ def test_get_path_path_override(sample_args, configured_test_manager):
     """Calling get_path with a basic set of args and a path override should return the expected path."""
     record = Record(configured_test_manager, sample_args)
     path = configured_test_manager.get_path(
-        "test_output", record, base_path="test/examples/WHAT", aggregate_records=None
+        "test_output", record, base_path="test/examples/WHAT"
     )
     assert path == "test/examples/WHAT/test_sample_hash__test_output"
 
@@ -127,9 +121,7 @@ def test_get_path_store_full(sample_args, configured_test_manager):
     record = Record(configured_test_manager, sample_args)
     configured_test_manager.store_entire_run = True
     ts = configured_test_manager.get_str_timestamp()
-    path = configured_test_manager.get_path(
-        "test_output", record, output=True, aggregate_records=None
-    )
+    path = configured_test_manager.get_path("test_output", record, output=True)
     assert (
         path
         == f"test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts}/test_sample_hash__test_output"
@@ -140,9 +132,7 @@ def test_get_path_custom_name(sample_args, configured_test_manager):
     """Calling get_path when a custom name is in use should return the expected path."""
     record = Record(configured_test_manager, sample_args)
     configured_test_manager.custom_name = "some_custom_name"
-    path = configured_test_manager.get_path(
-        "test_output", record, aggregate_records=None
-    )
+    path = configured_test_manager.get_path("test_output", record)
     assert path == "test/examples/data/cache/some_custom_name_sample_hash__test_output"
 
 
@@ -152,9 +142,7 @@ def test_get_path_custom_name_and_store_full(sample_args, configured_test_manage
     configured_test_manager.store_entire_run = True
     configured_test_manager.custom_name = "some_custom_name"
     ts = configured_test_manager.get_str_timestamp()
-    path = configured_test_manager.get_path(
-        "test_output", record, output=True, aggregate_records=None
-    )
+    path = configured_test_manager.get_path("test_output", record, output=True)
     assert (
         path
         == f"test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts}/some_custom_name_sample_hash__test_output"
@@ -164,9 +152,7 @@ def test_get_path_custom_name_and_store_full(sample_args, configured_test_manage
 def test_get_path_no_args(configured_test_manager):
     """Calling get_path with None args will result in None in the output name."""
     record = Record(configured_test_manager, None)
-    path = configured_test_manager.get_path(
-        "test_output", record, aggregate_records=None
-    )
+    path = configured_test_manager.get_path("test_output", record)
     assert path == f"test/examples/data/cache/test_{record.combo_hash}__test_output"
 
 
@@ -303,6 +289,7 @@ def test_cache_aware_dict_no_resolve(configured_test_manager):
 # -----------------------------------------
 # hash-setting tests
 # -----------------------------------------
+
 
 # TODO: (05/09/2022) with and without an agg of None args
 def test_aggregate_stage_record_uses_combo_hash(configured_test_manager):

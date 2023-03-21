@@ -111,7 +111,8 @@ class Record:
 
     def set_aggregate(self, aggregate_records):
         """Mark this record as starting with an aggregate stage, meaning the hash of all cached outputs produced
-        within this record need to reflect the combo hash of all records going into it."""
+        within this record need to reflect the combo hash of all records going into it.
+        """
         self.is_aggregate = True
         self.combo_hash = hashing.add_args_combo_hash(
             self,
@@ -183,6 +184,7 @@ class Record:
 
         return new_record
 
+    # TODO: should also take an optional 'sub-path' and 'extension'
     def get_path(self, obj_name: str, track: bool = True) -> str:
         """Return an args-appropriate cache path with passed object name.
 
