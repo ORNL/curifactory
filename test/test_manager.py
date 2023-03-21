@@ -20,7 +20,7 @@ class FakeCacher(Cacheable):
 
 
 # -----------------------------------------
-# Stage/manager.get_path intergration tests
+# Stage/manager.get_artifact_path intergration tests
 # -----------------------------------------
 
 
@@ -29,9 +29,9 @@ def test_stage_integration_basic(
     sample_args,
     configured_test_manager,
 ):
-    """The stage should be calling manager's get_path with the correct parameters."""
+    """The stage should be calling manager's get_artifact_path with the correct parameters."""
     mock = mocker.patch.object(
-        configured_test_manager, "get_path", return_value="test_path"
+        configured_test_manager, "get_artifact_path", return_value="test_path"
     )
 
     @stage([], ["test_output"], [FakeCacher])
@@ -48,9 +48,9 @@ def test_stage_integration_path_override(
     sample_args,
     configured_test_manager,
 ):
-    """The stage should be calling manager's get_path with the correct parameters when using a path override in a cacher."""
+    """The stage should be calling manager's get_artifact_path with the correct parameters when using a path override in a cacher."""
     mock = mocker.patch.object(
-        configured_test_manager, "get_path", return_value="test_path"
+        configured_test_manager, "get_artifact_path", return_value="test_path"
     )
 
     @stage([], ["test_output"], [FakeCacher(path_override="test/examples/WHAT")])
@@ -67,10 +67,10 @@ def test_stage_integration_storefull(
     sample_args,
     configured_test_manager,
 ):
-    """The stage should be calling manager's get_path twice with the correct parameters."""
+    """The stage should be calling manager's get_artifact_path twice with the correct parameters."""
     configured_test_manager.store_entire_run = True
     mock = mocker.patch.object(
-        configured_test_manager, "get_path", return_value="test_path"
+        configured_test_manager, "get_artifact_path", return_value="test_path"
     )
 
     @stage([], ["test_output"], [FakeCacher])
@@ -88,40 +88,40 @@ def test_stage_integration_storefull(
 
 
 # -----------------------------------------
-# get_path unit tests
+# get_artifact_path unit tests
 # -----------------------------------------
 
 
 def test_get_path_basic(sample_args, configured_test_manager):
-    """Calling get_path with a basic set of args should return the expected path."""
+    """Calling get_artifact_path with a basic set of args should return the expected path."""
     record = Record(configured_test_manager, sample_args)
-    path = configured_test_manager.get_path("test_output", record)
+    path = configured_test_manager.get_artifact_path("test_output", record)
     assert path == "test/examples/data/cache/test_sample_hash__test_output"
 
 
 def test_get_path_basic_w_stagename(sample_args, configured_test_manager):
-    """Calling get_path with a basic set of args and a valid stage name should return the expected path."""
+    """Calling get_artifact_path with a basic set of args and a valid stage name should return the expected path."""
     record = Record(configured_test_manager, sample_args)
     configured_test_manager.current_stage_name = "somestage"
-    path = configured_test_manager.get_path("test_output", record)
+    path = configured_test_manager.get_artifact_path("test_output", record)
     assert path == "test/examples/data/cache/test_sample_hash_somestage_test_output"
 
 
 def test_get_path_path_override(sample_args, configured_test_manager):
-    """Calling get_path with a basic set of args and a path override should return the expected path."""
+    """Calling get_artifact_path with a basic set of args and a path override should return the expected path."""
     record = Record(configured_test_manager, sample_args)
-    path = configured_test_manager.get_path(
+    path = configured_test_manager.get_artifact_path(
         "test_output", record, base_path="test/examples/WHAT"
     )
     assert path == "test/examples/WHAT/test_sample_hash__test_output"
 
 
 def test_get_path_store_full(sample_args, configured_test_manager):
-    """Calling get_path with store-full should return the expected path."""
+    """Calling get_artifact_path with store-full should return the expected path."""
     record = Record(configured_test_manager, sample_args)
     configured_test_manager.store_entire_run = True
     ts = configured_test_manager.get_str_timestamp()
-    path = configured_test_manager.get_path("test_output", record, output=True)
+    path = configured_test_manager.get_artifact_path("test_output", record, output=True)
     assert (
         path
         == f"test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts}/test_sample_hash__test_output"
@@ -129,20 +129,20 @@ def test_get_path_store_full(sample_args, configured_test_manager):
 
 
 def test_get_path_custom_name(sample_args, configured_test_manager):
-    """Calling get_path when a custom name is in use should return the expected path."""
+    """Calling get_artifact_path when a custom name is in use should return the expected path."""
     record = Record(configured_test_manager, sample_args)
     configured_test_manager.custom_name = "some_custom_name"
-    path = configured_test_manager.get_path("test_output", record)
+    path = configured_test_manager.get_artifact_path("test_output", record)
     assert path == "test/examples/data/cache/some_custom_name_sample_hash__test_output"
 
 
 def test_get_path_custom_name_and_store_full(sample_args, configured_test_manager):
-    """Calling get_path when a custom name is in use and storefull is called should return the expected path."""
+    """Calling get_artifact_path when a custom name is in use and storefull is called should return the expected path."""
     record = Record(configured_test_manager, sample_args)
     configured_test_manager.store_entire_run = True
     configured_test_manager.custom_name = "some_custom_name"
     ts = configured_test_manager.get_str_timestamp()
-    path = configured_test_manager.get_path("test_output", record, output=True)
+    path = configured_test_manager.get_artifact_path("test_output", record, output=True)
     assert (
         path
         == f"test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts}/some_custom_name_sample_hash__test_output"
@@ -150,9 +150,9 @@ def test_get_path_custom_name_and_store_full(sample_args, configured_test_manage
 
 
 def test_get_path_no_args(configured_test_manager):
-    """Calling get_path with None args will result in None in the output name."""
+    """Calling get_artifact_path with None args will result in None in the output name."""
     record = Record(configured_test_manager, None)
-    path = configured_test_manager.get_path("test_output", record)
+    path = configured_test_manager.get_artifact_path("test_output", record)
     assert path == f"test/examples/data/cache/test_{record.combo_hash}__test_output"
 
 

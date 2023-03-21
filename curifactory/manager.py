@@ -410,7 +410,7 @@ class ArtifactManager:
                 non_grouped_reportables.append(reportable)
         return non_grouped_reportables
 
-    def get_path(
+    def get_artifact_path(
         self,
         obj_name: str,
         record: Record,

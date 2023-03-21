@@ -198,7 +198,7 @@ class Record:
                 or not. This will only work if the returned path is not altered
                 by a stage before saving something to it.
         """
-        path = self.manager.get_path(obj_name=obj_name, record=self)
+        path = self.manager.get_artifact_path(obj_name=obj_name, record=self)
         if track:
             self.additional_tracked_paths.append((obj_name, path))
         return path
@@ -212,7 +212,7 @@ class Record:
                 or not. This will only work if the returned path is not altered
                 by a stage before saving something to it.
         """
-        dir_path = self.manager.get_path(obj_name=dir_name_suffix, record=self)
+        dir_path = self.manager.get_artifact_path(obj_name=dir_name_suffix, record=self)
         if track:
             self.additional_tracked_paths.append((dir_name_suffix, dir_path))
 
