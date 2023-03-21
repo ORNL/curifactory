@@ -1,6 +1,9 @@
 import os
+from dataclasses import dataclass
+from enum import IntEnum
 
 import curifactory as cf
+from curifactory import reporting
 from curifactory.caching import JsonCacher
 from curifactory.reporting import JsonReporter
 
@@ -32,3 +35,21 @@ def test_reportables_cached(configured_test_manager):
 
     assert len(configured_test_manager.reportables) == 2
     assert not os.path.exists(ran_path)
+
+
+def test_no_angle_brackets_in_report_argset_dump(configured_test_manager):
+    """The output pre tag in the report argset dump should not contain un-escaped angle brackets."""
+
+    class MyEnum(IntEnum):
+        thing1 = 0
+        thing2 = 2
+
+    @dataclass
+    class MyArgs(cf.ExperimentArgs):
+        thing: MyEnum = MyEnum.thing1
+
+    cf.Record(configured_test_manager, MyArgs())
+    lines = reporting.render_report_argset_dump(configured_test_manager)
+    all_text = "".join(lines[2:-1])
+    assert "<" not in all_text
+    assert ">" not in all_text
