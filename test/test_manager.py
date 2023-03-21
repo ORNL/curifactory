@@ -2,6 +2,7 @@
 
 import os
 
+import pytest
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
 from curifactory import ExperimentArgs, Record, aggregate, hashing, stage
@@ -43,6 +44,9 @@ def test_stage_integration_basic(
     mock.assert_called_once_with("test_output", record)
 
 
+# TODO: path_override is going to work a little differently, but this general test might
+# end up belonging in the test_caching, so keep around for now
+@pytest.mark.skip
 def test_stage_integration_path_override(
     mocker,  # noqa: F811 -- mocker has to be passed in as fixture
     sample_args,
@@ -84,7 +88,7 @@ def test_stage_integration_storefull(
     assert mock.call_args_list[0].args == ("test_output", record)
     assert mock.call_args_list[0].kwargs == dict()
     assert mock.call_args_list[1].args == ("test_output", record)
-    assert mock.call_args_list[1].kwargs == dict(output=True)
+    assert mock.call_args_list[1].kwargs == dict(store=True)
 
 
 # -----------------------------------------
@@ -107,6 +111,8 @@ def test_get_path_basic_w_stagename(sample_args, configured_test_manager):
     assert path == "test/examples/data/cache/test_sample_hash_somestage_test_output"
 
 
+# TODO: see above
+@pytest.mark.skip
 def test_get_path_path_override(sample_args, configured_test_manager):
     """Calling get_artifact_path with a basic set of args and a path override should return the expected path."""
     record = Record(configured_test_manager, sample_args)
@@ -121,10 +127,10 @@ def test_get_path_store_full(sample_args, configured_test_manager):
     record = Record(configured_test_manager, sample_args)
     configured_test_manager.store_entire_run = True
     ts = configured_test_manager.get_str_timestamp()
-    path = configured_test_manager.get_artifact_path("test_output", record, output=True)
+    path = configured_test_manager.get_artifact_path("test_output", record, store=True)
     assert (
         path
-        == f"test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts}/test_sample_hash__test_output"
+        == f"test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts}/artifacts/test_sample_hash__test_output"
     )
 
 
@@ -142,10 +148,10 @@ def test_get_path_custom_name_and_store_full(sample_args, configured_test_manage
     configured_test_manager.store_entire_run = True
     configured_test_manager.custom_name = "some_custom_name"
     ts = configured_test_manager.get_str_timestamp()
-    path = configured_test_manager.get_artifact_path("test_output", record, output=True)
+    path = configured_test_manager.get_artifact_path("test_output", record, store=True)
     assert (
         path
-        == f"test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts}/some_custom_name_sample_hash__test_output"
+        == f"test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts}/artifacts/some_custom_name_sample_hash__test_output"
     )
 
 

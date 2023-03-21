@@ -686,20 +686,21 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
         # set the path for every instantiated cacher
         paths = []
         for index, arg in enumerate(outputs):
-            if cachers[index].path_override is None:
-                # the str(arg) will handle Lazy objects
-                path = record.manager.get_artifact_path(str(arg), record)
-            elif str.endswith(cachers[index].extension, cachers[index].path_override):
-                # if the path override includes the extension they provided a full file name
-                # NOTE: this is useful if there's a static file that won't change across diff
-                # runs or paramsets, like an input dataset
-                path = cachers[index].path
-            else:
-                path = record.manager.get_artifact_path(
-                    arg,
-                    record,
-                    base_path=cachers[index].path,
-                )
+            path = record.manager.get_artifact_path(str(arg), record)
+            # if cachers[index].path_override is None:
+            #     # the str(arg) will handle Lazy objects
+            #     path = record.manager.get_artifact_path(str(arg), record)
+            # elif str.endswith(cachers[index].extension, cachers[index].path_override):
+            #     # if the path override includes the extension they provided a full file name
+            #     # NOTE: this is useful if there's a static file that won't change across diff
+            #     # runs or paramsets, like an input dataset
+            #     path = cachers[index].path
+            # else:
+            #     path = record.manager.get_artifact_path(
+            #         arg,
+            #         record,
+            #         base_path=cachers[index].path,
+            #     )
             path = cachers[index].set_path(path)
             paths.append(path)
 
@@ -732,9 +733,7 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
                     # eat the memory costs of reloading and resaving.)
                     previous_path = cachers[i].path
                     cachers[i].set_path(
-                        record.manager.get_artifact_path(
-                            outputs[i], record, output=True
-                        )
+                        record.manager.get_artifact_path(outputs[i], record, store=True)
                     )
                     if type(outputs[i]) == Lazy:
                         shutil.copyfile(previous_path, cachers[i].path)
@@ -886,9 +885,7 @@ def _store_outputs(
             # TODO: (3/20/2023) can get rid of entirely if we manage via tracked paths
             if record.manager.store_entire_run:
                 cachers[index].set_path(
-                    record.manager.get_artifact_path(
-                        outputs[index], record, output=True
-                    )
+                    record.manager.get_artifact_path(outputs[index], record, store=True)
                 )
                 logging.debug(f"Caching {outputs[index]} to '{cachers[index].path}'...")
                 cachers[index].save(output)
@@ -901,7 +898,7 @@ def _store_outputs(
     if record.manager.store_entire_run:
         for obj_name, path in record.additional_tracked_paths:
             full_store_path = record.manager.get_artifact_path(
-                obj_name, record=record, output=True
+                obj_name, record=record, store=True
             )
             logging.debug(f"Copying tracked path '{path}' to '{full_store_path}'...")
             if os.path.isdir(path):

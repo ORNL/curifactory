@@ -1,10 +1,13 @@
 import json
 import os
+from test.examples.stages.cache_stages import (
+    filerefcacher_stage,
+    filerefcacher_stage_multifile,
+)
 
 import numpy as np
 import pandas as pd
 import pytest
-from stages.cache_stages import filerefcacher_stage, filerefcacher_stage_multifile
 
 import curifactory as cf
 from curifactory.caching import PandasCsvCacher, PandasJsonCacher, PickleCacher
@@ -385,7 +388,7 @@ def test_get_path_file_included_in_full_store(configured_test_manager):
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
     custom_output(r0)
 
-    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}"
+    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
 
     regular_custom_output_path = os.path.join(
         configured_test_manager.cache_path,
@@ -414,7 +417,7 @@ def test_get_dir_folder_included_in_full_store(configured_test_manager):
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
     custom_output(r0)
 
-    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}"
+    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
 
     regular_custom_output_path = os.path.join(
         configured_test_manager.cache_path,
@@ -435,7 +438,7 @@ def test_get_path_file_excluded_in_full_store_when_not_tracked(configured_test_m
 
     @cf.stage(None, ["other_output"], [PickleCacher])
     def custom_output(record):
-        path = record.get_path("my_extra_file.txt", False)
+        path = record.get_path("my_extra_file.txt", track=False)
         with open(path, "w") as outfile:
             outfile.write("Hello world!")
 
@@ -444,7 +447,7 @@ def test_get_path_file_excluded_in_full_store_when_not_tracked(configured_test_m
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
     custom_output(r0)
 
-    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}"
+    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
 
     regular_custom_output_path = os.path.join(
         configured_test_manager.cache_path,
@@ -466,7 +469,7 @@ def test_get_dir_folder_excluded_in_full_store_when_not_tracked(
 
     @cf.stage(None, ["other_output"], [PickleCacher])
     def custom_output(record):
-        path = record.get_dir("my_extra_dir", False)
+        path = record.get_dir("my_extra_dir", track=False)
         with open(f"{path}/testfile.txt", "w") as outfile:
             outfile.write("Hello world!")
 
@@ -475,7 +478,7 @@ def test_get_dir_folder_excluded_in_full_store_when_not_tracked(
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
     custom_output(r0)
 
-    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}"
+    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
 
     regular_custom_output_path = os.path.join(
         configured_test_manager.cache_path,

@@ -185,7 +185,9 @@ class Record:
         return new_record
 
     # TODO: should also take an optional 'sub-path' and 'extension'
-    def get_path(self, obj_name: str, track: bool = True) -> str:
+    def get_path(
+        self, obj_name: str, subdir: str = None, prefix: str = None, track: bool = True
+    ) -> str:
         """Return an args-appropriate cache path with passed object name.
 
         This should be equivalent to what a cacher for a stage should get. Note that this
@@ -194,25 +196,49 @@ class Record:
 
         Args:
             obj_name (str): the name to associate with the object as the last part of the filename.
+            subdir (str): An optional string of one or more nested subdirectories to prepend to the artifact filepath.
+                This can be used if you want to subdivide cache and run artifacts into logical subsets, e.g. similar to
+                https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71.
+            prefix (str): An optional alternative prefix to the experiment-wide prefix (either the experiment name or
+                custom-specified experiment prefix). This can be used if you want a cached object to work easier across
+                multiple experiments, rather than being experiment specific. WARNING: use with caution, cross-experiment
+                caching can mess with provenance.
             track (bool): whether to include returned path in a store full copy
                 or not. This will only work if the returned path is not altered
                 by a stage before saving something to it.
         """
-        path = self.manager.get_artifact_path(obj_name=obj_name, record=self)
+        path = self.manager.get_artifact_path(
+            obj_name=obj_name, record=self, subdir=subdir, prefix=prefix
+        )
         if track:
             self.additional_tracked_paths.append((obj_name, path))
         return path
 
-    def get_dir(self, dir_name_suffix: str, track: bool = True) -> str:
+    def get_dir(
+        self,
+        dir_name_suffix: str,
+        subdir: str = None,
+        prefix: str = None,
+        track: bool = True,
+    ) -> str:
         """Returns an args-appropriate cache path with the passed name, (similar to get_path) and creates it as a directory.
 
         Args:
             dir_name_suffix (str): the name to add as a suffix to the created directory name.
+            subdir (str): An optional string of one or more nested subdirectories to prepend to the artifact filepath.
+                This can be used if you want to subdivide cache and run artifacts into logical subsets, e.g. similar to
+                https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71.
+            prefix (str): An optional alternative prefix to the experiment-wide prefix (either the experiment name or
+                custom-specified experiment prefix). This can be used if you want a cached object to work easier across
+                multiple experiments, rather than being experiment specific. WARNING: use with caution, cross-experiment
+                caching can mess with provenance.
             track (bool): whether to include returned path in a store full copy
                 or not. This will only work if the returned path is not altered
                 by a stage before saving something to it.
         """
-        dir_path = self.manager.get_artifact_path(obj_name=dir_name_suffix, record=self)
+        dir_path = self.manager.get_artifact_path(
+            obj_name=dir_name_suffix, record=self, subdir=subdir, prefix=prefix
+        )
         if track:
             self.additional_tracked_paths.append((dir_name_suffix, dir_path))
 

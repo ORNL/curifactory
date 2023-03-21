@@ -414,36 +414,56 @@ class ArtifactManager:
         self,
         obj_name: str,
         record: Record,
-        output: bool = False,
-        base_path: str = None,
+        subdir: str = None,
+        prefix: str = None,
+        store: bool = False,
     ) -> str:
-        """Get an appropriate full path/filename for a given object name and record.
+        """Get a record-appropriate full path/filename for a given object name and record.
 
         This is used by the cachers, it automatically handles generating a filename
         using appropriate experiment name prefixing etc. **NOTE:** This function sets the record's args hash if it is None, or if an aggregate stage is involved.
+
+        The output path will follow this convention: ``[base path]/[prefix]_[parameterset hash]_[stage name]_[artifact name]``,
+        where ``base path`` is determined based on the value of ``store`` and ``subdir``.
 
         Args:
             obj_name (str): The name to associate with the object as the last part of the filename.
             record (Record): The record that this object is associated with. (Used to get experiment name, args hash
                 and so on.)
-            output (bool): Set this to true if the path needs to be based in a --store-full run folder.
-            base_path (str): If a specific path override is needed, pass it in here. (Otherwise the
-                manager's cache_path is used.)
+            subdir (str): An optional string of one or more nested subdirectories to prepend to the artifact filepath.
+                This can be used if you want to subdivide cache and run artifacts into logical subsets, e.g. similar to
+                https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71.
+            prefix (str): An optional alternative prefix to the experiment-wide prefix (either the experiment name or
+                custom-specified experiment prefix). This can be used if you want a cached object to work easier across
+                multiple experiments, rather than being experiment specific. WARNING: use with caution, cross-experiment
+                caching can mess with provenance.
+            store (bool): Set this to true if the path needs to go into a --store-full run folder.
 
         Returns:
             A string filepath that an object can be written to.
         """
+        # TODO: provide some examples in the docstring
         args_hash = record.get_hash()
-        object_path = (
-            f"{self._get_name()}_{args_hash}_{self.current_stage_name}_{obj_name}"
-        )
+        if prefix is None:
+            prefix = self._get_name()
 
-        if output:
-            return os.path.join(self.get_run_output_path(), object_path)
-        elif base_path is not None:
-            return os.path.join(base_path, object_path)
-        else:
-            return os.path.join(self.cache_path, object_path)
+        # NOTE: at some point if we have better parallel handling in cf, we'll probably
+        # want "current_stage_name" to be on the record level rather than the manager level.
+        object_path = f"{prefix}_{args_hash}_{self.current_stage_name}_{obj_name}"
+
+        base_path = self.cache_path
+        if store:
+            base_path = os.path.join(self.get_run_output_path(), "artifacts")
+
+        # if specific subdirectories are requested, those go at the _end_ of the base path.
+        # e.g. 'data/cache/my/sub/directories/[object_filepath]'
+        if subdir is not None:
+            base_path = os.path.join(base_path, subdir)
+
+        # TODO: (3/21/2023) unsure if always making the path is correct, may need
+        # to add a parameter for this
+        os.makedirs(base_path, exist_ok=True)
+        return os.path.join(base_path, object_path)
 
     def get_str_timestamp(self) -> str:
         """Convert the manager's run timestamp into a string representation."""
