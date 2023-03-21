@@ -188,7 +188,7 @@ class Cacheable:
     def save_metadata(self):
         metadata_path = self.get_path("_metadata.json")
         with open(metadata_path, "w") as outfile:
-            json.dump(self.metadata, indent=2, default=str)
+            json.dump(self.metadata, outfile, indent=2, default=str)
 
     def load_metadata(self) -> Dict:
         metadata_path = self.get_path("_metadata.json")
@@ -269,32 +269,32 @@ class Cacheable:
 class JsonCacher(Cacheable):
     """Dumps an object to indented JSON."""
 
-    def __init__(self, path_override=None):
-        super().__init__(".json", path_override=path_override)
+    def __init__(self, **kwargs):
+        super().__init__(extension=".json", **kwargs)
 
     def load(self):
-        with open(self.path) as infile:
+        with open(self.get_path()) as infile:
             obj = json.load(infile)
         return obj
 
     def save(self, obj):
-        with open(self.path, "w") as outfile:
+        with open(self.get_path(), "w") as outfile:
             json.dump(obj, outfile, indent=4, default=lambda x: str(x))
 
 
 class PickleCacher(Cacheable):
     """Dumps an object to a pickle file."""
 
-    def __init__(self, path_override=None):
-        super().__init__(".pkl.gz", path_override=path_override)
+    def __init__(self, **kwargs):
+        super().__init__(extension=".pkl", **kwargs)
 
     def load(self):
-        with open(self.path, "rb") as infile:
+        with open(self.get_path(), "rb") as infile:
             obj = pickle.load(infile)
         return obj
 
     def save(self, obj):
-        with open(self.path, "wb") as outfile:
+        with open(self.get_path(), "wb") as outfile:
             pickle.dump(obj, outfile)
 
 
@@ -325,10 +325,10 @@ class PandasJsonCacher(Cacheable):
         super().__init__(".json", path_override=path_override)
 
     def load(self):
-        return pd.read_json(self.path, **self.read_csv_args)
+        return pd.read_json(self.get_path(), **self.read_csv_args)
 
     def save(self, obj):
-        obj.to_json(self.path, **self.to_json_args)
+        obj.to_json(self.get_path(), **self.to_json_args)
 
 
 class PandasCsvCacher(Cacheable):
@@ -346,16 +346,17 @@ class PandasCsvCacher(Cacheable):
         path_override: str = None,
         to_csv_args: Dict = dict(),
         read_csv_args: Dict = dict(index_col=0),
+        **kwargs
     ):
         self.read_csv_args = read_csv_args
         self.to_csv_args = to_csv_args
-        super().__init__(".csv", path_override=path_override)
+        super().__init__(path_override=path_override, extension=".csv", **kwargs)
 
     def load(self):
-        return pd.read_csv(self.path, **self.read_csv_args)
+        return pd.read_csv(self.get_path(), **self.read_csv_args)
 
     def save(self, obj):
-        obj.to_csv(self.path, **self.to_csv_args)
+        obj.to_csv(self.get_path(), **self.to_csv_args)
 
 
 class FileReferenceCacher(Cacheable):
@@ -393,8 +394,8 @@ class FileReferenceCacher(Cacheable):
                 return my_file_list
     """
 
-    def __init__(self, path_override=None):
-        super().__init__(".json", path_override=path_override)
+    def __init__(self, **kwargs):
+        super().__init__(extension=".json", **kwargs)
 
     def check(self) -> bool:
         # check the file list file exists
@@ -404,7 +405,7 @@ class FileReferenceCacher(Cacheable):
         # load the file list and check each file
         # NOTE: we don't need to re-check args overwrite because that
         # would already have applied in the super check
-        with open(self.path) as infile:
+        with open(self.get_path()) as infile:
             files = json.load(infile)
 
         if type(files) == list:
@@ -419,10 +420,10 @@ class FileReferenceCacher(Cacheable):
         return True
 
     def load(self) -> Union[List[str], str]:
-        with open(self.path) as infile:
+        with open(self.get_path()) as infile:
             files = json.load(infile)
         return files
 
     def save(self, files: Union[List[str], str]):
-        with open(self.path, "w") as outfile:
+        with open(self.get_path(), "w") as outfile:
             json.dump(files, outfile, indent=4)
