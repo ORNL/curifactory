@@ -375,7 +375,7 @@ def test_aggregate_no_args_records_overwrite_doesnot_load_cache(
 def test_get_path_file_included_in_full_store(configured_test_manager):
     """A file manually saved within a stage using get_path should correctly be
     copied to the run folder in a full-store run."""
-    configured_test_manager.store_entire_run = True
+    configured_test_manager.store_full = True
 
     @cf.stage(None, ["other_output"], [PickleCacher])
     def custom_output(record):
@@ -404,7 +404,7 @@ def test_get_path_file_included_in_full_store(configured_test_manager):
 def test_get_dir_folder_included_in_full_store(configured_test_manager):
     """File(s) manually saved within a stage using get_dir should correctly be
     copied to the run folder in a full-store run."""
-    configured_test_manager.store_entire_run = True
+    configured_test_manager.store_full = True
 
     @cf.stage(None, ["other_output"], [PickleCacher])
     def custom_output(record):
@@ -434,7 +434,7 @@ def test_get_dir_folder_included_in_full_store(configured_test_manager):
 def test_get_path_file_excluded_in_full_store_when_not_tracked(configured_test_manager):
     """A file manually saved within a stage using get_path should NOT be
     copied to the run folder in a full-store run when not tracked."""
-    configured_test_manager.store_entire_run = True
+    configured_test_manager.store_full = True
 
     @cf.stage(None, ["other_output"], [PickleCacher])
     def custom_output(record):
@@ -465,7 +465,7 @@ def test_get_dir_folder_excluded_in_full_store_when_not_tracked(
 ):
     """File(s) manually saved within a stage using get_dir should NOT be
     copied to the run folder in a full-store run when not tracked."""
-    configured_test_manager.store_entire_run = True
+    configured_test_manager.store_full = True
 
     @cf.stage(None, ["other_output"], [PickleCacher])
     def custom_output(record):

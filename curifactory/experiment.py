@@ -36,7 +36,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     log_debug: bool = False,
     dry: bool = False,
     dry_cache: bool = False,
-    store_entire_run: bool = False,
+    store_full: bool = False,
     log_errors: bool = False,
     custom_name: str = None,
     build_docker: bool = False,
@@ -79,7 +79,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         dry_cache (bool): Setting this to true only suppresses saving cache files. This is recommended
             if you're running with a cache_dir_override for some previous --store-full run, so you
             don't accidentally overwrite or add new data to the --store-full directory.
-        store_entire_run (bool): Store environment info, log, output report, and all cached files in a
+        store_full (bool): Store environment info, log, output report, and all cached files in a
             run-specific folder (:code:`data/runs` by default)
         log_errors (bool): Whether to include error messages in the log output.
         custom_name (str): Instead of using the experiment name to group cached data, use this name instead.
@@ -167,7 +167,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         if global_args_indices is not None:
             for index_range in global_args_indices:
                 run_string += f" --global-indices {index_range}"
-        if store_entire_run:
+        if store_full:
             run_string += " --store-full"
         if dry:
             run_string += " --dry"
@@ -210,9 +210,9 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         # correctly (doesn't have run info with run num.) We throw a warning
         # to ensure the user knows any full store caching they do (really all
         # caching) needs to be handled by the rank 0 process.
-        if store_entire_run:
+        if store_full:
             warn_store_full_during_distributed = True
-            store_entire_run = False
+            store_full = False
 
     # get the experiment run notes if requested
     if notes == "":
@@ -237,12 +237,12 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
     # force full store if building a docker container
     if build_docker:
-        store_entire_run = True
+        store_full = True
 
     if mngr is None:
         mngr = ArtifactManager(
             experiment_name,
-            store_entire_run=store_entire_run,
+            store_full=store_full,
             dry=dry,
             dry_cache=dry_cache,
             custom_name=custom_name,
@@ -400,7 +400,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             # NOTE: (3/5/2023) is it just so that the hash is computed and stored
             # on the args? Unclear exactly why that's necessary but that is technically
             # a side-effect
-            if store_entire_run:
+            if store_full:
                 hashing.args_hash(
                     argset, store_in_registry=False
                 )  # don't try to store because get_run_output_path does not exist yet
@@ -423,7 +423,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
     # store params registry in run folder
     # TODO: is this already being done in manager get_path?
-    if store_entire_run:
+    if store_full:
         for argset in argsets:
             hashing.args_hash(
                 argset,
@@ -437,7 +437,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             "NOTE - running in dry mode. This log will not be saved, and no new"
             + " files will be cached. (Existing caches will still be read.)"
         )
-    if store_entire_run:
+    if store_full:
         logging.info(
             "NOTE - running in full store mode. A copy of all cached objects and environment information will be stored in %s",
             mngr.get_run_output_path(),
@@ -488,7 +488,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     log_debug,
                     dry,
                     dry_cache,
-                    False,  # store_entire_run
+                    False,  # store_full
                     log_errors,
                     custom_name,
                     False,  # build_docker
@@ -630,7 +630,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     if not parallel_mode:
         mngr.store()
 
-    if log and store_entire_run and not dry:
+    if log and store_full and not dry:
         # copy the logfile(s) over (when running in parallel, grab the subproc logs too)
         log_name = mngr.get_reference_name()
         log_path = f"logs/{log_name}*.log"
@@ -720,7 +720,7 @@ def write_experiment_notebook(
     logging.info("Creating experiment notebook...")
 
     if use_global_cache is None:
-        use_global_cache = not manager.store_entire_run
+        use_global_cache = not manager.store_full
 
     output_lines = [
         "# %%",
@@ -1240,7 +1240,7 @@ Examples:
         log_debug=args.verbose,
         dry=args.dry,
         dry_cache=args.dry_cache,
-        store_entire_run=args.store_full,
+        store_full=args.store_full,
         log_errors=args.log_errors,
         custom_name=args.name,
         build_docker=args.docker,

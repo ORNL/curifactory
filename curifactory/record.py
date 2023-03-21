@@ -91,7 +91,7 @@ class Record:
                 registry_path=self.manager.manager_cache_path,
             )
 
-            if self.manager.store_entire_run:
+            if self.manager.store_full:
                 hashing.args_hash(
                     self.args,
                     store_in_registry=not (
@@ -120,7 +120,7 @@ class Record:
             self.manager.manager_cache_path,
             not (self.manager.dry or self.manager.parallel_mode),
         )
-        if self.manager.store_entire_run:
+        if self.manager.store_full:
             hashing.add_args_combo_hash(
                 self,
                 aggregate_records,

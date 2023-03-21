@@ -17,7 +17,7 @@ from curifactory.manager import ArtifactManager
         (
             dict(experiment_name="test", parameters_list=["params1", "params2"]),
             dict(
-                store_entire_run=False,
+                store_full=False,
                 dry=False,
                 dry_cache=False,
                 custom_name=None,
@@ -31,7 +31,7 @@ from curifactory.manager import ArtifactManager
         (
             dict(experiment_name="test", parameters_list=[]),
             dict(
-                store_entire_run=False,
+                store_full=False,
                 dry=False,
                 dry_cache=False,
                 custom_name=None,
@@ -49,7 +49,7 @@ from curifactory.manager import ArtifactManager
                 cache_dir_override="test/examples/data/superspecialcache",
             ),
             dict(
-                store_entire_run=False,
+                store_full=False,
                 dry=False,
                 dry_cache=False,
                 custom_name=None,
@@ -64,10 +64,10 @@ from curifactory.manager import ArtifactManager
             dict(
                 experiment_name="test",
                 parameters_list=["params1"],
-                store_entire_run=True,
+                store_full=True,
             ),
             dict(
-                store_entire_run=True,
+                store_full=True,
                 dry=False,
                 dry_cache=False,
                 custom_name=None,
@@ -86,7 +86,7 @@ from curifactory.manager import ArtifactManager
                 dry_cache=True,
             ),
             dict(
-                store_entire_run=False,
+                store_full=False,
                 dry=True,
                 dry_cache=True,
                 custom_name=None,
@@ -104,7 +104,7 @@ from curifactory.manager import ArtifactManager
                 custom_name="custom_test",
             ),
             dict(
-                store_entire_run=False,
+                store_full=False,
                 dry=False,
                 dry_cache=False,
                 custom_name="custom_test",
@@ -118,7 +118,7 @@ from curifactory.manager import ArtifactManager
         (
             dict(experiment_name="test", parameters_list=["params1"], lazy=True),
             dict(
-                store_entire_run=False,
+                store_full=False,
                 dry=False,
                 dry_cache=False,
                 custom_name=None,
@@ -132,7 +132,7 @@ from curifactory.manager import ArtifactManager
         (
             dict(experiment_name="test", parameters_list=["params1"], ignore_lazy=True),
             dict(
-                store_entire_run=False,
+                store_full=False,
                 dry=False,
                 dry_cache=False,
                 custom_name=None,
@@ -201,7 +201,7 @@ def test_rank_manager_integration(
         pass
     mock.assert_called_once_with(
         "test",
-        store_entire_run=False,
+        store_full=False,
         dry=False,
         dry_cache=False,
         custom_name=None,
@@ -235,7 +235,7 @@ def test_rank_manager_store_full_integration(
     clear_rank_env_vars,
 ):
     """A rank-zero process in a distributed run with store full should still set
-    'store_entire_run' on manager."""
+    'store_full' on manager."""
     if local_rank is not None:
         os.environ["LOCAL_RANK"] = str(local_rank)
     if node_rank is not None:
@@ -244,7 +244,7 @@ def test_rank_manager_store_full_integration(
     mock = mocker.patch.object(ArtifactManager, "__init__", return_value=None)
     try:
         run_experiment(
-            experiment_name="test", parameters_list=["params1"], store_entire_run=True
+            experiment_name="test", parameters_list=["params1"], store_full=True
         )
     except AttributeError:
         # NOTE: I'm not actually sure a better way around this, all I want to test is that
@@ -252,7 +252,7 @@ def test_rank_manager_store_full_integration(
         pass
     mock.assert_called_once_with(
         "test",
-        store_entire_run=expect_store_full,
+        store_full=expect_store_full,
         dry=False,
         dry_cache=False,
         custom_name=None,

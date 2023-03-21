@@ -727,7 +727,7 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
                 artifact.file = cachers[i].path
 
                 # copy it over to output run folder if necessary
-                if record.manager.store_entire_run:
+                if record.manager.store_full:
                     # if we don't handle lazy separately it will literally store the lazy object.
                     # Instead, just use the OS to copy the file over. (This avoids us having to
                     # eat the memory costs of reloading and resaving.)
@@ -823,7 +823,7 @@ def _store_reportables(stage_name, record, aggregate_records=None):
     reportables_list_cacher.save(paths)
     # NOTE: unnecessary because the reportables don't get copied over anyway, see todo note above.
     # (we should get this for free without needing this code when we add extra path tracking to the manager.)
-    # if record.manager.store_entire_run:
+    # if record.manager.store_full:
     #     reportables_list_cacher.set_path(
     #         record.manager.get_path(
     #             "reportables_file_list",
@@ -883,7 +883,7 @@ def _store_outputs(
 
             # check if we store an additional run output copy
             # TODO: (3/20/2023) can get rid of entirely if we manage via tracked paths
-            if record.manager.store_entire_run:
+            if record.manager.store_full:
                 cachers[index].set_path(
                     record.manager.get_artifact_path(outputs[index], record, store=True)
                 )
@@ -895,7 +895,7 @@ def _store_outputs(
             outputs[index].cacher = cachers[index]
 
     # store any additionally tracked paths as needed
-    if record.manager.store_entire_run:
+    if record.manager.store_full:
         for obj_name, path in record.unstored_tracked_paths:
             full_store_path = record.manager.get_artifact_path(
                 obj_name, record=record, store=True

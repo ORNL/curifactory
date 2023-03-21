@@ -72,7 +72,7 @@ def test_stage_integration_storefull(
     configured_test_manager,
 ):
     """The stage should be calling manager's get_artifact_path twice with the correct parameters."""
-    configured_test_manager.store_entire_run = True
+    configured_test_manager.store_full = True
     mock = mocker.patch.object(
         configured_test_manager, "get_artifact_path", return_value="test_path"
     )
@@ -125,7 +125,7 @@ def test_get_path_path_override(sample_args, configured_test_manager):
 def test_get_path_store_full(sample_args, configured_test_manager):
     """Calling get_artifact_path with store-full should return the expected path."""
     record = Record(configured_test_manager, sample_args)
-    configured_test_manager.store_entire_run = True
+    configured_test_manager.store_full = True
     ts = configured_test_manager.get_str_timestamp()
     path = configured_test_manager.get_artifact_path("test_output", record, store=True)
     assert (
@@ -145,7 +145,7 @@ def test_get_path_custom_name(sample_args, configured_test_manager):
 def test_get_path_custom_name_and_store_full(sample_args, configured_test_manager):
     """Calling get_artifact_path when a custom name is in use and storefull is called should return the expected path."""
     record = Record(configured_test_manager, sample_args)
-    configured_test_manager.store_entire_run = True
+    configured_test_manager.store_full = True
     configured_test_manager.custom_name = "some_custom_name"
     ts = configured_test_manager.get_str_timestamp()
     path = configured_test_manager.get_artifact_path("test_output", record, store=True)
@@ -228,7 +228,7 @@ def test_write_run_env_output(configured_test_manager):
 def test_run_line_sanitization_normal(configured_test_manager):
     """Ensure that a normal store-full run-line will result in a correct reproduction line in the run info."""
     configured_test_manager.run_line = "experiment test -p params1 --store-full"
-    configured_test_manager.store_entire_run = True
+    configured_test_manager.store_full = True
     configured_test_manager.store()
     ts = configured_test_manager.get_str_timestamp()
     assert (
@@ -242,7 +242,7 @@ def test_run_line_sanitization_order(configured_test_manager):
     configured_test_manager.run_line = (
         "experiment test -p params1 --store-full --parallel 4"
     )
-    configured_test_manager.store_entire_run = True
+    configured_test_manager.store_full = True
     configured_test_manager.store()
     ts = configured_test_manager.get_str_timestamp()
     assert (
@@ -256,7 +256,7 @@ def test_run_line_sanitization_overwrite(configured_test_manager):
     configured_test_manager.run_line = (
         "experiment test -p params1 --store-full --parallel 4 --overwrite"
     )
-    configured_test_manager.store_entire_run = True
+    configured_test_manager.store_full = True
     configured_test_manager.store()
     ts = configured_test_manager.get_str_timestamp()
     assert (

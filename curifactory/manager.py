@@ -26,7 +26,7 @@ class ArtifactManager:
             most relevant information and affects caching paths. If a manager is being
             used primarily from jupyter notebooks, you could for instance set this to
             be the name of the notebook.
-        store_entire_run (bool): Store/copy environment info, log, output report, and
+        store_full (bool): Store/copy environment info, log, output report, and
             all cached files in a run-specific folder (this is a --store-full run.)
         dry (bool): Setting dry to true will suppress saving any files (including logs), and will
             not update parameter stores. (It should have no effect on any files.)
@@ -65,7 +65,7 @@ class ArtifactManager:
     def __init__(
         self,
         experiment_name: str = None,
-        store_entire_run: bool = False,
+        store_full: bool = False,
         dry: bool = False,
         dry_cache: bool = False,
         custom_name: str = None,
@@ -144,7 +144,7 @@ class ArtifactManager:
 
         self.records = []
         """The list of records currently managed by this manager."""
-        self.store_entire_run: bool = store_entire_run
+        self.store_full: bool = store_full
         """Flag for whether to store/copy environment info, log, output report, and
         all cached files in a run-specific folder."""
         self.dry: bool = dry
@@ -340,7 +340,7 @@ class ArtifactManager:
             # update
             store = ManagerStore(self.manager_cache_path)
             self.run_info = store.update_run(self)
-            if self.store_entire_run:
+            if self.store_full:
                 # update relevant run_info too with new_run
                 if self.run_info is not None:
                     with open(
@@ -352,7 +352,7 @@ class ArtifactManager:
             store = ManagerStore(self.manager_cache_path)
             self.run_info = store.add_run(self)
             self.stored = True
-            if self.store_entire_run:
+            if self.store_full:
                 self.write_run_env_output()
 
     def write_run_env_output(self):
@@ -524,7 +524,7 @@ class ArtifactManager:
             self, self.reports_path, self.get_reference_name(), self.report_css_path
         )
         self.live_report_path_generated = True
-        if self.store_entire_run:
+        if self.store_full:
             reporting.run_report(
                 self, self.get_run_output_path(), "report", self.report_css_path
             )

@@ -117,7 +117,7 @@ class ManagerStore:
             "workdir_dirty": mngr.git_workdir_dirty,
             "params_files": mngr.experiment_args_file_list,
             "args": mngr.experiment_args,
-            "full_store": mngr.store_entire_run,
+            "full_store": mngr.store_full,
             "status": "incomplete",
             "cli": mngr.run_line,
             "hostname": mngr.hostname,
@@ -125,7 +125,7 @@ class ManagerStore:
         }
 
         # sanitize reproduction cli command
-        if mngr.store_entire_run:
+        if mngr.store_full:
             run = self._get_reproduction_line(mngr, run)
 
         self.runs.append(run)
@@ -144,9 +144,9 @@ class ManagerStore:
         if sanitized_run_line.endswith("--store-full"):
             sanitized_run_line = sanitized_run_line[:-13]
 
-        store_entire_run_path = os.path.join(mngr.runs_path, mngr.get_reference_name())
+        cache_path = mngr.get_run_output_path()
         mngr.reproduction_line = (
-            f"{sanitized_run_line} --cache {store_entire_run_path} --dry-cache"
+            f"{sanitized_run_line} --cache {cache_path} --dry-cache"
         )
 
         run["reproduce"] = mngr.reproduction_line
@@ -178,7 +178,7 @@ class ManagerStore:
         run_info["params_files"] = mngr.experiment_args_file_list
         run_info["args"] = mngr.experiment_args
 
-        if mngr.store_entire_run:
+        if mngr.store_full:
             run_info = self._get_reproduction_line(mngr, run_info)
 
         self.runs[index] = run_info

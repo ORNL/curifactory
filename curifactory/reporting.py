@@ -411,20 +411,18 @@ def render_report_info_block(  # noqa: C901 -- TODO: yeaaaaah break it up at som
             f"<p id='run-string'>Run string: <pre>{manager.run_line}</pre></p>"
         )
 
-        if manager.store_entire_run:
-            store_entire_run_path = os.path.join(
-                manager.runs_path, manager.get_reference_name()
-            )
+        if manager.store_full:
+            cache_path = manager.get_run_output_path()
             html_lines.append(
                 f"<p><span style='color: green'><b>This run has a full cache store.</b></span> Live runs have a much lower chance of reproducing correctly than an experiment script, but you can utilize this cache with:"
-                f'<pre>manager = ArtifactManager("{manager.experiment_name}", cache_path="{store_entire_run_path}", dry_cache=True)</pre></p>'
+                f'<pre>manager = ArtifactManager("{manager.experiment_name}", cache_path="{cache_path}", dry_cache=True)</pre></p>'
             )
     else:
         html_lines.append(
             f"<p id='run-string'>Run string: <pre>{manager.run_line}</pre></p>"
         )
 
-        if manager.store_entire_run:
+        if manager.store_full:
             html_lines.append(
                 f"<p><span style='color: green'><b>This run has a full cache store.</b></span> Reproduce with:"
                 f"<pre>{manager.reproduction_line}</pre></p>"
@@ -750,7 +748,6 @@ def update_report_index(experiments_path, reports_root_dir):
                 runs.append(info)
                 experiment_name = info["experiment_name"]
                 if experiment_name not in experiment_runs:
-
                     # try to get comment on experiment
                     comment = ""
                     try:
