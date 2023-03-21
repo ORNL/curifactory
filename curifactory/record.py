@@ -4,6 +4,7 @@ through some set of stages."""
 import copy
 import logging
 import os
+from typing import Dict, List
 
 from curifactory import hashing
 from curifactory.caching import Lazy
@@ -59,25 +60,36 @@ class Record:
         """The list of stage names that this record has run through so far."""
         self.stage_inputs = []
         """A list of lists per stage with the state inputs that stage requested."""
+        # TODO: what's the type? Are these indices? or artifact representations? Keys to the artifact representations?
         self.stage_outputs = []
         """A list of lists per stage with the state outputs that stage produced."""
+        # TODO: what's the type? Are these indices? or artifact representations? Keys to the artifact representations?
         self.input_records = []
         """A list of any records used as input to this one. This mostly only occurs when aggregate
         stages are run."""
+        # TODO: what's the type??? Just full record references?
         self.is_aggregate = False
         """If this record runs an aggregate stage, we flip this flag to true to know we need to use the
         combo hash rather than the individual args hash."""
         self.combo_hash = None
         """This gets set on records that run an aggregate stage. This is set from utils.add_args_combo_hash."""
-        self.unstored_tracked_paths = []
+        self.unstored_tracked_paths: List[Dict[str, str]] = []
         """Paths obtained with get_path/get_dir that should be copied to a full
         store folder. The last executed stage should manage copying anything
-        listed here and then clearing it. This is a list of tuples: (obj_name,
-        path)"""
+        listed here and then clearing it. This is a list of dicts that would be
+        passed to the artifact manager's ``get_artifact_path` function: (obj_name, subdir, prefix, and path)
+        """
 
         self.set_hash()
         if not hide:
             self.manager.records.append(self)
+
+    def store_tracked_paths(self):
+        """Copy all of the recent relevant files generated (likely from the recently executing
+        stage) into a store-full run. This is run automatically at the end of a stage.
+        """
+        # TODO: if name, subdir, and prefix are all none, then take path, get filepath name, and use that as the name?
+        pass
 
     def set_hash(self):
         """Establish the hash for the current args (and set it on the args instance)."""
@@ -211,7 +223,9 @@ class Record:
             obj_name=obj_name, record=self, subdir=subdir, prefix=prefix
         )
         if track:
-            self.unstored_tracked_paths.append((obj_name, path))
+            self.unstored_tracked_paths.append(
+                dict(obj_name=obj_name, subdir=subdir, prefix=prefix, path=path)
+            )
         return path
 
     def get_dir(
@@ -240,7 +254,14 @@ class Record:
             obj_name=dir_name_suffix, record=self, subdir=subdir, prefix=prefix
         )
         if track:
-            self.unstored_tracked_paths.append((dir_name_suffix, dir_path))
+            self.unstored_tracked_paths.append(
+                dict(
+                    obj_name=dir_name_suffix,
+                    subdir=subdir,
+                    prefix=prefix,
+                    path=dir_path,
+                )
+            )
 
         os.makedirs(dir_path, exist_ok=True)
         return dir_path
@@ -259,7 +280,7 @@ class ArtifactRepresentation:
         artifact: The artifact itself.
     """
 
-    def __init__(self, record, name, artifact):
+    def __init__(self, record, name, artifact, metadata=None):
         self.init_record = record
         self.name = name
         self.string = f"({type(artifact).__name__}) {str(artifact)[:20]}"
@@ -274,6 +295,8 @@ class ArtifactRepresentation:
             self.string += f" shape: {shape}"
         elif hasattr(artifact, "__len__"):
             self.string += f" len: {len(artifact)}"
+
+        self.metadata = metadata
 
         self.file = "no file"
 
