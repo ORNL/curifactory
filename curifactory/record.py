@@ -69,7 +69,7 @@ class Record:
         combo hash rather than the individual args hash."""
         self.combo_hash = None
         """This gets set on records that run an aggregate stage. This is set from utils.add_args_combo_hash."""
-        self.additional_tracked_paths = []
+        self.unstored_tracked_paths = []
         """Paths obtained with get_path/get_dir that should be copied to a full
         store folder. The last executed stage should manage copying anything
         listed here and then clearing it. This is a list of tuples: (obj_name,
@@ -211,7 +211,7 @@ class Record:
             obj_name=obj_name, record=self, subdir=subdir, prefix=prefix
         )
         if track:
-            self.additional_tracked_paths.append((obj_name, path))
+            self.unstored_tracked_paths.append((obj_name, path))
         return path
 
     def get_dir(
@@ -240,7 +240,7 @@ class Record:
             obj_name=dir_name_suffix, record=self, subdir=subdir, prefix=prefix
         )
         if track:
-            self.additional_tracked_paths.append((dir_name_suffix, dir_path))
+            self.unstored_tracked_paths.append((dir_name_suffix, dir_path))
 
         os.makedirs(dir_path, exist_ok=True)
         return dir_path

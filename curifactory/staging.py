@@ -896,7 +896,7 @@ def _store_outputs(
 
     # store any additionally tracked paths as needed
     if record.manager.store_entire_run:
-        for obj_name, path in record.additional_tracked_paths:
+        for obj_name, path in record.unstored_tracked_paths:
             full_store_path = record.manager.get_artifact_path(
                 obj_name, record=record, store=True
             )
@@ -905,4 +905,4 @@ def _store_outputs(
                 shutil.copytree(path, full_store_path)
             else:
                 shutil.copy(path, full_store_path)
-    record.additional_tracked_paths = []
+    record.unstored_tracked_paths = []
