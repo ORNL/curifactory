@@ -544,6 +544,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                         logging.debug("Disabling lazy cache for '%s'" % output)
                         outputs[index] = output.name
 
+            # check for mismatched amounts of cachers
             if cachers is not None and len(cachers) != len(outputs):
                 raise CachersMismatchError(
                     f"Stage '{name}' - the number of cachers does not match the number of outputs to cache"
@@ -562,8 +563,14 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                     cacher = cachers[i]
                     if type(cacher) == type:
                         cachers[i] = cacher()
-                    # set the active record on the cacher
-                    cachers[i].record = record
+                    # set the active record on the cacher as well as provide a default name
+                    # (the name of the output)
+                    cachers[i].set_record(record)
+                    if cachers[i].name is None and cachers[i].path_override is None:
+                        if type(outputs[i]) == Lazy:
+                            cachers[i].name = outputs[i].name
+                        else:
+                            cachers[i].name = outputs[i]
 
             pre_cache_time_start = time.perf_counter()  # time to load from cache
             record.manager.lock()
@@ -571,6 +578,17 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             if cache_valid:
                 # get previous reportables if available
                 _check_cached_reportables(name, record, records)
+
+                # if we've hit this point, we will be returning early/not executing
+                # the stage because all outputs are found. The process of checking
+                # cached outputs should correctly add all the necessary tracked paths,
+                # so to transfer these paths into a store full run, we just need
+                # the below call
+                # NOTE: I _believe_ that we also get metadata from this because
+                # the load_metadata will have entered the metadata path already.
+                # this will need to be tested
+                record.store_tracked_paths()
+
             record.manager.unlock()
             pre_cache_time_end = time.perf_counter()
 
@@ -612,6 +630,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             record.manager.lock()
             _store_outputs(name, record, outputs, cachers, function_outputs, records)
             _store_reportables(name, record, records)
+            record.store_tracked_paths()
             record.manager.unlock()
             post_cache_time_end = time.perf_counter()
 

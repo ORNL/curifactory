@@ -179,7 +179,7 @@ class Cacheable:
             artifact_generated=datetime.now().strftime(utils.TIMESTAMP_FORMAT),
             params_hash=self.record.get_hash(),
             params_name=self.record.args.name,
-            stage=self.record.manager.current_stage,
+            stage=self.record.manager.current_stage_name,
             artifact_name=self.name,
             cacher_type=str(type(self)),
             manager_run_info=self.record.run_info,  # TODO: remove 'status' because it will never be updated here.
