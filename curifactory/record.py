@@ -68,7 +68,7 @@ class Record:
         self.input_records = []
         """A list of any records used as input to this one. This mostly only occurs when aggregate
         stages are run."""
-        # TODO: what's the type??? Just full record references?
+        # NOTE: these are actual record references
         self.is_aggregate = False
         """If this record runs an aggregate stage, we flip this flag to true to know we need to use the
         combo hash rather than the individual args hash."""
@@ -94,7 +94,7 @@ class Record:
         """
         if self.manager.store_full:
             for path_info in self.unstored_tracked_paths:
-                name = path_info["name"]
+                name = path_info["obj_name"]
                 subdir = path_info["subdir"]
                 prefix = path_info["prefix"]
                 path = path_info["path"]
@@ -102,6 +102,12 @@ class Record:
                 # don't duplicate if we've already stored it (this might occur from multiple get_path
                 # calls on a cacher)
                 if path in self.stored_paths:
+                    continue
+
+                # paths can get added to the list that don't exist from a cacher's check() call
+                # (e.g. checking if reportables exist but a stage output no reportables.)
+                # at least for now we silently skip these.
+                if not os.path.exists(path):
                     continue
 
                 # if the auto naming strategy isn't being used (only a filepath given, no name),
@@ -121,7 +127,11 @@ class Record:
 
                 # remember that we copied this path
                 self.stored_paths.append(path)
-            self.unstored_tracked_paths = []
+        # I'm clearing unstored regardless of store full or not, because we may
+        # eventually want to support something like --store-artifact, where we
+        # selectively add specific things to the tracked paths, so we want tracked
+        # paths to not build up things that are never going to be stored.
+        self.unstored_tracked_paths = []
 
     def set_hash(self):
         """Establish the hash for the current args (and set it on the args instance)."""
@@ -297,6 +307,17 @@ class Record:
 
         os.makedirs(dir_path, exist_ok=True)
         return dir_path
+
+    def get_reference_name(self) -> str:
+        """This returns a name describing the record, in the format 'Record [index on manager] (paramset name)
+
+        This should be the same as what's shown in the stage map in the output report.
+        """
+        for i, record in enumerate(self.manager.records):
+            if self == record:
+                paramset_name = record.args.name if record.args is not None else "None"
+                return f"Record {i} ({paramset_name})"
+        return None
 
 
 class ArtifactRepresentation:

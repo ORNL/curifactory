@@ -7,6 +7,7 @@ Note that there are effectively two ways to use cacheables -
 # TODO finish this
 """
 
+import copy
 import json
 import logging
 import os
@@ -109,6 +110,10 @@ class Cacheable:
         """The running list of paths this cacher is using, as appended by ``get_path``."""
         self.metadata: Dict = None
         """Metadata about the artifact cached with this cacheable."""
+        self.extra_metadata: Dict = {}
+        """``collect_metadata`` uses but does not overwrite this, placing into the `extra` key
+        in the actual metadata. This can be used by the cacher's save function to store additional
+        information that would then be available if the 'load' function calls ``load_metadata()``."""
 
         if record is not None:
             self.set_record(record)
@@ -175,18 +180,32 @@ class Cacheable:
 
     def collect_metadata(self):
         # TODO: error if record not set
+
+        manager_run_info = copy.copy(self.record.manager.run_info)
+        del manager_run_info[
+            "status"
+        ]  # it's always going to be incomplete at this point
+
+        # input_records are record references, need to resolve similarly to maps in report
+        input_record_names = [
+            record.get_reference_name() for record in self.record.input_records
+        ]
+
         self.metadata = dict(
             artifact_generated=datetime.now().strftime(utils.TIMESTAMP_FORMAT),
             params_hash=self.record.get_hash(),
-            params_name=self.record.args.name,
+            params_name=self.record.args.name if self.record.args is not None else None,
+            record_name=self.record.get_reference_name(),
             stage=self.record.manager.current_stage_name,
             artifact_name=self.name,
             cacher_type=str(type(self)),
-            manager_run_info=self.record.run_info,  # TODO: remove 'status' because it will never be updated here.
-            record_prior_stages=self.record.stages,
-            prior_records=self.record.input_records,  # TODO: unclear what type this is
-            params=hashing.parameters_string_hash_representation(self.record.args),
-            extra={},  # cachers can store any additional info here they want.
+            record_prior_stages=self.record.stages[:-1],
+            prior_records=input_record_names,
+            params=hashing.parameters_string_hash_representation(self.record.args)
+            if self.record.args is not None
+            else None,
+            extra=self.extra_metadata,  # cachers can store any additional info here they want.
+            manager_run_info=manager_run_info,
         )
 
     def save_metadata(self):
@@ -211,7 +230,7 @@ class Cacheable:
             True if we find the cached file and the current :code:`Args`
             don't specify to overwrite, otherwise False.
         """
-        logging.debug("Searching for cached file at %s...", self.path)
+        logging.debug("Searching for cached file at '%s'...", self.get_path())
         if os.path.exists(self.get_path()):
             if (
                 self.record is not None
@@ -235,14 +254,14 @@ class Cacheable:
                         return False
                 # we made it through each record and they weren't overwrite, we're good
                 logging.debug("No records had overwrite, will use cache")
-                logging.info("Cached object '%s' found", self.path)
+                logging.info("Cached object '%s' found", self.get_path())
                 return True
             elif (
                 self.record is not None
                 and self.record.args is not None
                 and not self.record.args.overwrite
             ):
-                logging.info("Cached object '%s' found", self.path)
+                logging.info("Cached object '%s' found", self.get_path())
                 return True
             # TODO: (3/21/2023) there's no logic correctly handling if record is just none, we
             # probably need a separate check that determines if overwrite is set on manager?

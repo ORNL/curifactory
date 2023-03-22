@@ -850,9 +850,12 @@ def _store_reportables(stage_name, record, aggregate_records=None):
     # write a cache file out containing the reportables path names.
     reportables_list_cacher = FileReferenceCacher(
         name="reportables_file_list", record=record
-    ).save(paths)
+    )
+    reportables_list_cacher.save(paths)
 
     # send along metadata for it, to track when the reportables were generated.
+    # NOTE: we've already collected_metadata from passing record in init up above,
+    # so we don't need to use the extra_metadata field on the cacher.
     reportables_list_cacher.metadata["extra"]["reportables"] = True
     reportables_list_cacher.save_metadata()
     # NOTE: unnecessary because the reportables don't get copied over anyway, see todo note above.
@@ -906,7 +909,7 @@ def _store_outputs(
                 f"Caching {outputs[index]} to '{cachers[index].get_path()}'..."
             )
             cachers[index].save(output)
-            artifact.file = cachers[index].path
+            artifact.file = cachers[index].get_path()
 
             # generate and save metadata
             # note that if we got to this point, we actually ran the stage code, so
