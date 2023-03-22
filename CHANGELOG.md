@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   on `Record`'s path tracking to simply copy the cached files into the full store folder at the end of a stage.
 - Cachers' path mechanism - rather than expecting a cacher's `set_path` to be called beforehand, `save` and `load`
   should call the cacher's `get_path()`.
+- The default cachers' `save()` functions return the path that was saved to
 
 
 

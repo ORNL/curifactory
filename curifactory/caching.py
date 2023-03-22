@@ -310,9 +310,11 @@ class JsonCacher(Cacheable):
             obj = json.load(infile)
         return obj
 
-    def save(self, obj):
-        with open(self.get_path(), "w") as outfile:
+    def save(self, obj) -> str:
+        path = self.get_path()
+        with open(path, "w") as outfile:
             json.dump(obj, outfile, indent=4, default=lambda x: str(x))
+        return path
 
 
 class PickleCacher(Cacheable):
@@ -326,9 +328,11 @@ class PickleCacher(Cacheable):
             obj = pickle.load(infile)
         return obj
 
-    def save(self, obj):
-        with open(self.get_path(), "wb") as outfile:
+    def save(self, obj) -> str:
+        path = self.get_path()
+        with open(path, "wb") as outfile:
             pickle.dump(obj, outfile)
+        return path
 
 
 class PandasJsonCacher(Cacheable):
@@ -361,8 +365,10 @@ class PandasJsonCacher(Cacheable):
     def load(self):
         return pd.read_json(self.get_path(), **self.read_csv_args)
 
-    def save(self, obj):
-        obj.to_json(self.get_path(), **self.to_json_args)
+    def save(self, obj) -> str:
+        path = self.get_path()
+        obj.to_json(path, **self.to_json_args)
+        return path
 
 
 class PandasCsvCacher(Cacheable):
@@ -389,8 +395,10 @@ class PandasCsvCacher(Cacheable):
     def load(self):
         return pd.read_csv(self.get_path(), **self.read_csv_args)
 
-    def save(self, obj):
-        obj.to_csv(self.get_path(), **self.to_csv_args)
+    def save(self, obj) -> str:
+        path = self.get_path()
+        obj.to_csv(path, **self.to_csv_args)
+        return path
 
 
 class FileReferenceCacher(Cacheable):
@@ -458,6 +466,8 @@ class FileReferenceCacher(Cacheable):
             files = json.load(infile)
         return files
 
-    def save(self, files: Union[List[str], str]):
-        with open(self.get_path(), "w") as outfile:
+    def save(self, files: Union[List[str], str]) -> str:
+        path = self.get_path()
+        with open(path, "w") as outfile:
             json.dump(files, outfile, indent=4)
+        return path
