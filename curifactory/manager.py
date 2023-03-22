@@ -416,6 +416,7 @@ class ArtifactManager:
         record: Record,
         subdir: str = None,
         prefix: str = None,
+        stage_name: str = None,
         store: bool = False,
     ) -> str:
         """Get a record-appropriate full path/filename for a given object name and record.
@@ -437,6 +438,8 @@ class ArtifactManager:
                 custom-specified experiment prefix). This can be used if you want a cached object to work easier across
                 multiple experiments, rather than being experiment specific. WARNING: use with caution, cross-experiment
                 caching can mess with provenance.
+            stage_name (str): The stage that produced an artifact. If not supplied, uses
+                the currently executing stage name.
             store (bool): Set this to true if the path needs to go into a --store-full run folder.
 
         Returns:
@@ -447,9 +450,12 @@ class ArtifactManager:
         if prefix is None:
             prefix = self._get_name()
 
+        if stage_name is None:
+            stage_name = self.current_stage_name
+
         # NOTE: at some point if we have better parallel handling in cf, we'll probably
         # want "current_stage_name" to be on the record level rather than the manager level.
-        object_path = f"{prefix}_{args_hash}_{self.current_stage_name}_{obj_name}"
+        object_path = f"{prefix}_{args_hash}_{stage_name}_{obj_name}"
 
         base_path = self.cache_path
         if store:

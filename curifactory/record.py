@@ -240,7 +240,12 @@ class Record:
 
     # TODO: should also take an optional 'sub-path' and 'extension'
     def get_path(
-        self, obj_name: str, subdir: str = None, prefix: str = None, track: bool = True
+        self,
+        obj_name: str,
+        subdir: str = None,
+        prefix: str = None,
+        stage_name: str = None,
+        track: bool = True,
     ) -> str:
         """Return an args-appropriate cache path with passed object name.
 
@@ -257,14 +262,23 @@ class Record:
                 custom-specified experiment prefix). This can be used if you want a cached object to work easier across
                 multiple experiments, rather than being experiment specific. WARNING: use with caution, cross-experiment
                 caching can mess with provenance.
+            stage_name (str): The associated stage for a path. If not provided, the currently
+                executing stage name is used.
             track (bool): whether to include returned path in a store full copy
                 or not. This will only work if the returned path is not altered
                 by a stage before saving something to it.
         """
         path = self.manager.get_artifact_path(
-            obj_name=obj_name, record=self, subdir=subdir, prefix=prefix
+            obj_name=obj_name,
+            record=self,
+            subdir=subdir,
+            prefix=prefix,
+            stage_name=stage_name,
         )
         if track:
+            # TODO: (3/22/2023) do I need to also be storing stage name? These are always supposed
+            # to be handled from the current stage only anyway, so the stage name should always
+            # be the last one
             self.unstored_tracked_paths.append(
                 dict(obj_name=obj_name, subdir=subdir, prefix=prefix, path=path)
             )

@@ -114,6 +114,8 @@ class Cacheable:
         """``collect_metadata`` uses but does not overwrite this, placing into the `extra` key
         in the actual metadata. This can be used by the cacher's save function to store additional
         information that would then be available if the 'load' function calls ``load_metadata()``."""
+        self.stage: str = None
+        """The stage associated with this cacher, if applicable."""
 
         if record is not None:
             self.set_record(record)
@@ -164,7 +166,11 @@ class Cacheable:
 
             obj_name = self.name + suffix
             path = self.record.get_path(
-                obj_name, subdir=self.subdir, prefix=self.prefix, track=self.track
+                obj_name,
+                subdir=self.subdir,
+                prefix=self.prefix,
+                stage_name=self.stage,
+                track=self.track,
             )
         if path not in self.cache_paths:
             self.cache_paths.append(path)

@@ -274,6 +274,9 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                     # set the active record on the cacher as well as provide a default name
                     # (the name of the output)
                     cachers[i].set_record(record)
+                    cachers[
+                        i
+                    ].stage = name  # set current stage name, so get_path is correct in later stages (particularly for lazy)
                     if cachers[i].name is None and cachers[i].path_override is None:
                         if type(outputs[i]) == Lazy:
                             cachers[i].name = outputs[i].name
@@ -566,6 +569,9 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                     # set the active record on the cacher as well as provide a default name
                     # (the name of the output)
                     cachers[i].set_record(record)
+                    cachers[
+                        i
+                    ].stage = name  # set current stage name, so get_path is correct in later stages (particularly for lazy)
                     if cachers[i].name is None and cachers[i].path_override is None:
                         if type(outputs[i]) == Lazy:
                             cachers[i].name = outputs[i].name
