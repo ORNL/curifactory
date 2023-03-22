@@ -346,10 +346,11 @@ class PandasJsonCacher(Cacheable):
         path_override: str = None,
         to_json_args: Dict = dict(double_precision=15),
         read_json_args: Dict = dict(),
+        **kwargs
     ):
         self.read_json_args = read_json_args
         self.to_json_args = to_json_args
-        super().__init__(".json", path_override=path_override)
+        super().__init__(path_override=path_override, extension=".json", **kwargs)
 
     def load(self):
         return pd.read_json(self.get_path(), **self.read_csv_args)

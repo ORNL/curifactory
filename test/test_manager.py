@@ -8,89 +8,6 @@ from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as 
 from curifactory import ExperimentArgs, Record, aggregate, hashing, stage
 from curifactory.caching import Cacheable, JsonCacher, Lazy, PickleCacher
 
-
-class FakeCacher(Cacheable):
-    def __init__(self, path_override=None):
-        super().__init__(".fake", path_override=path_override)
-
-    def load(self):
-        return None
-
-    def save(self, obj):
-        pass
-
-
-# -----------------------------------------
-# Stage/manager.get_artifact_path intergration tests
-# -----------------------------------------
-
-
-def test_stage_integration_basic(
-    mocker,  # noqa: F811 -- mocker has to be passed in as fixture
-    sample_args,
-    configured_test_manager,
-):
-    """The stage should be calling manager's get_artifact_path with the correct parameters."""
-    mock = mocker.patch.object(
-        configured_test_manager, "get_artifact_path", return_value="test_path"
-    )
-
-    @stage([], ["test_output"], [FakeCacher])
-    def do_thing(record):
-        return "hello world"
-
-    record = Record(configured_test_manager, sample_args)
-    do_thing(record)
-    mock.assert_called_once_with("test_output", record)
-
-
-# TODO: path_override is going to work a little differently, but this general test might
-# end up belonging in the test_caching, so keep around for now
-@pytest.mark.skip
-def test_stage_integration_path_override(
-    mocker,  # noqa: F811 -- mocker has to be passed in as fixture
-    sample_args,
-    configured_test_manager,
-):
-    """The stage should be calling manager's get_artifact_path with the correct parameters when using a path override in a cacher."""
-    mock = mocker.patch.object(
-        configured_test_manager, "get_artifact_path", return_value="test_path"
-    )
-
-    @stage([], ["test_output"], [FakeCacher(path_override="test/examples/WHAT")])
-    def do_thing(record):
-        return "hello world"
-
-    record = Record(configured_test_manager, sample_args)
-    do_thing(record)
-    mock.assert_called_once_with("test_output", record, base_path="test/examples/WHAT")
-
-
-def test_stage_integration_storefull(
-    mocker,  # noqa: F811 -- mocker has to be passed in as fixture
-    sample_args,
-    configured_test_manager,
-):
-    """The stage should be calling manager's get_artifact_path twice with the correct parameters."""
-    configured_test_manager.store_full = True
-    mock = mocker.patch.object(
-        configured_test_manager, "get_artifact_path", return_value="test_path"
-    )
-
-    @stage([], ["test_output"], [FakeCacher])
-    def do_thing(record):
-        return "hello world"
-
-    record = Record(configured_test_manager, sample_args)
-    do_thing(record)
-
-    assert len(mock.call_args_list) == 2
-    assert mock.call_args_list[0].args == ("test_output", record)
-    assert mock.call_args_list[0].kwargs == dict()
-    assert mock.call_args_list[1].args == ("test_output", record)
-    assert mock.call_args_list[1].kwargs == dict(store=True)
-
-
 # -----------------------------------------
 # get_artifact_path unit tests
 # -----------------------------------------
@@ -111,15 +28,34 @@ def test_get_path_basic_w_stagename(sample_args, configured_test_manager):
     assert path == "test/examples/data/cache/test_sample_hash_somestage_test_output"
 
 
-# TODO: see above
-@pytest.mark.skip
-def test_get_path_path_override(sample_args, configured_test_manager):
-    """Calling get_artifact_path with a basic set of args and a path override should return the expected path."""
+def test_get_path_subdir(sample_args, configured_test_manager):
+    """Calling get_artifact_path with a basic set of args and a subdir should return the expected path."""
     record = Record(configured_test_manager, sample_args)
     path = configured_test_manager.get_artifact_path(
-        "test_output", record, base_path="test/examples/WHAT"
+        "test_output", record, subdir="WHAT"
     )
-    assert path == "test/examples/WHAT/test_sample_hash__test_output"
+    assert path == "test/examples/data/cache/WHAT/test_sample_hash__test_output"
+
+
+def test_get_path_subdirs(sample_args, configured_test_manager):
+    """Calling get_artifact_path with a basic set of args and multiple subdirs should return the expected path."""
+    record = Record(configured_test_manager, sample_args)
+    path = configured_test_manager.get_artifact_path(
+        "test_output", record, subdir="WHAT/somethingelse"
+    )
+    assert (
+        path
+        == "test/examples/data/cache/WHAT/somethingelse/test_sample_hash__test_output"
+    )
+
+
+def test_get_path_prefix(sample_args, configured_test_manager):
+    """Calling get_artifact_path with a basic set of args and a prefix should return the expected path."""
+    record = Record(configured_test_manager, sample_args)
+    path = configured_test_manager.get_artifact_path(
+        "test_output", record, prefix="special_data_proc"
+    )
+    assert path == "test/examples/data/cache/special_data_proc_sample_hash__test_output"
 
 
 def test_get_path_store_full(sample_args, configured_test_manager):
