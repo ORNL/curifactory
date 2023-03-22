@@ -5,6 +5,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [unreleased]
+
+### Added
+- Metadata output for every cached artifact. Alongside every output cache file will be a `[file]_metadata.json`,
+  containing information about the run that generated it, the parameters, and previous stages run in the same record.
+- `track` parameter to cachers, indicating whether the output files should be copied into a full store run folder or not.
+  (It is true by default.)
+- Optional cacher prefixes, which replaces the first part of a cached filepath name (normally the experiment name) with the provided
+  prefix. This allows cross-experiment caching (use with care!)
+- Optional cacher subdir, which places output files into the specified subdirectory in the cache/run folder (allows better organization,
+  e.g. Kedro's data engineering convention of 01_raw, 02_intermediate, etc.)
+- Allowing exact path overrides to be used by a cacher, making it cleaner to use them on the fly/outside of stages.
+
+### Changed
+- Full store cached files are now placed into an `artifacts/` subdirectory of the run folder.
+- `PickleCacher`'s extension is now correctly set to `.pkl` (we aren't actually running gzip on it.)
+- Full store runs no longer call a cacher's `save` function a second time with a new path, instead relying
+  on `Record`'s path tracking to simply copy the cached files into the full store folder at the end of a stage.
+- Cachers' path mechanism - rather than expecting a cacher's `set_path` to be called beforehand, `save` and `load`
+  should call the cacher's `get_path()`.
+
+
+
+
 ## [0.9.3] - 2023-03-21
 
 ### Fixed
