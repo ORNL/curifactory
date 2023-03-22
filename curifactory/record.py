@@ -111,7 +111,8 @@ class Record:
 
     def set_aggregate(self, aggregate_records):
         """Mark this record as starting with an aggregate stage, meaning the hash of all cached outputs produced
-        within this record need to reflect the combo hash of all records going into it."""
+        within this record need to reflect the combo hash of all records going into it.
+        """
         self.is_aggregate = True
         self.combo_hash = hashing.add_args_combo_hash(
             self,
@@ -137,18 +138,18 @@ class Record:
         reportable.record = self
         reportable.stage = self.stages[-1]
 
-        name = ""
+        qualified_name = ""
         if reportable.record.is_aggregate:
-            name = "(Aggregate)_"
+            qualified_name = "(Aggregate)_"
         if reportable.record.args is not None:
-            name += f"{reportable.record.args.name}_"
-        name += f"{reportable.stage}_"
+            qualified_name += f"{reportable.record.args.name}_"
+        qualified_name += f"{reportable.stage}_"
 
         if reportable.name is None:
-            name += str(len(self.manager.reportables))
+            qualified_name += str(len(self.manager.reportables))
         else:
-            name += reportable.name
-        reportable.name = name
+            qualified_name += reportable.name
+        reportable.qualified_name = qualified_name
 
         self.manager.reportables.append(reportable)
 

@@ -91,6 +91,9 @@ class Reportable:
         in :code:`render()` and :code:`html()`"""
         self.name: str = name
         """The suffix to title the reportable with."""
+        self.qualified_name: str = name
+        """The full prefixed name including the stage name and aggregate indicator. This is
+        set by the record when a ``report()`` is called."""
         self.group: str = group
         """If specified, reports group all reportables with the same :code:`group` value together."""
         self.record = None
@@ -960,8 +963,8 @@ def render_reportable(
         )
     else:
         html_lines.append("<div class='reportable'>")
-    html_lines.append(f"<a name='{reportable.name}'></a>")
-    html_lines.append(f"<h3>{reportable.name} {color_string}</h3>")
+    html_lines.append(f"<a name='{reportable.qualified_name}'></a>")
+    html_lines.append(f"<h3>{reportable.qualified_name} {color_string}</h3>")
     reportable_html = reportable.html()
     if isinstance(reportable_html, list):
         html_lines.extend(reportable_html)

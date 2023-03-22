@@ -1,10 +1,13 @@
 import json
 import os
+from test.examples.stages.cache_stages import (
+    filerefcacher_stage,
+    filerefcacher_stage_multifile,
+)
 
 import numpy as np
 import pandas as pd
 import pytest
-from stages.cache_stages import filerefcacher_stage, filerefcacher_stage_multifile
 
 import curifactory as cf
 from curifactory.caching import PandasCsvCacher, PandasJsonCacher, PickleCacher
@@ -136,6 +139,117 @@ def test_reportables_are_cached(configured_test_manager):
     assert len(paths) == 1
     assert paths[0] == reportable_path
     assert os.path.exists(reportable_path)
+
+
+def test_named_reportables_are_cached(configured_test_manager):
+    """Running a stage with a named reportable should cache the reportable and a list of reportable cache files."""
+
+    @cf.stage(None, ["test_output"], [PickleCacher])
+    def basic_reportable(record):
+        record.report(JsonReporter({"test": "hello world"}, name="thing"))
+        return "test"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    basic_reportable(r0)
+
+    list_path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_basic_reportable_reportables_file_list.json",
+    )
+
+    reportable_path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_basic_reportable_reportables/test_basic_reportable_thing.pkl",
+    )
+
+    assert os.path.exists(list_path)
+
+    with open(list_path) as infile:
+        paths = json.load(infile)
+
+    assert len(paths) == 1
+    assert paths[0] == reportable_path
+    assert os.path.exists(reportable_path)
+
+
+def test_cached_reportables_loaded_without_doubling_name(configured_test_manager):
+    """Re-loading cached reportables should not double name!
+
+    (This was caused previously by re-reporting on the record, which prefixed the
+    name in-place.)
+    """
+    run_count = 0
+
+    @cf.stage(None, ["test_output"], [PickleCacher])
+    def basic_reportable(record):
+        nonlocal run_count
+        run_count += 1
+        record.report(JsonReporter({"test": "hello world"}))
+        return "test"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    basic_reportable(r0)
+
+    assert len(configured_test_manager.reportables) == 1
+
+    # run again in a new record with exact same config, so it will find cached
+    # things.
+    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    basic_reportable(r1)
+
+    # make sure we didn't run the stage, so we actually had to load reportables
+    assert run_count == 1
+
+    assert len(configured_test_manager.reportables) == 2
+    assert configured_test_manager.reportables[0].name is None
+    assert configured_test_manager.reportables[1].name is None
+    assert (
+        configured_test_manager.reportables[0].qualified_name
+        == "test_basic_reportable_0"
+    )
+    assert (
+        configured_test_manager.reportables[1].qualified_name
+        == "test_basic_reportable_1"
+    )
+
+
+def test_cached_named_reportables_loaded_without_doubling_name(configured_test_manager):
+    """Re-loading cached named reportables should not double name!
+
+    (This was caused previously by re-reporting on the record, which prefixed the
+    name in-place.)
+    """
+    run_count = 0
+
+    @cf.stage(None, ["test_output"], [PickleCacher])
+    def basic_reportable(record):
+        nonlocal run_count
+        run_count += 1
+        record.report(JsonReporter({"test": "hello world"}, name="thing"))
+        return "test"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    basic_reportable(r0)
+
+    assert len(configured_test_manager.reportables) == 1
+
+    # run again in a new record with exact same config, so it will find cached
+    # things.
+    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    basic_reportable(r1)
+
+    # make sure we didn't run the stage, so we actually had to load reportables
+    assert run_count == 1
+
+    assert len(configured_test_manager.reportables) == 2
+    assert (
+        configured_test_manager.reportables[0].name
+        == configured_test_manager.reportables[1].name
+    )
+    assert (
+        configured_test_manager.reportables[0].qualified_name
+        == configured_test_manager.reportables[1].qualified_name
+    )
 
 
 def test_aggregate_reportables_are_cached(configured_test_manager):

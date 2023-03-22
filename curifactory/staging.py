@@ -50,7 +50,6 @@ def _log_stats(
     pre_max_footprint=0,
     post_max_footprint=0,
 ):
-
     pre_cache_time = pre_cache_time_end - pre_cache_time_start
     exec_time = exec_time_end - exec_time_start
     post_cache_time = post_cache_time_end - post_cache_time_start
@@ -716,7 +715,6 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
         function_outputs = []
         for i in range(len(paths)):
             if cachers[i].check():
-
                 # handle lazy objects by setting the cacher but not actually loading yet.
                 if type(outputs[i]) == Lazy:
                     outputs[i].cacher = cachers[i]
@@ -814,7 +812,9 @@ def _store_reportables(stage_name, record, aggregate_records=None):
         # NOTE: do NOT use a deepcopy below, runs into same issue.
         reportable_copy = copy.copy(reportable)
         reportable_copy.record = None
-        reportable_path = os.path.join(reportables_path, f"{reportable.name}.pkl")
+        reportable_path = os.path.join(
+            reportables_path, f"{reportable.qualified_name}.pkl"
+        )
         paths.append(reportable_path)
         logging.debug("Caching reportable '%s'" % reportable_path)
         with open(reportable_path, "wb") as outfile:
