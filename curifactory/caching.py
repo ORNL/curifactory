@@ -100,7 +100,7 @@ class Cacheable:
         caching can mess with provenance.  """
         self.extension = extension
         """The filetype extension to add at the end of the path. (Optional, automatically used as suffix in get_path if provided)"""
-        self.record = record
+        self.record = None
         """The current record this cacheable is caching under. This can be used to get a copy of the current args instance and is also
         how artifact metadata is collected."""
         self.track = track
@@ -109,6 +109,9 @@ class Cacheable:
         """The running list of paths this cacher is using, as appended by ``get_path``."""
         self.metadata: Dict = None
         """Metadata about the artifact cached with this cacheable."""
+
+        if record is not None:
+            self.set_record(record)
 
     def get_path(self, suffix=None) -> str:
         """Retrieve the full filepath to use for saving and loading. This should be called in the ``save()`` and
@@ -166,9 +169,9 @@ class Cacheable:
     #     # TODO: necessary?
     #     pass
 
-    # def set_record(self, record):
-    #     self.record = record
-    #     self.collect_metadata()
+    def set_record(self, record):
+        self.record = record
+        self.collect_metadata()
 
     def collect_metadata(self):
         # TODO: error if record not set
@@ -183,6 +186,7 @@ class Cacheable:
             record_prior_stages=self.record.stages,
             prior_records=self.record.input_records,  # TODO: unclear what type this is
             params=hashing.parameters_string_hash_representation(self.record.args),
+            extra={},  # cachers can store any additional info here they want.
         )
 
     def save_metadata(self):
@@ -242,6 +246,10 @@ class Cacheable:
                 return True
             # TODO: (3/21/2023) there's no logic correctly handling if record is just none, we
             # probably need a separate check that determines if overwrite is set on manager?
+            # TODO: (3/21/2023) check_cached_outputs in staging is already handling if the
+            # manager at large or current stage is set to overwrite, check in this instance
+            # should only manage if the path exists at all or not, and possibly a metadata
+            # check.
             else:
                 logging.debug("Object found, but overwrite specified in args")
                 return False

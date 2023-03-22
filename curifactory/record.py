@@ -4,6 +4,7 @@ through some set of stages."""
 import copy
 import logging
 import os
+import shutil
 from typing import Dict, List
 
 from curifactory import hashing
@@ -79,6 +80,9 @@ class Record:
         listed here and then clearing it. This is a list of dicts that would be
         passed to the artifact manager's ``get_artifact_path` function: (obj_name, subdir, prefix, and path)
         """
+        self.stored_paths: List[str] = []
+        """A list of paths that have been copied into a full store folder. These are
+        the source paths, not the destination paths."""
 
         self.set_hash()
         if not hide:
@@ -88,8 +92,36 @@ class Record:
         """Copy all of the recent relevant files generated (likely from the recently executing
         stage) into a store-full run. This is run automatically at the end of a stage.
         """
-        # TODO: if name, subdir, and prefix are all none, then take path, get filepath name, and use that as the name?
-        pass
+        if self.manager.store_full:
+            for path_info in self.unstored_tracked_paths:
+                name = path_info["name"]
+                subdir = path_info["subdir"]
+                prefix = path_info["prefix"]
+                path = path_info["path"]
+
+                # don't duplicate if we've already stored it (this might occur from multiple get_path
+                # calls on a cacher)
+                if path in self.stored_paths:
+                    continue
+
+                # if the auto naming strategy isn't being used (only a filepath given, no name),
+                # then use the last part of the filename (from the last '/') as the obj name
+                if name is None:
+                    name = os.path.basename(path)
+                    # TODO: (3/22/2023) unclear if I need to set subdir and prefix to none or not
+
+                store_path = self.manager.get_artifact_path(
+                    name, record=self, subdir=subdir, prefix=prefix, store=True
+                )
+                logging.debug(f"Copying tracked path '{path}' to '{store_path}'...")
+                if os.path.isdir(path):
+                    shutil.copytree(path, store_path)
+                else:
+                    shutil.copy(path, store_path)
+
+                # remember that we copied this path
+                self.stored_paths.append(path)
+            self.unstored_tracked_paths = []
 
     def set_hash(self):
         """Establish the hash for the current args (and set it on the args instance)."""
@@ -281,6 +313,7 @@ class ArtifactRepresentation:
     """
 
     def __init__(self, record, name, artifact, metadata=None):
+        # TODO: (3/21/2023) possibly have "files" which would be cachers.cached_files?
         self.init_record = record
         self.name = name
         self.string = f"({type(artifact).__name__}) {str(artifact)[:20]}"
