@@ -4,8 +4,8 @@ from enum import IntEnum
 
 import curifactory as cf
 from curifactory import reporting
-from curifactory.caching import JsonCacher
-from curifactory.reporting import JsonReporter
+from curifactory.caching import JsonCacher, PickleCacher
+from curifactory.reporting import JsonReporter, render_reportable
 
 
 def test_reportables_cached(configured_test_manager):
@@ -53,3 +53,22 @@ def test_no_angle_brackets_in_report_argset_dump(configured_test_manager):
     all_text = "".join(lines[2:-1])
     assert "<" not in all_text
     assert ">" not in all_text
+
+
+def test_reportable_render_uses_qualified_name_in_title(configured_test_manager):
+    """Reportable rendering should use the fully qualified name in the link and the title"""
+
+    @cf.stage(None, ["test_output"], [PickleCacher])
+    def basic_reportable(record):
+        record.report(JsonReporter({"test": "hello world"}))
+        return "test"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    basic_reportable(r0)
+
+    reportable = configured_test_manager.reportables[0]
+    html = render_reportable(
+        reportable, configured_test_manager, configured_test_manager.cache_path
+    )
+    assert reportable.qualified_name in html[1]  # link
+    assert reportable.qualified_name in html[2]  # title

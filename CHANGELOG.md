@@ -27,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   should call the cacher's `get_path()`.
 - The default cachers' `save()` functions return the path that was saved to.
 
+### Fixed
+- Reportable names doubling when loading from cache.
+
 
 
 

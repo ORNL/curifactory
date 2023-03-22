@@ -808,7 +808,9 @@ def _store_reportables(stage_name, record, aggregate_records=None):
         # NOTE: do NOT use a deepcopy below, runs into same issue.
         reportable_copy = copy.copy(reportable)
         reportable_copy.record = None
-        reportable_path = os.path.join(reportables_path, f"{reportable.name}.pkl")
+        reportable_path = os.path.join(
+            reportables_path, f"{reportable.qualified_name}.pkl"
+        )
         paths.append(reportable_path)
         logging.debug("Caching reportable '%s'" % reportable_path)
         with open(reportable_path, "wb") as outfile:
