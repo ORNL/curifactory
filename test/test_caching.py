@@ -677,6 +677,8 @@ def test_pandas_json_cacher_with_df_no_recursion_error(configured_test_manager):
 def test_cacheable_get_path(
     configured_test_manager, cacher_args, suffix, expected_path
 ):
+    """A cacher's get_path should correctly handle different combinations of path inputs and
+    requested suffixes."""
     configured_test_manager.current_stage_name = "test_stage"
     r = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
     r.args.hash = "hash"
@@ -731,9 +733,28 @@ def test_cacher_outputs_metadata_storefull(configured_test_manager):
     assert os.path.exists(metadata_path)
 
 
-"""Metadata should still output at the correct path when using a manual static-path cacher."""
+def test_manual_static_path_cacher_outputs_metadata(configured_test_manager):
+    """Metadata should still output at the correct path when using a manual static-path cacher."""
 
-"""Metadata for a static-path cacher should still be loadable."""
+    @cf.stage()
+    def output_thing(record):
+        cacher = PickleCacher(
+            "test/examples/data/cache/raw_path_file.pkl", record=record
+        )
+        cacher.save("hello world")
+        cacher.save_metadata()
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    output_thing(r0)
+
+    path = "test/examples/data/cache/raw_path_file.pkl"
+    loader = PickleCacher(path)
+    metadata = loader.load_metadata()
+
+    assert os.path.exists(path)
+    assert os.path.exists("test/examples/data/cache/raw_path_file_metadata.json")
+    assert loader.load() == "hello world"
+    assert metadata["stage"] == "output_thing"
 
 
 def test_load_metadata_with_manual_cacher_from_stage_cacher_path(
@@ -760,21 +781,81 @@ def test_load_metadata_with_manual_cacher_from_stage_cacher_path(
     assert metadata["artifact_name"] == "output"
 
 
-"""A non-tracked cacher should not copy the metadata file to the full store."""
+def test_non_tracked_cacher_does_not_copy_metadata_to_full_store(
+    configured_test_manager,
+):
+    """A non-tracked cacher should not copy the metadata file to the full store."""
+    configured_test_manager.store_full = True
+
+    @cf.stage(None, ["output"], [PickleCacher(track=False)])
+    def output_thing(record):
+        return "Hello world"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    output_thing(r0)
+
+    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
+
+    metadata_path = os.path.join(
+        full_store_path,
+        f"test_{r0.args.hash}_output_thing_output_metadata.json",
+    )
+    assert not os.path.exists(metadata_path)
+
+
+def test_no_metadata_written_to_dry_cache_folder(
+    configured_test_manager,
+):
+    """Metadata should not be written out to a dry-cache cache folder."""
+    configured_test_manager.dry_cache = True
+
+    @cf.stage(None, ["output"], [PickleCacher])
+    def output_thing(record):
+        return "Hello world"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    output_thing(r0)
+
+    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
+
+    metadata_path = os.path.join(
+        full_store_path,
+        f"test_{r0.args.hash}_output_thing_output_metadata.json",
+    )
+    assert not os.path.exists(metadata_path)
+
 
 """When cached values loaded in, existing metadata file should not be overwritten."""
 
 """A full store output that's using a cached value should transfer the _existing_ metadata file
 to the full store."""
 
-"""Metadata should not be written out to a dry-cache cache folder."""
-
 
 """A cacher created in one stage should still return the same get_paths even after later stages have
 executed."""
 
 
-"""A cacher with path-override set should save the output to that path."""
+def test_path_override_cacher_saves_to_that_path(configured_test_manager):
+    """A cacher with path-override set should save the output to that path."""
+
+    @cf.stage(
+        None, ["output"], [PickleCacher("test/examples/data/cache/raw_path_file.pkl")]
+    )
+    def output_thing(record):
+        return "Hello world"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    output_thing(r0)
+
+    path = "test/examples/data/cache/raw_path_file.pkl"
+    loader = PickleCacher(path)
+    metadata = loader.load_metadata()
+
+    assert os.path.exists(path)
+    assert os.path.exists("test/examples/data/cache/raw_path_file_metadata.json")
+    assert loader.load() == "Hello world"
+    assert metadata["stage"] == "output_thing"
+
 
 """A manual cacher with path-override set should save and load the output to that path."""
 
@@ -784,11 +865,64 @@ executed."""
 full store in full store mode."""
 
 
-"""Two separate managers with different paths but a common stage with custom prefix should
-both use the same cached value if the args are the same."""
+def test_separate_managers_no_crosscache_by_default(
+    configured_test_manager, alternate_test_manager2
+):
+    """Two separate managers with different paths and a common stage withOUT custom prefix should
+    _not_ use the same cached value."""
+    run_count = 0
 
-"""Two separate managers with different paths but a common stage with custom prefix should
-_not_ use the same cached value if the args are not the same."""
+    @cf.stage(None, ["output"], [PickleCacher])
+    def output_thing(record):
+        nonlocal run_count
+        run_count += 1
+        return "Hello world"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(alternate_test_manager2, cf.ExperimentArgs(name="test"))
+    output_thing(r0)
+    output_thing(r1)
+    assert run_count == 2
+
+
+def test_separate_managers_common_prefix_cacher_crosscaches(
+    configured_test_manager, alternate_test_manager2
+):
+    """Two separate managers with different paths but a common stage with custom prefix should
+    both use the same cached value if the args are the same."""
+    run_count = 0
+
+    @cf.stage(None, ["output"], [PickleCacher(prefix="commondata")])
+    def output_thing(record):
+        nonlocal run_count
+        run_count += 1
+        return "Hello world"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(alternate_test_manager2, cf.ExperimentArgs(name="test"))
+    output_thing(r0)
+    output_thing(r1)
+    assert run_count == 1
+
+
+def test_separate_managers_common_prefix_cacher_no_crosscache_if_args_diff(
+    configured_test_manager, alternate_test_manager2
+):
+    """Two separate managers with different paths but a common stage with custom prefix should
+    _not_ use the same cached value if the args are not the same."""
+    run_count = 0
+
+    @cf.stage(None, ["output"], [PickleCacher(prefix="commondata")])
+    def output_thing(record):
+        nonlocal run_count
+        run_count += 1
+        return "Hello world"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(alternate_test_manager2, cf.ExperimentArgs(name="test2"))
+    output_thing(r0)
+    output_thing(r1)
+    assert run_count == 2
 
 
 """A manual cacher used with a static path should be transferred to the full store. (I think?)"""
