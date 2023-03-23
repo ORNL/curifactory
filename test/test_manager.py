@@ -27,6 +27,19 @@ def test_get_path_basic_w_stagename(sample_args, configured_test_manager):
     assert path == "test/examples/data/cache/test_sample_hash_somestage_test_output"
 
 
+def test_get_path_basic_w_custom_stagename(sample_args, configured_test_manager):
+    """Calling get_artifact_path with a specific stage name should override the current stage name in the
+    returned path."""
+    record = Record(configured_test_manager, sample_args)
+    configured_test_manager.current_stage_name = "somestage"
+    path = configured_test_manager.get_artifact_path(
+        "test_output", record, stage_name="someotherstage"
+    )
+    assert (
+        path == "test/examples/data/cache/test_sample_hash_someotherstage_test_output"
+    )
+
+
 def test_get_path_subdir(sample_args, configured_test_manager):
     """Calling get_artifact_path with a basic set of args and a subdir should return the expected path."""
     record = Record(configured_test_manager, sample_args)

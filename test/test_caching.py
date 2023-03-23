@@ -653,14 +653,92 @@ def test_pandas_json_cacher_with_df_no_recursion_error(configured_test_manager):
     np.testing.assert_almost_equal(df.values, data)
 
 
-"""A basic cacher output should also output a metadata file associated with it."""
+def test_cacher_outputs_metadata(configured_test_manager):
+    """A basic cacher output should also output a metadata file associated with it."""
 
-"""A cacher output should copy the associated metadata file to the full store if full store mode."""
+    @cf.stage(None, ["output"], [PickleCacher])
+    def output_thing(record):
+        return "Hello world"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    output_thing(r0)
+
+    path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_output_thing_output.pkl",
+    )
+    metadata_path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_output_thing_output_metadata.json",
+    )
+
+    assert os.path.exists(path)
+    assert os.path.exists(metadata_path)
+
+
+def test_cacher_outputs_metadata_storefull(configured_test_manager):
+    """A cacher output should copy the associated metadata file to the full store if full store mode."""
+    configured_test_manager.store_full = True
+
+    @cf.stage(None, ["output"], [PickleCacher])
+    def output_thing(record):
+        return "Hello world"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    output_thing(r0)
+
+    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
+
+    metadata_path = os.path.join(
+        full_store_path,
+        f"test_{r0.args.hash}_output_thing_output_metadata.json",
+    )
+    assert os.path.exists(metadata_path)
+
+
+# TODO: TODO: TODO: cacheable get_path unit tests
+
+"""Metadata should still output at the correct path when using a manual static-path cacher."""
+
+"""Metadata for a static-path cacher should still be loadable."""
+
+
+def test_load_metadata_with_manual_cacher_from_stage_cacher_path(
+    configured_test_manager,
+):
+    """Metadata for a static-path cacher created based on a stage cacher's path should still be loadable."""
+
+    @cf.stage(None, ["output"], [PickleCacher])
+    def output_thing(record):
+        return "Hello world"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    output_thing(r0)
+
+    path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_output_thing_output.pkl",
+    )
+
+    manual_cacher = PickleCacher(path_override=path)
+    metadata = manual_cacher.load_metadata()
+
+    assert metadata is not None
+    assert metadata["artifact_name"] == "output"
+
 
 """A non-tracked cacher should not copy the metadata file to the full store."""
 
+"""When cached values loaded in, existing metadata file should not be overwritten."""
+
 """A full store output that's using a cached value should transfer the _existing_ metadata file
 to the full store."""
+
+"""Metadata should not be written out to a dry-cache cache folder."""
+
+
+"""A cacher created in one stage should still return the same get_paths even after later stages have
+executed."""
 
 
 """A cacher with path-override set should save the output to that path."""
@@ -671,10 +749,6 @@ to the full store."""
 
 """A manual cacher with record.get_path static path should correctly store to that path in
 full store in full store mode."""
-
-"""QSTN: what happens when path-override set in cacher and store full?"""
-
-"""QSTN: what happens when path-override set in manual cacher and store full?"""
 
 
 """Two separate managers with different paths but a common stage with custom prefix should
@@ -687,3 +761,6 @@ _not_ use the same cached value if the args are not the same."""
 """A manual cacher used with a static path should be transferred to the full store. (I think?)"""
 
 """A cacher used with a static path should be transferred to the full store. (I think?)"""
+
+
+# TODO: expected functionality when record is not set/no info is set, etc.?

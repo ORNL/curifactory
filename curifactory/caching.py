@@ -120,6 +120,23 @@ class Cacheable:
         if record is not None:
             self.set_record(record)
 
+    def _resolve_suffix(self, path: str, suffix: str) -> str:
+        """Handles determining the final suffix of a path based on the extension of
+        this cacheable and whether a specific suffix was requested or not."""
+
+        # this is the logic to add an extension if no suffix supplied and the
+        # object name/override path doesn't already contain the extension
+        if suffix is None and (
+            self.extension is not None
+            and self.extension != ""
+            and not path.endswith(self.extension)
+        ):
+            suffix = self.extension
+        elif suffix is None:
+            suffix = ""
+
+        return suffix
+
     def get_path(self, suffix=None) -> str:
         """Retrieve the full filepath to use for saving and loading. This should be called in the ``save()`` and
         ``load()`` implementations.
@@ -146,21 +163,16 @@ class Cacheable:
         if self.path_override is not None:
             path = self.path_override
 
-            # This is to allow for metadata loading I think for a static path
-            # (if metadata exists) I think it technically also allows for save
-            # to work even based on static paths, as in it won't work without it.
-            if suffix is not None:
-                path += suffix
+            # if the path_override has the extension in it already, remove it to handle
+            # suffix addition consistently with non-path_override case
+            # (the extension will be re-added in as necessary)
+            if self.extension != "" and path.endswith(self.extension):
+                path = path[: path.rindex(self.extension)]
+
+            suffix = self._resolve_suffix(path, suffix)
+            path = path + suffix
         else:
-            # logic to add an extension if no suffix supplied and the object name doesn't already contain the extension
-            if suffix is None and (
-                self.extension is not None
-                and self.extension != ""
-                and not self.name.endswith(self.extension)
-            ):
-                suffix = self.extension
-            elif suffix is None:
-                suffix = ""
+            suffix = self._resolve_suffix(self.name, suffix)
 
             # TODO: error if record is none and/or name is none
 
