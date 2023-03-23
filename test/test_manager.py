@@ -2,11 +2,10 @@
 
 import os
 
-import pytest
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
 from curifactory import ExperimentArgs, Record, aggregate, hashing, stage
-from curifactory.caching import Cacheable, JsonCacher, Lazy, PickleCacher
+from curifactory.caching import JsonCacher, Lazy, PickleCacher
 
 # -----------------------------------------
 # get_artifact_path unit tests
@@ -169,7 +168,7 @@ def test_run_line_sanitization_normal(configured_test_manager):
     ts = configured_test_manager.get_str_timestamp()
     assert (
         configured_test_manager.run_info["reproduce"]
-        == f"experiment test -p params1 --cache test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts} --dry-cache"
+        == f"experiment test -p params1 --cache test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts}/artifacts --dry-cache"
     )
 
 
@@ -183,7 +182,7 @@ def test_run_line_sanitization_order(configured_test_manager):
     ts = configured_test_manager.get_str_timestamp()
     assert (
         configured_test_manager.run_info["reproduce"]
-        == f"experiment test -p params1 --parallel 4 --cache test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts} --dry-cache"
+        == f"experiment test -p params1 --parallel 4 --cache test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts}/artifacts --dry-cache"
     )
 
 
@@ -197,7 +196,7 @@ def test_run_line_sanitization_overwrite(configured_test_manager):
     ts = configured_test_manager.get_str_timestamp()
     assert (
         configured_test_manager.run_info["reproduce"]
-        == f"experiment test -p params1 --parallel 4 --cache test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts} --dry-cache"
+        == f"experiment test -p params1 --parallel 4 --cache test/examples/data/runs/test_{configured_test_manager.experiment_run_number}_{ts}/artifacts --dry-cache"
     )
 
 

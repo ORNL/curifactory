@@ -146,7 +146,7 @@ class ManagerStore:
 
         cache_path = mngr.get_run_output_path()
         mngr.reproduction_line = (
-            f"{sanitized_run_line} --cache {cache_path} --dry-cache"
+            f"{sanitized_run_line} --cache {cache_path}/artifacts --dry-cache"
         )
 
         run["reproduce"] = mngr.reproduction_line

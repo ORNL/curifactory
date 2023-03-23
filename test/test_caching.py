@@ -651,3 +651,39 @@ def test_pandas_json_cacher_with_df_no_recursion_error(configured_test_manager):
     assert os.path.exists(path)
     df = pd.read_json(path)
     np.testing.assert_almost_equal(df.values, data)
+
+
+"""A basic cacher output should also output a metadata file associated with it."""
+
+"""A cacher output should copy the associated metadata file to the full store if full store mode."""
+
+"""A non-tracked cacher should not copy the metadata file to the full store."""
+
+"""A full store output that's using a cached value should transfer the _existing_ metadata file
+to the full store."""
+
+
+"""A cacher with path-override set should save the output to that path."""
+
+"""A manual cacher with path-override set should save and load the output to that path."""
+
+"""A manual cacher with record.get_path static path should correctly save and load to that path."""
+
+"""A manual cacher with record.get_path static path should correctly store to that path in
+full store in full store mode."""
+
+"""QSTN: what happens when path-override set in cacher and store full?"""
+
+"""QSTN: what happens when path-override set in manual cacher and store full?"""
+
+
+"""Two separate managers with different paths but a common stage with custom prefix should
+both use the same cached value if the args are the same."""
+
+"""Two separate managers with different paths but a common stage with custom prefix should
+_not_ use the same cached value if the args are not the same."""
+
+
+"""A manual cacher used with a static path should be transferred to the full store. (I think?)"""
+
+"""A cacher used with a static path should be transferred to the full store. (I think?)"""
