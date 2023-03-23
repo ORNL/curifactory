@@ -653,6 +653,41 @@ def test_pandas_json_cacher_with_df_no_recursion_error(configured_test_manager):
     np.testing.assert_almost_equal(df.values, data)
 
 
+@pytest.mark.parametrize(
+    # fmt: off
+    "cacher_args,suffix,expected_path",
+    [
+        (dict(name="test"), None, "test_hash_test_stage_test.pkl"),
+        (dict(name="test"), "_metadata.json", "test_hash_test_stage_test_metadata.json"),
+        (dict(name="test"), "_thing", "test_hash_test_stage_test_thing"),
+        (dict(name="test.pkl"), None, "test_hash_test_stage_test.pkl"),
+        (dict(path_override="test/examples/data/cache/test"), None, "test.pkl"),
+        (dict(path_override="test/examples/data/cache/test.pkl"), None, "test.pkl"),
+        (dict(path_override="test/examples/data/cache/test"), "_metadata.json", "test_metadata.json"),
+        (dict(path_override="test/examples/data/cache/test.pkl"), "_metadata.json", "test_metadata.json"),
+        (dict(name="test", prefix="someprefix"), None, "someprefix_hash_test_stage_test.pkl"),
+        (dict(name="test", prefix="someprefix"), "_metadata.json", "someprefix_hash_test_stage_test_metadata.json"),
+        (dict(name="test", subdir="01_raw"), None, "01_raw/test_hash_test_stage_test.pkl"),
+        (dict(name="test", subdir="01_raw"), "_metadata.json", "01_raw/test_hash_test_stage_test_metadata.json"),
+        (dict(name="test", subdir="01_raw", prefix="someprefix"), None, "01_raw/someprefix_hash_test_stage_test.pkl"),
+        (dict(name="test", subdir="01_raw", prefix="someprefix"), "_metadata.json", "01_raw/someprefix_hash_test_stage_test_metadata.json"),
+    ]
+    # fmt: on
+)
+def test_cacheable_get_path(
+    configured_test_manager, cacher_args, suffix, expected_path
+):
+    configured_test_manager.current_stage_name = "test_stage"
+    r = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r.args.hash = "hash"
+
+    cacher = PickleCacher(**cacher_args, record=r)
+
+    path_prefix = "test/examples/data/cache/"
+    path = cacher.get_path(suffix)
+    assert path == path_prefix + expected_path
+
+
 def test_cacher_outputs_metadata(configured_test_manager):
     """A basic cacher output should also output a metadata file associated with it."""
 
@@ -696,8 +731,6 @@ def test_cacher_outputs_metadata_storefull(configured_test_manager):
     assert os.path.exists(metadata_path)
 
 
-# TODO: TODO: TODO: cacheable get_path unit tests
-
 """Metadata should still output at the correct path when using a manual static-path cacher."""
 
 """Metadata for a static-path cacher should still be loadable."""
@@ -720,7 +753,7 @@ def test_load_metadata_with_manual_cacher_from_stage_cacher_path(
         f"test_{r0.args.hash}_output_thing_output.pkl",
     )
 
-    manual_cacher = PickleCacher(path_override=path)
+    manual_cacher = PickleCacher(path)
     metadata = manual_cacher.load_metadata()
 
     assert metadata is not None

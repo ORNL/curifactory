@@ -73,6 +73,16 @@ class Cacheable:
                     self.some_custom_attribute = custom_attribute
 
         This allows consistent handling of paths in the parent ``get_path()`` and ``check()`` functions.
+
+        If no custom attributes are needed, also pass in *args, so path_override can be specified without
+        a kwarg:
+
+            .. code-block:: python
+
+                class CustomCacher(cf.Cacheable):
+                    def __init__(self, *args, **kwargs):
+                        super().__init__(*args, extension=".custom", **kwargs)
+
     """
 
     def __init__(
@@ -314,8 +324,8 @@ class Cacheable:
 class JsonCacher(Cacheable):
     """Dumps an object to indented JSON."""
 
-    def __init__(self, **kwargs):
-        super().__init__(extension=".json", **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, extension=".json", **kwargs)
 
     def load(self):
         with open(self.get_path()) as infile:
@@ -332,8 +342,8 @@ class JsonCacher(Cacheable):
 class PickleCacher(Cacheable):
     """Dumps an object to a pickle file."""
 
-    def __init__(self, **kwargs):
-        super().__init__(extension=".pkl", **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, extension=".pkl", **kwargs)
 
     def load(self):
         with open(self.get_path(), "rb") as infile:
@@ -448,8 +458,8 @@ class FileReferenceCacher(Cacheable):
                 return my_file_list
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(extension=".json", **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, extension=".json", **kwargs)
 
     def check(self) -> bool:
         # check the file list file exists
