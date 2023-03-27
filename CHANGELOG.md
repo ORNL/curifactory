@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Reportable names doubling when loading from cache.
+- Silent execution when no parametersets provided or a requested parameterset name wasn't found, (now errors and exits.)
 
 
 
