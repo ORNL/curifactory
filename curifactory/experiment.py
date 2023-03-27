@@ -174,7 +174,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         if dry_cache:
             run_string += " --dry-cache"
         if custom_name is not None:
-            run_string += f" --name {custom_name}"
+            run_string += f" --prefix {custom_name}"
         if lazy:
             run_string += " --lazy"
         if ignore_lazy:
@@ -1082,11 +1082,10 @@ Examples:
         help="Do a dry cache run: this still modifies stores and runs reports but does not write anything into the cache. This is recommended when running an experiment with a cache directory from --store-full.",
     )
     caching_group.add_argument(
-        "-n",
-        "--name",
-        dest="name",
+        "--prefix",
+        dest="prefix",
         default=None,
-        help="Specify a custom name to use for caching rather than the experiment name. This can be useful if multiple similar experiments can use the same cached objects. Note that this does not change the reference name.",
+        help="Specify a custom prefix to use for caching rather than the experiment name. This can be useful if multiple similar experiments can use the same cached objects. Note that this does not change the reference name.",
     )
     caching_group.add_argument(
         "--lazy",
@@ -1242,7 +1241,7 @@ Examples:
         dry_cache=args.dry_cache,
         store_full=args.store_full,
         log_errors=args.log_errors,
-        custom_name=args.name,
+        custom_name=args.prefix,
         build_docker=args.docker,
         build_notebook=args.notebook,
         run_string=run_string,

@@ -108,7 +108,7 @@ from curifactory.manager import ArtifactManager
                 dry=False,
                 dry_cache=False,
                 custom_name="custom_test",
-                run_line="experiment test -p params1 --name custom_test",
+                run_line="experiment test -p params1 --prefix custom_test",
                 parallel_lock=None,
                 parallel_mode=False,
                 lazy=False,
