@@ -165,13 +165,7 @@ class Cacheable:
             over. Note also that this can be problematic for cachers that store multiple files since anything that isn't
             the path_override won't get copied. **For multiple file cachers you should use ``name``/``subdir``/``prefix``
             instead of setting a ``path_override``.**
-
-            # TODO: there is technically a way around this by manually adding to unstored_tracked_paths a dictionary with
-            # fully specified path (and everything else None), in which case the record resolves object name to whatever
-            # is after the last /
         """
-        # don't deal with any additional logic if a static path was specified. (If passing in record.get_path, store-full logic
-        # is already being handled.)
         path = None
         if self.path_override is not None:
             path = self.path_override
@@ -194,10 +188,16 @@ class Cacheable:
             suffix = self._resolve_suffix(path, suffix, False)
             path = path + suffix
         else:
+            if self.record is None:
+                raise RuntimeError(
+                    "Trying to call get_path on a cacher with no record and no path_override. Either pass a path directly into this cacher, or set cacher.record = some_record"
+                )
+            if self.name is None:
+                raise RuntimeError(
+                    "Trying to call get_path on a cacher with no object name and no path_overide. Either pass a path directly into this cacher, or set cacher.name = 'objectname'"
+                )
+
             suffix = self._resolve_suffix(self.name, suffix)
-
-            # TODO: error if record is none and/or name is none
-
             obj_name = self.name + suffix
             path = self.record.get_path(
                 obj_name,
@@ -219,7 +219,10 @@ class Cacheable:
         self.collect_metadata()
 
     def collect_metadata(self):
-        # TODO: error if record not set
+        if self.record is None:
+            raise RuntimeError(
+                "Cannot collect metadata from a cacher with no associated record. Assign cacher.record if metadata is needed."
+            )
 
         manager_run_info = copy.copy(self.record.manager.run_info)
         del manager_run_info[
@@ -303,12 +306,11 @@ class Cacheable:
             ):
                 logging.info("Cached object '%s' found", self.get_path())
                 return True
-            # TODO: (3/21/2023) there's no logic correctly handling if record is just none, we
-            # probably need a separate check that determines if overwrite is set on manager?
-            # TODO: (3/21/2023) check_cached_outputs in staging is already handling if the
-            # manager at large or current stage is set to overwrite, check in this instance
-            # should only manage if the path exists at all or not, and possibly a metadata
-            # check.
+            elif self.record is None:
+                # if we don't have a record (e.g. running check on a manual cacher with a
+                # path override specified), don't worry about overwrite logic.
+                logging.info("Cached object '%s' found", self.get_path())
+                return True
             else:
                 logging.debug("Object found, but overwrite specified in args")
                 return False

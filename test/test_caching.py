@@ -1079,11 +1079,3 @@ def test_cacher_with_record_get_path_no_extension_full_store(configured_test_man
         f"test_{r0.args.hash}_manual_output_thing_manualtest",
     )
     assert os.path.exists(path)
-
-
-"""A manual cacher used with a static path should be transferred to the full store. (I think?)"""
-
-"""A cacher used with a static path should be transferred to the full store. (I think?)"""
-
-
-# TODO: expected functionality when record is not set/no info is set, etc.?
