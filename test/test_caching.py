@@ -10,7 +10,12 @@ import pandas as pd
 import pytest
 
 import curifactory as cf
-from curifactory.caching import PandasCsvCacher, PandasJsonCacher, PickleCacher
+from curifactory.caching import (
+    JsonCacher,
+    PandasCsvCacher,
+    PandasJsonCacher,
+    PickleCacher,
+)
 from curifactory.reporting import JsonReporter
 
 
@@ -661,7 +666,7 @@ def test_pandas_json_cacher_with_df_no_recursion_error(configured_test_manager):
         (dict(name="test"), "_metadata.json", "test_hash_test_stage_test_metadata.json"),
         (dict(name="test"), "_thing", "test_hash_test_stage_test_thing"),
         (dict(name="test.pkl"), None, "test_hash_test_stage_test.pkl"),
-        (dict(path_override="test/examples/data/cache/test"), None, "test.pkl"),
+        (dict(path_override="test/examples/data/cache/test"), None, "test"),
         (dict(path_override="test/examples/data/cache/test.pkl"), None, "test.pkl"),
         (dict(path_override="test/examples/data/cache/test"), "_metadata.json", "test_metadata.json"),
         (dict(path_override="test/examples/data/cache/test.pkl"), "_metadata.json", "test_metadata.json"),
@@ -825,14 +830,84 @@ def test_no_metadata_written_to_dry_cache_folder(
     assert not os.path.exists(metadata_path)
 
 
-"""When cached values loaded in, existing metadata file should not be overwritten."""
+def test_existing_metadata_not_overwritten_when_cache_used(
+    configured_test_manager, alternate_test_manager2
+):
+    """When cached values loaded in, existing metadata file should not be overwritten. Tested here
+    with cross-caching"""
 
-"""A full store output that's using a cached value should transfer the _existing_ metadata file
-to the full store."""
+    @cf.stage(None, ["output"], [PickleCacher(prefix="commondata")])
+    def output_thing(record):
+        return "Hello world"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    output_thing(r0)
+
+    r1 = cf.Record(alternate_test_manager2, cf.ExperimentArgs(name="test"))
+    output_thing(r1)
+
+    path = os.path.join(
+        configured_test_manager.cache_path,
+        f"commondata_{r1.args.hash}_output_thing_output_metadata.json",
+    )
+    metadata = JsonCacher(path).load()
+    assert (
+        metadata["manager_run_info"]["experiment_name"] == "test"
+    )  # rather than test2
 
 
-"""A cacher created in one stage should still return the same get_paths even after later stages have
-executed."""
+def test_uses_existing_metadata_in_full_store_when_cache_used(
+    configured_test_manager, alternate_test_manager2
+):
+    """A full store output that's using a cached value should transfer the _existing_ metadata file
+    to the full store."""
+    configured_test_manager.store_full = True
+    alternate_test_manager2.store_full = True
+
+    @cf.stage(None, ["output"], [PickleCacher(prefix="commondata")])
+    def output_thing(record):
+        return "Hello world"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    output_thing(r0)
+
+    r1 = cf.Record(alternate_test_manager2, cf.ExperimentArgs(name="test"))
+    output_thing(r1)
+
+    full_store_path = f"{alternate_test_manager2.runs_path}/test2_1_{alternate_test_manager2.get_str_timestamp()}/artifacts"
+    path = os.path.join(
+        full_store_path,
+        f"commondata_{r1.args.hash}_output_thing_output_metadata.json",
+    )
+    metadata = JsonCacher(path).load()
+    assert (
+        metadata["manager_run_info"]["experiment_name"] == "test"
+    )  # rather than test2
+
+
+def test_cacher_getpath_keeps_stagename_after_later_stages(configured_test_manager):
+    """A cacher created in one stage should still return the same get_paths even after later
+    stages have executed."""
+    cacher = PickleCacher()
+
+    @cf.stage(None, ["output"], [cacher])
+    def output_thing(record):
+        return "Hello world"
+
+    @cf.stage(["output"], ["output2"])
+    def do_something_else(record, output):
+        return output + ", kthxbye"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = output_thing(r0)
+    assert cacher.stage == "output_thing"
+    first_path = cacher.get_path()
+
+    do_something_else(r0)
+    assert cacher.stage == "output_thing"
+    second_path = cacher.get_path()
+
+    assert first_path == second_path
 
 
 def test_path_override_cacher_saves_to_that_path(configured_test_manager):
@@ -855,14 +930,6 @@ def test_path_override_cacher_saves_to_that_path(configured_test_manager):
     assert os.path.exists("test/examples/data/cache/raw_path_file_metadata.json")
     assert loader.load() == "Hello world"
     assert metadata["stage"] == "output_thing"
-
-
-"""A manual cacher with path-override set should save and load the output to that path."""
-
-"""A manual cacher with record.get_path static path should correctly save and load to that path."""
-
-"""A manual cacher with record.get_path static path should correctly store to that path in
-full store in full store mode."""
 
 
 def test_separate_managers_no_crosscache_by_default(
@@ -923,6 +990,95 @@ def test_separate_managers_common_prefix_cacher_no_crosscache_if_args_diff(
     output_thing(r0)
     output_thing(r1)
     assert run_count == 2
+
+
+def test_cacher_with_record_get_path(configured_test_manager):
+    """A manual cacher with record.get_path static path should correctly save and load to that path."""
+    cacher = None
+
+    @cf.stage()
+    def manual_output_thing(record):
+        nonlocal cacher
+        cacher = JsonCacher(record.get_path("manualtest.json"))
+        cacher.save(dict(message="hello world"))
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    manual_output_thing(r0)
+
+    path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_manual_output_thing_manualtest.json",
+    )
+    assert os.path.exists(path)
+    assert cacher.load()["message"] == "hello world"
+
+
+def test_cacher_with_record_get_path_no_extension(configured_test_manager):
+    """A manual cacher with record.get_path static path should correctly save and load to that path,
+    even when an extension hasn't been implicitly provided in the record.get_path call
+    """
+    cacher = None
+
+    @cf.stage()
+    def manual_output_thing(record):
+        nonlocal cacher
+        cacher = JsonCacher(record.get_path("manualtest"))
+        cacher.save(dict(message="hello world"))
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    manual_output_thing(r0)
+
+    path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_manual_output_thing_manualtest",
+    )
+    assert os.path.exists(path)
+    assert cacher.load()["message"] == "hello world"
+
+
+def test_cacher_with_record_get_path_full_store(configured_test_manager):
+    """A manual cacher with record.get_path static path should correctly store to that path in
+    full store in full store mode."""
+    configured_test_manager.store_full = True
+
+    @cf.stage()
+    def manual_output_thing(record):
+        cacher = JsonCacher(record.get_path("manualtest.json"))
+        cacher.save(dict(message="hello world"))
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    manual_output_thing(r0)
+
+    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
+    path = os.path.join(
+        full_store_path,
+        f"test_{r0.args.hash}_manual_output_thing_manualtest.json",
+    )
+    assert os.path.exists(path)
+
+
+def test_cacher_with_record_get_path_no_extension_full_store(configured_test_manager):
+    """A manual cacher with record.get_path static path should correctly store to that path in
+    full store in full store mode, even when an extension hasn't been implicitly provided to the
+    record.get_path"""
+    configured_test_manager.store_full = True
+    cacher = None
+
+    @cf.stage()
+    def manual_output_thing(record):
+        nonlocal cacher
+        cacher = JsonCacher(record.get_path("manualtest"))
+        cacher.save(dict(message="hello world"))
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    manual_output_thing(r0)
+
+    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
+    path = os.path.join(
+        full_store_path,
+        f"test_{r0.args.hash}_manual_output_thing_manualtest",
+    )
+    assert os.path.exists(path)
 
 
 """A manual cacher used with a static path should be transferred to the full store. (I think?)"""

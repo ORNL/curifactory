@@ -130,7 +130,9 @@ class Cacheable:
         if record is not None:
             self.set_record(record)
 
-    def _resolve_suffix(self, path: str, suffix: str) -> str:
+    def _resolve_suffix(
+        self, path: str, suffix: str, add_extension: bool = True
+    ) -> str:
         """Handles determining the final suffix of a path based on the extension of
         this cacheable and whether a specific suffix was requested or not."""
 
@@ -140,6 +142,7 @@ class Cacheable:
             self.extension is not None
             and self.extension != ""
             and not path.endswith(self.extension)
+            and add_extension
         ):
             suffix = self.extension
         elif suffix is None:
@@ -176,10 +179,19 @@ class Cacheable:
             # if the path_override has the extension in it already, remove it to handle
             # suffix addition consistently with non-path_override case
             # (the extension will be re-added in as necessary)
-            if self.extension != "" and path.endswith(self.extension):
+            # NOTE: we only do this if suffix is specified, otherwise we assume
+            # path override is exactly what's desired. This is important because if
+            # someone calls record.get_path and passes it in here, that get_path won't
+            # auto handle an extension, and we need this get_path to return the same
+            # thing as expected from record.get_path for tracking to work.
+            if (
+                self.extension != ""
+                and path.endswith(self.extension)
+                and suffix is not None
+            ):
                 path = path[: path.rindex(self.extension)]
 
-            suffix = self._resolve_suffix(path, suffix)
+            suffix = self._resolve_suffix(path, suffix, False)
             path = path + suffix
         else:
             suffix = self._resolve_suffix(self.name, suffix)
