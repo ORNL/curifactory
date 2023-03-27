@@ -408,6 +408,33 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
         argsets.extend(argsets_to_add)
 
+    # check that there wasn't an invalid name and all requested parameterset names were found
+    if args_names is not None:
+        for args_name in args_names:
+            found = False
+            for argset in argsets:
+                if args_name == argset:
+                    found = True
+                    break
+            if not found:
+                logging.error(
+                    "Paramset name '%s' not found in any of the provided parameter files."
+                    % args_name
+                )
+                raise RuntimeError(
+                    "Paramset name '%s' not found in any of the provided parameter files."
+                    % args_name
+                )
+
+    # check that we actually have parameters
+    if len(argsets) == 0:
+        logging.error(
+            "No parameter sets found, please make sure any `get_params()` functions are returning non-empty arrays."
+        )
+        raise RuntimeError(
+            "No parameter sets found, please make sure any `get_params()` functions are returning non-empty arrays."
+        )
+
     if len(global_args_indices_resolved) > 0:
         argsets = [argsets[i] for i in global_args_indices_resolved]
 
