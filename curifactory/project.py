@@ -157,14 +157,26 @@ def initialize_project():  # noqa: C901 yeaaaah break up into sub functions
 
 
 def main():
-
     # TODO: could add the reset functionality as requested in this runnable.
 
     parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--version",
+        dest="version",
+        action="store_true",
+        help="Print the current version of the curifactory library.",
+    )
+
     subparsers = parser.add_subparsers(dest="subparser_name")
     init_parser = subparsers.add_parser("init")  # noqa: F841 -- we might use eventually
 
     args = parser.parse_args()
+
+    if args.version:
+        print(cf.__version__)
+        quit()
+
     if args.subparser_name == "init":
         initialize_project()
 

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional cacher subdir, which places output files into the specified subdirectory in the cache/run folder (allows better organization,
   e.g. Kedro's data engineering convention of 01_raw, 02_intermediate, etc.)
 - Allowing exact path overrides to be used by a cacher, making it cleaner to use them on the fly/outside of stages.
+- `--version` flag on the `curifactory` command
 
 ### Changed
 - Full store cached files are now placed into an `artifacts/` subdirectory of the run folder.
