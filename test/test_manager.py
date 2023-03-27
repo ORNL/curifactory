@@ -85,7 +85,7 @@ def test_get_path_store_full(sample_args, configured_test_manager):
 def test_get_path_custom_name(sample_args, configured_test_manager):
     """Calling get_artifact_path when a custom name is in use should return the expected path."""
     record = Record(configured_test_manager, sample_args)
-    configured_test_manager.custom_name = "some_custom_name"
+    configured_test_manager.prefix = "some_custom_name"
     path = configured_test_manager.get_artifact_path("test_output", record)
     assert path == "test/examples/data/cache/some_custom_name_sample_hash__test_output"
 
@@ -94,7 +94,7 @@ def test_get_path_custom_name_and_store_full(sample_args, configured_test_manage
     """Calling get_artifact_path when a custom name is in use and storefull is called should return the expected path."""
     record = Record(configured_test_manager, sample_args)
     configured_test_manager.store_full = True
-    configured_test_manager.custom_name = "some_custom_name"
+    configured_test_manager.prefix = "some_custom_name"
     ts = configured_test_manager.get_str_timestamp()
     path = configured_test_manager.get_artifact_path("test_output", record, store=True)
     assert (

@@ -38,7 +38,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     dry_cache: bool = False,
     store_full: bool = False,
     log_errors: bool = False,
-    custom_name: str = None,
+    prefix: str = None,
     build_docker: bool = False,
     build_notebook: bool = False,
     run_string: str = None,
@@ -82,7 +82,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         store_full (bool): Store environment info, log, output report, and all cached files in a
             run-specific folder (:code:`data/runs` by default)
         log_errors (bool): Whether to include error messages in the log output.
-        custom_name (str): Instead of using the experiment name to group cached data, use this name instead.
+        prefix (str): Instead of using the experiment name to group cached data, use this prefix instead.
         build_docker (bool): If true, build a docker image with all of the run cache afterwards.
         build_notebook (bool): If true, add a notebook with run info and default cells to reproduce
             after run execution.
@@ -173,8 +173,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             run_string += " --dry"
         if dry_cache:
             run_string += " --dry-cache"
-        if custom_name is not None:
-            run_string += f" --prefix {custom_name}"
+        if prefix is not None:
+            run_string += f" --prefix {prefix}"
         if lazy:
             run_string += " --lazy"
         if ignore_lazy:
@@ -245,7 +245,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             store_full=store_full,
             dry=dry,
             dry_cache=dry_cache,
-            custom_name=custom_name,
+            prefix=prefix,
             run_line=run_string,
             parallel_lock=parallel_lock,
             parallel_mode=parallel_mode,
@@ -490,7 +490,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     dry_cache,
                     False,  # store_full
                     log_errors,
-                    custom_name,
+                    prefix,
                     False,  # build_docker
                     False,  # build_notebook
                     None,  # run_string
@@ -1241,7 +1241,7 @@ Examples:
         dry_cache=args.dry_cache,
         store_full=args.store_full,
         log_errors=args.log_errors,
-        custom_name=args.prefix,
+        prefix=args.prefix,
         build_docker=args.docker,
         build_notebook=args.notebook,
         run_string=run_string,

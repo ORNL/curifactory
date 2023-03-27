@@ -33,7 +33,7 @@ class ArtifactManager:
         dry_cache (bool): Setting this to true only suppresses saving cache files. This is recommended
             if you're running with a cache_dir_override for some previous --store-full run, so you
             don't accidentally overwrite or add new data to the --store-full directory.
-        custom_name (str): Instead of using the experiment name to group cached data, use
+        prefix (str): Instead of using the experiment name to group cached data, use
             this name instead.
         run_line (str): The CLI command used to run the current experiment.
         parallel_lock (multiprocessing.Lock): If this function is called from a multiprocessing
@@ -68,7 +68,7 @@ class ArtifactManager:
         store_full: bool = False,
         dry: bool = False,
         dry_cache: bool = False,
-        custom_name: str = None,
+        prefix: str = None,
         run_line: str = "",
         parallel_lock: mp.Lock = None,
         parallel_mode: bool = False,
@@ -119,7 +119,7 @@ class ArtifactManager:
         self.hostname = gethostname()
         """The hostname of the machine this experiment ran on."""
 
-        self.custom_name = custom_name
+        self.prefix = prefix
         """If specified, the name to use for grouping cached data instead of the experiment name."""
         self.notes = notes
         """A notes associated with a session/run to output into the report etc."""
@@ -476,9 +476,9 @@ class ArtifactManager:
         return self.run_timestamp.strftime(utils.TIMESTAMP_FORMAT)
 
     def _get_name(self) -> str:
-        if self.custom_name is None:
+        if self.prefix is None:
             return self.experiment_name
-        return self.custom_name
+        return self.prefix
 
     def get_reference_name(self) -> str:
         """Get the reference name of this run in the experiment registry.
