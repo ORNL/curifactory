@@ -9,7 +9,7 @@ import json
 import os
 import shutil
 
-import pkg_resources
+import importlib_resources
 
 import curifactory as cf
 from curifactory import utils
@@ -59,12 +59,17 @@ def initialize_project():  # noqa: C901 yeaaaah break up into sub functions
     os.makedirs(config["reports_path"], exist_ok=True)
 
     # copy in style sheet for reports
-    style_path = pkg_resources.resource_filename("curifactory", "data/style.css")
-    shutil.copyfile(style_path, config["report_css_path"])
+    # style_path = pkg_resources.resource_filename("curifactory", "data/style.css")
+    with importlib_resources.as_file(
+        importlib_resources.files("curifactory") / "data/style.css"
+    ) as style_path:
+        shutil.copyfile(style_path, config["report_css_path"])
 
     # copy in debug.py for easier IDE debugging entrypoint
-    debug_file_path = pkg_resources.resource_filename("curifactory", "data/debug.py")
-    shutil.copyfile(debug_file_path, "debug.py")
+    with importlib_resources.as_file(
+        importlib_resources.files("curifactory") / "data/debug.py"
+    ) as debug_file_path:
+        shutil.copyfile(debug_file_path, "debug.py")
 
     # handle docker folder and dockerfile
     valid_docker_choice = False
@@ -76,24 +81,24 @@ def initialize_project():  # noqa: C901 yeaaaah break up into sub functions
             os.makedirs("docker", exist_ok=True)
 
             # read in the dockerfile contents and edit appropriately
-            dockerfile_path = pkg_resources.resource_filename(
-                "curifactory", "data/dockerfile"
-            )
-            with open(dockerfile_path) as infile:
-                contents = infile.read()
-                contents.replace("{{CF_VERSION}}", cf.__version__)
-            with open("docker/dockerfile", "w") as outfile:
-                outfile.write(contents)
+            with importlib_resources.as_file(
+                importlib_resources.files("curifactory") / "data/dockerfile"
+            ) as dockerfile_path:
+                with open(dockerfile_path) as infile:
+                    contents = infile.read()
+                    contents.replace("{{CF_VERSION}}", cf.__version__)
+                with open("docker/dockerfile", "w") as outfile:
+                    outfile.write(contents)
 
-            dockerfile_start_path = pkg_resources.resource_filename(
-                "curifactory", "data/startup.sh"
-            )
-            shutil.copyfile(dockerfile_start_path, "docker/startup.sh")
+            with importlib_resources.as_file(
+                importlib_resources.files("curifactory") / "data/startup.sh"
+            ) as dockerfile_start_path:
+                shutil.copyfile(dockerfile_start_path, "docker/startup.sh")
 
-            dockerfile_ignore_path = pkg_resources.resource_filename(
-                "curifactory", "data/.dockerignore"
-            )
-            shutil.copyfile(dockerfile_ignore_path, "docker/.dockerignore")
+            with importlib_resources.as_file(
+                importlib_resources.files("curifactory") / "data/.dockerignore"
+            ) as dockerfile_ignore_path:
+                shutil.copyfile(dockerfile_ignore_path, "docker/.dockerignore")
         elif docker_yn.lower() == "n":
             valid_docker_choice = True
         if not valid_docker_choice:
