@@ -289,6 +289,7 @@ class Record:
         dir_name_suffix: str,
         subdir: str = None,
         prefix: str = None,
+        stage_name: str = None,
         track: bool = True,
     ) -> str:
         """Returns an args-appropriate cache path with the passed name, (similar to get_path) and creates it as a directory.
@@ -302,12 +303,18 @@ class Record:
                 custom-specified experiment prefix). This can be used if you want a cached object to work easier across
                 multiple experiments, rather than being experiment specific. WARNING: use with caution, cross-experiment
                 caching can mess with provenance.
+            stage_name (str): The associated stage for a path. If not provided, the currently
+                executing stage name is used.
             track (bool): whether to include returned path in a store full copy
                 or not. This will only work if the returned path is not altered
                 by a stage before saving something to it.
         """
         dir_path = self.manager.get_artifact_path(
-            obj_name=dir_name_suffix, record=self, subdir=subdir, prefix=prefix
+            obj_name=dir_name_suffix,
+            record=self,
+            subdir=subdir,
+            prefix=prefix,
+            stage_name=stage_name,
         )
         if track:
             self.unstored_tracked_paths.append(

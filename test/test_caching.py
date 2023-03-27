@@ -11,6 +11,7 @@ import pytest
 
 import curifactory as cf
 from curifactory.caching import (
+    Cacheable,
     JsonCacher,
     PandasCsvCacher,
     PandasJsonCacher,
@@ -1079,3 +1080,53 @@ def test_cacher_with_record_get_path_no_extension_full_store(configured_test_man
         f"test_{r0.args.hash}_manual_output_thing_manualtest",
     )
     assert os.path.exists(path)
+
+
+def test_custom_cacher_using_get_dir_store_full(configured_test_manager):
+    """A custom cacheable that uses the cacher's get_dir function should correctly create
+    the directory and allow storing in it, and transfer it to a full store."""
+    configured_test_manager.store_full = True
+
+    class MultiCacher(Cacheable):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+        def save(self, obj):
+            dirpath = self.get_dir()
+            with open(f"{dirpath}/thing.json", "w") as outfile:
+                json.dump(obj, outfile)
+            with open(f"{dirpath}/what.txt", "w") as outfile:
+                outfile.write("This is the confirmation that thing.json was written.")
+
+        def load(self):
+            dirpath = self.get_dir()
+            with open(f"{dirpath}/thing.json") as infile:
+                return json.load(infile)
+
+    cacher = MultiCacher()
+
+    @cf.stage(outputs=["output"], cachers=[cacher])
+    def output_thing(record):
+        return dict(message="hello world!")
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    output_thing(r0)
+
+    path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_output_thing_output",
+    )
+    assert os.path.exists(path)
+    assert os.path.exists(f"{path}/thing.json")
+    assert os.path.exists(f"{path}/what.txt")
+
+    full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
+    full_path = os.path.join(
+        full_store_path,
+        f"test_{r0.args.hash}_output_thing_output",
+    )
+    assert os.path.exists(full_path)
+    assert os.path.exists(f"{full_path}/thing.json")
+    assert os.path.exists(f"{full_path}/what.txt")
+
+    assert cacher.load()["message"] == "hello world!"

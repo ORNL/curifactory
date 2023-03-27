@@ -210,9 +210,26 @@ class Cacheable:
             self.cache_paths.append(path)
         return path
 
-    # def get_dir(self, suffix=None) -> str:
-    #     # TODO: necessary?
-    #     pass
+    def get_dir(self, suffix=None) -> str:
+        """Returns a path for a directory with the given suffix (if provided), appropriate for use in a ``save``
+        and ``load`` function. This will create any subdirectories in the path if they don't exist.
+        """
+        path = None
+        if suffix is None:
+            suffix = ""
+
+        if self.path_override is not None:
+            path = self.path_override + suffix
+        else:
+            path = self.record.get_dir(
+                self.name + suffix,
+                subdir=self.subdir,
+                prefix=self.prefix,
+                stage_name=self.stage,
+                track=self.track,
+            )
+        os.makedirs(path, exist_ok=True)
+        return path
 
     def set_record(self, record):
         self.record = record
