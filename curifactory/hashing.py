@@ -151,6 +151,24 @@ def get_parameters_hash_values(param_set) -> Dict[str, Tuple[str, Any]]:
     }
 
 
+def _compute_hash_part(hash_representations: Dict[str, Tuple[str, Any]]) -> int:
+    """Recursive computation for the integer value of the hash of a passed hash_values dictionary."""
+    hash_total = 0
+    for hash_key, (hash_rep, hash_rep_value) in hash_representations.items():
+        if hash_rep_value is None:
+            continue
+
+        # make sure to recursively compute on any subdataclasses
+        if hash_rep.startswith("get_parameters_hash_values"):
+            hash_total += _compute_hash_part(hash_rep_value)
+        else:
+            # Note that we concatenate the string of the value with the hash key, otherwise if two parameters had eachother's
+            # values in another args instance, they'd compute the same hash which is decidedly not correct.
+            hash_hex = hashlib.md5(f"{hash_key}{hash_rep_value}".encode()).hexdigest()
+            hash_total += int(hash_hex, 16)
+    return hash_total
+
+
 def compute_hash(hash_representations: Dict[str, Tuple[str, Any]]) -> str:
     """Returns a combined order-independent md5 hash of the passed representations.
 
@@ -159,16 +177,8 @@ def compute_hash(hash_representations: Dict[str, Tuple[str, Any]]) -> str:
     things are hashed won't change the hash as long as the values themselves are
     the same.
     """
-    hash_total = 0
 
-    # Note that we concatenate the string of the value with the hash key, otherwise if two parameters had eachother's
-    # values in another args instance, they'd compute the same hash which is decidedly not correct.
-    for hash_key, (hash_rep, hash_rep_value) in hash_representations.items():
-        if hash_rep_value is None:
-            continue
-        hash_hex = hashlib.md5(f"{hash_key}{hash_rep_value}".encode()).hexdigest()
-        hash_total += int(hash_hex, 16)
-
+    hash_total = _compute_hash_part(hash_representations)
     final_hash = f"{hash_total:x}"  # convert to a hexadecimal hash string
     return final_hash
 
