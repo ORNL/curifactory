@@ -5,9 +5,9 @@ import json
 import os
 from copy import deepcopy
 from dataclasses import field, fields, is_dataclass
-from typing import Any, Callable, Dict, Tuple, Union
+from typing import Any, Callable, Union
 
-PARAMETERS_BLACKLIST = ["hash", "overwrite", "hash_representations"]
+PARAMETERS_BLACKLIST = ["name", "hash", "overwrite", "hash_representations"]
 """The default parameters on the ExperimentArgs class that we always
 ignore as part of the hash."""
 
@@ -48,7 +48,7 @@ def set_hash_functions(*args, **kwargs):
     return field(default_factory=lambda: dict(**kwargs), repr=False)
 
 
-def get_parameter_hash_value(param_set, param_name: str) -> Tuple[str, Any]:
+def get_parameter_hash_value(param_set, param_name: str) -> tuple[str, Any]:
     """Determines which hashing representation mechanism to use, computes the result
     of the mechanism, and returns both.
 
@@ -135,7 +135,7 @@ def get_parameter_hash_value(param_set, param_name: str) -> Tuple[str, Any]:
     return (f"repr(param_set.{param_name})", repr(value))
 
 
-def get_parameters_hash_values(param_set) -> Dict[str, Tuple[str, Any]]:
+def get_parameters_hash_values(param_set) -> dict[str, tuple[str, Any]]:
     """Collect the hash representations from every parameter in the passed parameter set.
 
     This essentially just calls ``get_parameter_hash_value`` on every parameter.
@@ -151,7 +151,7 @@ def get_parameters_hash_values(param_set) -> Dict[str, Tuple[str, Any]]:
     }
 
 
-def _compute_hash_part(hash_representations: Dict[str, Tuple[str, Any]]) -> int:
+def _compute_hash_part(hash_representations: dict[str, tuple[str, Any]]) -> int:
     """Recursive computation for the integer value of the hash of a passed hash_values dictionary."""
     hash_total = 0
     for hash_key, (hash_rep, hash_rep_value) in hash_representations.items():
@@ -169,7 +169,7 @@ def _compute_hash_part(hash_representations: Dict[str, Tuple[str, Any]]) -> int:
     return hash_total
 
 
-def compute_hash(hash_representations: Dict[str, Tuple[str, Any]]) -> str:
+def compute_hash(hash_representations: dict[str, tuple[str, Any]]) -> str:
     """Returns a combined order-independent md5 hash of the passed representations.
 
     We do this by individually computing a hash for each item, and add the integer values up,
@@ -185,7 +185,7 @@ def compute_hash(hash_representations: Dict[str, Tuple[str, Any]]) -> str:
 
 # TODO: (3/10/2023) unclear how necessary this is, it's only used in this file
 # and the logic is simple enough it could directly be included in ``args_hash``
-def hash_parameterset(args, dry: bool = False) -> Union[str, Dict]:
+def hash_parameterset(args, dry: bool = False) -> Union[str, dict]:
     """Run all of the hashing mechanisms for the parameter set and either
     return the hash or, if ``dry`` is ``True`` return the dictionary of representations.
 
@@ -203,7 +203,7 @@ def hash_parameterset(args, dry: bool = False) -> Union[str, Dict]:
 
 
 # TODO: (3/10/2023) allow flag to still at least show the values of ignored parameters
-def parameters_string_hash_representation(param_set) -> Dict[str, str]:
+def parameters_string_hash_representation(param_set) -> dict[str, str]:
     """Get the hash representation of a parameter set into a json-dumpable dictionary.
 
     This is used both in the output report as well as in the params registry.
@@ -241,7 +241,7 @@ def parameters_string_hash_representation(param_set) -> Dict[str, str]:
 
 def args_hash(
     args, store_in_registry: bool = False, registry_path: str = None, dry: bool = False
-) -> Union[str, Dict]:
+) -> Union[str, dict]:
     """Returns a hex string representing the passed arguments, optionally recording
     the arguments and hash in the params registry.
 

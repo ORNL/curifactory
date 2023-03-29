@@ -1,5 +1,6 @@
 import json
 import os
+from dataclasses import dataclass
 from test.examples.stages.cache_stages import (
     filerefcacher_stage,
     filerefcacher_stage_multifile,
@@ -960,14 +961,18 @@ def test_separate_managers_common_prefix_cacher_crosscaches(
     both use the same cached value if the args are the same."""
     run_count = 0
 
+    @dataclass
+    class MyArgs(cf.ExperimentArgs):
+        a: int = 5
+
     @cf.stage(None, ["output"], [PickleCacher(prefix="commondata")])
     def output_thing(record):
         nonlocal run_count
         run_count += 1
         return "Hello world"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
-    r1 = cf.Record(alternate_test_manager2, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, MyArgs(name="test", a=4))
+    r1 = cf.Record(alternate_test_manager2, MyArgs(name="test2", a=4))
     output_thing(r0)
     output_thing(r1)
     assert run_count == 1
@@ -980,14 +985,18 @@ def test_separate_managers_common_prefix_cacher_no_crosscache_if_args_diff(
     _not_ use the same cached value if the args are not the same."""
     run_count = 0
 
+    @dataclass
+    class MyArgs(cf.ExperimentArgs):
+        a: int = 5
+
     @cf.stage(None, ["output"], [PickleCacher(prefix="commondata")])
     def output_thing(record):
         nonlocal run_count
         run_count += 1
         return "Hello world"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
-    r1 = cf.Record(alternate_test_manager2, cf.ExperimentArgs(name="test2"))
+    r0 = cf.Record(configured_test_manager, MyArgs(name="test", a=4))
+    r1 = cf.Record(alternate_test_manager2, MyArgs(name="test2", a=5))
     output_thing(r0)
     output_thing(r1)
     assert run_count == 2
