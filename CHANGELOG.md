@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.11.0] - 2023-03-29
 
+### Added
+- Curifactory submodules to top level import, so separately importing submodules is no longer necessary.
+
 ### Changed
 - Minimum python version to 3.9.
 - Parameterset `name` to be ignored by hashing mechanism.
