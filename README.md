@@ -56,9 +56,10 @@ a conda environment, you'll need to install this in your system python.)
 pip install argcomplete
 ```
 
-To enable, you can either use argcomplete's global hook, which will enable tab complete on all argcomplete-enabled
-python packages (e.g. pytest), or you can add `eval "$(register-python-argcomplete experiment)"` to your shell's
-rc file. Curifactory can add this line for you automatically with:
+To enable, you can either use argcomplete's global hook `activate-global-python-argcomplete`, which
+will enable tab complete on all argcomplete-enabled python packages (e.g. pytest), or you can add
+`eval "$(register-python-argcomplete experiment)"` to your shell's rc file. Curifactory can add
+this line for you automatically with:
 
 ```bash
 curifactory completion [--bash|--zsh]  # use the shell flag appropriate
