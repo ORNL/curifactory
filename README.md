@@ -47,6 +47,25 @@ via:
 conda install python-graphviz
 ```
 
+### Tab completion
+
+For tab-completion in bash/zsh, install the `argcomplete` package (if using curifactory inside
+a conda environment, you'll need to install this in your system python.)
+
+```python
+pip install argcomplete
+```
+
+To enable, you can either use argcomplete's global hook, which will enable tab complete on all argcomplete-enabled
+python packages (e.g. pytest), or you can add `eval "$(register-python-argcomplete experiment)"` to your shell's
+rc file. Curifactory can add this line for you automatically with:
+
+```bash
+curifactory completion [--bash|--zsh]  # use the shell flag appropriate
+```
+
+Once enabled, the `experiment` command will provide tab complete for experiment names, parameter names, and flags.
+
 ## Documentation
 
 The documentation for the latest version of Curifactory can be found at:

@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [unreleased]
+
+### Added
+- Bash/zsh tab-completion via `argcomplete`. (This requires installing `argcomplete` outside of the
+  environment and adding a line to your shell's rc file in order to use. You can run
+  `curifactory completion [--bash|--zsh]` to add the line, or just run `curifactory completion` for
+  instructions.)
+
+### Fixed
+- `experiment ls` incorrectly handling curifactory configurations with experiment/param modules located
+  in subdirectories.
+
+
+
+
 ## [0.11.1] - 2023-03-29
 
 ### Fixed
