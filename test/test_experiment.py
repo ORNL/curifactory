@@ -365,3 +365,45 @@ def test_parallel_overwrite_removed_after_parallel(
 
 
 # TODO: do args_names/args_indices get correctly factored into parallel index calls
+
+
+def test_full_experiment_runs(clear_filesystem):
+    results, manager = run_experiment("basic", ["params1", "params2"])
+    assert len(manager.records) == 3
+    assert manager.records[0].state["sum"] == 3
+    assert manager.records[1].state["sum"] == 6
+    assert manager.records[2].state["sum"] == 9
+
+
+def test_empty_parameters_errors(clear_filesystem):
+    """Using a parameterfile whos get_params returns an empty list should error."""
+    with pytest.raises(RuntimeError) as exc_info:
+        results, manager = run_experiment("basic", ["empty"])
+
+    assert (
+        str(exc_info.value)
+        == "No parameter sets found, please make sure any `get_params()` functions are returning non-empty arrays."
+    )
+
+
+def test_invalid_args_names_errors(clear_filesystem):
+    """Using a --names flag but with a non-existant parameterset name should error.."""
+    with pytest.raises(RuntimeError) as exc_info:
+        results, manager = run_experiment(
+            "basic", ["params1", "params2"], args_names=["test4"]
+        )
+
+    assert (
+        str(exc_info.value)
+        == "Paramset name 'test4' not found in any of the provided parameter files."
+    )
+
+
+def test_valid_args_names_works(clear_filesystem):
+    """Using a --names flag should correctly run only that parameterset."""
+    results, manager = run_experiment(
+        "basic", ["params1", "params2"], args_names=["test3"]
+    )
+
+    assert len(manager.records) == 1
+    assert manager.records[0].state["sum"] == 9

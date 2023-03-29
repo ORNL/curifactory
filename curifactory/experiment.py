@@ -412,7 +412,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         for args_name in args_names:
             found = False
             for argset in argsets:
-                if args_name == argset:
+                if args_name == argset.name:
                     found = True
                     break
             if not found:
