@@ -190,7 +190,8 @@ def get_command_output(cmd, silent=False) -> str:
         return ""
     if cmd_return.returncode == 0:
         output = cmd_return.stdout.decode("utf-8")
-        return output[:-2]
+        return output[:-2]  # TODO: (3/29/2023) is this definitely right?
+        # seems like it would prob be different on windows vs linux
     return ""
 
 

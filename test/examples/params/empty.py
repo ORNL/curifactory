@@ -1,4 +1,4 @@
-"""Represents an incorrectly constructed get_params that doesn't return anything"""
+# Represents an incorrectly constructed get_params that doesn't return anything
 
 from test.examples.params.basic import Args
 

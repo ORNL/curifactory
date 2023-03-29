@@ -897,11 +897,13 @@ def write_experiment_notebook(
     os.remove(script_path)
 
 
-def regex_lister(path, regex, try_import=True):
+def regex_lister(module_name, regex, try_import=True):
     """Used by both list_experiments and list_params. This scans every file in the passed
     folder for the requested regex, and tries to import the files that have a match."""
 
     names = []
+
+    path = module_name.replace(".", "/")
 
     if not os.path.exists(path):
         print(
@@ -930,7 +932,9 @@ def regex_lister(path, regex, try_import=True):
                     if try_import:
                         # see if it's valid
                         try:
-                            importlib.import_module(f"{path}.{non_pyextension_name}")
+                            importlib.import_module(
+                                f"{module_name}.{non_pyextension_name}"
+                            )
                             comment = utils.get_py_opening_comment(lines)
                             if comment != "":
                                 names.append(
@@ -956,11 +960,8 @@ def list_experiments():
     """Print out all valid experiments that have a :code:`def run()` function, including
     any top-of-file docstrings associated with each."""
     config = utils.get_configuration()
-
-    experiment_names = regex_lister(
-        config["experiments_module_name"], r"^def run\(.*\)"
-    )
-
+    module = config["experiments_module_name"]
+    experiment_names = regex_lister(module, r"^def run\(.*\)")
     return experiment_names
 
 
@@ -968,21 +969,31 @@ def list_params():
     """Print out all valid parameter files that have a :code:`def get_params()`
     function, including any top-of-file docstrings associated with each."""
     config = utils.get_configuration()
+    experiment_module = config["experiments_module_name"]
+    params_module = config["params_module_name"]
 
     param_names = []
-
-    param_names.extend(
-        regex_lister(config["params_module_name"], r"^def get_params\(.*\)")
-    )
-    param_names.extend(
-        regex_lister(config["experiments_module_name"], r"^def get_params\(.*\)")
-    )
+    param_names.extend(regex_lister(params_module, r"^def get_params\(.*\)"))
+    param_names.extend(regex_lister(experiment_module, r"^def get_params\(.*\)"))
     return param_names
 
 
 def experiments_completer(**kwargs) -> list[str]:
     # argcomplete experiment completer
     config = utils.get_configuration()
+
+    experiments_path = config["experiments_module_name"].replace(".", "/")
+    files = (
+        subprocess.run(
+            f"cd {experiments_path} && grep -rl '^def run('",
+            shell=True,
+            capture_output=True,
+        )
+        .stdout.decode("utf-8")[:-1]
+        .split("\n")
+    )
+    files = [file[:-3] for file in files]
+    return files
 
     experiment_names = regex_lister(
         config["experiments_module_name"], r"^def run\(.*\)", try_import=False
@@ -1265,7 +1276,7 @@ Examples:
         print("\nPARAMS:")
         for param in list_params():
             print("\t" + param)
-        exit()
+        return
 
     elif args.experiment_name == "reports":
         if args.update:
@@ -1280,7 +1291,7 @@ Examples:
             ["python", "-m", "http.server", str(args.port), "--bind", args.host]
         )
         os.chdir("..")
-        exit()
+        return
 
     # TODO: verify names exist
     # TODO: ensure folders exist (logs)
