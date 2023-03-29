@@ -8,10 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Minimum python version to 3.9.
-- Changed parameters `name` to be ignored by hashing mechanism.
+- Parameterset `name` to be ignored by hashing mechanism.
 
 ### Fixed
-- No longer using backported package that wasn't in the setup.
+- No longer using backported package `importlib_resources` that wasn't in the setup.
 
 
 
