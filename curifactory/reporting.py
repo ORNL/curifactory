@@ -11,7 +11,6 @@ import json
 import logging
 import os
 import shutil
-from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -324,7 +323,7 @@ class LinePlotReporter(Reportable):
         return f"<img src='{self.path}/{self.name}.{self.savefig_kwargs['format']}'>"
 
 
-def render_report_head(manager) -> List[str]:
+def render_report_head(manager) -> list[str]:
     """Generates the report head tag."""
     return [
         f"<head><title>{manager.experiment_name}/{manager.experiment_run_number}</title>",
@@ -334,7 +333,7 @@ def render_report_head(manager) -> List[str]:
 
 def render_report_info_block(  # noqa: C901 -- TODO: yeaaaaah break it up at some point
     manager,
-) -> List[str]:
+) -> list[str]:
     """Generate the header and block of metadata at the top of the report."""
 
     html_lines = []
@@ -441,7 +440,7 @@ def render_report_info_block(  # noqa: C901 -- TODO: yeaaaaah break it up at som
     return html_lines
 
 
-def render_report_toc() -> List[str]:
+def render_report_toc() -> list[str]:
     """Render table of contents for the overall report."""
     return [
         "<a name='top'></a>" "<h2>Table of Contents</h2>",
@@ -454,7 +453,7 @@ def render_report_toc() -> List[str]:
     ]
 
 
-def render_report_reportables_toc(manager) -> List[str]:
+def render_report_reportables_toc(manager) -> list[str]:
     """Render the table of contents for the reportables."""
     html_lines = []
 
@@ -485,7 +484,7 @@ def render_report_all_reportables(
     reportables_path: str,
     override_display_path: str = None,
     notebook: bool = False,
-) -> List[str]:
+) -> list[str]:
     """Get the HTML for displaying all reportables output."""
     html_lines = []
 
@@ -517,7 +516,7 @@ def render_report_all_reportables(
     return html_lines
 
 
-def render_report_stage_map(manager, graphs_path) -> List[str]:
+def render_report_stage_map(manager, graphs_path) -> list[str]:
     """Generate and write out the graphviz graph for the stages and return the html to display it."""
     graph = map_full_svg(manager)
     with open(f"{graphs_path}/full.gv", "w") as outfile:
@@ -531,7 +530,7 @@ def render_report_stage_map(manager, graphs_path) -> List[str]:
     return html_lines
 
 
-def render_report_detailed_stage_maps(manager, graphs_path) -> List[str]:
+def render_report_detailed_stage_maps(manager, graphs_path) -> list[str]:
     """Generate and write out a more detailed graphviz graph for each record and return the html."""
     html_lines = []
     html_lines.append("<a name='stage_detail'></a>")
@@ -550,7 +549,7 @@ def render_report_detailed_stage_maps(manager, graphs_path) -> List[str]:
     return html_lines
 
 
-def render_report_argset_dump(manager) -> List[str]:
+def render_report_argset_dump(manager) -> list[str]:
     """Dump out the JSON for all args used by manager."""
     html_lines = []
 
@@ -939,7 +938,7 @@ def render_reportable(
     reportables_path: str,
     override_display_path: str = None,
     notebook: bool = False,
-) -> List[str]:
+) -> list[str]:
     """Render a reportable to file and get the HTML to display it."""
     html_lines = []
 

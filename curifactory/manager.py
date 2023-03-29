@@ -8,7 +8,6 @@ import os
 import sys
 from datetime import datetime
 from socket import gethostname
-from typing import Dict, List
 
 from curifactory import reporting, utils
 from curifactory.record import Record
@@ -206,7 +205,7 @@ class ArtifactManager:
         """If we're in map mode, don't actually execute any stages, we're only
         recording the 'DAG' (really just the set of stages associated with each
         record)"""
-        self.map: List[Record] = None
+        self.map: list[Record] = None
 
         self.map_progress = None
         self.map_progress_overall_task_id = None
@@ -379,7 +378,7 @@ class ArtifactManager:
             with open(self.get_run_output_path("run_info.json"), "w") as outfile:
                 json.dump(self.run_info, outfile, indent=4)
 
-    def get_all_argsets(self) -> List:
+    def get_all_argsets(self) -> list:
         """This is important to get argsets that aren't obtained through parameter files, e.g. in an interactive session."""
         master_list = []
         found_hashes = []
@@ -391,7 +390,7 @@ class ArtifactManager:
 
         return master_list
 
-    def get_grouped_reportables(self) -> Dict[str, List[Reportable]]:
+    def get_grouped_reportables(self) -> dict[str, list[Reportable]]:
         """Returns a dictionary of reportable groups, each group containing the list of reportables."""
         grouped_reportables = {}
         for reportable in self.reportables:
@@ -402,7 +401,7 @@ class ArtifactManager:
             grouped_reportables[reportable.group].append(reportable)
         return grouped_reportables
 
-    def get_ungrouped_reportables(self) -> List[Reportable]:
+    def get_ungrouped_reportables(self) -> list[Reportable]:
         """Returns the list of reportables that have no group."""
         non_grouped_reportables = []
         for reportable in self.reportables:
@@ -686,7 +685,7 @@ class ArtifactManager:
         html = reporting.render_graph(reporting.map_full_svg(self))
         return HTML("".join(html))
 
-    def get_reportable_groups(self) -> List[str]:
+    def get_reportable_groups(self) -> list[str]:
         groups = []
         for reportable in self.reportables:
             if reportable.group not in groups:

@@ -7,7 +7,7 @@ import os
 import pickle
 import time
 from functools import wraps
-from typing import List, Union
+from typing import Union
 
 import psutil
 
@@ -81,9 +81,9 @@ def _log_stats(
 
 
 def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
-    inputs: List[str] = None,
-    outputs: List[Union[str, Lazy]] = None,
-    cachers: List = None,
+    inputs: list[str] = None,
+    outputs: list[Union[str, Lazy]] = None,
+    cachers: list = None,
     suppress_missing_inputs: bool = False,
 ):
     """Decorator to wrap around a function that represents a single step in an experiment,
@@ -428,7 +428,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
 
 
 def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
-    outputs: List[str] = None, cachers: List = None
+    outputs: list[str] = None, cachers: list = None
 ):
     """Decorator to wrap around a function that represents some step that must operate across
     multiple different argsets or "experiment lines" within an experiment. This is normally
@@ -467,7 +467,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
 
     def decorator(function):
         @wraps(function)
-        def wrapper(record: Record, records: List[Record] = None, **kwargs):
+        def wrapper(record: Record, records: list[Record] = None, **kwargs):
             # set the logging prefix to the args name
             if record.args is not None:
                 utils.set_logging_prefix(f"[{record.args.name}] ")

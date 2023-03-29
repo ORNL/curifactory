@@ -5,7 +5,6 @@ import copy
 import logging
 import os
 import shutil
-from typing import Dict, List
 
 from curifactory import hashing
 from curifactory.caching import Lazy
@@ -74,13 +73,13 @@ class Record:
         combo hash rather than the individual args hash."""
         self.combo_hash = None
         """This gets set on records that run an aggregate stage. This is set from utils.add_args_combo_hash."""
-        self.unstored_tracked_paths: List[Dict[str, str]] = []
+        self.unstored_tracked_paths: list[dict[str, str]] = []
         """Paths obtained with get_path/get_dir that should be copied to a full
         store folder. The last executed stage should manage copying anything
         listed here and then clearing it. This is a list of dicts that would be
         passed to the artifact manager's ``get_artifact_path` function: (obj_name, subdir, prefix, and path)
         """
-        self.stored_paths: List[str] = []
+        self.stored_paths: list[str] = []
         """A list of paths that have been copied into a full store folder. These are
         the source paths, not the destination paths."""
 

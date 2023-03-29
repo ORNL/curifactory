@@ -79,6 +79,7 @@ def test_returns_less_than_expected_errors(configured_test_manager):
 
 def test_empty_cachers_array_errors(configured_test_manager):
     """Don't let the user write [] for cachers list, as it always shortcircuits."""
+
     # NOTE: technically this could probably just be a special case handled by staging.py, but I think specifying [] for cachers is kind of unclear anyway.
     @stage([], [], [])
     def stage_that_does_nothing(record):
@@ -305,7 +306,6 @@ def test_lazy_forced_on_manager_lazy(configured_test_manager):
 
     @stage([], ["tester"], cachers=[PickleCacher])
     def output_stage(record):
-
         return "hello world"
 
     configured_test_manager.lazy = True
@@ -407,6 +407,7 @@ def test_aggregate_returns_less_than_expected_errors(configured_test_manager):
 
 def test_aggregate_empty_cachers_array_errors(configured_test_manager):
     """Don't let the user write [] for cachers list, as it always shortcircuits."""
+
     # NOTE: technically this could probably just be a special case handled by staging.py, but I think specifying [] for cachers is kind of unclear anyway.
     @aggregate([], [])
     def aggregate_stage_that_does_nothing(record, records):

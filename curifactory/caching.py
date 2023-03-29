@@ -13,7 +13,7 @@ import logging
 import os
 import pickle
 from datetime import datetime
-from typing import Dict, List, Union
+from typing import Union
 
 import pandas as pd
 
@@ -116,11 +116,11 @@ class Cacheable:
         how artifact metadata is collected."""
         self.track = track
         """Whether to store the artifact this cacher is used with in the run folder on store-full runs or not."""
-        self.cache_paths: List[str] = []
+        self.cache_paths: list[str] = []
         """The running list of paths this cacher is using, as appended by ``get_path``."""
-        self.metadata: Dict = None
+        self.metadata: dict = None
         """Metadata about the artifact cached with this cacheable."""
-        self.extra_metadata: Dict = {}
+        self.extra_metadata: dict = {}
         """``collect_metadata`` uses but does not overwrite this, placing into the `extra` key
         in the actual metadata. This can be used by the cacher's save function to store additional
         information that would then be available if the 'load' function calls ``load_metadata()``."""
@@ -273,7 +273,7 @@ class Cacheable:
         with open(metadata_path, "w") as outfile:
             json.dump(self.metadata, outfile, indent=2, default=str)
 
-    def load_metadata(self) -> Dict:
+    def load_metadata(self) -> dict:
         metadata_path = self.get_path("_metadata.json")
         if os.path.exists(metadata_path):
             with open(metadata_path) as infile:
@@ -407,8 +407,8 @@ class PandasJsonCacher(Cacheable):
     def __init__(
         self,
         path_override: str = None,
-        to_json_args: Dict = dict(double_precision=15),
-        read_json_args: Dict = dict(),
+        to_json_args: dict = dict(double_precision=15),
+        read_json_args: dict = dict(),
         **kwargs
     ):
         self.read_json_args = read_json_args
@@ -437,8 +437,8 @@ class PandasCsvCacher(Cacheable):
     def __init__(
         self,
         path_override: str = None,
-        to_csv_args: Dict = dict(),
-        read_csv_args: Dict = dict(index_col=0),
+        to_csv_args: dict = dict(),
+        read_csv_args: dict = dict(index_col=0),
         **kwargs
     ):
         self.read_csv_args = read_csv_args
@@ -514,12 +514,12 @@ class FileReferenceCacher(Cacheable):
 
         return True
 
-    def load(self) -> Union[List[str], str]:
+    def load(self) -> Union[list[str], str]:
         with open(self.get_path()) as infile:
             files = json.load(infile)
         return files
 
-    def save(self, files: Union[List[str], str]) -> str:
+    def save(self, files: Union[list[str], str]) -> str:
         path = self.get_path()
         with open(path, "w") as outfile:
             json.dump(files, outfile, indent=4)

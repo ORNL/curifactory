@@ -16,7 +16,6 @@ import shutil
 import subprocess
 import sys
 import traceback
-from typing import List
 
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
@@ -42,10 +41,10 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     build_docker: bool = False,
     build_notebook: bool = False,
     run_string: str = None,
-    stage_overwrites: List[str] = None,
-    args_names: List[str] = None,
-    args_indices: List[str] = None,
-    global_args_indices: List[str] = None,
+    stage_overwrites: list[str] = None,
+    args_names: list[str] = None,
+    args_indices: list[str] = None,
+    global_args_indices: list[str] = None,
     parallel: int = None,
     parallel_mode: bool = False,
     parallel_lock: mp.Lock = None,

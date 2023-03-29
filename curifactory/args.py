@@ -1,7 +1,7 @@
 """Contains the parent dataclass ExperimentArgs, containing run-specific config params."""
 
 from dataclasses import dataclass, field
-from typing import Callable, Dict, Union
+from typing import Callable, Union
 
 from curifactory import hashing
 
@@ -42,7 +42,7 @@ class ExperimentArgs:
 
     # NOTE: may be able to take parent classes' hashing functions into account as well
     # https://stackoverflow.com/questions/10091957/get-parent-class-name
-    hash_representations: Dict[str, Union[None, Callable]] = field(
+    hash_representations: dict[str, Union[None, Callable]] = field(
         default_factory=dict, repr=False
     )
     """Dictionary of parameter names in the dataclass where you can provide functions
