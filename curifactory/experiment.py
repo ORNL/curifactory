@@ -1000,11 +1000,6 @@ def experiments_completer(**kwargs) -> list[str]:
     files = [file[:-3] for file in files if file != ""]
     return files
 
-    experiment_names = regex_lister(
-        config["experiments_module_name"], r"^def run\(.*\)", try_import=False
-    )
-    return experiment_names
-
 
 def params_completer(**kwargs) -> list[str]:
     # argcomplete -p completer
@@ -1035,22 +1030,6 @@ def params_completer(**kwargs) -> list[str]:
     param_files = [file[:-3] for file in param_files if file != ""]
 
     return param_files + experiment_files
-
-    param_names = []
-
-    param_names.extend(
-        regex_lister(
-            config["params_module_name"], r"^def get_params\(.*\)", try_import=False
-        )
-    )
-    param_names.extend(
-        regex_lister(
-            config["experiments_module_name"],
-            r"^def get_params\(.*\)",
-            try_import=False,
-        )
-    )
-    return param_names
 
 
 def main():
