@@ -5,7 +5,11 @@ import os
 import pytest
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
-from curifactory.experiment import experiments_completer, run_experiment
+from curifactory.experiment import (
+    experiments_completer,
+    params_completer,
+    run_experiment,
+)
 from curifactory.manager import ArtifactManager
 
 # TODO: need to test that specifying no params will default to experiment_name
@@ -412,3 +416,8 @@ def test_valid_args_names_works(clear_filesystem):
 def test_experiments_completer():
     output = experiments_completer()
     assert output == ["basic"]
+
+
+def test_params_completer():
+    output = params_completer()
+    assert output == ["params1", "params2", "empty"]

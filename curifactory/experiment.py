@@ -6,21 +6,17 @@ This file contains a :code:`__name__ == "__main__"` and can be run directly.
 
 import argparse
 import datetime
-import glob
 import importlib
 import logging
 import multiprocessing as mp
 import os
 import re
-import shutil
 import subprocess
 import sys
-import traceback
 
 import argcomplete
-from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
-from curifactory import docker, hashing, reporting, utils
+from curifactory import reporting, utils
 from curifactory.manager import ArtifactManager
 
 CONFIGURATION_FILE = "curifactory_config.json"
@@ -142,6 +138,15 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             mngr = ArtifactManager()
             experiment.run_experiment('exp_name', ['params1', 'params2'], mngr=mngr, dry=True)
     """
+
+    # doing imports here to avoid needing such a long import list for tab completion functionality
+    import glob
+    import shutil
+    import traceback
+
+    from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
+
+    from curifactory import docker, hashing
 
     if run_string is None:
         run_string = f"experiment {experiment_name}"
@@ -992,7 +997,7 @@ def experiments_completer(**kwargs) -> list[str]:
         .stdout.decode("utf-8")[:-1]
         .split("\n")
     )
-    files = [file[:-3] for file in files]
+    files = [file[:-3] for file in files if file != ""]
     return files
 
     experiment_names = regex_lister(
@@ -1004,6 +1009,32 @@ def experiments_completer(**kwargs) -> list[str]:
 def params_completer(**kwargs) -> list[str]:
     # argcomplete -p completer
     config = utils.get_configuration()
+    experiments_path = config["experiments_module_name"].replace(".", "/")
+    params_path = config["params_module_name"].replace(".", "/")
+
+    experiment_files = (
+        subprocess.run(
+            f"cd {experiments_path} && grep -rl '^def get_params('",
+            shell=True,
+            capture_output=True,
+        )
+        .stdout.decode("utf-8")[:-1]
+        .split("\n")
+    )
+    experiment_files = [file[:-3] for file in experiment_files if file != ""]
+
+    param_files = (
+        subprocess.run(
+            f"cd {params_path} && grep -rl '^def get_params('",
+            shell=True,
+            capture_output=True,
+        )
+        .stdout.decode("utf-8")[:-1]
+        .split("\n")
+    )
+    param_files = [file[:-3] for file in param_files if file != ""]
+
+    return param_files + experiment_files
 
     param_names = []
 
@@ -1245,6 +1276,7 @@ Examples:
         action="store_true",
         help="Only used for 'experiment reports', updates the report index with all exisiting reports in the reports file. This is to handle if you pull in reports from other machines.",
     )
+    argcomplete.autocomplete(parser, always_complete_options=False)
 
     # fix any missing quotes in run line
     command_parts = sys.argv[1:]
@@ -1264,7 +1296,6 @@ Examples:
 
     run_string = "experiment " + " ".join(fixed_parts)
 
-    argcomplete.autocomplete(parser, always_complete_options=False)
     args = parser.parse_args()
     params_list = args.parameters_name
 
