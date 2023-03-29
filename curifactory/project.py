@@ -158,6 +158,37 @@ def initialize_project():  # noqa: C901 yeaaaah break up into sub functions
             print("Invalid entry, please enter 'y' or 'n', or leave blank for default.")
 
     print("Curifactory project initialization complete!")
+    add_completion_to_rc(False, False)
+
+
+def add_completion_to_rc(bash=False, zsh=False):
+    print(
+        "\nFor bash/zsh completion to work, the argcomplete package needs to be installed (outside a conda environment)"
+    )
+    print("You can use `pip install argcomplete`")
+
+    print("\nEnabling completion can then be done in three different ways:")
+    print(
+        "* Globally for all argcomplete python packages: \n\tsudo activate-global-python-argcomplete"
+    )
+    print(
+        '* Single shell instance: \n\teval "$(register-python-argcomplete experiment)"'
+    )
+    print(
+        "* Permanent non-globally for curifactory (RECOMMENDED):\n\tcurifactory completion --bash --zsh\n\tOr simply add single shell instance manually to any sourced shell rc file."
+    )
+
+    shell_string = '# tab-completion hook for curifactory\neval "$(register-python-argcomplete experiment)"'
+    print(f"\n{shell_string}\n")
+
+    if bash:
+        print("Writing tab-completion hook into '~/.bashrc'...")
+        with open(os.path.expanduser("~/.bashrc"), "a") as bashrc:
+            bashrc.write(f"\n{shell_string}\n")
+    if zsh:
+        print("Writing tab-completion hook into '~/.zshrc'...")
+        with open(os.path.expanduser("~/.zshrc"), "a") as zshrc:
+            zshrc.write(f"\n{shell_string}\n")
 
 
 def main():
@@ -173,7 +204,12 @@ def main():
     )
 
     subparsers = parser.add_subparsers(dest="subparser_name")
+
     init_parser = subparsers.add_parser("init")  # noqa: F841 -- we might use eventually
+
+    completion_parser = subparsers.add_parser("completion")
+    completion_parser.add_argument("--bash", dest="bash", action="store_true")
+    completion_parser.add_argument("--zsh", dest="zsh", action="store_true")
 
     args = parser.parse_args()
 
@@ -183,6 +219,8 @@ def main():
 
     if args.subparser_name == "init":
         initialize_project()
+    elif args.subparser_name == "completion":
+        add_completion_to_rc(args.bash, args.zsh)
 
 
 if __name__ == "__main__":
