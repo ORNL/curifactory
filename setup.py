@@ -54,5 +54,6 @@ setup(
         "matplotlib",
         "psutil",
         "rich",
+        "argcomplete",
     ],
 )

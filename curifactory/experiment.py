@@ -17,6 +17,7 @@ import subprocess
 import sys
 import traceback
 
+import argcomplete
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
 from curifactory import docker, hashing, reporting, utils
@@ -896,7 +897,7 @@ def write_experiment_notebook(
     os.remove(script_path)
 
 
-def regex_lister(path, regex):
+def regex_lister(path, regex, try_import=True):
     """Used by both list_experiments and list_params. This scans every file in the passed
     folder for the requested regex, and tries to import the files that have a match."""
 
@@ -922,24 +923,31 @@ def regex_lister(path, regex):
                     if result != []:
                         clean_results.extend(result)
 
-                # did we find a run()?
+                # did we find a run()/get_params()?
                 if len(clean_results) > 0:
                     non_pyextension_name = filename.name[:-3]
 
-                    # see if it's valid
-                    try:
-                        importlib.import_module(f"{path}.{non_pyextension_name}")
-                        comment = utils.get_py_opening_comment(lines)
-                        if comment != "":
+                    if try_import:
+                        # see if it's valid
+                        try:
+                            importlib.import_module(f"{path}.{non_pyextension_name}")
+                            comment = utils.get_py_opening_comment(lines)
+                            if comment != "":
+                                names.append(
+                                    non_pyextension_name
+                                    + " - "
+                                    + utils.get_py_opening_comment(lines)
+                                )
+                            else:
+                                names.append(non_pyextension_name)
+                        except Exception as e:
                             names.append(
-                                non_pyextension_name
-                                + " - "
-                                + utils.get_py_opening_comment(lines)
+                                non_pyextension_name + " [ERROR - " + str(e) + "]"
                             )
-                        else:
-                            names.append(non_pyextension_name)
-                    except Exception as e:
-                        names.append(non_pyextension_name + " [ERROR - " + str(e) + "]")
+                    else:
+                        # we have a non-validity check option for speed, this is used
+                        # for the argcomplete stuff
+                        names.append(non_pyextension_name)
 
     return names
 
@@ -972,6 +980,37 @@ def list_params():
     return param_names
 
 
+def experiments_completer(**kwargs) -> list[str]:
+    # argcomplete experiment completer
+    config = utils.get_configuration()
+
+    experiment_names = regex_lister(
+        config["experiments_module_name"], r"^def run\(.*\)", try_import=False
+    )
+    return experiment_names
+
+
+def params_completer(**kwargs) -> list[str]:
+    # argcomplete -p completer
+    config = utils.get_configuration()
+
+    param_names = []
+
+    param_names.extend(
+        regex_lister(
+            config["params_module_name"], r"^def get_params\(.*\)", try_import=False
+        )
+    )
+    param_names.extend(
+        regex_lister(
+            config["experiments_module_name"],
+            r"^def get_params\(.*\)",
+            try_import=False,
+        )
+    )
+    return param_names
+
+
 def main():
     """'Main' command line entrypoint, parses command line flags and makes the
     appropriate :code:`run_experiment()` call."""
@@ -988,7 +1027,7 @@ Examples:
     experiment reports --port 8000 --host 0.0.0.0
 """,
     )
-    parser.add_argument("experiment_name")
+    parser.add_argument("experiment_name").completer = experiments_completer
 
     parser.add_argument(
         "--notes",
@@ -1023,7 +1062,7 @@ Examples:
         dest="parameters_name",
         action="append",
         help="The name of a parameters python file. Does not need to include path or .py. You can specify multiple -p arguments to run all parameters",
-    )
+    ).completer = params_completer
     parameters_group.add_argument(
         "--names",
         dest="args_name",
@@ -1214,6 +1253,7 @@ Examples:
 
     run_string = "experiment " + " ".join(fixed_parts)
 
+    argcomplete.autocomplete(parser, always_complete_options=False)
     args = parser.parse_args()
     params_list = args.parameters_name
 
