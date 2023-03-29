@@ -5,11 +5,10 @@ This file contains a :code:`__name__ == "__main__"` and can be run directly.
 """
 
 import argparse
+import importlib.resources
 import json
 import os
 import shutil
-
-import importlib_resources
 
 import curifactory as cf
 from curifactory import utils
@@ -60,14 +59,14 @@ def initialize_project():  # noqa: C901 yeaaaah break up into sub functions
 
     # copy in style sheet for reports
     # style_path = pkg_resources.resource_filename("curifactory", "data/style.css")
-    with importlib_resources.as_file(
-        importlib_resources.files("curifactory") / "data/style.css"
+    with importlib.resources.as_file(
+        importlib.resources.files("curifactory") / "data/style.css"
     ) as style_path:
         shutil.copyfile(style_path, config["report_css_path"])
 
     # copy in debug.py for easier IDE debugging entrypoint
-    with importlib_resources.as_file(
-        importlib_resources.files("curifactory") / "data/debug.py"
+    with importlib.resources.as_file(
+        importlib.resources.files("curifactory") / "data/debug.py"
     ) as debug_file_path:
         shutil.copyfile(debug_file_path, "debug.py")
 
@@ -81,8 +80,8 @@ def initialize_project():  # noqa: C901 yeaaaah break up into sub functions
             os.makedirs("docker", exist_ok=True)
 
             # read in the dockerfile contents and edit appropriately
-            with importlib_resources.as_file(
-                importlib_resources.files("curifactory") / "data/dockerfile"
+            with importlib.resources.as_file(
+                importlib.resources.files("curifactory") / "data/dockerfile"
             ) as dockerfile_path:
                 with open(dockerfile_path) as infile:
                     contents = infile.read()
@@ -90,13 +89,13 @@ def initialize_project():  # noqa: C901 yeaaaah break up into sub functions
                 with open("docker/dockerfile", "w") as outfile:
                     outfile.write(contents)
 
-            with importlib_resources.as_file(
-                importlib_resources.files("curifactory") / "data/startup.sh"
+            with importlib.resources.as_file(
+                importlib.resources.files("curifactory") / "data/startup.sh"
             ) as dockerfile_start_path:
                 shutil.copyfile(dockerfile_start_path, "docker/startup.sh")
 
-            with importlib_resources.as_file(
-                importlib_resources.files("curifactory") / "data/.dockerignore"
+            with importlib.resources.as_file(
+                importlib.resources.files("curifactory") / "data/.dockerignore"
             ) as dockerfile_ignore_path:
                 shutil.copyfile(dockerfile_ignore_path, "docker/.dockerignore")
         elif docker_yn.lower() == "n":
