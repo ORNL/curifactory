@@ -3,6 +3,8 @@
 This means curifactory will unload the object from memory as soon as the stage completes,
 and then automatically resolve it in an executing stage that needs it.
 """
+from dataclasses import dataclass
+
 import numpy as np
 
 import curifactory as cf
@@ -27,11 +29,44 @@ def use_big_data_directly(record, big_data):
     return modified_big_data
 
 
+@cf.stage(None, [cf.Lazy("big_data", resolve=False)], [PickleCacher])
+def make_big_data_no_resolve(record):
+    """We set resolve to False on the output - this means that when it's
+    requested as an input in another stage, it won't automatically call
+    load on the cacher, instead passing in the lazy instance itself. This
+    can be useful if you're using a stage that's calling an external script,
+    and you just want to pass the path to it, rather than loading it into
+    memory."""
+    data = np.random.rand(10 * 1024 * 1024)
+    return data
+
+
+@cf.stage(["big_data"], [])
+def use_big_data_no_resolve(record, big_data):
+    """Here we assume we get a no-resolve lazy instance."""
+    print(big_data.cacher.get_path())
+    # we can still get the data like we normally could by calling load()
+    # on the cacher
+    data = big_data.load()
+    print(len(data))
+
+
+@dataclass
+class Params(cf.ExperimentArgs):
+    in_memory: bool = False
+
+
 def get_params():
-    return [cf.ExperimentArgs(name="test")]
+    return [
+        Params(name="LazyResolve", in_memory=True),
+        Params(name="LazyNoResolve", in_memory=False),
+    ]
 
 
 def run(argsets, manager):
     for argset in argsets:
         record = cf.Record(manager, argset)
-        record = use_big_data_directly(make_big_data(record))
+        if argset.in_memory:
+            record = use_big_data_directly(make_big_data(record))
+        else:
+            record = use_big_data_no_resolve(make_big_data_no_resolve(record))
