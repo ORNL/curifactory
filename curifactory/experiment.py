@@ -967,6 +967,7 @@ def list_experiments():
     config = utils.get_configuration()
     module = config["experiments_module_name"]
     experiment_names = regex_lister(module, r"^def run\(.*\)")
+    experiment_names.sort()
     return experiment_names
 
 
@@ -980,6 +981,7 @@ def list_params():
     param_names = []
     param_names.extend(regex_lister(params_module, r"^def get_params\(.*\)"))
     param_names.extend(regex_lister(experiment_module, r"^def get_params\(.*\)"))
+    param_names.sort()
     return param_names
 
 
@@ -998,6 +1000,7 @@ def experiments_completer(**kwargs) -> list[str]:
         .split("\n")
     )
     files = [file[:-3] for file in files if file != ""]
+    files.sort()
     return files
 
 
@@ -1028,8 +1031,9 @@ def params_completer(**kwargs) -> list[str]:
         .split("\n")
     )
     param_files = [file[:-3] for file in param_files if file != ""]
-
-    return param_files + experiment_files
+    files = param_files + experiment_files
+    files.sort()
+    return files
 
 
 def main():

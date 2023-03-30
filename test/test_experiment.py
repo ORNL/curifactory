@@ -420,4 +420,4 @@ def test_experiments_completer():
 
 def test_params_completer():
     output = params_completer()
-    assert output == ["params1", "params2", "empty"]
+    assert output == ["empty", "params1", "params2"]
