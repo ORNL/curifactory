@@ -255,7 +255,8 @@ class Cacheable:
 
     def set_record(self, record):
         self.record = record
-        self.collect_metadata()
+        if not self.record.manager.map_mode:
+            self.collect_metadata()
 
     def collect_metadata(self):
         if self.record is None:
