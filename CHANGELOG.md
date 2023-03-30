@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   environment and adding a line to your shell's rc file in order to use. You can run
   `curifactory completion [--bash|--zsh]` to add the line, or just run `curifactory completion` for
   instructions.)
+- `resolve` option to `Lazy` outputs - this allows not automatically loading the object on an input
+  to the stage, directly providing the lazy instance instead. This allows delaying the loading, or
+  simply getting the path of the object to deal with in some other way (e.g. passing to an external
+  command.)
 
 ### Fixed
 - `experiment ls` incorrectly handling curifactory configurations with experiment/param modules located
