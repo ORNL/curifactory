@@ -6,21 +6,17 @@ This file contains a :code:`__name__ == "__main__"` and can be run directly.
 
 import argparse
 import datetime
-import glob
 import importlib
 import logging
 import multiprocessing as mp
 import os
 import re
-import shutil
 import subprocess
 import sys
-import traceback
-from typing import List
 
-from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
+import argcomplete
 
-from curifactory import docker, reporting, utils
+from curifactory import reporting, utils
 from curifactory.manager import ArtifactManager
 
 CONFIGURATION_FILE = "curifactory_config.json"
@@ -36,16 +32,16 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     log_debug: bool = False,
     dry: bool = False,
     dry_cache: bool = False,
-    store_entire_run: bool = False,
+    store_full: bool = False,
     log_errors: bool = False,
-    custom_name: str = None,
+    prefix: str = None,
     build_docker: bool = False,
     build_notebook: bool = False,
     run_string: str = None,
-    stage_overwrites: List[str] = None,
-    args_names: List[str] = None,
-    args_indices: List[str] = None,
-    global_args_indices: List[str] = None,
+    stage_overwrites: list[str] = None,
+    args_names: list[str] = None,
+    args_indices: list[str] = None,
+    global_args_indices: list[str] = None,
     parallel: int = None,
     parallel_mode: bool = False,
     parallel_lock: mp.Lock = None,
@@ -80,10 +76,10 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         dry_cache (bool): Setting this to true only suppresses saving cache files. This is recommended
             if you're running with a cache_dir_override for some previous --store-full run, so you
             don't accidentally overwrite or add new data to the --store-full directory.
-        store_entire_run (bool): Store environment info, log, output report, and all cached files in a
+        store_full (bool): Store environment info, log, output report, and all cached files in a
             run-specific folder (:code:`data/runs` by default)
         log_errors (bool): Whether to include error messages in the log output.
-        custom_name (str): Instead of using the experiment name to group cached data, use this name instead.
+        prefix (str): Instead of using the experiment name to group cached data, use this prefix instead.
         build_docker (bool): If true, build a docker image with all of the run cache afterwards.
         build_notebook (bool): If true, add a notebook with run info and default cells to reproduce
             after run execution.
@@ -146,6 +142,15 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             experiment.run_experiment('exp_name', ['params1', 'params2'], mngr=mngr, dry=True)
     """
 
+    # doing imports here to avoid needing such a long import list for tab completion functionality
+    import glob
+    import shutil
+    import traceback
+
+    from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
+
+    from curifactory import docker, hashing
+
     # if we request a map only run, make sure we don't impact any files, so
     # automatically set "dry"
     if map_only:
@@ -175,14 +180,14 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         if global_args_indices is not None:
             for index_range in global_args_indices:
                 run_string += f" --global-indices {index_range}"
-        if store_entire_run:
+        if store_full:
             run_string += " --store-full"
         if dry:
             run_string += " --dry"
         if dry_cache:
             run_string += " --dry-cache"
-        if custom_name is not None:
-            run_string += f" --name {custom_name}"
+        if prefix is not None:
+            run_string += f" --prefix {prefix}"
         if lazy:
             run_string += " --lazy"
         if ignore_lazy:
@@ -205,11 +210,12 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     # this was added because of issues with pytorch distributed compute
     distributed_mode_detected = False
     warn_store_full_during_distributed = False
-    if "LOCAL_RANK" in os.environ:
-        if os.getenv("LOCAL_RANK") != "0":
-            distributed_mode_detected = True
-        elif "NODE_RANK" in os.environ and os.getenv("NODE_RANK") != "0":
-            distributed_mode_detected = True
+    if "LOCAL_RANK" in os.environ and os.getenv("LOCAL_RANK") != "0":
+        distributed_mode_detected = True
+    elif "NODE_RANK" in os.environ and os.getenv("NODE_RANK") != "0":
+        distributed_mode_detected = True
+    elif "RANK" in os.environ and os.getenv("RANK") != "0":
+        distributed_mode_detected = True
     if distributed_mode_detected:
         parallel_mode = True
 
@@ -219,9 +225,9 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         # correctly (doesn't have run info with run num.) We throw a warning
         # to ensure the user knows any full store caching they do (really all
         # caching) needs to be handled by the rank 0 process.
-        if store_entire_run:
+        if store_full:
             warn_store_full_during_distributed = True
-            store_entire_run = False
+            store_full = False
 
     # get the experiment run notes if requested
     if notes == "":
@@ -246,15 +252,15 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
     # force full store if building a docker container
     if build_docker:
-        store_entire_run = True
+        store_full = True
 
     if mngr is None:
         mngr = ArtifactManager(
             experiment_name,
-            store_entire_run=store_entire_run,
+            store_full=store_full,
             dry=dry,
             dry_cache=dry_cache,
-            custom_name=custom_name,
+            prefix=prefix,
             run_line=run_string,
             parallel_lock=parallel_lock,
             parallel_mode=parallel_mode,
@@ -393,7 +399,6 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         # TODO: if param_argsets is not of type List, throw exception and advise
         # compute the hash of every argset and store the params
         for index, argset in enumerate(param_argsets):
-
             # if specific names requested, just grab those
             if args_names is not None:
                 if argset.name not in args_names:
@@ -404,20 +409,52 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                 if index not in args_indices_resolved:
                     continue
 
-            argset.hash = utils.args_hash(
-                argset, mngr.manager_cache_path, (not dry and not parallel_mode)
+            argset.hash = hashing.args_hash(
+                argset,
+                store_in_registry=(not dry and not parallel_mode),
+                registry_path=mngr.manager_cache_path,
             )
             mngr.experiment_args[params].append((argset.name, argset.hash))
             # TODO: (01/24/2022) I have no idea what the point of this args_hash is...
             # it's not storing anything, and args_hash has no side-effects, so unclear
             # on why this matters.
-            if store_entire_run:
-                utils.args_hash(
-                    argset, None, False
+            # NOTE: (3/5/2023) is it just so that the hash is computed and stored
+            # on the args? Unclear exactly why that's necessary but that is technically
+            # a side-effect
+            if store_full:
+                hashing.args_hash(
+                    argset, store_in_registry=False
                 )  # don't try to store because get_run_output_path does not exist yet
             argsets_to_add.append(argset)
 
         argsets.extend(argsets_to_add)
+
+    # check that there wasn't an invalid name and all requested parameterset names were found
+    if args_names is not None:
+        for args_name in args_names:
+            found = False
+            for argset in argsets:
+                if args_name == argset.name:
+                    found = True
+                    break
+            if not found:
+                logging.error(
+                    "Paramset name '%s' not found in any of the provided parameter files."
+                    % args_name
+                )
+                raise RuntimeError(
+                    "Paramset name '%s' not found in any of the provided parameter files."
+                    % args_name
+                )
+
+    # check that we actually have parameters
+    if len(argsets) == 0:
+        logging.error(
+            "No parameter sets found, please make sure any `get_params()` functions are returning non-empty arrays."
+        )
+        raise RuntimeError(
+            "No parameter sets found, please make sure any `get_params()` functions are returning non-empty arrays."
+        )
 
     if len(global_args_indices_resolved) > 0:
         argsets = [argsets[i] for i in global_args_indices_resolved]
@@ -434,10 +471,12 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
     # store params registry in run folder
     # TODO: is this already being done in manager get_path?
-    if store_entire_run:
+    if store_full:
         for argset in argsets:
-            utils.args_hash(
-                argset, mngr.get_run_output_path(), (not dry and not parallel_mode)
+            hashing.args_hash(
+                argset,
+                store_in_registry=(not dry and not parallel_mode),
+                registry_path=mngr.get_run_output_path(),
             )
 
     # note that nothing is being cached or stored
@@ -446,7 +485,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             "NOTE - running in dry mode. This log will not be saved, and no new"
             + " files will be cached. (Existing caches will still be read.)"
         )
-    if store_entire_run:
+    if store_full:
         logging.info(
             "NOTE - running in full store mode. A copy of all cached objects and environment information will be stored in %s",
             mngr.get_run_output_path(),
@@ -497,9 +536,9 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     log_debug,
                     dry,
                     dry_cache,
-                    False,  # store_entire_run
+                    False,  # store_full
                     log_errors,
-                    custom_name,
+                    prefix,
                     False,  # build_docker
                     False,  # build_notebook
                     None,  # run_string
@@ -563,7 +602,6 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         f"{mngr.config['experiments_module_name']}.{experiment_name}"
     )
     try:
-
         # run experiment mapping and set up progress bars
         if not parallel_mode and not no_map:
             logging.info("Pre-mapping stages and records")
@@ -649,7 +687,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     if not parallel_mode:
         mngr.store()
 
-    if log and store_entire_run and not dry:
+    if log and store_full and not dry:
         # copy the logfile(s) over (when running in parallel, grab the subproc logs too)
         log_name = mngr.get_reference_name()
         log_path = f"logs/{log_name}*.log"
@@ -739,7 +777,7 @@ def write_experiment_notebook(
     logging.info("Creating experiment notebook...")
 
     if use_global_cache is None:
-        use_global_cache = not manager.store_entire_run
+        use_global_cache = not manager.store_full
 
     output_lines = [
         "# %%",
@@ -889,11 +927,13 @@ def write_experiment_notebook(
     os.remove(script_path)
 
 
-def regex_lister(path, regex):
+def regex_lister(module_name, regex, try_import=True):
     """Used by both list_experiments and list_params. This scans every file in the passed
     folder for the requested regex, and tries to import the files that have a match."""
 
     names = []
+
+    path = module_name.replace(".", "/")
 
     if not os.path.exists(path):
         print(
@@ -915,24 +955,33 @@ def regex_lister(path, regex):
                     if result != []:
                         clean_results.extend(result)
 
-                # did we find a run()?
+                # did we find a run()/get_params()?
                 if len(clean_results) > 0:
                     non_pyextension_name = filename.name[:-3]
 
-                    # see if it's valid
-                    try:
-                        importlib.import_module(f"{path}.{non_pyextension_name}")
-                        comment = utils.get_py_opening_comment(lines)
-                        if comment != "":
-                            names.append(
-                                non_pyextension_name
-                                + " - "
-                                + utils.get_py_opening_comment(lines)
+                    if try_import:
+                        # see if it's valid
+                        try:
+                            importlib.import_module(
+                                f"{module_name}.{non_pyextension_name}"
                             )
-                        else:
-                            names.append(non_pyextension_name)
-                    except Exception as e:
-                        names.append(non_pyextension_name + " [ERROR - " + str(e) + "]")
+                            comment = utils.get_py_opening_comment(lines)
+                            if comment != "":
+                                names.append(
+                                    non_pyextension_name
+                                    + " - "
+                                    + utils.get_py_opening_comment(lines)
+                                )
+                            else:
+                                names.append(non_pyextension_name)
+                        except Exception as e:
+                            names.append(
+                                non_pyextension_name + " [ERROR - " + str(e) + "]"
+                            )
+                    else:
+                        # we have a non-validity check option for speed, this is used
+                        # for the argcomplete stuff
+                        names.append(non_pyextension_name)
 
     return names
 
@@ -941,11 +990,9 @@ def list_experiments():
     """Print out all valid experiments that have a :code:`def run()` function, including
     any top-of-file docstrings associated with each."""
     config = utils.get_configuration()
-
-    experiment_names = regex_lister(
-        config["experiments_module_name"], r"^def run\(.*\)"
-    )
-
+    module = config["experiments_module_name"]
+    experiment_names = regex_lister(module, r"^def run\(.*\)")
+    experiment_names.sort()
     return experiment_names
 
 
@@ -953,16 +1000,65 @@ def list_params():
     """Print out all valid parameter files that have a :code:`def get_params()`
     function, including any top-of-file docstrings associated with each."""
     config = utils.get_configuration()
+    experiment_module = config["experiments_module_name"]
+    params_module = config["params_module_name"]
 
     param_names = []
-
-    param_names.extend(
-        regex_lister(config["params_module_name"], r"^def get_params\(.*\)")
-    )
-    param_names.extend(
-        regex_lister(config["experiments_module_name"], r"^def get_params\(.*\)")
-    )
+    param_names.extend(regex_lister(params_module, r"^def get_params\(.*\)"))
+    param_names.extend(regex_lister(experiment_module, r"^def get_params\(.*\)"))
+    param_names.sort()
     return param_names
+
+
+def experiments_completer(**kwargs) -> list[str]:
+    # argcomplete experiment completer
+    config = utils.get_configuration()
+
+    experiments_path = config["experiments_module_name"].replace(".", "/")
+    files = (
+        subprocess.run(
+            f"cd {experiments_path} && grep -rl '^def run('",
+            shell=True,
+            capture_output=True,
+        )
+        .stdout.decode("utf-8")[:-1]
+        .split("\n")
+    )
+    files = [file[:-3] for file in files if file != ""]
+    files.sort()
+    return files
+
+
+def params_completer(**kwargs) -> list[str]:
+    # argcomplete -p completer
+    config = utils.get_configuration()
+    experiments_path = config["experiments_module_name"].replace(".", "/")
+    params_path = config["params_module_name"].replace(".", "/")
+
+    experiment_files = (
+        subprocess.run(
+            f"cd {experiments_path} && grep -rl '^def get_params('",
+            shell=True,
+            capture_output=True,
+        )
+        .stdout.decode("utf-8")[:-1]
+        .split("\n")
+    )
+    experiment_files = [file[:-3] for file in experiment_files if file != ""]
+
+    param_files = (
+        subprocess.run(
+            f"cd {params_path} && grep -rl '^def get_params('",
+            shell=True,
+            capture_output=True,
+        )
+        .stdout.decode("utf-8")[:-1]
+        .split("\n")
+    )
+    param_files = [file[:-3] for file in param_files if file != ""]
+    files = param_files + experiment_files
+    files.sort()
+    return files
 
 
 def main():
@@ -981,7 +1077,7 @@ Examples:
     experiment reports --port 8000 --host 0.0.0.0
 """,
     )
-    parser.add_argument("experiment_name")
+    parser.add_argument("experiment_name").completer = experiments_completer
 
     parser.add_argument(
         "--notes",
@@ -1016,7 +1112,7 @@ Examples:
         dest="parameters_name",
         action="append",
         help="The name of a parameters python file. Does not need to include path or .py. You can specify multiple -p arguments to run all parameters",
-    )
+    ).completer = params_completer
     parameters_group.add_argument(
         "--names",
         dest="args_name",
@@ -1101,11 +1197,10 @@ Examples:
         help="Do a dry cache run: this still modifies stores and runs reports but does not write anything into the cache. This is recommended when running an experiment with a cache directory from --store-full.",
     )
     caching_group.add_argument(
-        "-n",
-        "--name",
-        dest="name",
+        "--prefix",
+        dest="prefix",
         default=None,
-        help="Specify a custom name to use for caching rather than the experiment name. This can be useful if multiple similar experiments can use the same cached objects. Note that this does not change the reference name.",
+        help="Specify a custom prefix to use for caching rather than the experiment name. This can be useful if multiple similar experiments can use the same cached objects. Note that this does not change the reference name.",
     )
     caching_group.add_argument(
         "--lazy",
@@ -1195,6 +1290,7 @@ Examples:
         action="store_true",
         help="Only used for 'experiment reports', updates the report index with all exisiting reports in the reports file. This is to handle if you pull in reports from other machines.",
     )
+    argcomplete.autocomplete(parser, always_complete_options=False)
 
     # fix any missing quotes in run line
     command_parts = sys.argv[1:]
@@ -1218,7 +1314,6 @@ Examples:
     params_list = args.parameters_name
 
     if args.experiment_name == "ls":
-
         sys.path.append(os.getcwd())
         print("EXPERIMENTS:")
         for experiment in list_experiments():
@@ -1226,7 +1321,7 @@ Examples:
         print("\nPARAMS:")
         for param in list_params():
             print("\t" + param)
-        exit()
+        return
 
     elif args.experiment_name == "reports":
         if args.update:
@@ -1241,7 +1336,7 @@ Examples:
             ["python", "-m", "http.server", str(args.port), "--bind", args.host]
         )
         os.chdir("..")
-        exit()
+        return
 
     # TODO: verify names exist
     # TODO: ensure folders exist (logs)
@@ -1266,9 +1361,9 @@ Examples:
         log_debug=args.verbose,
         dry=args.dry,
         dry_cache=args.dry_cache,
-        store_entire_run=args.store_full,
+        store_full=args.store_full,
         log_errors=args.log_errors,
-        custom_name=args.name,
+        prefix=args.prefix,
         build_docker=args.docker,
         build_notebook=args.notebook,
         run_string=run_string,

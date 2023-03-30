@@ -5,17 +5,16 @@ This file contains a :code:`__name__ == "__main__"` and can be run directly.
 """
 
 import argparse
+import importlib.resources
 import json
 import os
 import shutil
-
-import pkg_resources
 
 import curifactory as cf
 from curifactory import utils
 
 
-def initialize_project():
+def initialize_project():  # noqa: C901 yeaaaah break up into sub functions
     print("Initializing curifactory project...")
     print(
         "Enter paths for configuration file, default values shown in '[]' (leave entry blank to use default)"
@@ -59,8 +58,17 @@ def initialize_project():
     os.makedirs(config["reports_path"], exist_ok=True)
 
     # copy in style sheet for reports
-    style_path = pkg_resources.resource_filename("curifactory", "data/style.css")
-    shutil.copyfile(style_path, config["report_css_path"])
+    # style_path = pkg_resources.resource_filename("curifactory", "data/style.css")
+    with importlib.resources.as_file(
+        importlib.resources.files("curifactory") / "data/style.css"
+    ) as style_path:
+        shutil.copyfile(style_path, config["report_css_path"])
+
+    # copy in debug.py for easier IDE debugging entrypoint
+    with importlib.resources.as_file(
+        importlib.resources.files("curifactory") / "data/debug.py"
+    ) as debug_file_path:
+        shutil.copyfile(debug_file_path, "debug.py")
 
     # handle docker folder and dockerfile
     valid_docker_choice = False
@@ -72,28 +80,46 @@ def initialize_project():
             os.makedirs("docker", exist_ok=True)
 
             # read in the dockerfile contents and edit appropriately
-            dockerfile_path = pkg_resources.resource_filename(
-                "curifactory", "data/dockerfile"
-            )
-            with open(dockerfile_path) as infile:
-                contents = infile.read()
-                contents.replace("{{CF_VERSION}}", cf.__version__)
-            with open("docker/dockerfile", "w") as outfile:
-                outfile.write(contents)
+            with importlib.resources.as_file(
+                importlib.resources.files("curifactory") / "data/dockerfile"
+            ) as dockerfile_path:
+                with open(dockerfile_path) as infile:
+                    contents = infile.read()
+                    contents.replace("{{CF_VERSION}}", cf.__version__)
+                with open("docker/dockerfile", "w") as outfile:
+                    outfile.write(contents)
 
-            dockerfile_start_path = pkg_resources.resource_filename(
-                "curifactory", "data/startup.sh"
-            )
-            shutil.copyfile(dockerfile_start_path, "docker/startup.sh")
+            with importlib.resources.as_file(
+                importlib.resources.files("curifactory") / "data/startup.sh"
+            ) as dockerfile_start_path:
+                shutil.copyfile(dockerfile_start_path, "docker/startup.sh")
 
-            dockerfile_ignore_path = pkg_resources.resource_filename(
-                "curifactory", "data/.dockerignore"
-            )
-            shutil.copyfile(dockerfile_ignore_path, "docker/.dockerignore")
+            with importlib.resources.as_file(
+                importlib.resources.files("curifactory") / "data/.dockerignore"
+            ) as dockerfile_ignore_path:
+                shutil.copyfile(dockerfile_ignore_path, "docker/.dockerignore")
         elif docker_yn.lower() == "n":
             valid_docker_choice = True
         if not valid_docker_choice:
             print("Invalid entry, please enter 'y' or 'n', or leave blank for default.")
+
+    # if this isn't being run in a git repository, ask the user if they want to git init
+    if not os.path.exists(".git"):
+        print(
+            "No .git folder found. Curifactoy expects to run from within a git repository."
+        )
+        valid_gitinit_choice = False
+        while not valid_gitinit_choice:
+            gitinit_yn = input("Run `git init`? [y/N]")
+            if gitinit_yn.lower() == "y":
+                valid_gitinit_choice = True
+                utils.run_command(["git", "init"])
+            elif gitinit_yn == "" or gitinit_yn.lower() == "n":
+                valid_gitinit_choice = True
+            if not valid_gitinit_choice:
+                print(
+                    "Invalid entry, please enter 'y' or 'n', or leave blank for default."
+                )
 
     # handle gitignore
     valid_gitfile_choice = False
@@ -132,19 +158,69 @@ def initialize_project():
             print("Invalid entry, please enter 'y' or 'n', or leave blank for default.")
 
     print("Curifactory project initialization complete!")
+    add_completion_to_rc(False, False)
+
+
+def add_completion_to_rc(bash=False, zsh=False):
+    print(
+        "\nFor bash/zsh completion to work, the argcomplete package needs to be installed (outside a conda environment)"
+    )
+    print("You can use `pip install argcomplete`")
+
+    print("\nEnabling completion can then be done in three different ways:")
+    print(
+        "* Globally for all argcomplete python packages: \n\tsudo activate-global-python-argcomplete"
+    )
+    print(
+        '* Single shell instance: \n\teval "$(register-python-argcomplete experiment)"'
+    )
+    print(
+        "* Permanent non-globally for curifactory (RECOMMENDED):\n\tcurifactory completion --bash --zsh\n\tOr simply add single shell instance manually to any sourced shell rc file."
+    )
+
+    shell_string = '# tab-completion hook for curifactory\neval "$(register-python-argcomplete experiment)"'
+    print(f"\n{shell_string}\n")
+
+    if bash:
+        print("Writing tab-completion hook into '~/.bashrc'...")
+        with open(os.path.expanduser("~/.bashrc"), "a") as bashrc:
+            bashrc.write(f"\n{shell_string}\n")
+    if zsh:
+        print("Writing tab-completion hook into '~/.zshrc'...")
+        with open(os.path.expanduser("~/.zshrc"), "a") as zshrc:
+            zshrc.write(f"\n{shell_string}\n")
 
 
 def main():
-
     # TODO: could add the reset functionality as requested in this runnable.
 
     parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "--version",
+        dest="version",
+        action="store_true",
+        help="Print the current version of the curifactory library.",
+    )
+
     subparsers = parser.add_subparsers(dest="subparser_name")
+
     init_parser = subparsers.add_parser("init")  # noqa: F841 -- we might use eventually
 
+    completion_parser = subparsers.add_parser("completion")
+    completion_parser.add_argument("--bash", dest="bash", action="store_true")
+    completion_parser.add_argument("--zsh", dest="zsh", action="store_true")
+
     args = parser.parse_args()
+
+    if args.version:
+        print(cf.__version__)
+        quit()
+
     if args.subparser_name == "init":
         initialize_project()
+    elif args.subparser_name == "completion":
+        add_completion_to_rc(args.bash, args.zsh)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,5 @@
 """ Helper and utility functions for the library. """
 
-import hashlib
 import json
 import logging
 import os
@@ -8,9 +7,6 @@ import platform
 import shutil
 import subprocess
 import sys
-from copy import deepcopy
-from dataclasses import asdict
-from typing import Dict
 
 from rich import get_console, reconfigure
 from rich.logging import RichHandler
@@ -24,7 +20,7 @@ EDITORS = ["vim", "nvim", "emacs", "nano", "vi"]
 """The list of possible editor exec names to test for getting a valid text editor."""
 
 
-def get_configuration() -> Dict[str, str]:
+def get_configuration() -> dict[str, str]:
     """Load the configuration file if available, with defaults for any
     keys not found. The config file should be "curifactory_config.json"
     in the project root.
@@ -194,7 +190,8 @@ def get_command_output(cmd, silent=False) -> str:
         return ""
     if cmd_return.returncode == 0:
         output = cmd_return.stdout.decode("utf-8")
-        return output[:-2]
+        return output[:-2]  # TODO: (3/29/2023) is this definitely right?
+        # seems like it would prob be different on windows vs linux
     return ""
 
 
@@ -402,107 +399,6 @@ def init_logging(
     # logging.getLogger("snorkel").setLevel(logging.WARNING)
     # logging.getLogger("snorkel.labeling.model").setLevel(logging.WARNING)
     # logging.getLogger("snorkel.labeling.model.logger").setLevel(logging.WARNING)
-
-
-# setting store_in_registry to true will store the hash and associated args dictionary
-# in registry json file
-def args_hash(args, registry_path: str, store_in_registry: bool = False) -> str:
-    """Returns a hex string representing the passed arguments, optionally recording
-    the arguments and hash in the params registry.
-
-    Args:
-        args (ExperimentArgs): The argument set to hash.
-        registry_path (str): The location to keep the :code:`params_registry.json`.
-        store_in_registry (bool): Whether to update the params registry with the passed
-            arguments or not.
-
-    Returns:
-        The hash string computed from the arguments.
-    """
-    if args.hash is not None:
-        hash_str = args.hash
-    else:
-        args_copy = deepcopy(args)
-
-        # get rid of parameters that shouldn't affect hash
-        args_dict = asdict(args_copy)
-        del args_dict["overwrite"]
-        del args_dict["hash"]
-
-        hash_key = str(args_dict)
-
-        hash_str = hashlib.md5(hash_key.encode()).hexdigest()
-
-    def stringify(x):
-        # NOTE: at some point it may be worth doing fancier logic here. Objects
-        # that don't have __str__ implemented will return a string with a pointer,
-        # which will always be different regardless
-        return str(x)
-
-    if store_in_registry:
-        registry_path = os.path.join(registry_path, "params_registry.json")
-        registry = {}
-
-        if os.path.exists(registry_path):
-            with open(registry_path) as infile:
-                registry = json.load(infile)
-
-        registry[hash_str] = asdict(args)
-        with open(registry_path, "w") as outfile:
-            json.dump(registry, outfile, indent=4, default=stringify)
-
-    return hash_str
-
-
-def add_args_combo_hash(
-    active_record, records_list, registry_path: str, store_in_registry: bool = False
-):
-    """Returns a hex string representing the the combined argument set hashes from the
-    passed records list. This is mainly used for getting a hash for an aggregate stage,
-    which may not have a meaningful argument set of its own.
-
-    Args:
-        active_record (Record): The currently in-use record (likely owned by the aggregate
-            stage.)
-        records_list (List[Record]): The list of records to include as part of the resulting
-            hash.
-        registry_path (str): The location to keep the :code:`params_registry.json`.
-        store_in_registry (bool): Whether to update the params registry with the passed
-            records or not.
-
-    Returns:
-        The hash string computed from the combined record arguments.
-    """
-
-    hashes = []
-    for agg_record in records_list:
-        if agg_record.args is not None:
-            hashes.append(agg_record.args.hash)
-        else:
-            hashes.append("None")
-    hashes = sorted(hashes)
-
-    hashes_for_key = deepcopy(hashes)
-    active_key = "None"
-    if active_record.args is not None:
-        active_key = active_record.args.hash
-    hashes_for_key.insert(0, active_key)
-
-    hash_key = str(hashes_for_key)
-    hash_str = hashlib.md5(hash_key.encode()).hexdigest()
-
-    if store_in_registry:
-        registry_path = os.path.join(registry_path, "params_registry.json")
-        registry = {}
-
-        if os.path.exists(registry_path):
-            with open(registry_path) as infile:
-                registry = json.load(infile)
-
-        registry[hash_str] = {"active": active_key, "arg_list": hashes}
-        with open(registry_path, "w") as outfile:
-            json.dump(registry, outfile, indent=4, default=lambda x: str(x))
-    return hash_str
 
 
 # https://stackoverflow.com/questions/19425736/how-to-redirect-stdout-and-stderr-to-logger-in-python

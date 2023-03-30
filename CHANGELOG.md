@@ -4,12 +4,134 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2023-03-30
 
-## [unreleased]
+### Added
+- Bash/zsh tab-completion via `argcomplete`. (This requires installing `argcomplete` outside of the
+  environment and adding a line to your shell's rc file in order to use. You can run
+  `curifactory completion [--bash|--zsh]` to add the line, or just run `curifactory completion` for
+  instructions.)
+- `resolve` option to `Lazy` outputs - this allows not automatically loading the object on an input
+  to the stage, directly providing the lazy instance instead. This allows delaying the loading, or
+  simply getting the path of the object to deal with in some other way (e.g. passing to an external
+  command.)
+
+### Fixed
+- `experiment ls` incorrectly handling curifactory configurations with experiment/param modules located
+  in subdirectories.
+
+
+
+
+## [0.11.1] - 2023-03-29
+
+### Fixed
+- `--names` flag incorrectly checking existence of parameterset name.
+
+
+
+
+## [0.11.0] - 2023-03-29
+
+### Added
+- Curifactory submodules to top level import, so separately importing submodules is no longer necessary.
+
+### Changed
+- Minimum python version to 3.9.
+- Parameterset `name` to be ignored by hashing mechanism.
+
+### Fixed
+- No longer using backported package `importlib_resources` that wasn't in the setup.
+
+
+
+
+## [0.10.1] - 2023-03-28
+
+### Fixed
+- Hash computation not correctly handling sub-dataclasses recursively.
+
+
+
+
+## [0.10.0] - 2023-03-28
+
+### Added
+- Metadata output for every cached artifact. Alongside every output cache file will be a `[file]_metadata.json`,
+  containing information about the run that generated it, the parameters, and previous stages run in the same record.
+- `track` parameter to cachers, indicating whether the output files should be copied into a full store run folder or not.
+  (It is true by default.)
+- Optional cacher prefixes, which replaces the first part of a cached filepath name (normally the experiment name) with the provided
+  prefix. This allows cross-experiment caching (use with care!)
+- Optional cacher subdir, which places output files into the specified subdirectory in the cache/run folder (allows better organization,
+  e.g. Kedro's data engineering convention of 01_raw, 02_intermediate, etc.)
+- Allowing exact path overrides to be used by a cacher, making it cleaner to use them on the fly/outside of stages.
+- `--version` flag on the `curifactory` command.
+
+### Changed
+- Full store cached files are now placed into an `artifacts/` subdirectory of the run folder.
+- `PickleCacher`'s extension is now correctly set to `.pkl` (we aren't actually running gzip on it.)
+- Full store runs no longer call a cacher's `save` function a second time with a new path, instead relying
+  on `Record`'s path tracking to simply copy the cached files into the full store folder at the end of a stage.
+- Cachers' path mechanism - rather than expecting a cacher's `set_path` to be called beforehand, `save` and `load`
+  should call the cacher's `get_path()`.
+- The default cachers' `save()` functions return the path that was saved to.
+- `--name` flag to `--prefix` to make it more consistent to caching terminology.
+
+### Fixed
+- Reportable names doubling when loading from cache.
+- Silent execution when no parametersets provided or a requested parameterset name wasn't found, (now errors and exits.)
+
+
+
+
+## [0.9.3] - 2023-03-21
+
+### Fixed
+- Lack of proper html escaping of args dump in output reports.
+
+
+
+
+## [0.9.2] - 2023-03-20
+
+### Fixed
+- String hash representation not recursively getting a string hash
+  representation from any parameter sub-dataclasses.
+
+
+
+
+## [0.9.1] - 2023-03-15
+
+### Changed
+- String representation of hashed arguments will include the actual value of
+  the parameters in `IGNORED_PARAMS` for reporting purposes.
+
+### Fixed
+- Distributed run detection not checking `RANK` env variable.
+
+
+
+
+## [0.9.0] - 2023-03-10
+
+### Added
+- Git init prompt on `curifactory init`, if run in a folder that doesn't contain a `.git`
+
+### Changed
+- Argument hashing to allow user to specify `hash_representations` on their
+  parameter dataclasses. This allows them to (optionally) provide a function
+  for each individual parameter that will return a custom value to be hashed
+  rather than simply the default string representation. This also allows
+  completely ignoring parameters as part of their hash, by setting their hashing
+  function to `None`.
+- Arguments whose value is `None` are not included as part of the hash.
 
 ### Fixed
 - Store full distributed run creating a full store folder for every distributed process.
   Store entire run now auto disabled on all non-rank-zero distributed processes
+- `curifactory init` not extracting `debug.py`
 
 
 

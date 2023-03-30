@@ -9,7 +9,6 @@ import os
 import sys
 from datetime import datetime
 from socket import gethostname
-from typing import Dict, List
 
 from curifactory import reporting, utils
 from curifactory.record import Record
@@ -27,14 +26,14 @@ class ArtifactManager:
             most relevant information and affects caching paths. If a manager is being
             used primarily from jupyter notebooks, you could for instance set this to
             be the name of the notebook.
-        store_entire_run (bool): Store/copy environment info, log, output report, and
+        store_full (bool): Store/copy environment info, log, output report, and
             all cached files in a run-specific folder (this is a --store-full run.)
         dry (bool): Setting dry to true will suppress saving any files (including logs), and will
             not update parameter stores. (It should have no effect on any files.)
         dry_cache (bool): Setting this to true only suppresses saving cache files. This is recommended
             if you're running with a cache_dir_override for some previous --store-full run, so you
             don't accidentally overwrite or add new data to the --store-full directory.
-        custom_name (str): Instead of using the experiment name to group cached data, use
+        prefix (str): Instead of using the experiment name to group cached data, use
             this name instead.
         run_line (str): The CLI command used to run the current experiment.
         parallel_lock (multiprocessing.Lock): If this function is called from a multiprocessing
@@ -66,10 +65,10 @@ class ArtifactManager:
     def __init__(
         self,
         experiment_name: str = None,
-        store_entire_run: bool = False,
+        store_full: bool = False,
         dry: bool = False,
         dry_cache: bool = False,
-        custom_name: str = None,
+        prefix: str = None,
         run_line: str = "",
         parallel_lock: mp.Lock = None,
         parallel_mode: bool = False,
@@ -120,7 +119,7 @@ class ArtifactManager:
         self.hostname = gethostname()
         """The hostname of the machine this experiment ran on."""
 
-        self.custom_name = custom_name
+        self.prefix = prefix
         """If specified, the name to use for grouping cached data instead of the experiment name."""
         self.notes = notes
         """A notes associated with a session/run to output into the report etc."""
@@ -145,7 +144,7 @@ class ArtifactManager:
 
         self.records = []
         """The list of records currently managed by this manager."""
-        self.store_entire_run: bool = store_entire_run
+        self.store_full: bool = store_full
         """Flag for whether to store/copy environment info, log, output report, and
         all cached files in a run-specific folder."""
         self.dry: bool = dry
@@ -207,7 +206,7 @@ class ArtifactManager:
         """If we're in map mode, don't actually execute any stages, we're only
         recording the 'DAG' (really just the set of stages associated with each
         record)"""
-        self.map: List[Record] = None
+        self.map: list[Record] = None
 
         self.map_progress = None
         self.map_progress_overall_task_id = None
@@ -356,7 +355,7 @@ class ArtifactManager:
             # update
             store = ManagerStore(self.manager_cache_path)
             self.run_info = store.update_run(self)
-            if self.store_entire_run:
+            if self.store_full:
                 # update relevant run_info too with new_run
                 if self.run_info is not None:
                     with open(
@@ -368,7 +367,7 @@ class ArtifactManager:
             store = ManagerStore(self.manager_cache_path)
             self.run_info = store.add_run(self)
             self.stored = True
-            if self.store_entire_run:
+            if self.store_full:
                 self.write_run_env_output()
 
     def write_run_env_output(self):
@@ -395,7 +394,7 @@ class ArtifactManager:
             with open(self.get_run_output_path("run_info.json"), "w") as outfile:
                 json.dump(self.run_info, outfile, indent=4)
 
-    def get_all_argsets(self) -> List:
+    def get_all_argsets(self) -> list:
         """This is important to get argsets that aren't obtained through parameter files, e.g. in an interactive session."""
         master_list = []
         found_hashes = []
@@ -407,7 +406,7 @@ class ArtifactManager:
 
         return master_list
 
-    def get_grouped_reportables(self) -> Dict[str, List[Reportable]]:
+    def get_grouped_reportables(self) -> dict[str, list[Reportable]]:
         """Returns a dictionary of reportable groups, each group containing the list of reportables."""
         grouped_reportables = {}
         for reportable in self.reportables:
@@ -418,7 +417,7 @@ class ArtifactManager:
             grouped_reportables[reportable.group].append(reportable)
         return grouped_reportables
 
-    def get_ungrouped_reportables(self) -> List[Reportable]:
+    def get_ungrouped_reportables(self) -> list[Reportable]:
         """Returns the list of reportables that have no group."""
         non_grouped_reportables = []
         for reportable in self.reportables:
@@ -426,53 +425,75 @@ class ArtifactManager:
                 non_grouped_reportables.append(reportable)
         return non_grouped_reportables
 
-    def get_path(
+    def get_artifact_path(
         self,
         obj_name: str,
         record: Record,
-        output: bool = False,
-        base_path: str = None,
-        aggregate_records: List[Record] = None,
+        subdir: str = None,
+        prefix: str = None,
+        stage_name: str = None,
+        store: bool = False,
     ) -> str:
-        """Get an appropriate full path/filename for a given object name and record.
+        """Get a record-appropriate full path/filename for a given object name and record.
 
         This is used by the cachers, it automatically handles generating a filename
         using appropriate experiment name prefixing etc. **NOTE:** This function sets the record's args hash if it is None, or if an aggregate stage is involved.
+
+        The output path will follow this convention: ``[base path]/[prefix]_[parameterset hash]_[stage name]_[artifact name]``,
+        where ``base path`` is determined based on the value of ``store`` and ``subdir``.
 
         Args:
             obj_name (str): The name to associate with the object as the last part of the filename.
             record (Record): The record that this object is associated with. (Used to get experiment name, args hash
                 and so on.)
-            output (bool): Set this to true if the path needs to be based in a --store-full run folder.
-            base_path (str): If a specific path override is needed, pass it in here. (Otherwise the
-                manager's cache_path is used.)
-            aggregate_records (List[Record]): If a list of records is passed (not none), prefix the
-                path filename with the hash of arg hashes of all the passed records. This is used for
-                paths for cached objects of aggregate stages.
+            subdir (str): An optional string of one or more nested subdirectories to prepend to the artifact filepath.
+                This can be used if you want to subdivide cache and run artifacts into logical subsets, e.g. similar to
+                https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71.
+            prefix (str): An optional alternative prefix to the experiment-wide prefix (either the experiment name or
+                custom-specified experiment prefix). This can be used if you want a cached object to work easier across
+                multiple experiments, rather than being experiment specific. WARNING: use with caution, cross-experiment
+                caching can mess with provenance.
+            stage_name (str): The stage that produced an artifact. If not supplied, uses
+                the currently executing stage name.
+            store (bool): Set this to true if the path needs to go into a --store-full run folder.
 
         Returns:
             A string filepath that an object can be written to.
         """
+        # TODO: provide some examples in the docstring
         args_hash = record.get_hash()
-        object_path = (
-            f"{self._get_name()}_{args_hash}_{self.current_stage_name}_{obj_name}"
-        )
+        if prefix is None:
+            prefix = self._get_name()
 
-        if output:
-            return os.path.join(self.get_run_output_path(), object_path)
-        elif base_path is not None:
-            return os.path.join(base_path, object_path)
-        else:
-            return os.path.join(self.cache_path, object_path)
+        if stage_name is None:
+            stage_name = self.current_stage_name
+
+        # NOTE: at some point if we have better parallel handling in cf, we'll probably
+        # want "current_stage_name" to be on the record level rather than the manager level.
+        object_path = f"{prefix}_{args_hash}_{stage_name}_{obj_name}"
+
+        base_path = self.cache_path
+        if store:
+            base_path = os.path.join(self.get_run_output_path(), "artifacts")
+
+        # if specific subdirectories are requested, those go at the _end_ of the base path.
+        # e.g. 'data/cache/my/sub/directories/[object_filepath]'
+        if subdir is not None:
+            base_path = os.path.join(base_path, subdir)
+
+        # TODO: (3/21/2023) unsure if always making the path is correct, may need
+        # to add a parameter for this
+        os.makedirs(base_path, exist_ok=True)
+        return os.path.join(base_path, object_path)
 
     def get_str_timestamp(self) -> str:
         """Convert the manager's run timestamp into a string representation."""
         return self.run_timestamp.strftime(utils.TIMESTAMP_FORMAT)
 
     def _get_name(self) -> str:
-        if self.custom_name is None:
+        if self.prefix is None:
             return self.experiment_name
-        return self.custom_name
+        return self.prefix
 
     def get_reference_name(self) -> str:
         """Get the reference name of this run in the experiment registry.
@@ -524,7 +545,7 @@ class ArtifactManager:
             self, self.reports_path, self.get_reference_name(), self.report_css_path
         )
         self.live_report_path_generated = True
-        if self.store_entire_run:
+        if self.store_full:
             reporting.run_report(
                 self, self.get_run_output_path(), "report", self.report_css_path
             )
@@ -680,7 +701,7 @@ class ArtifactManager:
         html = reporting.render_graph(reporting.map_full_svg(self))
         return HTML("".join(html))
 
-    def get_reportable_groups(self) -> List[str]:
+    def get_reportable_groups(self) -> list[str]:
         groups = []
         for reportable in self.reportables:
             if reportable.group not in groups:

@@ -79,6 +79,7 @@ def test_returns_less_than_expected_errors(configured_test_manager):
 
 def test_empty_cachers_array_errors(configured_test_manager):
     """Don't let the user write [] for cachers list, as it always shortcircuits."""
+
     # NOTE: technically this could probably just be a special case handled by staging.py, but I think specifying [] for cachers is kind of unclear anyway.
     @stage([], [], [])
     def stage_that_does_nothing(record):
@@ -305,7 +306,6 @@ def test_lazy_forced_on_manager_lazy(configured_test_manager):
 
     @stage([], ["tester"], cachers=[PickleCacher])
     def output_stage(record):
-
         return "hello world"
 
     configured_test_manager.lazy = True
@@ -363,6 +363,68 @@ def test_cacher_not_injected_on_manager_ignore_lazy(configured_test_manager):
     assert record.state["tester"] == "hello world"
 
 
+def test_lazy_with_false_resolve_doesnot_resolve(configured_test_manager):
+    """When a lazy object is set to not resolve, both directly accessing state, and
+    a stage that utilizes that object should get the lazy object, not the underlying one.
+    """
+
+    @stage(None, [Lazy("tester", resolve=False)], [PickleCacher])
+    def output_stage(record):
+        return "hello world"
+
+    @stage(["tester"])
+    def use_lazy_stage(record, tester):
+        assert type(tester) == Lazy
+        assert type(tester.cacher) == PickleCacher
+        assert tester.load() == "hello world"
+        assert (
+            tester.cacher.get_path()
+            == "test/examples/data/cache/test_None_output_stage_tester.pkl"
+        )
+
+    record = Record(configured_test_manager, None)
+    use_lazy_stage(output_stage(record))
+
+
+def test_lazy_with_false_resolve_state_doesnot_resolve(configured_test_manager):
+    """When a lazy object is set to not resolve, directly accessing state
+    should return the lazy object, not the underlying one."""
+
+    @stage(None, [Lazy("tester", resolve=False)], [PickleCacher])
+    def output_stage(record):
+        return "hello world"
+
+    @stage(["tester"])
+    def use_lazy_stage(record, tester):
+        assert type(record.state["tester"]) == Lazy
+        assert type(record.state["tester"].cacher) == PickleCacher
+        assert record.state["tester"].load() == "hello world"
+
+    record = Record(configured_test_manager, None)
+    use_lazy_stage(output_stage(record))
+
+
+def test_lazy_with_false_resolve_storefull_correct_cacher_path(configured_test_manager):
+    """A lazy object set to not resolve in a store full manager should have a cacher
+    whose path is still inside the regular cache path, not the run folder"""
+    # TODO
+    configured_test_manager.store_entire_run = True
+
+    @stage(None, [Lazy("tester", resolve=False)], [PickleCacher])
+    def output_stage(record):
+        return "hello world"
+
+    @stage(["tester"])
+    def use_lazy_stage(record, tester):
+        assert (
+            tester.cacher.get_path()
+            == "test/examples/data/cache/test_None_output_stage_tester.pkl"
+        )
+
+    record = Record(configured_test_manager, None)
+    use_lazy_stage(output_stage(record))
+
+
 # --------------------------
 # @aggregate tests
 # --------------------------
@@ -407,6 +469,7 @@ def test_aggregate_returns_less_than_expected_errors(configured_test_manager):
 
 def test_aggregate_empty_cachers_array_errors(configured_test_manager):
     """Don't let the user write [] for cachers list, as it always shortcircuits."""
+
     # NOTE: technically this could probably just be a special case handled by staging.py, but I think specifying [] for cachers is kind of unclear anyway.
     @aggregate([], [])
     def aggregate_stage_that_does_nothing(record, records):

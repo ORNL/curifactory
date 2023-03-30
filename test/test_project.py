@@ -61,7 +61,9 @@ def test_project_init_input_nondefaults(
             return "myreports\n"
         elif prompt_number == 7:  # docker check
             return "n\n"
-        elif prompt_number == 8:  # gitignore check
+        elif prompt_number == 8:  # .git init check
+            return "\n"  # don't handle for now, difficult because this is running in a folder that already is in git repo
+        elif prompt_number == 9:  # gitignore check
             return "n\n"
         else:
             return "\n"
