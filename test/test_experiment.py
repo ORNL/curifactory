@@ -5,7 +5,11 @@ import os
 import pytest
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
-from curifactory.experiment import run_experiment
+from curifactory.experiment import (
+    experiments_completer,
+    params_completer,
+    run_experiment,
+)
 from curifactory.manager import ArtifactManager
 
 # TODO: need to test that specifying no params will default to experiment_name
@@ -17,10 +21,10 @@ from curifactory.manager import ArtifactManager
         (
             dict(experiment_name="test", parameters_list=["params1", "params2"]),
             dict(
-                store_entire_run=False,
+                store_full=False,
                 dry=False,
                 dry_cache=False,
-                custom_name=None,
+                prefix=None,
                 run_line="experiment test -p params1 -p params2",
                 parallel_lock=None,
                 parallel_mode=False,
@@ -31,10 +35,10 @@ from curifactory.manager import ArtifactManager
         (
             dict(experiment_name="test", parameters_list=[]),
             dict(
-                store_entire_run=False,
+                store_full=False,
                 dry=False,
                 dry_cache=False,
-                custom_name=None,
+                prefix=None,
                 run_line="experiment test",
                 parallel_lock=None,
                 parallel_mode=False,
@@ -49,10 +53,10 @@ from curifactory.manager import ArtifactManager
                 cache_dir_override="test/examples/data/superspecialcache",
             ),
             dict(
-                store_entire_run=False,
+                store_full=False,
                 dry=False,
                 dry_cache=False,
-                custom_name=None,
+                prefix=None,
                 run_line="experiment test -p params1 --cache test/examples/data/superspecialcache",
                 parallel_lock=None,
                 parallel_mode=False,
@@ -64,13 +68,13 @@ from curifactory.manager import ArtifactManager
             dict(
                 experiment_name="test",
                 parameters_list=["params1"],
-                store_entire_run=True,
+                store_full=True,
             ),
             dict(
-                store_entire_run=True,
+                store_full=True,
                 dry=False,
                 dry_cache=False,
-                custom_name=None,
+                prefix=None,
                 run_line="experiment test -p params1 --store-full",
                 parallel_lock=None,
                 parallel_mode=False,
@@ -86,10 +90,10 @@ from curifactory.manager import ArtifactManager
                 dry_cache=True,
             ),
             dict(
-                store_entire_run=False,
+                store_full=False,
                 dry=True,
                 dry_cache=True,
-                custom_name=None,
+                prefix=None,
                 run_line="experiment test -p params1 --dry --dry-cache",
                 parallel_lock=None,
                 parallel_mode=False,
@@ -101,14 +105,14 @@ from curifactory.manager import ArtifactManager
             dict(
                 experiment_name="test",
                 parameters_list=["params1"],
-                custom_name="custom_test",
+                prefix="custom_test",
             ),
             dict(
-                store_entire_run=False,
+                store_full=False,
                 dry=False,
                 dry_cache=False,
-                custom_name="custom_test",
-                run_line="experiment test -p params1 --name custom_test",
+                prefix="custom_test",
+                run_line="experiment test -p params1 --prefix custom_test",
                 parallel_lock=None,
                 parallel_mode=False,
                 lazy=False,
@@ -118,10 +122,10 @@ from curifactory.manager import ArtifactManager
         (
             dict(experiment_name="test", parameters_list=["params1"], lazy=True),
             dict(
-                store_entire_run=False,
+                store_full=False,
                 dry=False,
                 dry_cache=False,
-                custom_name=None,
+                prefix=None,
                 run_line="experiment test -p params1 --lazy",
                 parallel_lock=None,
                 parallel_mode=False,
@@ -132,10 +136,10 @@ from curifactory.manager import ArtifactManager
         (
             dict(experiment_name="test", parameters_list=["params1"], ignore_lazy=True),
             dict(
-                store_entire_run=False,
+                store_full=False,
                 dry=False,
                 dry_cache=False,
-                custom_name=None,
+                prefix=None,
                 run_line="experiment test -p params1 --ignore-lazy",
                 parallel_lock=None,
                 parallel_mode=False,
@@ -201,10 +205,10 @@ def test_rank_manager_integration(
         pass
     mock.assert_called_once_with(
         "test",
-        store_entire_run=False,
+        store_full=False,
         dry=False,
         dry_cache=False,
-        custom_name=None,
+        prefix=None,
         run_line="experiment test -p params1",
         parallel_lock=None,
         parallel_mode=expect_parallel,
@@ -235,7 +239,7 @@ def test_rank_manager_store_full_integration(
     clear_rank_env_vars,
 ):
     """A rank-zero process in a distributed run with store full should still set
-    'store_entire_run' on manager."""
+    'store_full' on manager."""
     if local_rank is not None:
         os.environ["LOCAL_RANK"] = str(local_rank)
     if node_rank is not None:
@@ -244,7 +248,7 @@ def test_rank_manager_store_full_integration(
     mock = mocker.patch.object(ArtifactManager, "__init__", return_value=None)
     try:
         run_experiment(
-            experiment_name="test", parameters_list=["params1"], store_entire_run=True
+            experiment_name="test", parameters_list=["params1"], store_full=True
         )
     except AttributeError:
         # NOTE: I'm not actually sure a better way around this, all I want to test is that
@@ -252,10 +256,10 @@ def test_rank_manager_store_full_integration(
         pass
     mock.assert_called_once_with(
         "test",
-        store_entire_run=expect_store_full,
+        store_full=expect_store_full,
         dry=False,
         dry_cache=False,
-        custom_name=None,
+        prefix=None,
         run_line="experiment test -p params1 --store-full",
         parallel_lock=None,
         parallel_mode=expect_parallel,
@@ -365,3 +369,55 @@ def test_parallel_overwrite_removed_after_parallel(
 
 
 # TODO: do args_names/args_indices get correctly factored into parallel index calls
+
+
+def test_full_experiment_runs(clear_filesystem):
+    results, manager = run_experiment("basic", ["params1", "params2"])
+    assert len(manager.records) == 3
+    assert manager.records[0].state["sum"] == 3
+    assert manager.records[1].state["sum"] == 6
+    assert manager.records[2].state["sum"] == 9
+
+
+def test_empty_parameters_errors(clear_filesystem):
+    """Using a parameterfile whos get_params returns an empty list should error."""
+    with pytest.raises(RuntimeError) as exc_info:
+        results, manager = run_experiment("basic", ["empty"])
+
+    assert (
+        str(exc_info.value)
+        == "No parameter sets found, please make sure any `get_params()` functions are returning non-empty arrays."
+    )
+
+
+def test_invalid_args_names_errors(clear_filesystem):
+    """Using a --names flag but with a non-existant parameterset name should error.."""
+    with pytest.raises(RuntimeError) as exc_info:
+        results, manager = run_experiment(
+            "basic", ["params1", "params2"], args_names=["test4"]
+        )
+
+    assert (
+        str(exc_info.value)
+        == "Paramset name 'test4' not found in any of the provided parameter files."
+    )
+
+
+def test_valid_args_names_works(clear_filesystem):
+    """Using a --names flag should correctly run only that parameterset."""
+    results, manager = run_experiment(
+        "basic", ["params1", "params2"], args_names=["test3"]
+    )
+
+    assert len(manager.records) == 1
+    assert manager.records[0].state["sum"] == 9
+
+
+def test_experiments_completer():
+    output = experiments_completer()
+    assert output == ["basic"]
+
+
+def test_params_completer():
+    output = params_completer()
+    assert output == ["empty", "params1", "params2"]

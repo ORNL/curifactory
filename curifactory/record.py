@@ -4,6 +4,7 @@ through some set of stages."""
 import copy
 import logging
 import os
+import shutil
 
 from curifactory import hashing
 from curifactory.caching import Lazy
@@ -59,25 +60,77 @@ class Record:
         """The list of stage names that this record has run through so far."""
         self.stage_inputs = []
         """A list of lists per stage with the state inputs that stage requested."""
+        # TODO: what's the type? Are these indices? or artifact representations? Keys to the artifact representations?
         self.stage_outputs = []
         """A list of lists per stage with the state outputs that stage produced."""
+        # TODO: what's the type? Are these indices? or artifact representations? Keys to the artifact representations?
         self.input_records = []
         """A list of any records used as input to this one. This mostly only occurs when aggregate
         stages are run."""
+        # NOTE: these are actual record references
         self.is_aggregate = False
         """If this record runs an aggregate stage, we flip this flag to true to know we need to use the
         combo hash rather than the individual args hash."""
         self.combo_hash = None
         """This gets set on records that run an aggregate stage. This is set from utils.add_args_combo_hash."""
-        self.additional_tracked_paths = []
+        self.unstored_tracked_paths: list[dict[str, str]] = []
         """Paths obtained with get_path/get_dir that should be copied to a full
         store folder. The last executed stage should manage copying anything
-        listed here and then clearing it. This is a list of tuples: (obj_name,
-        path)"""
+        listed here and then clearing it. This is a list of dicts that would be
+        passed to the artifact manager's ``get_artifact_path` function: (obj_name, subdir, prefix, and path)
+        """
+        self.stored_paths: list[str] = []
+        """A list of paths that have been copied into a full store folder. These are
+        the source paths, not the destination paths."""
 
         self.set_hash()
         if not hide:
             self.manager.records.append(self)
+
+    def store_tracked_paths(self):
+        """Copy all of the recent relevant files generated (likely from the recently executing
+        stage) into a store-full run. This is run automatically at the end of a stage.
+        """
+        if self.manager.store_full:
+            for path_info in self.unstored_tracked_paths:
+                name = path_info["obj_name"]
+                subdir = path_info["subdir"]
+                prefix = path_info["prefix"]
+                path = path_info["path"]
+
+                # don't duplicate if we've already stored it (this might occur from multiple get_path
+                # calls on a cacher)
+                if path in self.stored_paths:
+                    continue
+
+                # paths can get added to the list that don't exist from a cacher's check() call
+                # (e.g. checking if reportables exist but a stage output no reportables.)
+                # at least for now we silently skip these.
+                if not os.path.exists(path):
+                    continue
+
+                # if the auto naming strategy isn't being used (only a filepath given, no name),
+                # then use the last part of the filename (from the last '/') as the obj name
+                if name is None:
+                    name = os.path.basename(path)
+                    # TODO: (3/22/2023) unclear if I need to set subdir and prefix to none or not
+
+                store_path = self.manager.get_artifact_path(
+                    name, record=self, subdir=subdir, prefix=prefix, store=True
+                )
+                logging.debug(f"Copying tracked path '{path}' to '{store_path}'...")
+                if os.path.isdir(path):
+                    shutil.copytree(path, store_path)
+                else:
+                    shutil.copy(path, store_path)
+
+                # remember that we copied this path
+                self.stored_paths.append(path)
+        # I'm clearing unstored regardless of store full or not, because we may
+        # eventually want to support something like --store-artifact, where we
+        # selectively add specific things to the tracked paths, so we want tracked
+        # paths to not build up things that are never going to be stored.
+        self.unstored_tracked_paths = []
 
     def set_hash(self):
         """Establish the hash for the current args (and set it on the args instance)."""
@@ -91,7 +144,7 @@ class Record:
                 registry_path=self.manager.manager_cache_path,
             )
 
-            if self.manager.store_entire_run:
+            if self.manager.store_full:
                 hashing.args_hash(
                     self.args,
                     store_in_registry=not (
@@ -120,7 +173,7 @@ class Record:
             self.manager.manager_cache_path,
             not (self.manager.dry or self.manager.parallel_mode),
         )
-        if self.manager.store_entire_run:
+        if self.manager.store_full:
             hashing.add_args_combo_hash(
                 self,
                 aggregate_records,
@@ -138,18 +191,18 @@ class Record:
         reportable.record = self
         reportable.stage = self.stages[-1]
 
-        name = ""
+        qualified_name = ""
         if reportable.record.is_aggregate:
-            name = "(Aggregate)_"
+            qualified_name = "(Aggregate)_"
         if reportable.record.args is not None:
-            name += f"{reportable.record.args.name}_"
-        name += f"{reportable.stage}_"
+            qualified_name += f"{reportable.record.args.name}_"
+        qualified_name += f"{reportable.stage}_"
 
         if reportable.name is None:
-            name += str(len(self.manager.reportables))
+            qualified_name += str(len(self.manager.reportables))
         else:
-            name += reportable.name
-        reportable.name = name
+            qualified_name += reportable.name
+        reportable.qualified_name = qualified_name
 
         self.manager.reportables.append(reportable)
 
@@ -184,7 +237,15 @@ class Record:
 
         return new_record
 
-    def get_path(self, obj_name: str, track: bool = True) -> str:
+    # TODO: should also take an optional 'sub-path' and 'extension'
+    def get_path(
+        self,
+        obj_name: str,
+        subdir: str = None,
+        prefix: str = None,
+        stage_name: str = None,
+        track: bool = True,
+    ) -> str:
         """Return an args-appropriate cache path with passed object name.
 
         This should be equivalent to what a cacher for a stage should get. Note that this
@@ -193,30 +254,90 @@ class Record:
 
         Args:
             obj_name (str): the name to associate with the object as the last part of the filename.
+            subdir (str): An optional string of one or more nested subdirectories to prepend to the artifact filepath.
+                This can be used if you want to subdivide cache and run artifacts into logical subsets, e.g. similar to
+                https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71.
+            prefix (str): An optional alternative prefix to the experiment-wide prefix (either the experiment name or
+                custom-specified experiment prefix). This can be used if you want a cached object to work easier across
+                multiple experiments, rather than being experiment specific. WARNING: use with caution, cross-experiment
+                caching can mess with provenance.
+            stage_name (str): The associated stage for a path. If not provided, the currently
+                executing stage name is used.
             track (bool): whether to include returned path in a store full copy
                 or not. This will only work if the returned path is not altered
                 by a stage before saving something to it.
         """
-        path = self.manager.get_path(obj_name=obj_name, record=self)
+        path = self.manager.get_artifact_path(
+            obj_name=obj_name,
+            record=self,
+            subdir=subdir,
+            prefix=prefix,
+            stage_name=stage_name,
+        )
         if track:
-            self.additional_tracked_paths.append((obj_name, path))
+            # TODO: (3/22/2023) do I need to also be storing stage name? These are always supposed
+            # to be handled from the current stage only anyway, so the stage name should always
+            # be the last one
+            self.unstored_tracked_paths.append(
+                dict(obj_name=obj_name, subdir=subdir, prefix=prefix, path=path)
+            )
         return path
 
-    def get_dir(self, dir_name_suffix: str, track: bool = True) -> str:
+    def get_dir(
+        self,
+        dir_name_suffix: str,
+        subdir: str = None,
+        prefix: str = None,
+        stage_name: str = None,
+        track: bool = True,
+    ) -> str:
         """Returns an args-appropriate cache path with the passed name, (similar to get_path) and creates it as a directory.
 
         Args:
             dir_name_suffix (str): the name to add as a suffix to the created directory name.
+            subdir (str): An optional string of one or more nested subdirectories to prepend to the artifact filepath.
+                This can be used if you want to subdivide cache and run artifacts into logical subsets, e.g. similar to
+                https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71.
+            prefix (str): An optional alternative prefix to the experiment-wide prefix (either the experiment name or
+                custom-specified experiment prefix). This can be used if you want a cached object to work easier across
+                multiple experiments, rather than being experiment specific. WARNING: use with caution, cross-experiment
+                caching can mess with provenance.
+            stage_name (str): The associated stage for a path. If not provided, the currently
+                executing stage name is used.
             track (bool): whether to include returned path in a store full copy
                 or not. This will only work if the returned path is not altered
                 by a stage before saving something to it.
         """
-        dir_path = self.manager.get_path(obj_name=dir_name_suffix, record=self)
+        dir_path = self.manager.get_artifact_path(
+            obj_name=dir_name_suffix,
+            record=self,
+            subdir=subdir,
+            prefix=prefix,
+            stage_name=stage_name,
+        )
         if track:
-            self.additional_tracked_paths.append((dir_name_suffix, dir_path))
+            self.unstored_tracked_paths.append(
+                dict(
+                    obj_name=dir_name_suffix,
+                    subdir=subdir,
+                    prefix=prefix,
+                    path=dir_path,
+                )
+            )
 
         os.makedirs(dir_path, exist_ok=True)
         return dir_path
+
+    def get_reference_name(self) -> str:
+        """This returns a name describing the record, in the format 'Record [index on manager] (paramset name)
+
+        This should be the same as what's shown in the stage map in the output report.
+        """
+        for i, record in enumerate(self.manager.records):
+            if self == record:
+                paramset_name = record.args.name if record.args is not None else "None"
+                return f"Record {i} ({paramset_name})"
+        return None
 
 
 class ArtifactRepresentation:
@@ -232,7 +353,8 @@ class ArtifactRepresentation:
         artifact: The artifact itself.
     """
 
-    def __init__(self, record, name, artifact):
+    def __init__(self, record, name, artifact, metadata=None):
+        # TODO: (3/21/2023) possibly have "files" which would be cachers.cached_files?
         self.init_record = record
         self.name = name
         self.string = f"({type(artifact).__name__}) {str(artifact)[:20]}"
@@ -247,6 +369,8 @@ class ArtifactRepresentation:
             self.string += f" shape: {shape}"
         elif hasattr(artifact, "__len__"):
             self.string += f" len: {len(artifact)}"
+
+        self.metadata = metadata
 
         self.file = "no file"
 

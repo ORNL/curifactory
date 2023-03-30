@@ -7,7 +7,6 @@ import platform
 import shutil
 import subprocess
 import sys
-from typing import Dict
 
 from rich import get_console, reconfigure
 from rich.logging import RichHandler
@@ -21,7 +20,7 @@ EDITORS = ["vim", "nvim", "emacs", "nano", "vi"]
 """The list of possible editor exec names to test for getting a valid text editor."""
 
 
-def get_configuration() -> Dict[str, str]:
+def get_configuration() -> dict[str, str]:
     """Load the configuration file if available, with defaults for any
     keys not found. The config file should be "curifactory_config.json"
     in the project root.
@@ -191,7 +190,8 @@ def get_command_output(cmd, silent=False) -> str:
         return ""
     if cmd_return.returncode == 0:
         output = cmd_return.stdout.decode("utf-8")
-        return output[:-2]
+        return output[:-2]  # TODO: (3/29/2023) is this definitely right?
+        # seems like it would prob be different on windows vs linux
     return ""
 
 

@@ -1,3 +1,4 @@
+import argparse
 import sys
 
 sys.path.append("test/examples")
@@ -6,6 +7,7 @@ from experiments import basic
 from params.basic import Args
 from stages.basic_stages import get_data, sum_data
 
+from curifactory.experiment import main
 from curifactory.manager import ArtifactManager
 from curifactory.procedure import Procedure
 from curifactory.utils import get_configuration
@@ -38,3 +40,13 @@ def test_lone_procedure(configuration):
     proc = Procedure([get_data, sum_data], manager=ArtifactManager(dry=True))
     record = proc.run(Args(starting_data=[2, 3]))
     assert record.output == 5
+
+
+def test_experiment_ls_output(mocker, capfd):
+    mock = mocker.patch(  # noqa: F841
+        "argparse.ArgumentParser.parse_args",
+        return_value=argparse.Namespace(experiment_name="ls", parameters_name=""),
+    )
+    test = main()  # noqa: F841
+    out, err = capfd.readouterr()
+    assert out == "EXPERIMENTS:\n\tbasic\n\nPARAMS:\n\tempty\n\tparams1\n\tparams2\n"

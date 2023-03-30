@@ -81,6 +81,18 @@ def configured_test_manager(
     shutil.rmtree("test/examples/data", ignore_errors=True)
 
 
+@pytest.fixture()
+def alternate_test_manager2(
+    mocker, configuration  # noqa: F811 -- mocker has to be passed in as fixture
+):
+    """Meant for tests where a second artifact manager with a different 'experiment'
+    is needed."""
+    mock = mocker.patch("curifactory.utils.get_configuration")
+    mock.return_value = configuration
+
+    return ArtifactManager("test2", live_log_debug=True)
+
+
 @pytest.fixture(scope="session", autouse=True)
 def clear_proj_root():
     yield

@@ -17,12 +17,11 @@ def test_args_subclass_hash_includes_all_sub_params():
 
     args1 = MyExperimentArgs(name="test", a=6, b=7)
     dry_hash_dict = args1.args_hash(dry=True)
-    assert dry_hash_dict["name"] == ("repr(param_set.name)", "'test'")
     assert dry_hash_dict["a"] == ("repr(param_set.a)", "6")
     assert dry_hash_dict["b"] == ("repr(param_set.b)", "7")
 
     # make sure we correctly don't hash everything in the blacklist
-    for should_skip in ["hash", "overwrite", "hash_representations"]:
+    for should_skip in ["name", "hash", "overwrite", "hash_representations"]:
         assert dry_hash_dict[should_skip][0] == "SKIPPED: blacklist"
 
     # double check that different args with different params is in fact
@@ -89,6 +88,84 @@ def test_none_value_not_hashed():
 
     assert args1.args_hash() == args2.args_hash()
     assert args1.args_hash(dry=True)["b"][0] == "SKIPPED: value is None"
+
+
+def test_new_param_none_hash_same_result():
+    """Adding a new parameter to a parameterclass, but is added as None to hash representations should
+    still hash to the same value.
+    """
+
+    @dataclass
+    class MyExperimentArgs1(cf.ExperimentArgs):
+        a: int = 0
+
+    @dataclass
+    class MyExperimentArgs2(cf.ExperimentArgs):
+        a: int = 0
+        b: int = 3
+
+        hash_representations: dict = cf.set_hash_functions(b=None)
+
+    args1 = MyExperimentArgs1()
+    args2 = MyExperimentArgs2()
+
+    assert args1.args_hash() == args2.args_hash()
+    assert (
+        args2.args_hash(dry=True)["b"][0]
+        == "SKIPPED: set to None in hash_representations"
+    )
+
+
+def test_invalid_dataclassparam_should_not_change_hash():
+    """Adding a parameter without a typehint (e.g. not a valid dataclass field) should not impact
+    the hash."""
+
+    @dataclass
+    class MyExperimentArgs1(cf.ExperimentArgs):
+        a: int = 0
+        b = 3
+
+        hash_representations: dict = cf.set_hash_functions(b=None)
+
+    @dataclass
+    class MyExperimentArgs2(cf.ExperimentArgs):
+        a: int = 0
+        b: int = 4
+
+        hash_representations: dict = cf.set_hash_functions(b=None)
+
+    args1 = MyExperimentArgs1()
+    args2 = MyExperimentArgs2(b=7)
+
+    assert args1.args_hash() == args2.args_hash()
+
+
+def test_new_ignored_param_sub_dataclass():
+    """Adding a new (none-ignored) parameter to a subdatclass should not change the overall hash."""
+
+    @dataclass
+    class SubArgs1:
+        a: int = 0
+
+    @dataclass
+    class SubArgs2:
+        a: int = 0
+        b: int = 5
+
+        hash_representations: dict = cf.set_hash_functions(b=None)
+
+    @dataclass
+    class Args1(cf.ExperimentArgs):
+        sub: SubArgs1 = SubArgs1()
+
+    @dataclass
+    class Args2(cf.ExperimentArgs):
+        sub: SubArgs2 = SubArgs2()
+
+    a1 = Args1()
+    a2 = Args2()
+
+    assert a1.args_hash() == a2.args_hash()
 
 
 def test_parameter_name_included_in_hash():

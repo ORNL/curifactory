@@ -5,10 +5,9 @@ import copy
 import logging
 import os
 import pickle
-import shutil
 import time
 from functools import wraps
-from typing import List, Union
+from typing import Union
 
 import psutil
 
@@ -82,9 +81,9 @@ def _log_stats(
 
 
 def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
-    inputs: List[str] = None,
-    outputs: List[Union[str, Lazy]] = None,
-    cachers: List = None,
+    inputs: list[str] = None,
+    outputs: list[Union[str, Lazy]] = None,
+    cachers: list = None,
     suppress_missing_inputs: bool = False,
 ):
     """Decorator to wrap around a function that represents a single step in an experiment,
@@ -93,15 +92,6 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
     Important:
         Any function wrapped with the stage decorator must take a Record instance as the first
         parameter, followed by the input parameters corresponding to the :code:`inputs` list.
-
-    Note:
-        Note that a wrapped function that successfully finds all cached outputs does not
-        execute, meaning any reportables that might have been output to the experiment report
-        **will not run.** This can be mitigated by putting relevant reportables in a separate
-        stage that does not cache anything. This note similarly applies to any other "side effects"
-        that might result from stage code execution. Careful design of stages should ensure
-        that the effects of stage functions are limited exclusively to the given inputs and
-        returned outputs.
 
     Args:
         inputs (List[str]): A list of variable names that this stage will need from the
@@ -281,8 +271,17 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                     cacher = cachers[i]
                     if type(cacher) == type:
                         cachers[i] = cacher()
-                    # set the active record on the cacher
-                    cachers[i].record = record
+                    # set the active record on the cacher as well as provide a default name
+                    # (the name of the output)
+                    cachers[i].set_record(record)
+                    cachers[
+                        i
+                    ].stage = name  # set current stage name, so get_path is correct in later stages (particularly for lazy)
+                    if cachers[i].name is None and cachers[i].path_override is None:
+                        if type(outputs[i]) == Lazy:
+                            cachers[i].name = outputs[i].name
+                        else:
+                            cachers[i].name = outputs[i]
 
             # check for cached outputs and lazy load inputs if needed
             pre_cache_time_start = time.perf_counter()  # time to load from cache
@@ -291,6 +290,16 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             if cache_valid:
                 # get previous reportables if available
                 _check_cached_reportables(name, record)
+
+                # if we've hit this point, we will be returning early/not executing
+                # the stage because all outputs are found. The process of checking
+                # cached outputs should correctly add all the necessary tracked paths,
+                # so to transfer these paths into a store full run, we just need
+                # the below call
+                # NOTE: I _believe_ that we also get metadata from this because
+                # the load_metadata will have entered the metadata path already.
+                # this will need to be tested
+                record.store_tracked_paths()
 
             # check each input for Lazy objects and load them if we know we have to execute this stage
             if not cache_valid:
@@ -350,6 +359,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             record.manager.lock()
             _store_outputs(name, record, outputs, cachers, function_outputs)
             _store_reportables(name, record)
+            record.store_tracked_paths()
             record.manager.unlock()
             post_cache_time_end = time.perf_counter()
 
@@ -421,7 +431,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
 
 
 def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
-    outputs: List[str] = None, cachers: List = None
+    outputs: list[str] = None, cachers: list = None
 ):
     """Decorator to wrap around a function that represents some step that must operate across
     multiple different argsets or "experiment lines" within an experiment. This is normally
@@ -460,7 +470,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
 
     def decorator(function):
         @wraps(function)
-        def wrapper(record: Record, records: List[Record] = None, **kwargs):
+        def wrapper(record: Record, records: list[Record] = None, **kwargs):
             # set the logging prefix to the args name
             if record.args is not None:
                 utils.set_logging_prefix(f"[{record.args.name}] ")
@@ -540,6 +550,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                         logging.debug("Disabling lazy cache for '%s'" % output)
                         outputs[index] = output.name
 
+            # check for mismatched amounts of cachers
             if cachers is not None and len(cachers) != len(outputs):
                 raise CachersMismatchError(
                     f"Stage '{name}' - the number of cachers does not match the number of outputs to cache"
@@ -558,8 +569,17 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                     cacher = cachers[i]
                     if type(cacher) == type:
                         cachers[i] = cacher()
-                    # set the active record on the cacher
-                    cachers[i].record = record
+                    # set the active record on the cacher as well as provide a default name
+                    # (the name of the output)
+                    cachers[i].set_record(record)
+                    cachers[
+                        i
+                    ].stage = name  # set current stage name, so get_path is correct in later stages (particularly for lazy)
+                    if cachers[i].name is None and cachers[i].path_override is None:
+                        if type(outputs[i]) == Lazy:
+                            cachers[i].name = outputs[i].name
+                        else:
+                            cachers[i].name = outputs[i]
 
             pre_cache_time_start = time.perf_counter()  # time to load from cache
             record.manager.lock()
@@ -567,6 +587,17 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             if cache_valid:
                 # get previous reportables if available
                 _check_cached_reportables(name, record, records)
+
+                # if we've hit this point, we will be returning early/not executing
+                # the stage because all outputs are found. The process of checking
+                # cached outputs should correctly add all the necessary tracked paths,
+                # so to transfer these paths into a store full run, we just need
+                # the below call
+                # NOTE: I _believe_ that we also get metadata from this because
+                # the load_metadata will have entered the metadata path already.
+                # this will need to be tested
+                record.store_tracked_paths()
+
             record.manager.unlock()
             pre_cache_time_end = time.perf_counter()
 
@@ -608,6 +639,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             record.manager.lock()
             _store_outputs(name, record, outputs, cachers, function_outputs, records)
             _store_reportables(name, record, records)
+            record.store_tracked_paths()
             record.manager.unlock()
             post_cache_time_end = time.perf_counter()
 
@@ -686,29 +718,6 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
 
     cache_valid = False
     if cachers is not None:
-        # set the path for every instantiated cacher
-        paths = []
-        for index, arg in enumerate(outputs):
-            if cachers[index].path_override is None:
-                # the str(arg) will handle Lazy objects
-                path = record.manager.get_path(
-                    str(arg), record, aggregate_records=records
-                )
-            elif str.endswith(cachers[index].extension, cachers[index].path_override):
-                # if the path override includes the extension they provided a full file name
-                # NOTE: this is useful if there's a static file that won't change across diff
-                # runs or paramsets, like an input dataset
-                path = cachers[index].path
-            else:
-                path = record.manager.get_path(
-                    arg,
-                    record,
-                    base_path=cachers[index].path,
-                    aggregate_records=records,
-                )
-            path = cachers[index].set_path(path)
-            paths.append(path)
-
         # NOTE: we put this here because the cachers still need to be set up
         if stage_name in record.manager.overwrite_stages or record.manager.overwrite:
             return False
@@ -716,36 +725,28 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
         # check the cache (and load into record if found)
         cache_valid = True
         function_outputs = []
-        for i in range(len(paths)):
+        for i in range(len(cachers)):
             if cachers[i].check():
                 # handle lazy objects by setting the cacher but not actually loading yet.
                 if type(outputs[i]) == Lazy:
                     outputs[i].cacher = cachers[i]
                     # we set the output to just be the Lazy instance for now
                     output = outputs[i]
+                    # TODO: (3/21/2023) is this going to correctly send to store if we
+                    # never actually call load in later stages? at least the base path will,
+                    # from load_metadata below which calls get_path, but this seems...?
                 else:
                     output = cachers[i].load()
+                cachers[i].load_metadata()
+
                 function_outputs.append(output)
                 record.state[str(outputs[i])] = output
 
-                artifact = _add_output_artifact(record, output, outputs, i)
-                artifact.file = cachers[i].path
-
-                # copy it over to output run folder if necessary
-                if record.manager.store_entire_run:
-                    # if we don't handle lazy separately it will literally store the lazy object.
-                    # Instead, just use the OS to copy the file over. (This avoids us having to
-                    # eat the memory costs of reloading and resaving.)
-                    previous_path = cachers[i].path
-                    cachers[i].set_path(
-                        record.manager.get_path(
-                            outputs[i], record, output=True, aggregate_records=records
-                        )
-                    )
-                    if type(outputs[i]) == Lazy:
-                        shutil.copyfile(previous_path, cachers[i].path)
-                    else:
-                        cachers[i].save(output)
+                artifact = _add_output_artifact(
+                    record, output, outputs, i, metadata=cachers[i].metadata
+                )
+                # TODO: (3/21/2023) possibly have "files" which would be cachers.cached_files?
+                artifact.file = cachers[i].get_path()
             else:
                 # we found something that wasn't cached, recompute everything
                 cache_valid = False
@@ -753,18 +754,17 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
 
         # if we have the cached objects, return them right away
         if cache_valid:
-            if len(paths) == 1:
+            if len(cachers) == 1:
                 record.output = function_outputs[0]
             else:
                 record.output = tuple(function_outputs)
-            # return record
 
     return cache_valid
 
 
-def _add_output_artifact(record, object, outputs, index):
+def _add_output_artifact(record, object, outputs, index, metadata=None):
     """manage representation recording"""
-    artifact = ArtifactRepresentation(record, outputs[index], object)
+    artifact = ArtifactRepresentation(record, outputs[index], object, metadata=metadata)
     new_index = len(record.manager.artifacts)
     record.manager.artifacts.append(artifact)
     # if new_index not in record.stage_outputs[-1]:
@@ -774,14 +774,11 @@ def _add_output_artifact(record, object, outputs, index):
 
 
 def _check_cached_reportables(stage_name, record, aggregate_records=None):
-    reportables_list_cacher = FileReferenceCacher()
-    reportables_list_cacher.record = record
-    reportables_list_cacher.set_path(
-        record.manager.get_path(
-            "reportables_file_list", record, aggregate_records=aggregate_records
-        )
+    reportables_list_cacher = FileReferenceCacher(
+        name="reportables_file_list", record=record
     )
     if reportables_list_cacher.check():
+        reportables_list_cacher.load_metadata()
         paths = reportables_list_cacher.load()
         for path in paths:
             with open(path, "rb") as infile:
@@ -803,45 +800,36 @@ def _store_reportables(stage_name, record, aggregate_records=None):
     if len(reportables) == 0:
         return
 
-    # pickle each one and store it. (we'll have to handle store-full the same way as outputs below I think)
-    # STRT: (02/10/2022) like record get_dir and get_path normally, _this does not transfer into a store-full
-    # run.
-    # NOTE: so wait, this actually does transfer, but why? Is filerefcacher already handling this?
+    # pickle each one and store it.
     paths = []
-    reportables_path = record.get_dir("reportables")
+    reportables_path = record.get_dir(
+        "reportables"
+    )  # this will make sure all reportables go to full store
     for reportable in reportables:
         # make a copy of the reportable without the record, because that seems to break the mp.lock
         # when in parallel mode.
         # NOTE: do NOT use a deepcopy below, runs into same issue.
         reportable_copy = copy.copy(reportable)
         reportable_copy.record = None
-        reportable_path = os.path.join(reportables_path, f"{reportable.name}.pkl")
+        reportable_path = os.path.join(
+            reportables_path, f"{reportable.qualified_name}.pkl"
+        )
         paths.append(reportable_path)
         logging.debug("Caching reportable '%s'" % reportable_path)
         with open(reportable_path, "wb") as outfile:
             pickle.dump(reportable_copy, outfile)
 
     # write a cache file out containing the reportables path names.
-    reportables_list_cacher = FileReferenceCacher()
-    reportables_list_cacher.record = record
-    reportables_list_cacher.set_path(
-        record.manager.get_path(
-            "reportables_file_list", record, aggregate_records=aggregate_records
-        )
+    reportables_list_cacher = FileReferenceCacher(
+        name="reportables_file_list", record=record
     )
     reportables_list_cacher.save(paths)
-    # NOTE: unnecessary because the reportables don't get copied over anyway, see todo note above.
-    # (we should get this for free without needing this code when we add extra path tracking to the manager.)
-    # if record.manager.store_entire_run:
-    #     reportables_list_cacher.set_path(
-    #         record.manager.get_path(
-    #             "reportables_file_list",
-    #             record,
-    #             output=True,
-    #             aggregate_records=aggregate_records,
-    #         )
-    #     )
-    # reportables_list_cacher.save(reportables_path)
+
+    # send along metadata for it, to track when the reportables were generated.
+    # NOTE: we've already collected_metadata from passing record in init up above,
+    # so we don't need to use the extra_metadata field on the cacher.
+    reportables_list_cacher.metadata["extra"]["reportables"] = True
+    reportables_list_cacher.save_metadata()
 
 
 def _store_outputs(
@@ -877,33 +865,19 @@ def _store_outputs(
             and not record.manager.dry
             and not record.manager.dry_cache
         ):
-            logging.debug(f"Caching {outputs[index]} to '{cachers[index].path}'...")
+            logging.debug(
+                f"Caching {outputs[index]} to '{cachers[index].get_path()}'..."
+            )
             cachers[index].save(output)
-            artifact.file = cachers[index].path
+            artifact.file = cachers[index].get_path()
 
-            # check if we store an additional run output copy
-            if record.manager.store_entire_run:
-                cachers[index].set_path(
-                    record.manager.get_path(
-                        outputs[index], record, output=True, aggregate_records=records
-                    )
-                )
-                logging.debug(f"Caching {outputs[index]} to '{cachers[index].path}'...")
-                cachers[index].save(output)
+            # generate and save metadata
+            # note that if we got to this point, we actually ran the stage code, so
+            # we generate _new_ metadata
+            cachers[index].collect_metadata()
+            metadata = cachers[index].save_metadata()
+            artifact.metadata = metadata
 
         # if specified as lazy, be sure to populate the cacher
         if type(outputs[index]) == Lazy:
             outputs[index].cacher = cachers[index]
-
-    # store any additionally tracked paths as needed
-    if record.manager.store_entire_run:
-        for obj_name, path in record.additional_tracked_paths:
-            full_store_path = record.manager.get_path(
-                obj_name, record=record, output=True, aggregate_records=records
-            )
-            logging.debug(f"Copying tracked path '{path}' to '{full_store_path}'...")
-            if os.path.isdir(path):
-                shutil.copytree(path, full_store_path)
-            else:
-                shutil.copy(path, full_store_path)
-    record.additional_tracked_paths = []

@@ -6,11 +6,11 @@ extends it.
 """
 
 import datetime
+import html
 import json
 import logging
 import os
 import shutil
-from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -90,6 +90,9 @@ class Reportable:
         in :code:`render()` and :code:`html()`"""
         self.name: str = name
         """The suffix to title the reportable with."""
+        self.qualified_name: str = name
+        """The full prefixed name including the stage name and aggregate indicator. This is
+        set by the record when a ``report()`` is called."""
         self.group: str = group
         """If specified, reports group all reportables with the same :code:`group` value together."""
         self.record = None
@@ -320,7 +323,7 @@ class LinePlotReporter(Reportable):
         return f"<img src='{self.path}/{self.name}.{self.savefig_kwargs['format']}'>"
 
 
-def render_report_head(manager) -> List[str]:
+def render_report_head(manager) -> list[str]:
     """Generates the report head tag."""
     return [
         f"<head><title>{manager.experiment_name}/{manager.experiment_run_number}</title>",
@@ -330,7 +333,7 @@ def render_report_head(manager) -> List[str]:
 
 def render_report_info_block(  # noqa: C901 -- TODO: yeaaaaah break it up at some point
     manager,
-) -> List[str]:
+) -> list[str]:
     """Generate the header and block of metadata at the top of the report."""
 
     html_lines = []
@@ -411,20 +414,18 @@ def render_report_info_block(  # noqa: C901 -- TODO: yeaaaaah break it up at som
             f"<p id='run-string'>Run string: <pre>{manager.run_line}</pre></p>"
         )
 
-        if manager.store_entire_run:
-            store_entire_run_path = os.path.join(
-                manager.runs_path, manager.get_reference_name()
-            )
+        if manager.store_full:
+            cache_path = manager.get_run_output_path()
             html_lines.append(
                 f"<p><span style='color: green'><b>This run has a full cache store.</b></span> Live runs have a much lower chance of reproducing correctly than an experiment script, but you can utilize this cache with:"
-                f'<pre>manager = ArtifactManager("{manager.experiment_name}", cache_path="{store_entire_run_path}", dry_cache=True)</pre></p>'
+                f'<pre>manager = ArtifactManager("{manager.experiment_name}", cache_path="{cache_path}", dry_cache=True)</pre></p>'
             )
     else:
         html_lines.append(
             f"<p id='run-string'>Run string: <pre>{manager.run_line}</pre></p>"
         )
 
-        if manager.store_entire_run:
+        if manager.store_full:
             html_lines.append(
                 f"<p><span style='color: green'><b>This run has a full cache store.</b></span> Reproduce with:"
                 f"<pre>{manager.reproduction_line}</pre></p>"
@@ -439,7 +440,7 @@ def render_report_info_block(  # noqa: C901 -- TODO: yeaaaaah break it up at som
     return html_lines
 
 
-def render_report_toc() -> List[str]:
+def render_report_toc() -> list[str]:
     """Render table of contents for the overall report."""
     return [
         "<a name='top'></a>" "<h2>Table of Contents</h2>",
@@ -452,7 +453,7 @@ def render_report_toc() -> List[str]:
     ]
 
 
-def render_report_reportables_toc(manager) -> List[str]:
+def render_report_reportables_toc(manager) -> list[str]:
     """Render the table of contents for the reportables."""
     html_lines = []
 
@@ -483,7 +484,7 @@ def render_report_all_reportables(
     reportables_path: str,
     override_display_path: str = None,
     notebook: bool = False,
-) -> List[str]:
+) -> list[str]:
     """Get the HTML for displaying all reportables output."""
     html_lines = []
 
@@ -515,7 +516,7 @@ def render_report_all_reportables(
     return html_lines
 
 
-def render_report_stage_map(manager, graphs_path) -> List[str]:
+def render_report_stage_map(manager, graphs_path) -> list[str]:
     """Generate and write out the graphviz graph for the stages and return the html to display it."""
     graph = map_full_svg(manager)
     with open(f"{graphs_path}/full.gv", "w") as outfile:
@@ -529,7 +530,7 @@ def render_report_stage_map(manager, graphs_path) -> List[str]:
     return html_lines
 
 
-def render_report_detailed_stage_maps(manager, graphs_path) -> List[str]:
+def render_report_detailed_stage_maps(manager, graphs_path) -> list[str]:
     """Generate and write out a more detailed graphviz graph for each record and return the html."""
     html_lines = []
     html_lines.append("<a name='stage_detail'></a>")
@@ -548,7 +549,7 @@ def render_report_detailed_stage_maps(manager, graphs_path) -> List[str]:
     return html_lines
 
 
-def render_report_argset_dump(manager) -> List[str]:
+def render_report_argset_dump(manager) -> list[str]:
     """Dump out the JSON for all args used by manager."""
     html_lines = []
 
@@ -559,12 +560,8 @@ def render_report_argset_dump(manager) -> List[str]:
         html_lines.append(f"<h4>{name} - {args_hash}</h4>")
         html_lines.append("<pre>")
 
-        def stringify(x):
-            # make html-safe
-            return str(x).replace("<", "&lt;").replace(">", "&gt;")
-
         argset_data = hashing.parameters_string_hash_representation(argset)
-        html_lines.append(json.dumps(argset_data, indent=2, default=stringify))
+        html_lines.append(html.escape(json.dumps(argset_data, indent=2, default=str)))
         html_lines.append("</pre>")
 
     return html_lines
@@ -750,7 +747,6 @@ def update_report_index(experiments_path, reports_root_dir):
                 runs.append(info)
                 experiment_name = info["experiment_name"]
                 if experiment_name not in experiment_runs:
-
                     # try to get comment on experiment
                     comment = ""
                     try:
@@ -942,7 +938,7 @@ def render_reportable(
     reportables_path: str,
     override_display_path: str = None,
     notebook: bool = False,
-) -> List[str]:
+) -> list[str]:
     """Render a reportable to file and get the HTML to display it."""
     html_lines = []
 
@@ -964,8 +960,8 @@ def render_reportable(
         )
     else:
         html_lines.append("<div class='reportable'>")
-    html_lines.append(f"<a name='{reportable.name}'></a>")
-    html_lines.append(f"<h3>{reportable.name} {color_string}</h3>")
+    html_lines.append(f"<a name='{reportable.qualified_name}'></a>")
+    html_lines.append(f"<h3>{reportable.qualified_name} {color_string}</h3>")
     reportable_html = reportable.html()
     if isinstance(reportable_html, list):
         html_lines.extend(reportable_html)
