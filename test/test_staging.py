@@ -600,6 +600,31 @@ def test_aggregate_gets_manager_records_states(configured_test_manager):
     assert record3.state["output"] == 5
 
 
+def test_aggregate_gets_manager_records_except_own(configured_test_manager):
+    """A record with an aggregate stage and no explicitly provided records should grab all records on the manager
+    minus that currently executing record."""
+
+    @aggregate(["output"])
+    def small_aggregate(record, records):
+        total = 0
+        for r in records:
+            total += r.state["input"]
+        return total
+
+    record1 = Record(configured_test_manager, None)
+    record2 = Record(configured_test_manager, None)
+    record3 = Record(configured_test_manager, None)
+
+    record1.state["input"] = 3
+    record2.state["input"] = 2
+    record3.state["input"] = 1  # note that this is for the test and
+    # doesn't actually make sense - an aggregate stage should always
+    # be the first stage of the record.
+
+    small_aggregate(record3)
+    assert record3.state["output"] == 5
+
+
 def test_aggregate_lazy_obj_in_record(configured_test_manager):
     """Ensure a lazy object is put into state from a lazy output aggregate stage, and ensure that it reloads correctly when used."""
 
