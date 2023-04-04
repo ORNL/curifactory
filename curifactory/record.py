@@ -59,11 +59,11 @@ class Record:
         self.stages = []
         """The list of stage names that this record has run through so far."""
         self.stage_inputs = []
-        """A list of lists per stage with the state inputs that stage requested."""
-        # TODO: what's the type? Are these indices? or artifact representations? Keys to the artifact representations?
+        """A list of lists per stage with the state inputs that stage requested.
+        These are either ArtifactRepresentation references, or MapArtifactRepresentation references."""
         self.stage_outputs = []
-        """A list of lists per stage with the state outputs that stage produced."""
-        # TODO: what's the type? Are these indices? or artifact representations? Keys to the artifact representations?
+        """A list of lists per stage with the state outputs that stage produced.
+        These are either ArtifactRepresentation references, or MapArtifactRepresentation references."""
         self.input_records = []
         """A list of any records used as input to this one. This mostly only occurs when aggregate
         stages are run."""
@@ -86,30 +86,6 @@ class Record:
         self.set_hash()
         if not hide:
             self.manager.records.append(self)
-
-    def map_view(self):
-        """A string representation of record's 'path', used in text map rendering."""
-        output = f"==== {self.get_reference_name(True)} hash: {self.get_hash()} ===="
-        for index, stage in enumerate(self.stages):
-            output += "\nStage: " + stage
-            if len(self.stage_inputs[index]) > 0:
-                output += "\n\tInputs:"
-                for stage_input in self.stage_inputs[index]:
-                    if stage_input != -1:
-                        output += f"\n\t\t{stage_input.name}"
-                        if stage_input.cached:
-                            output += " (cached)"
-            if len(self.stage_outputs[index]) > 0:
-                output += "\n\tOutputs:"
-                for stage_output in self.stage_outputs[index]:
-                    output += f"\n\t\t{stage_output.name}"
-                    if stage_output.cached:
-                        output += " (cached)"
-            if len(self.input_records) > 0:
-                output += "\n\tInput records:"
-                for input_record in self.input_records:
-                    output += f"\n\t\t{input_record.get_reference_name(True)}"
-        return output
 
     def store_tracked_paths(self):
         """Copy all of the recent relevant files generated (likely from the recently executing
@@ -365,7 +341,7 @@ class Record:
                     )
                     return f"Record {i} ({paramset_name})"
         else:
-            for i, record in enumerate(self.manager.map):
+            for i, record in enumerate(self.manager.map.records):
                 if self == record:
                     paramset_name = (
                         record.args.name if record.args is not None else "None"

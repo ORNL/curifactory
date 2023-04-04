@@ -11,6 +11,7 @@ from datetime import datetime
 from socket import gethostname
 
 from curifactory import reporting, utils
+from curifactory.dag import DAG
 from curifactory.record import Record
 from curifactory.reporting import Reportable
 from curifactory.store import ManagerStore
@@ -206,7 +207,7 @@ class ArtifactManager:
         """If we're in map mode, don't actually execute any stages, we're only
         recording the 'DAG' (really just the set of stages associated with each
         record)"""
-        self.map: list[Record] = None
+        self.map: DAG = None
 
         self.map_progress = None
         self.map_progress_overall_task_id = None
@@ -247,10 +248,11 @@ class ArtifactManager:
                 log_path = None
             utils.init_logging(log_path, level, False)
 
+    # TODO: move this into dag
     def map_records(self):
         """Run through every record currently stored and grab the stage and
         stage i/o list and store it. Then clean the records."""
-        self.map = []
+        self.map = DAG()
 
         for record in self.records:
             mapped_record = Record(self, record.args, hide=True)
@@ -266,7 +268,7 @@ class ArtifactManager:
                 record.state_artifact_reps
             )
 
-            self.map.append(mapped_record)
+            self.map.records.append(mapped_record)
 
         # go through and add input_records now (can't directly add
         # inside previous loop because we have to add references to
@@ -275,7 +277,9 @@ class ArtifactManager:
         for i, record in enumerate(self.records):
             for input_record in record.input_records:
                 input_record_index = self.records.index(input_record)
-                self.map[i].input_records.append(self.map[input_record_index])
+                self.map.records[i].input_records.append(
+                    self.map.records[input_record_index]
+                )
 
         self.records.clear()
 
@@ -292,7 +296,7 @@ class ArtifactManager:
             name = record.args.name if record.args is not None else "None"
             record_hash = record.get_hash()
             record_index = -1
-            for i, map_record in enumerate(self.map):
+            for i, map_record in enumerate(self.map.records):
                 map_record_hash = map_record.get_hash()
                 # map_name = (
                 #     map_record.args.name if map_record.args is not None else "None"

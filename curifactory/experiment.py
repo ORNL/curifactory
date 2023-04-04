@@ -613,12 +613,10 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             logging.info("Stage map collected")
 
             if map_only:
-                experiment_map = mngr.map
-                for record in experiment_map:
-                    print(record.map_view())
-                # print(experiment_map)
+                dag = mngr.map
+                dag.print_experiment_map()
                 logging.info("Map-only mode, skipping remainder of experiment.")
-                return experiment_map, mngr
+                return dag, mngr
 
             # create a (rich) progress bar and the associated tasks for each
             # mapped record.
