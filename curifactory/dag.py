@@ -69,8 +69,9 @@ class DAG:
         # is in any of the inputs
         for i in range(stage_search_start_index, len(record.stages)):
             # TODO: doesn't work because inputs are reps not strings
-            if output in record.stage_inputs[i]:
-                return True
+            for stage_input in record.stage_inputs[i]:
+                if stage_input.name == output:
+                    return True
 
         # check if any following records directly use in a stage or if
         children = self.child_records(record)

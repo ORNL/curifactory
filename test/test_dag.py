@@ -87,7 +87,7 @@ def test_output_used_check_in_aggregate(configured_test_manager):
     r0 = thing1(r0)
 
     r1 = cf.Record(configured_test_manager, None)
-    r1 = all_the_things(r0)
+    r1 = all_the_things(r1, [r0])
 
     dag = DAG()
     dag.records.append(r0)
