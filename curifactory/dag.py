@@ -15,6 +15,8 @@ class DAG:
         )
         for index, stage in enumerate(record.stages):
             output += "\nStage: " + stage
+            if self.is_leaf(record, stage):
+                output += " (leaf)"
             if len(record.stage_inputs[index]) > 0:
                 output += "\n\tInputs:"
                 for stage_input in record.stage_inputs[index]:
