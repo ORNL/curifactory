@@ -788,6 +788,54 @@ def test_load_metadata_with_manual_cacher_from_stage_cacher_path(
     assert metadata["artifact_name"] == "output"
 
 
+def test_overwrites_stage_doesnot_break_storefull_of_other_stages(
+    configured_test_manager, alternate_test_manager2
+):
+    """An experiment run twice, the second time with an overwrite-stage flag and store-full, should
+    transfer both the newly overwritten artifacts into the run folder as well as the old non-overwritten
+    artifacts from the other stages."""
+    configured_test_manager.store_full = True
+    alternate_test_manager2.store_full = True
+    alternate_test_manager2.overwrite_stages = ["overwritten_output"]
+
+    nonoverwritten_call_count = 0
+    overwritten_call_count = 0
+
+    @cf.stage(None, ["firstoutput"], [PickleCacher(prefix="common")])
+    def non_overwritten_output(record):
+        nonlocal nonoverwritten_call_count
+        nonoverwritten_call_count += 1
+        return "hello!"
+
+    @cf.stage(["firstoutput"], ["secondoutput"], [PickleCacher(prefix="common")])
+    def overwritten_output(record, firstoutput):
+        nonlocal overwritten_call_count
+        overwritten_call_count += 1
+        return "world!"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(alternate_test_manager2, cf.ExperimentArgs(name="test2"))
+
+    overwritten_output(non_overwritten_output(r0))
+    overwritten_output(non_overwritten_output(r1))
+
+    assert nonoverwritten_call_count == 1
+    assert overwritten_call_count == 2
+
+    second_full_store_path = f"{alternate_test_manager2.runs_path}/test2_1_{alternate_test_manager2.get_str_timestamp()}/artifacts"
+    nonoverwritten_output_path = os.path.join(
+        second_full_store_path,
+        f"common_{r1.args.hash}_non_overwritten_output_firstoutput_metadata.json",
+    )
+    overwritten_output_path = os.path.join(
+        second_full_store_path,
+        f"common_{r1.args.hash}_overwritten_output_secondoutput_metadata.json",
+    )
+
+    assert os.path.exists(nonoverwritten_output_path)
+    assert os.path.exists(overwritten_output_path)
+
+
 def test_non_tracked_cacher_does_not_copy_metadata_to_full_store(
     configured_test_manager,
 ):
