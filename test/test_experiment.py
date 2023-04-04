@@ -168,6 +168,11 @@ def test_manager_integration(
     )
 
 
+def test_experiment_map():
+    run_experiment("basic", parameters_list=["params1"], map_only=True)
+    # TODO: will obviously need to add a great deal more to this
+
+
 @pytest.mark.parametrize(
     "local_rank,node_rank,expect_parallel",
     [

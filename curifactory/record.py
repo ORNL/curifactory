@@ -89,34 +89,26 @@ class Record:
 
     def map_view(self):
         """A string representation of record's 'path', used in text map rendering."""
-        output = "==== Record ===="
-        output += "\n-- "
-        if self.args is not None:
-            output += f"{self.args.name} - ({self.get_hash()})"
-        else:
-            output += "None"
-        output += " --"
+        output = f"==== {self.get_reference_name(True)} hash: {self.get_hash()} ===="
         for index, stage in enumerate(self.stages):
             output += "\nStage: " + stage
-            output += "\n\tInputs:"
-            for stage_input in self.stage_inputs[index]:
-                if stage_input != -1:
-                    output += f"\n\t\t{stage_input.name}"
-                    if stage_input.cached:
+            if len(self.stage_inputs[index]) > 0:
+                output += "\n\tInputs:"
+                for stage_input in self.stage_inputs[index]:
+                    if stage_input != -1:
+                        output += f"\n\t\t{stage_input.name}"
+                        if stage_input.cached:
+                            output += " (cached)"
+            if len(self.stage_outputs[index]) > 0:
+                output += "\n\tOutputs:"
+                for stage_output in self.stage_outputs[index]:
+                    output += f"\n\t\t{stage_output.name}"
+                    if stage_output.cached:
                         output += " (cached)"
-            output += "\n\tOutputs:"
-            for stage_output in self.stage_outputs[index]:
-                output += f"\n\t\t{stage_output.name}"
-                if stage_output.cached:
-                    output += " (cached)"
-            output += "\n\tInput records:"
-            for input_record in self.input_records:
-                if input_record.args is not None:
-                    output += (
-                        f"\n\t\t{input_record.args.name} - ({input_record.get_hash()})"
-                    )
-                else:
-                    output += "\n\t\tNone"
+            if len(self.input_records) > 0:
+                output += "\n\tInput records:"
+                for input_record in self.input_records:
+                    output += f"\n\t\t{input_record.get_reference_name(True)}"
         return output
 
     def store_tracked_paths(self):
@@ -360,15 +352,25 @@ class Record:
         os.makedirs(dir_path, exist_ok=True)
         return dir_path
 
-    def get_reference_name(self) -> str:
+    def get_reference_name(self, map=False) -> str:
         """This returns a name describing the record, in the format 'Record [index on manager] (paramset name)
 
         This should be the same as what's shown in the stage map in the output report.
         """
-        for i, record in enumerate(self.manager.records):
-            if self == record:
-                paramset_name = record.args.name if record.args is not None else "None"
-                return f"Record {i} ({paramset_name})"
+        if not map:
+            for i, record in enumerate(self.manager.records):
+                if self == record:
+                    paramset_name = (
+                        record.args.name if record.args is not None else "None"
+                    )
+                    return f"Record {i} ({paramset_name})"
+        else:
+            for i, record in enumerate(self.manager.map):
+                if self == record:
+                    paramset_name = (
+                        record.args.name if record.args is not None else "None"
+                    )
+                    return f"Record {i} ({paramset_name})"
         return None
 
 
