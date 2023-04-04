@@ -495,8 +495,12 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
 
             if records is None:
                 # if no explicit request for a specific set of records given,
-                # use all previous records
-                records = record.manager.records
+                # use all previous records (except own record)
+                records = [
+                    manager_record
+                    for manager_record in record.manager.records
+                    if manager_record != record
+                ]
             record.input_records = records
 
             name = function.__name__
