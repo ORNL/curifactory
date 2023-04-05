@@ -433,7 +433,7 @@ def test_lazy_with_false_resolve_storefull_correct_cacher_path(configured_test_m
 def test_aggregate_stores_output_in_record(configured_test_manager):
     """An aggregate output should exist in the record state."""
 
-    @aggregate(["output"])
+    @aggregate(None, ["output"])
     def small_aggregate(record, records):
         return "hello world"
 
@@ -445,7 +445,7 @@ def test_aggregate_stores_output_in_record(configured_test_manager):
 def test_aggregate_stores_multiple_outputs_in_record(configured_test_manager):
     """Multiple returned outputs from the stage should exist in the record state."""
 
-    @aggregate(["thing1", "thing2"])
+    @aggregate(None, ["thing1", "thing2"])
     def small_aggregate(record, records):
         return "hello world", 13
 
@@ -458,7 +458,7 @@ def test_aggregate_stores_multiple_outputs_in_record(configured_test_manager):
 def test_aggregate_returns_less_than_expected_errors(configured_test_manager):
     """A function that doesn't return the same number of objects as specified in the aggregate outputs should throw an OutputSignatureError."""
 
-    @aggregate(["test1", "test2"])
+    @aggregate(None, ["test1", "test2"])
     def output_stage(record, records):
         return "hello world"
 
@@ -471,7 +471,7 @@ def test_aggregate_empty_cachers_array_errors(configured_test_manager):
     """Don't let the user write [] for cachers list, as it always shortcircuits."""
 
     # NOTE: technically this could probably just be a special case handled by staging.py, but I think specifying [] for cachers is kind of unclear anyway.
-    @aggregate([], [])
+    @aggregate([], [], [])
     def aggregate_stage_that_does_nothing(record, records):
         i_am_very_important = 5 + 3
         del i_am_very_important
@@ -484,7 +484,7 @@ def test_aggregate_empty_cachers_array_errors(configured_test_manager):
 def test_aggregate_cachers_count_mismatch_errors(configured_test_manager):
     """Specifying a different number of cachers than output args should throw a CachersMismatchError."""
 
-    @aggregate(["thing1", "thing2"], [PickleCacher])
+    @aggregate(None, ["thing1", "thing2"], [PickleCacher])
     def bad_caching_vibes(record, records):
         return 1, 2
 
@@ -496,7 +496,7 @@ def test_aggregate_cachers_count_mismatch_errors(configured_test_manager):
 def test_aggregate_cachers_correct_count(configured_test_manager):
     """Specifying the correct number of cachers for outputs works fine."""
 
-    @aggregate(["thing1", "thing2"], [PickleCacher] * 2)
+    @aggregate(None, ["thing1", "thing2"], [PickleCacher] * 2)
     def good_caching_vibes(record, records):
         return 1, 2
 
@@ -508,7 +508,7 @@ def test_aggregate_cachers_correct_count(configured_test_manager):
 def test_aggregate_return_tuple_for_one_output_errors(configured_test_manager):
     """Returning something that is a tuple does not work for a single specified output, this should throw an OutputSignatureError."""
 
-    @aggregate(["my_output"])
+    @aggregate(None, ["my_output"])
     def return_tuple(record, records):
         multiple_values = (1, 2)
         return multiple_values
@@ -521,7 +521,7 @@ def test_aggregate_return_tuple_for_one_output_errors(configured_test_manager):
 def test_aggregate_return_tuplefied_tuple_for_one_output(configured_test_manager):
     """Returning something that is a tuple as a single output value should be tuplefied again."""
 
-    @aggregate(["my_output"])
+    @aggregate(None, ["my_output"])
     def return_tuple(record, records):
         multiple_values = (1, 2)
         return (multiple_values,)
@@ -534,7 +534,7 @@ def test_aggregate_return_tuplefied_tuple_for_one_output(configured_test_manager
 def test_aggregate_return_array_for_one_output(configured_test_manager):
     """Returning an array as a single output should not have the same issues as a tuple, and should work fine."""
 
-    @aggregate(["my_output"])
+    @aggregate(None, ["my_output"])
     def return_array(record, records):
         multiple_values = [1, 2]
         return multiple_values
@@ -547,7 +547,7 @@ def test_aggregate_return_array_for_one_output(configured_test_manager):
 def test_aggregate_gets_records_states(configured_test_manager):
     """Inside the aggregate, we should be able to get values from the states of the manually passed in records."""
 
-    @aggregate(["output"])
+    @aggregate(None, ["output"])
     def small_aggregate(record, records):
         total = 0
         for r in records:
@@ -567,7 +567,7 @@ def test_aggregate_gets_records_states(configured_test_manager):
 def test_aggregate_gets_no_manager_records(configured_test_manager):
     """Calling an aggregate stage without records and with no records on the manager should not crash."""
 
-    @aggregate(["output"])
+    @aggregate(None, ["output"])
     def small_aggregate(record, records):
         total = 0
         for r in records:
@@ -582,7 +582,7 @@ def test_aggregate_gets_no_manager_records(configured_test_manager):
 def test_aggregate_gets_manager_records_states(configured_test_manager):
     """Inside the aggregate, we should be passed all records on the manager by default, if no records explicitly passed."""
 
-    @aggregate(["output"])
+    @aggregate(None, ["output"])
     def small_aggregate(record, records):
         total = 0
         for r in records:
@@ -604,7 +604,7 @@ def test_aggregate_gets_manager_records_except_own(configured_test_manager):
     """A record with an aggregate stage and no explicitly provided records should grab all records on the manager
     minus that currently executing record."""
 
-    @aggregate(["output"])
+    @aggregate(None, ["output"])
     def small_aggregate(record, records):
         total = 0
         for r in records:
@@ -628,7 +628,7 @@ def test_aggregate_gets_manager_records_except_own(configured_test_manager):
 def test_aggregate_lazy_obj_in_record(configured_test_manager):
     """Ensure a lazy object is put into state from a lazy output aggregate stage, and ensure that it reloads correctly when used."""
 
-    @aggregate([Lazy("output")], cachers=[PickleCacher])
+    @aggregate(None, [Lazy("output")], cachers=[PickleCacher])
     def small_aggregate(record, records):
         total = 0
         for r in records:
@@ -658,7 +658,7 @@ def test_aggregate_lazy_obj_in_record(configured_test_manager):
 def test_aggregate_lazy_disabled_on_ignore_lazy(configured_test_manager):
     """Lazy objects should be replaced with str counterparts if ignore_lazy is set on the manager."""
 
-    @aggregate([Lazy("output")], cachers=[PickleCacher])
+    @aggregate(None, [Lazy("output")], cachers=[PickleCacher])
     def small_aggregate(record, records):
         return "hello world"
 
@@ -673,7 +673,7 @@ def test_aggregate_lazy_disabled_on_ignore_lazy(configured_test_manager):
 def test_aggregate_lazy_forced_on_manager_lazy(configured_test_manager):
     """All objects should be lazy if lazy is set on the manager."""
 
-    @aggregate(["output"], cachers=[PickleCacher])
+    @aggregate(None, ["output"], cachers=[PickleCacher])
     def small_aggregate(record, records):
         return "hello world"
 
@@ -689,7 +689,7 @@ def test_aggregate_lazy_forced_on_manager_lazy(configured_test_manager):
 def test_aggregate_error_on_missing_lazy_cacher(configured_test_manager):
     """If no cacher is given for a lazy object, an error should be thrown."""
 
-    @aggregate([Lazy("output")])
+    @aggregate(None, [Lazy("output")])
     def small_aggregate(record, records):
         return "hello world"
 
@@ -701,7 +701,7 @@ def test_aggregate_error_on_missing_lazy_cacher(configured_test_manager):
 def test_aggregate_cacher_injected_on_manager_lazy(configured_test_manager):
     """If lazy is set on the manager and an object has no cacher, inject a PickleCacher."""
 
-    @aggregate(["output"])
+    @aggregate(None, ["output"])
     def small_aggregate(record, records):
         return "hello world"
 
@@ -717,7 +717,7 @@ def test_aggregate_cacher_not_injected_on_manager_ignore_lazy(configured_test_ma
     """If ignore_lazy is set on the manager and a Lazy object has no cacher, do not error."""
     # NOTE: in theory this behavior is so that if someone gives you buggy stages, you can "fix" the stage without having to actually go in and modify the cachers.
 
-    @aggregate([Lazy("output")])
+    @aggregate(None, [Lazy("output")])
     def small_aggregate(record, records):
         return "hello world"
 
@@ -736,7 +736,7 @@ def test_aggregate_auto_resolve_lazy_state(configured_test_manager):
     def output_stage(record):
         return "hello world"
 
-    @aggregate(["reproduced_output"])
+    @aggregate(None, ["reproduced_output"])
     def small_aggregate(record, records):
         return records[0].state["tester"]
 

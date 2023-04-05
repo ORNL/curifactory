@@ -437,7 +437,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
 
 
 def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
-    outputs: list[str] = None, cachers: list = None
+    expected_state: list[str] = None, outputs: list[str] = None, cachers: list = None
 ):
     """Decorator to wrap around a function that represents some step that must operate across
     multiple different argsets or "experiment lines" within an experiment. This is normally
@@ -450,10 +450,15 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
         that this function needs to aggregate across.
 
     Args:
-        outputs (List[str]): A list of variable names that this stage will return and store
+        expected_state (list[str]): A list of variable names this stage expects to find in the
+            state of each record passed into it. A warning will be thrown on any records that
+            do not have the requested variable in state. Variables listed here are used for the
+            DAG/map calculation to determine which stages are actually required to run for this
+            stage to have everything it needs.
+        outputs (list[str]): A list of variable names that this stage will return and store
             in the record state. These represent, in order, the tuple of returned values from
             the function being wrapped.
-        cachers (List[Cacheable]): An optional list of Cacheable instances ("strategies") to
+        cachers (list[Cacheable]): An optional list of Cacheable instances ("strategies") to
             apply to each of the return outputs. If specified, for each output, an instance
             of the corresponding cacher is initialized, and the :code:`save()` function is called.
             Before the wrapped function is called, the output path is first checked, and if it
@@ -518,7 +523,9 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             record.manager.update_map_progress(record, "start")
 
             # apply consistent handling
-            nonlocal outputs, cachers
+            nonlocal expected_state, outputs, cachers
+            if expected_state is None:
+                expected_state = []
             if outputs is None:
                 outputs = []
 
@@ -565,6 +572,19 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 raise CachersMismatchError(
                     f"Stage '{name}' - the number of cachers does not match the number of outputs to cache"
                 )
+
+            # similar to how inputs are checked on the state for a regular stage, we use
+            # `expected_state` to (softly) check each input record for the requested state
+            # variables. We don't actually load/pass anything differently to the function,
+            # but this is useful from a documentation and debugging standpoint, and is required
+            # for DAG computation to work as expected.
+            for expected_input in expected_state:
+                for record in records:
+                    if expected_input not in record.state_artifact_reps:
+                        logging.warning(
+                            "Expected state variable '%s' not found in %s"
+                            % (expected_input, record.get_reference_name())
+                        )
 
             # see note in stage
             if cachers is not None:

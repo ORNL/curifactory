@@ -263,7 +263,7 @@ def test_aggregate_reportables_are_cached(configured_test_manager):
     """Running an aggregate stage with a reportable should cache the reportable and a list of reportable cache files.
     (using the record's aggregate combo hash)"""
 
-    @cf.aggregate(["test_output"], [PickleCacher])
+    @cf.aggregate(None, ["test_output"], [PickleCacher])
     def basic_agg_reportable(record, records):
         record.report(JsonReporter({"test": "hello world"}))
         return "test"
@@ -311,7 +311,7 @@ def test_aggregate_args_no_records_loads_cache(configured_test_manager):
     """Calling an aggregate stage with valid args, twice, should load from cache and not execute."""
     call_count = 0
 
-    @cf.aggregate(["test_output"], [PickleCacher])
+    @cf.aggregate(None, ["test_output"], [PickleCacher])
     def test_agg(record, records):
         nonlocal call_count
         call_count += 1
@@ -331,7 +331,7 @@ def test_aggregate_args_records_loads_cache(configured_test_manager):
     should load from cache and not execute."""
     call_count = 0
 
-    @cf.aggregate(["test_output"], [PickleCacher])
+    @cf.aggregate(None, ["test_output"], [PickleCacher])
     def test_agg(record, records):
         nonlocal call_count
         call_count += 1
@@ -356,7 +356,7 @@ def test_aggregate_args_overwrite_no_records_doesnot_load_cache(
     from cache and execute."""
     call_count = 0
 
-    @cf.aggregate(["test_output"], [PickleCacher])
+    @cf.aggregate(None, ["test_output"], [PickleCacher])
     def test_agg(record, records):
         nonlocal call_count
         call_count += 1
@@ -390,7 +390,7 @@ def test_aggregate_args_records_overwrite_loads_cache(configured_test_manager):
     """
     call_count = 0
 
-    @cf.aggregate(["test_output"], [PickleCacher])
+    @cf.aggregate(None, ["test_output"], [PickleCacher])
     def test_agg(record, records):
         nonlocal call_count
         call_count += 1
@@ -418,7 +418,7 @@ def test_aggregate_no_args_no_records_doesnot_load_cache(configured_test_manager
     """
     call_count = 0
 
-    @cf.aggregate(["test_output"], [PickleCacher])
+    @cf.aggregate(None, ["test_output"], [PickleCacher])
     def test_agg(record, records):
         nonlocal call_count
         call_count += 1
@@ -440,7 +440,7 @@ def test_aggregate_no_args_records_loads_cache(configured_test_manager):
     """
     call_count = 0
 
-    @cf.aggregate(["test_output"], [PickleCacher])
+    @cf.aggregate(None, ["test_output"], [PickleCacher])
     def test_agg(record, records):
         nonlocal call_count
         call_count += 1
@@ -471,7 +471,7 @@ def test_aggregate_no_args_records_overwrite_doesnot_load_cache(
     """
     call_count = 0
 
-    @cf.aggregate(["test_output"], [PickleCacher])
+    @cf.aggregate(None, ["test_output"], [PickleCacher])
     def test_agg(record, records):
         nonlocal call_count
         call_count += 1

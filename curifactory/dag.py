@@ -162,5 +162,5 @@ class DAG:
             leaf_record = self.records[leaf[0]]
             leaf_stage = leaf[1]
             self.execution_chain = self.build_execution_chain_recursive(
-                leaf_record, leaf_stage
+                leaf_record, leaf_stage, self.execution_chain
             )

@@ -71,7 +71,7 @@ def test_record_doesnot_store_combo_hash_when_parallel_mode(configured_test_mana
     aggregate stage in the param_registry.json."""
     configured_test_manager.parallel_mode = True
 
-    @aggregate(["testing"])
+    @aggregate(None, ["testing"])
     def agg_stage(record, records):
         return "test"
 
@@ -87,7 +87,7 @@ def test_record_doesnot_store_combo_hash_when_parallel_mode(configured_test_mana
 
 # TODO: test_record_gets_combo_hash_for_aggregate (check that is_aggregate sets)
 def test_record_gets_combo_hash_for_aggregate(configured_test_manager):
-    @aggregate(["testing"])
+    @aggregate(None, ["testing"])
     def agg_stage(record, records):
         return "test"
 
