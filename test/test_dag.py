@@ -30,6 +30,8 @@ def test_child_records_after_make_copy(configured_test_manager):
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
+    r0 = dag.records[0]
+    r1 = dag.records[1]
     r0_children = dag.child_records(r0)
     assert len(r0_children) == 1
     assert len(dag.child_records(r1)) == 0
@@ -66,7 +68,7 @@ def test_output_used_check_when_record_copied_butunused(configured_test_manager)
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
     r0 = thing1(r0)
 
-    r1 = r0.make_copy(cf.ExperimentArgs("test1"))
+    r0.make_copy(cf.ExperimentArgs("test1"))
 
     configured_test_manager.map_records()
     dag = configured_test_manager.map
@@ -95,6 +97,7 @@ def test_output_used_check_in_aggregate(configured_test_manager):
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
+    r0 = dag.records[0]
     assert dag.is_output_used_anywhere(r0, 1, "thing")
 
 
