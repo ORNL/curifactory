@@ -10,6 +10,8 @@ def test_child_records_empty_for_blank_records(configured_test_manager):
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
+    r0 = dag.records[0]
+    r1 = dag.records[1]
     assert len(dag.child_records(r0)) == 0
     assert len(dag.child_records(r1)) == 0
 
@@ -53,6 +55,7 @@ def test_output_used_check_when_no_following_stages(configured_test_manager):
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
+    r0 = dag.records[0]
     assert not dag.is_output_used_anywhere(r0, 1, "thing")
 
 
@@ -73,6 +76,7 @@ def test_output_used_check_when_record_copied_butunused(configured_test_manager)
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
+    r0 = dag.records[0]
     assert not dag.is_output_used_anywhere(r0, 1, "thing")
 
 
@@ -119,6 +123,7 @@ def test_output_used_check_finds_output_in_later_input(configured_test_manager):
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
+    r0 = dag.records[0]
     assert dag.is_output_used_anywhere(r0, 1, "thing")
 
 
@@ -160,4 +165,27 @@ def test_single_stage_is_leaf(configured_test_manager):
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
+    r0 = dag.records[0]
     assert dag.is_leaf(r0, "void_stares_back")
+
+
+def test_output_used_elsewhere_is_not_leaf(configured_test_manager):
+    configured_test_manager.map_mode = True
+
+    @cf.stage(outputs=["thing"])
+    def thing1(record):
+        return "green eggs and ham"
+
+    @cf.stage(inputs=["thing"], outputs=["another_thing"])
+    def thing2(record, thing):
+        return "Sam I am"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
+    thing2(thing1(r0))
+
+    configured_test_manager.map_records()
+    dag = configured_test_manager.map
+
+    r0 = dag.records[0]
+    assert not dag.is_leaf(r0, "thing1")
+    assert dag.is_leaf(r0, "thing2")

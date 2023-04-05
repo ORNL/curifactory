@@ -831,7 +831,15 @@ def _add_output_artifact(
         )
     else:
         artifact = MapArtifactRepresentation(
-            outputs[index], is_cached, metadata, cacher
+            # NOTE: we don't use map=True for the get record index because we're still in map mode...
+            # this should probably change at some point, where getindex also takes the current map_mode
+            # into account
+            record.get_record_index(True),
+            record.manager.current_stage_name,
+            outputs[index],
+            is_cached,
+            metadata,
+            cacher,
         )
     new_index = len(record.manager.artifacts)
     record.manager.artifacts.append(artifact)

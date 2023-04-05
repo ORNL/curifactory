@@ -10,6 +10,8 @@ class DAG:
         """This should essentially be an equivalent copy of ArtifactManager.artifacts.
         All of record's stage inputs and outputs should correctly index into this."""
 
+        self.execution_chain: list[tuple[int, str]] = []
+
     def get_record_string(self, record_index: int) -> str:
         """Get a string representation for a record."""
         record = self.records[record_index]
@@ -79,7 +81,7 @@ class DAG:
                 if stage_input.name == output:
                     return True
 
-        # check if any following records directly use in a stage or if
+        # check if any following records directly use in a stage or aggregate
         children = self.child_records(record)
         for child in children:
             # check if we're direclty using it in a normal stage
@@ -103,3 +105,62 @@ class DAG:
             if record in other_record.input_records
         ]
         return children
+
+    def find_leaves(self) -> list[tuple[int, str]]:
+        """Returns a list of tuples where the first element is the record index and the
+        second is the name of the stage."""
+        leaves = []
+        for index, record in enumerate(self.records):
+            for stage in record.stages:
+                if self.is_leaf(record, stage):
+                    leaves.append((index, stage))
+
+        return leaves
+
+    def build_execution_chain_recursive(
+        self, record: Record, stage: str, chain: list[tuple[int, str]]
+    ) -> list[tuple[int, str]]:
+        """Determines if the requested stage will need to execute or not, and if so prepends itself
+        and all prior stages needed to execute by recursively calls."""
+        stage_index = record.stages.index(stage)
+
+        # first check if all of the outputs for this stage are cached, if any one of them is not,
+        # will need to add to execution chain
+        cached = True
+        for stage_output_index in record.stage_outputs[stage_index]:
+            stage_output: MapArtifactRepresentation = self.artifacts[stage_output_index]
+            if not stage_output.cached:
+                cached = False
+
+        if cached:
+            # no need to execute this stage, don't prepend to execution chain
+            return chain
+
+        # need to execute, prepend to chain
+        chain.insert(0, (record.get_record_index(True), stage))
+
+        # now recursively go through previous stages whose output is needed for this one and
+        # continue to build execution chain.
+        for stage_input_index in record.stage_inputs[stage_index]:
+            stage_input: MapArtifactRepresentation = self.artifacts[stage_input_index]
+
+            # TODO will need diff logic for aggregate?
+            prereq_record = self.records[stage_input.record_index]
+            prereq_stage = stage_input.stage_name
+            chain = self.build_execution_chain_recursive(
+                prereq_record, prereq_stage, chain
+            )
+
+        return chain
+
+    def build_execution_chain(self):
+        """Build up the full set of stages that need to run based on all of the leaves in
+        the DAG."""
+        self.execution_chain = []
+        leaves = self.find_leaves()
+        for leaf in leaves:
+            leaf_record = self.records[leaf[0]]
+            leaf_stage = leaf[1]
+            self.execution_chain = self.build_execution_chain_recursive(
+                leaf_record, leaf_stage
+            )

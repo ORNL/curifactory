@@ -330,29 +330,36 @@ class Record:
 
         This should be the same as what's shown in the stage map in the output report.
         """
-        if not map:
-            for i, record in enumerate(self.manager.records):
-                if self == record:
-                    paramset_name = (
-                        record.args.name if record.args is not None else "None"
-                    )
-                    return f"Record {i} ({paramset_name})"
-        else:
-            for i, record in enumerate(self.manager.map.records):
-                if self == record:
-                    paramset_name = (
-                        record.args.name if record.args is not None else "None"
-                    )
-                    return f"Record {i} ({paramset_name})"
-        return None
+        index = self.get_record_index(map)
+        paramset_name = self.args.name if self.args is not None else "None"
+        return f"Record {index} ({paramset_name})"
+
+    def get_record_index(self, map=False) -> int:
+        record_list = self.manager.records
+        if map and not self.manager.map_mode:
+            record_list = self.manager.map.records
+        for i, record in enumerate(record_list):
+            if self == record:
+                return i
+        return -1
 
 
 class MapArtifactRepresentation:
-    def __init__(self, name: str, cached: bool, metadata=None, cacher=None):
+    def __init__(
+        self,
+        record_index: int,
+        stage_name: str,
+        name: str,
+        cached: bool,
+        metadata=None,
+        cacher=None,
+    ):
         # NOTE: we're not keeping track of record because when the map stuff
         # is transfered from the manager over into the DAG, we make a separate
         # record instance anyway.
         # NOTE: (4/5/2023) we may want to at least keep a record index.
+        self.record_index = record_index
+        self.stage_name = stage_name
         self.name = name
         self.cached = cached
         self.metadata = metadata
