@@ -155,6 +155,8 @@ class ArtifactManager:
         self.artifacts = []
         """The list of :code:`ArtifactRepresentation` instances for all artifacts stored in all
         record states."""
+        self.mapped_artifacts = []
+        """The list of :code:`MapArtifactRepresentation` instances found during the mapping process."""
         self.reportables = []
         """The list of all reportables reported from all records."""
 
@@ -281,7 +283,12 @@ class ArtifactManager:
                     self.map.records[input_record_index]
                 )
 
+        # Move over all of the artifact representations into the map
+        for artifact_rep in self.artifacts:
+            self.map.artifacts.append(artifact_rep)
+
         self.records.clear()
+        self.artifacts.clear()
 
     # update_type can either be "start" or "continue"
     # start type means "stage start", not record start, though we could check if

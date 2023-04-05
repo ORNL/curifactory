@@ -1,11 +1,14 @@
 """Class for managing an experiment's map/dag logic."""
 
-from curifactory.record import Record
+from curifactory.record import MapArtifactRepresentation, Record
 
 
 class DAG:
     def __init__(self):
         self.records: list[Record] = []
+        self.artifacts: list[MapArtifactRepresentation] = []
+        """This should essentially be an equivalent copy of ArtifactManager.artifacts.
+        All of record's stage inputs and outputs should correctly index into this."""
 
     def get_record_string(self, record_index: int) -> str:
         """Get a string representation for a record."""
@@ -54,7 +57,7 @@ class DAG:
         # it's a leaf if outputs are not used anywhere
         found_used = False
         for output in outputs:
-            if not self.is_output_used_anywhere(record, stage_index + 1, output.name):
+            if self.is_output_used_anywhere(record, stage_index + 1, output.name):
                 found_used = True
         if not found_used:
             return True

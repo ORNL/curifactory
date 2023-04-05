@@ -51,20 +51,20 @@ class Record:
         """The dictionary of all variables created by stages this record is passed through. (AKA 'Artifacts')
         All :code:`inputs` from stage decorators are pulled from this dictionary, and all
         :code:`outputs` are stored here."""
-        self.state_artifact_reps = {}
-        """Dictionary mimicking state that keeps an :code:`ArtifactRepresentation` associated with
-        each variable stored in :code:`self.state`."""
+        self.state_artifact_reps: dict[str, int] = {}
+        """Dictionary mimicking state that keeps an index to the associated artifact representation in
+         manager's artifact representation list."""
         self.output = None
         """The returned value from the last stage that was run with this record."""
         self.stages = []
         """The list of stage names that this record has run through so far."""
-        self.stage_inputs = []
+        self.stage_inputs: list[list[int]] = []
         """A list of lists per stage with the state inputs that stage requested.
-        These are either ArtifactRepresentation references, or MapArtifactRepresentation references."""
-        self.stage_outputs = []
+        These are lists of indices into state_artifact_reps."""
+        self.stage_outputs: list[list[int]] = []
         """A list of lists per stage with the state outputs that stage produced.
-        These are either ArtifactRepresentation references, or MapArtifactRepresentation references."""
-        self.input_records = []
+        These are lists of indices into state_artifact_reps."""
+        self.input_records: list[Record] = []
         """A list of any records used as input to this one. This mostly only occurs when aggregate
         stages are run."""
         # NOTE: these are actual record references
@@ -351,9 +351,14 @@ class Record:
 
 
 class MapArtifactRepresentation:
-    def __init__(self, name: str, cached: bool):
+    def __init__(self, name: str, cached: bool, metadata=None, cacher=None):
+        # NOTE: we're not keeping track of record because when the map stuff
+        # is transfered from the manager over into the DAG, we make a separate
+        # record instance anyway.
         self.name = name
         self.cached = cached
+        self.metadata = metadata
+        self.cacher = cacher
 
 
 class ArtifactRepresentation:
@@ -369,7 +374,7 @@ class ArtifactRepresentation:
         artifact: The artifact itself.
     """
 
-    def __init__(self, record, name, artifact, metadata=None):
+    def __init__(self, record, name, artifact, metadata=None, cacher=None):
         # TODO: (3/21/2023) possibly have "files" which would be cachers.cached_files?
         self.init_record = record
         self.name = name
@@ -386,6 +391,7 @@ class ArtifactRepresentation:
         elif hasattr(artifact, "__len__"):
             self.string += f" len: {len(artifact)}"
 
+        self.cacher = cacher
         self.metadata = metadata
 
         self.file = "no file"

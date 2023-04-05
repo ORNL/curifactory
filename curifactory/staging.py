@@ -7,7 +7,7 @@ import os
 import pickle
 import time
 from functools import wraps
-from typing import Union
+from typing import Any, Union
 
 import psutil
 
@@ -282,21 +282,11 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             # TODO: 3/8/2023 - not true, we're not getting outputs
             if record.manager.map_mode:
                 record.manager.stage_active = False
-                output_statuses = _check_outputs_cache_status(
-                    record, outputs, cachers, None
-                )
-
                 # in order to get a more detailed map that accurately shows input/output names,
                 # we need to create pseudo-state-artifact-representations for the outputs. Since
                 # we obviously can't add the actual artifacts (there are none without running!),
                 # we just add the string key and a name, so record __repr__ has something to use
-
-                for index, output in enumerate(outputs):
-                    record.state_artifact_reps[output] = MapArtifactRepresentation(
-                        name=output, cached=output_statuses[index]
-                    )
-                    record.stage_outputs[-1].append(record.state_artifact_reps[output])
-
+                _get_output_representations_for_map(record, outputs, cachers, None)
                 return record
 
             # check for cached outputs and lazy load inputs if needed
@@ -600,21 +590,11 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             # TODO: 3/8/2023 - not true, we're not getting outputs
             if record.manager.map_mode:
                 record.manager.stage_active = False
-                output_statuses = _check_outputs_cache_status(
-                    record, outputs, cachers, records
-                )
-
                 # in order to get a more detailed map that accurately shows input/output names,
                 # we need to create pseudo-state-artifact-representations for the outputs. Since
                 # we obviously can't add the actual artifacts (there are none without running!),
                 # we just add the string key and a name, so record __repr__ has something to use
-
-                for index, output in enumerate(outputs):
-                    record.state_artifact_reps[output] = MapArtifactRepresentation(
-                        name=output, cached=output_statuses[index]
-                    )
-                    record.stage_outputs[-1].append(record.state_artifact_reps[output])
-
+                _get_output_representations_for_map(record, outputs, cachers, records)
                 return record
 
             pre_cache_time_start = time.perf_counter()  # time to load from cache
@@ -746,21 +726,37 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
     return decorator
 
 
-def _check_outputs_cache_status(record, outputs, cachers, records=None) -> list[bool]:
+def _get_output_representations_for_map(
+    record, outputs: list[str], cachers, records=None
+) -> list[MapArtifactRepresentation]:
     """Check if the requested outputs are cached but do not load them, simply return
     a list of statuses for found."""
-    statuses = None
-    if cachers is not None:
-        statuses = []
-        for cacher in cachers:
-            statuses.append(cacher.check())
+    if cachers == []:
+        raise EmptyCachersError(
+            "Do not use '[]' for cachers. This will always short-circuit because there is nothing that isn't cached."
+        )
 
-    elif outputs is not None and len(outputs) > 0:
-        statuses = [False] * len(outputs)
-    return statuses
+    artifacts = []
+    for i in range(len(outputs)):
+        metadata = None
+        cacher = None
+        is_cached = False
+        if cachers is not None:
+            cacher = cachers[i]
+            is_cached = cacher.check()
+            if is_cached:
+                metadata = cacher.load_metadata()
+        artifact = _add_output_artifact(
+            record, None, outputs, i, metadata, cacher, is_cached
+        )
+        artifacts.append(artifact)
+
+    return artifacts
 
 
-def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
+def _check_cached_outputs(
+    stage_name: str, record, outputs: list[str], cachers, records=None
+) -> bool:
     """Check if the requested outputs are cached and load them if so."""
     if cachers == []:
         raise EmptyCachersError(
@@ -794,7 +790,13 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
                 record.state[str(outputs[i])] = output
 
                 artifact = _add_output_artifact(
-                    record, output, outputs, i, metadata=cachers[i].metadata
+                    record,
+                    output,
+                    outputs,
+                    i,
+                    metadata=cachers[i].metadata,
+                    cacher=cachers[i],
+                    is_cached=True,
                 )
                 # TODO: (3/21/2023) possibly have "files" which would be cachers.cached_files?
                 artifact.file = cachers[i].get_path()
@@ -813,9 +815,24 @@ def _check_cached_outputs(stage_name, record, outputs, cachers, records=None):
     return cache_valid
 
 
-def _add_output_artifact(record, object, outputs, index, metadata=None):
-    """manage representation recording"""
-    artifact = ArtifactRepresentation(record, outputs[index], object, metadata=metadata)
+def _add_output_artifact(
+    record,
+    object: Any,
+    outputs: list[str],
+    index: int,
+    metadata=None,
+    cacher=None,
+    is_cached=False,
+):
+    """Manage representation recording - this creates an artifact representation and adds to the manager's artifacts."""
+    if not record.manager.map_mode:
+        artifact = ArtifactRepresentation(
+            record, outputs[index], object, metadata=metadata, cacher=cacher
+        )
+    else:
+        artifact = MapArtifactRepresentation(
+            outputs[index], is_cached, metadata, cacher
+        )
     new_index = len(record.manager.artifacts)
     record.manager.artifacts.append(artifact)
     # if new_index not in record.stage_outputs[-1]:
