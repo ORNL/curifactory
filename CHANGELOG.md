@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * An aggregate stage that is not explicitly given a set of records now takes manager records minus
   the record containing the currently running aggregate stage.
 
-
+### Fixed
+* Record `make_copy` adding the new record to the artifact manager twice.
 
 
 ## [0.12.0] - 2023-03-30

@@ -122,3 +122,37 @@ def test_record_make_copy_retains_state(configured_test_manager):
     assert "test" in r1.state
     assert r1.state["test"] == "hello world"
     assert r1.args.name == "test2"
+
+
+def test_record_make_copy_adds_record_to_manager(configured_test_manager):
+    """Making a record copy with default values should add one (and only one) record
+    to the manager."""
+
+    @stage([], outputs=["test"])
+    def output_stage(record):
+        return "hello world"
+
+    r0 = Record(configured_test_manager, ExperimentArgs(name="test0"))
+    r0 = output_stage(r0)
+    assert len(configured_test_manager.records) == 1
+
+    r0.make_copy(ExperimentArgs(name="test1"))
+    assert len(configured_test_manager.records) == 2
+
+
+def test_record_make_copy_doesnot_add_record_to_manager_when_specified(
+    configured_test_manager,
+):
+    """Making a record copy with default values should add one (and only one) record
+    to the manager."""
+
+    @stage([], outputs=["test"])
+    def output_stage(record):
+        return "hello world"
+
+    r0 = Record(configured_test_manager, ExperimentArgs(name="test0"))
+    r0 = output_stage(r0)
+    assert len(configured_test_manager.records) == 1
+
+    r0.make_copy(ExperimentArgs(name="test1"), add_to_manager=False)
+    assert len(configured_test_manager.records) == 1
