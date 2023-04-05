@@ -229,8 +229,9 @@ class Record:
         new_record = Record(self.manager, args, hide=(not add_to_manager))
         new_record.input_records = [self]
         new_record.state = copy.deepcopy(self.state)
-        # TODO: (02/02/2022) state without state artifact reps might cause issues
-        # new_record.state_artifact_reps = self.state_artifact_reps
+        # we shallow copy because this new list needs to be modified with new artifact_reps without
+        # modifying the one in the old record
+        new_record.state_artifact_reps = copy.copy(self.state_artifact_reps)
         return new_record
 
     # TODO: should also take an optional 'sub-path' and 'extension'

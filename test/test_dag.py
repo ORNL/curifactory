@@ -122,6 +122,30 @@ def test_output_used_check_finds_output_in_later_input(configured_test_manager):
     assert dag.is_output_used_anywhere(r0, 1, "thing")
 
 
+def test_output_used_check_finds_output_in_later_input_of_copy(configured_test_manager):
+    """An output that's used as an input in a later copy of a record should be found."""
+    configured_test_manager.map_mode = True
+
+    @cf.stage(outputs=["thing"])
+    def thing1(record):
+        return "green eggs and ham"
+
+    @cf.stage(inputs=["thing"], outputs=["another_thing"])
+    def thing2(record, thing):
+        return "Sam I am"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
+    thing1(r0)
+    r1 = r0.make_copy(cf.ExperimentArgs("test1"))
+    thing2(r1)
+
+    configured_test_manager.map_records()
+    dag = configured_test_manager.map
+
+    r0 = dag.records[0]
+    assert dag.is_output_used_anywhere(r0, 1, "thing")
+
+
 def test_single_stage_is_leaf(configured_test_manager):
     """Make sure a single stage is in fact a leaf."""
     configured_test_manager.map_mode = True
