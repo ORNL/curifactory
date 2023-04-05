@@ -47,22 +47,23 @@ def train_model(record, training_data):
     return clf
 
 
-@cf.aggregate(outputs=["scores"], cachers=[PickleCacher])
+@cf.aggregate(
+    expected_state=["model", "testing_data"], outputs=["scores"], cachers=[PickleCacher]
+)
 def test_models(record, records):
     scores = {}
 
     # iterate through every record and score its associated model
     lines = {}
     for prev_record in records:
-        if "model" in prev_record.state:
-            score = prev_record.state["model"].score(
-                prev_record.state["testing_data"][0],
-                prev_record.state["testing_data"][1],
-            )
+        score = prev_record.state["model"].score(
+            prev_record.state["testing_data"][0],
+            prev_record.state["testing_data"][1],
+        )
 
-            # store the result keyed to the argument set name
-            scores[prev_record.args.name] = score
-            lines[prev_record.args.name] = prev_record.state["model"].loss_curve_
+        # store the result keyed to the argument set name
+        scores[prev_record.args.name] = score
+        lines[prev_record.args.name] = prev_record.state["model"].loss_curve_
 
     record.report(LinePlotReporter(lines))
     record.report(JsonReporter(scores))
