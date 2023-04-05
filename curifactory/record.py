@@ -226,15 +226,11 @@ class Record:
         """
         if args is None:
             args = self.args
-        new_record = Record(self.manager, args)
+        new_record = Record(self.manager, args, hide=(not add_to_manager))
         new_record.input_records = [self]
         new_record.state = copy.deepcopy(self.state)
         # TODO: (02/02/2022) state without state artifact reps might cause issues
         # new_record.state_artifact_reps = self.state_artifact_reps
-
-        if add_to_manager:
-            self.manager.records.append(new_record)
-
         return new_record
 
     # TODO: should also take an optional 'sub-path' and 'extension'
