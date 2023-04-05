@@ -468,12 +468,12 @@ def render_report_reportables_toc(manager) -> list[str]:
         html_lines.append(f"<li>{group}<ul>")
         for reportable in grouped_reportables[group]:
             html_lines.append(
-                f"<li><a href='#{reportable.name}'>{reportable.name}</a></li>"
+                f"<li><a href='#{reportable.qualified_name}'>{reportable.qualified_name}</a></li>"
             )
         html_lines.append("</ul></li>")
     for reportable in non_grouped_reportables:
         html_lines.append(
-            f"<li><a href='#{reportable.name}'>{reportable.name}</a></li>"
+            f"<li><a href='#{reportable.qualified_name}'>{reportable.qualified_name}</a></li>"
         )
     html_lines.append("</ul>")
     return html_lines
