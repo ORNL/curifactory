@@ -355,6 +355,7 @@ class MapArtifactRepresentation:
         # NOTE: we're not keeping track of record because when the map stuff
         # is transfered from the manager over into the DAG, we make a separate
         # record instance anyway.
+        # NOTE: (4/5/2023) we may want to at least keep a record index.
         self.name = name
         self.cached = cached
         self.metadata = metadata

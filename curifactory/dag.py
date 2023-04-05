@@ -22,17 +22,19 @@ class DAG:
                 output += " (leaf)"
             if len(record.stage_inputs[index]) > 0:
                 output += "\n\tInputs:"
-                for stage_input in record.stage_inputs[index]:
-                    if stage_input != -1:
+                for stage_input_index in record.stage_inputs[index]:
+                    if stage_input_index != -1:
+                        stage_input = self.artifacts[stage_input_index]
                         output += f"\n\t\t{stage_input.name}"
                         if stage_input.cached:
                             output += " (cached)"
             if len(record.stage_outputs[index]) > 0:
                 output += "\n\tOutputs:"
-                for stage_output in record.stage_outputs[index]:
+                for stage_output_index in record.stage_outputs[index]:
+                    stage_output = self.artifacts[stage_output_index]
                     output += f"\n\t\t{stage_output.name}"
                     if stage_output.cached:
-                        output += " (cached)"
+                        output += f" (cached) [{stage_output.metadata['manager_run_info']['reference']}]"
             if len(record.input_records) > 0:
                 output += "\n\tInput records:"
                 for input_record in record.input_records:
@@ -56,7 +58,8 @@ class DAG:
 
         # it's a leaf if outputs are not used anywhere
         found_used = False
-        for output in outputs:
+        for output_index in outputs:
+            output = self.artifacts[output_index]
             if self.is_output_used_anywhere(record, stage_index + 1, output.name):
                 found_used = True
         if not found_used:
@@ -71,8 +74,8 @@ class DAG:
         # Iterate each following stage in that record and see if the requested output
         # is in any of the inputs
         for i in range(stage_search_start_index, len(record.stages)):
-            # TODO: doesn't work because inputs are reps not strings
-            for stage_input in record.stage_inputs[i]:
+            for stage_input_index in record.stage_inputs[i]:
+                stage_input = self.artifacts[stage_input_index]
                 if stage_input.name == output:
                     return True
 
