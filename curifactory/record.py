@@ -336,7 +336,7 @@ class Record:
 
     def get_record_index(self, map=False) -> int:
         record_list = self.manager.records
-        if map and not self.manager.map_mode:
+        if map:
             record_list = self.manager.map.records
         for i, record in enumerate(record_list):
             if self == record:

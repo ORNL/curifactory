@@ -80,6 +80,32 @@ def test_output_used_check_when_record_copied_butunused(configured_test_manager)
     assert not dag.is_output_used_anywhere(r0, 1, "thing")
 
 
+def test_output_used_check_in_aggregate_when_not_expected(configured_test_manager):
+    """is_output_used_anywhere should return false when there is an aggregate using this record
+    but does not list the variable as part of expected state."""
+    configured_test_manager.map_mode = True
+
+    @cf.stage(outputs=["thing"])
+    def thing1(record):
+        return "green eggs and ham"
+
+    @cf.aggregate(outputs=["things"])
+    def all_the_things(record, records):
+        return "no"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
+    r0 = thing1(r0)
+
+    r1 = cf.Record(configured_test_manager, None)
+    r1 = all_the_things(r1, [r0])
+
+    configured_test_manager.map_records()
+    dag = configured_test_manager.map
+
+    r0 = dag.records[0]
+    assert not dag.is_output_used_anywhere(r0, 1, "thing")
+
+
 def test_output_used_check_in_aggregate(configured_test_manager):
     """is_output_used_anywhere should return true when there is an aggregate using this record."""
     configured_test_manager.map_mode = True
@@ -88,7 +114,7 @@ def test_output_used_check_in_aggregate(configured_test_manager):
     def thing1(record):
         return "green eggs and ham"
 
-    @cf.aggregate(outputs=["things"])
+    @cf.aggregate(expected_state=["thing"], outputs=["things"])
     def all_the_things(record, records):
         return "no"
 

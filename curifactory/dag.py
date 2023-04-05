@@ -84,15 +84,15 @@ class DAG:
         # check if any following records directly use in a stage or aggregate
         children = self.child_records(record)
         for child in children:
-            # check if we're direclty using it in a normal stage
+            # check if we're directly using it in a normal stage
             explicitly_used = self.is_output_used_anywhere(child, 0, output)
             if explicitly_used:
                 return True
 
             # check if there's an aggregate in which we _might_ be using it.
-            if child.is_aggregate:
-                # TODO: will eventually want to use the "expects_state" here
-                return True
+            # if child.is_aggregate:
+            #     # TODO: will eventually want to use the "expects_state" here
+            #     return True
 
         return False
 

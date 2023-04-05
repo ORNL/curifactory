@@ -579,11 +579,15 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             # but this is useful from a documentation and debugging standpoint, and is required
             # for DAG computation to work as expected.
             for expected_input in expected_state:
-                for record in records:
-                    if expected_input not in record.state_artifact_reps:
+                for prev_record in records:
+                    if expected_input not in prev_record.state_artifact_reps:
                         logging.warning(
                             "Expected state variable '%s' not found in %s"
-                            % (expected_input, record.get_reference_name())
+                            % (expected_input, prev_record.get_reference_name())
+                        )
+                    else:
+                        record.stage_inputs[-1].append(
+                            prev_record.state_artifact_reps[expected_input]
                         )
 
             # see note in stage
@@ -854,7 +858,7 @@ def _add_output_artifact(
             # NOTE: we don't use map=True for the get record index because we're still in map mode...
             # this should probably change at some point, where getindex also takes the current map_mode
             # into account
-            record.get_record_index(True),
+            record.get_record_index(),
             record.manager.current_stage_name,
             outputs[index],
             is_cached,
