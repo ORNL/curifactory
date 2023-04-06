@@ -9,6 +9,7 @@ def test_child_records_empty_for_blank_records(configured_test_manager):
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
     r1 = cf.Record(configured_test_manager, cf.ExperimentArgs("test1"))
 
+    configured_test_manager.map_mode = False
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
@@ -31,6 +32,7 @@ def test_child_records_after_make_copy(configured_test_manager):
     r0 = do_thing(r0)
     r1 = r0.make_copy(cf.ExperimentArgs("test1"))
 
+    configured_test_manager.map_mode = False
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
@@ -54,6 +56,7 @@ def test_output_used_check_when_no_following_stages(configured_test_manager):
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
     r0 = thing1(r0)
 
+    configured_test_manager.map_mode = False
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
@@ -75,6 +78,7 @@ def test_output_used_check_when_record_copied_butunused(configured_test_manager)
 
     r0.make_copy(cf.ExperimentArgs("test1"))
 
+    configured_test_manager.map_mode = False
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
@@ -101,6 +105,7 @@ def test_output_used_check_in_aggregate_when_not_expected(configured_test_manage
     r1 = cf.Record(configured_test_manager, None)
     r1 = all_the_things(r1, [r0])
 
+    configured_test_manager.map_mode = False
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
@@ -126,6 +131,7 @@ def test_output_used_check_in_aggregate(configured_test_manager):
     r1 = cf.Record(configured_test_manager, None)
     r1 = all_the_things(r1, [r0])
 
+    configured_test_manager.map_mode = False
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
@@ -148,6 +154,7 @@ def test_output_used_check_finds_output_in_later_input(configured_test_manager):
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
     thing2(thing1(r0))
 
+    configured_test_manager.map_mode = False
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
@@ -172,6 +179,7 @@ def test_output_used_check_finds_output_in_later_input_of_copy(configured_test_m
     r1 = r0.make_copy(cf.ExperimentArgs("test1"))
     thing2(r1)
 
+    configured_test_manager.map_mode = False
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
@@ -190,6 +198,7 @@ def test_single_stage_is_leaf(configured_test_manager):
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
     void_stares_back(r0)
 
+    configured_test_manager.map_mode = False
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
@@ -211,6 +220,7 @@ def test_output_used_elsewhere_is_not_leaf(configured_test_manager):
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
     thing2(thing1(r0))
 
+    configured_test_manager.map_mode = False
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
@@ -241,6 +251,7 @@ def test_single_record_execution_lists(
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
     thing1(r0)
 
+    configured_test_manager.map_mode = False
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
@@ -253,6 +264,7 @@ def test_single_record_execution_lists(
 @pytest.mark.parametrize(
     "cached,overwrite_stages,expected_execution_list",
     [
+        # fmt: off
         ([False, False], [], [(0, "thing1"), (0, "thing2")]),
         ([True, False], [], [(0, "thing2")]),
         ([True, True], [], []),
@@ -263,6 +275,7 @@ def test_single_record_execution_lists(
         ([True, True], ["thing1"], [(0, "thing1"), (0, "thing2")]),
         ([False, True], ["thing1"], [(0, "thing1"), (0, "thing2")]),
         ([False, False], ["thing1"], [(0, "thing1"), (0, "thing2")]),
+        # fmt: on
     ],
 )
 def test_single_record_double_stage_execution_lists(
@@ -282,6 +295,7 @@ def test_single_record_double_stage_execution_lists(
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
     thing2(thing1(r0))
 
+    configured_test_manager.map_mode = False
     configured_test_manager.map_records()
     dag = configured_test_manager.map
 
@@ -292,5 +306,182 @@ def test_single_record_double_stage_execution_lists(
     assert len(dag.execution_list) == len(expected_execution_list)
     assert set(dag.execution_list) == set(expected_execution_list)
 
+
+@pytest.mark.parametrize(
+    "cached,overwrite_stages,expected_execution_list",
+    [
+        # fmt: off
+        ([False, False, False], [], [(0, "thing1"), (0, "thing2"), (0, "thing3")]),
+        ([False, False, True], [], []),
+        ([False, True, False], [], [(0, "thing3")]),
+        ([True, False, False], [], [(0, "thing2"), (0, "thing3")]),
+        ([True, True, True], ["thing1"], [(0, "thing1"), (0, "thing2"), (0, "thing3")]),
+        ([True, False, True], ["thing1"], [(0, "thing1"), (0, "thing2"), (0, "thing3")]),
+        ([True, False, True], ["thing2"], [(0, "thing2"), (0, "thing3")]),
+        ([False, False, True], ["thing2"], [(0, "thing1"), (0, "thing2"), (0, "thing3")]),
+        # fmt: on
+    ],
+)
+def test_single_record_triple_stage_execution_lists(
+    configured_test_manager, cached, overwrite_stages, expected_execution_list
+):
+    configured_test_manager.map_mode = True
+    configured_test_manager.overwrite_stages = overwrite_stages
+
+    @cf.stage(outputs=["thing1"])
+    def thing1(record):
+        return 1
+
+    @cf.stage(inputs=["thing1"], outputs=["thing2"])
+    def thing2(record, thing1):
+        return thing1 + 1
+
+    @cf.stage(inputs=["thing2"], outputs=["thing3"])
+    def thing3(record, thing2):
+        return thing2 + 1
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    thing3(thing2(thing1(r0)))
+
+    configured_test_manager.map_mode = False
+    configured_test_manager.map_records()
+    dag = configured_test_manager.map
+
+    dag.artifacts[0].cached = cached[0]
+    dag.artifacts[1].cached = cached[1]
+    dag.artifacts[2].cached = cached[2]
+    dag.determine_execution_list()
+
+    assert len(dag.execution_list) == len(expected_execution_list)
+    assert set(dag.execution_list) == set(expected_execution_list)
+
+
+@pytest.mark.parametrize(
+    "cached,overwrite_stages,expected_execution_list",
+    [
+        # fmt: off
+        ([False, False, False], [], [(0, "thing1"), (0, "thing2"), (1, "thing3")]),
+        ([True, False, False], [], [(0, "thing2"), (1, "thing3")]),
+        ([True, True, True], [], []),
+        ([False, True, True], [], []),
+        ([False, False, True], [], [(0, "thing1"), (0, "thing2")]),
+        ([False, True, False], [], [(0, "thing1"), (1, "thing3")]),
+        ([True, True, False], [], [(1, "thing3")]),
+        ([True, False, True], [], [(0, "thing2")]),
+        ([True, True, True], ["thing1"], [(0, "thing1"), (0, "thing2"), (1, "thing3")]),
+        ([False, True, True], ["thing1"], [(0, "thing1"), (0, "thing2"), (1, "thing3")]),
+        ([False, False, True], ["thing1"], [(0, "thing1"), (0, "thing2"), (1, "thing3")]),
+        ([True, True, True], ["thing2"], [(0, "thing2")]),
+        ([True, True, True], ["thing3"], [(1, "thing3")]),
+        ([False, True, True], ["thing2"], [(0, "thing1"), (0, "thing2")]),
+        ([False, True, True], ["thing3"], [(0, "thing1"), (1, "thing3")]),
+        # fmt: on
+    ],
+)
+def test_double_record_triple_stage_execution_lists(
+    configured_test_manager, cached, overwrite_stages, expected_execution_list
+):
+    configured_test_manager.map_mode = True
+    configured_test_manager.overwrite_stages = overwrite_stages
+
+    @cf.stage(outputs=["thing1"])
+    def thing1(record):
+        return 1
+
+    @cf.stage(inputs=["thing1"], outputs=["thing2"])
+    def thing2(record, thing1):
+        return thing1 + 1
+
+    @cf.stage(inputs=["thing1"], outputs=["thing3"])
+    def thing3(record, thing1):
+        return thing1 + 2
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    thing1(r0)
+    r1 = r0.make_copy(cf.ExperimentArgs("test2"))
+    thing2(r0)
+    thing3(r1)
+
+    configured_test_manager.map_mode = False
+    configured_test_manager.map_records()
+    dag = configured_test_manager.map
+
+    dag.artifacts[0].cached = cached[0]
+    dag.artifacts[1].cached = cached[1]
+    dag.artifacts[2].cached = cached[2]
+    dag.determine_execution_list()
+
+
+@pytest.mark.parametrize(
+    "cached,overwrite_stages,expected_execution_list",
+    [
+        # fmt: off
+        ([False, False, False, False], [], [(0, "thing1"), (0, "thing2"), (1, "thing3"), (2, "agg_things")]),
+        ([False, False, False, True], [], []),
+        ([False, False, True, False], [], [(0, "thing1"), (0, "thing2"), (2, "agg_things")]),
+        ([False, True, False, False], [], [(0, "thing1"), (1, "thing3"), (2, "agg_things")]),
+        ([False, True, True, False], [], [(2, "agg_things")]),
+        ([True, True, True, False], [], [(2, "agg_things")]),
+        ([True, True, True, True], ["thing1"], [(0, "thing1"), (0, "thing2"), (1, "thing3"), (2, "agg_things")]),
+        ([False, True, True, True], ["thing1"], [(0, "thing1"), (0, "thing2"), (1, "thing3"), (2, "agg_things")]),
+        ([True, True, False, True], ["thing2"], [(0, "thing2"), (1, "thing3"), (2, "agg_things")]),
+        ([True, False, True, True], ["thing3"], [(0, "thing2"), (1, "thing3"), (2, "agg_things")]),
+        ([True, True, True, True], ["thing2"], [(0, "thing2"), (2, "agg_things")]),
+        ([True, True, True, True], ["thing3"], [(1, "thing3"), (2, "agg_things")]),
+        ([False, False, False, True], ["thing2"], [(0, "thing1"), (0, "thing2"), (1, "thing3"), (2, "agg_things")]),
+        ([False, False, False, True], ["thing3"], [(0, "thing1"), (0, "thing2"), (1, "thing3"), (2, "agg_things")]),
+        ([False, False, True, True], ["thing2"], [(0, "thing1"), (0, "thing2"), (2, "agg_things")]),
+        ([False, True, False, True], ["thing3"], [(0, "thing1"), (1, "thing3"), (2, "agg_things")]),
+        # fmt: on
+    ],
+)
+def test_triple_record_quadruple_stage_execution_lists(
+    configured_test_manager, cached, overwrite_stages, expected_execution_list
+):
+    configured_test_manager.map_mode = True
+    configured_test_manager.overwrite_stages = overwrite_stages
+
+    @cf.stage(outputs=["thing1"])
+    def thing1(record):
+        return 1
+
+    @cf.stage(inputs=["thing1"], outputs=["thing"])
+    def thing2(record, thing1):
+        return thing1 + 1
+
+    @cf.stage(inputs=["thing1"], outputs=["thing"])
+    def thing3(record, thing1):
+        return thing1 + 2
+
+    @cf.aggregate(expected_state=["thing"], outputs=["things"])
+    def agg_things(record, records):
+        total = 0
+        for record in records:
+            total += record.state["thing"]
+        return total
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    thing1(r0)
+    r1 = r0.make_copy(cf.ExperimentArgs("test2"))
+    thing2(r0)
+    thing3(r1)
+    r2 = cf.Record(configured_test_manager, None)
+    agg_things(r2, [r0, r1])
+
+    configured_test_manager.map_mode = False
+    configured_test_manager.map_records()
+    dag = configured_test_manager.map
+
+    dag.artifacts[0].cached = cached[0]
+    dag.artifacts[1].cached = cached[1]
+    dag.artifacts[2].cached = cached[2]
+    dag.artifacts[3].cached = cached[3]
+    dag.determine_execution_list()
+
+    assert len(dag.execution_list) == len(expected_execution_list)
+    assert set(dag.execution_list) == set(expected_execution_list)
+
+
+# TODO: tests with two records two stages (single record first stage, two records run second stage)
 
 # TODO: also tests where the outputs of a stage are each used as an input in a different stage
