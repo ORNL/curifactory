@@ -610,8 +610,10 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             mngr.map_mode = False
             logging.debug("Constructing record map")
             mngr.map_records()
-            mngr.map.build_execution_chain()
-            logging.debug("Execution map: %s" % mngr.map.execution_chain)
+            mngr.map.build_execution_trees()
+            for tree in mngr.map.execution_trees:
+                logging.debug(str(tree))
+            # logging.debug("Execution map: %s" % mngr.map.execution_chain)
             logging.info("Stage map collected")
 
             if map_only:

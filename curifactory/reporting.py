@@ -879,18 +879,20 @@ def map_full_svg(manager, detailed=False, colors=None):
         _add_record_subgraph(dot, index, record, manager, detailed)
 
     # add record connections to any aggregate stages
-    for index, record in enumerate(manager.records):
-        for prev_record in record.input_records:
-            if prev_record == record:
-                continue
-            # prev_record_index =
-            for jndex, manager_record in enumerate(manager.records):
-                if manager_record == prev_record:
-                    dot.edge(
-                        f"{jndex}_{manager.records[jndex].stages[-1]}",
-                        f"{index}_{record.stages[0]}",
-                        ltail=f"cluster_{jndex}",
-                    )
+    # NOTE: (4/6/23) - because of the new expected state stuff, this is
+    # actually no longer strictly necessary
+    # for index, record in enumerate(manager.records):
+    #     for prev_record in record.input_records:
+    #         if prev_record == record:
+    #             continue
+    #         # prev_record_index =
+    #         for jndex, manager_record in enumerate(manager.records):
+    #             if manager_record == prev_record:
+    #                 dot.edge(
+    #                     f"{jndex}_{manager.records[jndex].stages[-1]}",
+    #                     f"{index}_{record.stages[0]}",
+    #                     ltail=f"cluster_{jndex}",
+    #                 )
 
     dot.format = "svg"
     return dot

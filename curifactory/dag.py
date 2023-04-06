@@ -3,6 +3,29 @@
 from curifactory.record import MapArtifactRepresentation, Record
 
 
+class ExecutionNode:
+    def __init__(self, record: Record, stage_name: str):
+        self.record = record
+        self.stage_name = stage_name
+        self.parent: ExecutionNode = None
+        self.dependencies: list[ExecutionNode] = []
+
+    def chain_rep(self) -> tuple[int, str]:
+        """Return this node represented as a tuple of the record index and stage name."""
+        return (self.record.get_record_index(True), self.stage_name)
+
+    def __str__(self):
+        return self.string_rep()
+
+    def string_rep(self, level=0) -> str:
+        string = "\n"
+        string += "\t" * level
+        string += f"({self.record.get_record_index(True)}, {self.stage_name})"
+        for child in self.dependencies:
+            string += child.string_rep(level + 1)
+        return string
+
+
 class DAG:
     def __init__(self):
         self.records: list[Record] = []
@@ -11,6 +34,11 @@ class DAG:
         All of record's stage inputs and outputs should correctly index into this."""
 
         self.execution_chain: list[tuple[int, str]] = []
+        """NO"""
+
+        self.execution_trees: list[ExecutionNode] = []
+
+        self.need_to_execute: list[tuple[int, str]] = []
 
     def get_record_string(self, record_index: int) -> str:
         """Get a string representation for a record."""
@@ -75,6 +103,7 @@ class DAG:
         """Check if the specified output is used as input in any stage"""
         # Iterate each following stage in that record and see if the requested output
         # is in any of the inputs
+        # TODO: instead of checking by name, we should be checking by the artifact id
         for i in range(stage_search_start_index, len(record.stages)):
             for stage_input_index in record.stage_inputs[i]:
                 stage_input = self.artifacts[stage_input_index]
@@ -132,8 +161,12 @@ class DAG:
             if not stage_output.cached:
                 cached = False
 
-        if cached:
+        if cached and not record.manager.overwrite:
             # no need to execute this stage, don't prepend to execution chain
+            # TODO: will need to continue the recursive chain in "silent" mode
+            # to check for overwrite-stage, at which point any in betweens _do_
+            # get added to the chain. and we need to do the full build recursive
+            # from below
             return chain
 
         # need to execute, prepend to chain
@@ -144,7 +177,8 @@ class DAG:
         for stage_input_index in record.stage_inputs[stage_index]:
             stage_input: MapArtifactRepresentation = self.artifacts[stage_input_index]
 
-            # TODO will need diff logic for aggregate?
+            # TODO will need diff logic for aggregate? (no I actually don't think so, I think the expected
+            # state addition just makes this work)
             prereq_record = self.records[stage_input.record_index]
             prereq_stage = stage_input.stage_name
             chain = self.build_execution_chain_recursive(
@@ -152,6 +186,37 @@ class DAG:
             )
 
         return chain
+
+    def build_execution_tree_recursive(
+        self, record: Record, stage: str
+    ) -> ExecutionNode:
+        """Recursively builds the stage dependency tree based on inputs/outputs. This does
+        not condition anything based on cache or overwrite status, this is exclusively the
+        "inverted" stage path (provided stage is the root)."""
+        this_node = ExecutionNode(record, stage)
+
+        # go through each input and get the record and stage that provides it as an output - these are the dependencies
+        # recursively create nodes for them
+        stage_index = record.stages.index(stage)
+        for stage_input_index in record.stage_inputs[stage_index]:
+            stage_input: MapArtifactRepresentation = self.artifacts[stage_input_index]
+
+            prereq_record = self.records[stage_input.record_index]
+            prereq_stage = stage_input.stage_name
+
+            sub_node = self.build_execution_tree_recursive(prereq_record, prereq_stage)
+            sub_node.parent = this_node
+            this_node.dependencies.append(sub_node)
+
+        return this_node
+
+    def build_execution_trees(self):
+        leaves = self.find_leaves()
+        for leaf in leaves:
+            leaf_record = self.records[leaf[0]]
+            leaf_stage = leaf[1]
+            tree = self.build_execution_tree_recursive(leaf_record, leaf_stage)
+            self.execution_trees.append(tree)
 
     def build_execution_chain(self):
         """Build up the full set of stages that need to run based on all of the leaves in
@@ -164,3 +229,5 @@ class DAG:
             self.execution_chain = self.build_execution_chain_recursive(
                 leaf_record, leaf_stage, self.execution_chain
             )
+
+        # remove any duplicates (stages that produce multiple needed outputs will be added for each output)
