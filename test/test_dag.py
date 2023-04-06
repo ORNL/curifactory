@@ -1,3 +1,5 @@
+import pytest
+
 import curifactory as cf
 
 
@@ -215,3 +217,80 @@ def test_output_used_elsewhere_is_not_leaf(configured_test_manager):
     r0 = dag.records[0]
     assert not dag.is_leaf(r0, "thing1")
     assert dag.is_leaf(r0, "thing2")
+
+
+@pytest.mark.parametrize(
+    "cached,overwrite_stages,expected_execution_list",
+    [
+        (False, [], [(0, "thing1")]),
+        (True, [], []),
+        (False, ["thing1"], [(0, "thing1")]),
+        (True, ["thing1"], [(0, "thing1")]),
+    ],
+)
+def test_single_record_execution_lists(
+    configured_test_manager, cached, overwrite_stages, expected_execution_list
+):
+    configured_test_manager.map_mode = True
+    configured_test_manager.overwrite_stages = overwrite_stages
+
+    @cf.stage(outputs=["thing1"])
+    def thing1(record):
+        return 1
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    thing1(r0)
+
+    configured_test_manager.map_records()
+    dag = configured_test_manager.map
+
+    dag.artifacts[0].cached = cached
+    dag.determine_execution_list()
+
+    assert dag.execution_list == expected_execution_list
+
+
+@pytest.mark.parametrize(
+    "cached,overwrite_stages,expected_execution_list",
+    [
+        ([False, False], [], [(0, "thing1"), (0, "thing2")]),
+        ([True, False], [], [(0, "thing2")]),
+        ([True, True], [], []),
+        ([False, True], [], []),
+        ([False, True], ["thing2"], [(0, "thing1"), (0, "thing2")]),
+        ([True, False], ["thing2"], [(0, "thing2")]),
+        ([True, True], ["thing2"], [(0, "thing2")]),
+        ([True, True], ["thing1"], [(0, "thing1"), (0, "thing2")]),
+        ([False, True], ["thing1"], [(0, "thing1"), (0, "thing2")]),
+        ([False, False], ["thing1"], [(0, "thing1"), (0, "thing2")]),
+    ],
+)
+def test_single_record_double_stage_execution_lists(
+    configured_test_manager, cached, overwrite_stages, expected_execution_list
+):
+    configured_test_manager.map_mode = True
+    configured_test_manager.overwrite_stages = overwrite_stages
+
+    @cf.stage(outputs=["thing1"])
+    def thing1(record):
+        return 1
+
+    @cf.stage(inputs=["thing1"], outputs=["thing2"])
+    def thing2(record, thing1):
+        return thing1 + 1
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    thing2(thing1(r0))
+
+    configured_test_manager.map_records()
+    dag = configured_test_manager.map
+
+    dag.artifacts[0].cached = cached[0]
+    dag.artifacts[1].cached = cached[1]
+    dag.determine_execution_list()
+
+    assert len(dag.execution_list) == len(expected_execution_list)
+    assert set(dag.execution_list) == set(expected_execution_list)
+
+
+# TODO: also tests where the outputs of a stage are each used as an input in a different stage

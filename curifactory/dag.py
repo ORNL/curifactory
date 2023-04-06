@@ -37,6 +37,11 @@ class DAG:
 
         self.execution_trees: list[ExecutionNode] = []
 
+    def analyze(self):
+        """Construct execution trees and execution list."""
+        self.build_execution_trees()
+        self.determine_execution_list()
+
     def get_record_string(self, record_index: int) -> str:
         """Get a string representation for a record."""
         record = self.records[record_index]
@@ -168,6 +173,7 @@ class DAG:
         return this_node
 
     def build_execution_trees(self):
+        self.execution_trees = []
         leaves = self.find_leaves()
         for leaf in leaves:
             leaf_record = self.records[leaf[0]]
@@ -177,6 +183,7 @@ class DAG:
 
     def determine_execution_list(self):
         """I've got them on the list, they'll none of them be missed."""
+        self.execution_list = []
         for node in self.execution_trees:
             self.determine_execution_list_recursive(node, False)
 

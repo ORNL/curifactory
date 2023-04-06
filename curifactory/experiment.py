@@ -610,8 +610,6 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             mngr.map_mode = False
             logging.debug("Constructing record map")
             mngr.map_records()
-            mngr.map.build_execution_trees()
-            mngr.map.determine_execution_list()
             for tree in mngr.map.execution_trees:
                 logging.debug(str(tree))
             logging.debug("Execution list: %s" % mngr.map.execution_list)

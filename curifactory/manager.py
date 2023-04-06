@@ -290,6 +290,8 @@ class ArtifactManager:
         self.records.clear()
         self.artifacts.clear()
 
+        self.map.analyze()
+
     # update_type can either be "start" or "continue"
     # start type means "stage start", not record start, though we could check if
     # it hasn't been started yet.
