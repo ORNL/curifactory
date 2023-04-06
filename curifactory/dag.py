@@ -19,7 +19,7 @@ class ExecutionNode:
 
     def string_rep(self, level=0) -> str:
         string = "\n"
-        string += "\t" * level
+        string += "  " * level
         string += f"({self.record.get_record_index(True)}, {self.stage_name})"
         for child in self.dependencies:
             string += child.string_rep(level + 1)
@@ -33,12 +33,9 @@ class DAG:
         """This should essentially be an equivalent copy of ArtifactManager.artifacts.
         All of record's stage inputs and outputs should correctly index into this."""
 
-        self.execution_chain: list[tuple[int, str]] = []
-        """NO"""
+        self.execution_list: list[tuple[int, str]] = []
 
         self.execution_trees: list[ExecutionNode] = []
-
-        self.need_to_execute: list[tuple[int, str]] = []
 
     def get_record_string(self, record_index: int) -> str:
         """Get a string representation for a record."""
@@ -50,6 +47,10 @@ class DAG:
             output += "\nStage: " + stage
             if self.is_leaf(record, stage):
                 output += " (leaf)"
+            if len(record.input_records) > 0:
+                output += "\n\tInput records:"
+                for input_record in record.input_records:
+                    output += f"\n\t\t{input_record.get_reference_name(True)}"
             if len(record.stage_inputs[index]) > 0:
                 output += "\n\tInputs:"
                 for stage_input_index in record.stage_inputs[index]:
@@ -57,7 +58,7 @@ class DAG:
                         stage_input = self.artifacts[stage_input_index]
                         output += f"\n\t\t{stage_input.name}"
                         if stage_input.cached:
-                            output += " (cached)"
+                            output += f" (cached) [{stage_input.metadata['manager_run_info']['reference']}]"
             if len(record.stage_outputs[index]) > 0:
                 output += "\n\tOutputs:"
                 for stage_output_index in record.stage_outputs[index]:
@@ -65,10 +66,6 @@ class DAG:
                     output += f"\n\t\t{stage_output.name}"
                     if stage_output.cached:
                         output += f" (cached) [{stage_output.metadata['manager_run_info']['reference']}]"
-            if len(record.input_records) > 0:
-                output += "\n\tInput records:"
-                for input_record in record.input_records:
-                    output += f"\n\t\t{input_record.get_reference_name(True)}"
         return output
 
     def print_experiment_map(self):
@@ -146,47 +143,7 @@ class DAG:
 
         return leaves
 
-    def build_execution_chain_recursive(
-        self, record: Record, stage: str, chain: list[tuple[int, str]]
-    ) -> list[tuple[int, str]]:
-        """Determines if the requested stage will need to execute or not, and if so prepends itself
-        and all prior stages needed to execute by recursively calls."""
-        stage_index = record.stages.index(stage)
-
-        # first check if all of the outputs for this stage are cached, if any one of them is not,
-        # will need to add to execution chain
-        cached = True
-        for stage_output_index in record.stage_outputs[stage_index]:
-            stage_output: MapArtifactRepresentation = self.artifacts[stage_output_index]
-            if not stage_output.cached:
-                cached = False
-
-        if cached and not record.manager.overwrite:
-            # no need to execute this stage, don't prepend to execution chain
-            # TODO: will need to continue the recursive chain in "silent" mode
-            # to check for overwrite-stage, at which point any in betweens _do_
-            # get added to the chain. and we need to do the full build recursive
-            # from below
-            return chain
-
-        # need to execute, prepend to chain
-        chain.insert(0, (record.get_record_index(True), stage))
-
-        # now recursively go through previous stages whose output is needed for this one and
-        # continue to build execution chain.
-        for stage_input_index in record.stage_inputs[stage_index]:
-            stage_input: MapArtifactRepresentation = self.artifacts[stage_input_index]
-
-            # TODO will need diff logic for aggregate? (no I actually don't think so, I think the expected
-            # state addition just makes this work)
-            prereq_record = self.records[stage_input.record_index]
-            prereq_stage = stage_input.stage_name
-            chain = self.build_execution_chain_recursive(
-                prereq_record, prereq_stage, chain
-            )
-
-        return chain
-
+    # TODO: rename stage tree
     def build_execution_tree_recursive(
         self, record: Record, stage: str
     ) -> ExecutionNode:
@@ -218,16 +175,138 @@ class DAG:
             tree = self.build_execution_tree_recursive(leaf_record, leaf_stage)
             self.execution_trees.append(tree)
 
-    def build_execution_chain(self):
-        """Build up the full set of stages that need to run based on all of the leaves in
-        the DAG."""
-        self.execution_chain = []
-        leaves = self.find_leaves()
-        for leaf in leaves:
-            leaf_record = self.records[leaf[0]]
-            leaf_stage = leaf[1]
-            self.execution_chain = self.build_execution_chain_recursive(
-                leaf_record, leaf_stage, self.execution_chain
-            )
+    def determine_execution_list(self):
+        """I've got them on the list, they'll none of them be missed."""
+        for node in self.execution_trees:
+            self.determine_execution_list_recursive(node, False)
 
-        # remove any duplicates (stages that produce multiple needed outputs will be added for each output)
+    def determine_execution_list_recursive(
+        self, node: ExecutionNode, overwrite_check_only: False
+    ) -> bool:
+        """Determines if the requested stage will need to execute or not, and if so prepends itself
+        and all prior stages needed to execute by recursively calls."""
+        stage_index = node.record.stages.index(node.stage_name)
+
+        # first check if all of the outputs for this stage are cached, if any one of them is not,
+        # will need to add to execution chain
+        cached = True
+        for stage_output_index in node.record.stage_outputs[stage_index]:
+            stage_output: MapArtifactRepresentation = self.artifacts[stage_output_index]
+            if not stage_output.cached:
+                cached = False
+
+        # -- overwrite seek mode --
+        # (in this mode we add the node if and only if there's a sub node that's being overwritten.)
+
+        overwrite_stage_found = False
+        """set to true if either this stage is overwrite subtree finds overwrite"""
+
+        if node.stage_name in node.record.manager.overwrite_stages:
+            overwrite_stage_found = True
+
+        # we don't bother stepping into this part if _this_ stage is specified to overwrite,
+        # because in the dependencies required mode below we'll be going on to check dependency
+        # stages normally anyway.
+        if (
+            cached and not node.record.manager.overwrite and not overwrite_stage_found
+        ) or overwrite_check_only:
+            # recursively go through previous stages whose output is needed for this one and
+            # look for a stage on the manager's overwrite stages list.
+            for sub_node in node.dependencies:
+                overwrite_found = self.determine_execution_list_recursive(
+                    sub_node, True
+                )
+                if overwrite_found:
+                    overwrite_stage_found = True
+
+            # if no dependencies need to be overwritten, we're good to stop going down.
+            if not overwrite_stage_found:
+                return False
+            # otherwise continue into dependencies required mode (because we need to execute
+            # this stage)
+
+        # -- dependencies required mode --
+
+        # need to execute, off with its head!
+        if node.chain_rep() not in self.execution_list:
+            self.execution_list.insert(0, node.chain_rep())
+            # NOTE: for some weird reason in how I have this structured, if an overwrite stage
+            # is found, the ordering of the execution list is in reverse of what it's supposed to be.
+            # For right now that doesn't really matter, but if we ever get fancy with using the DAG
+            # to directly run functions, it will be important to fix this.
+
+        # now recursively go through previous stages whose output is needed for this one and
+        # continue to build execution list.
+        for sub_node in node.dependencies:
+            self.determine_execution_list_recursive(sub_node, False)
+
+        # the output from this is technically only checked for inside the overwrite seek mode
+        # I think
+        return overwrite_stage_found
+
+    # NOTE: this version actually works (I think) without having computed the trees.
+    # def determine_execution_list_recursive(self, node: ExecutionNode, overwrite_check_only: False) -> bool:
+    #     """Determines if the requested stage will need to execute or not, and if so prepends itself
+    #     and all prior stages needed to execute by recursively calls."""
+    #     stage_index = node.record.stages.index(node.stage_name)
+
+    #     # first check if all of the outputs for this stage are cached, if any one of them is not,
+    #     # will need to add to execution chain
+    #     cached = True
+    #     for stage_output_index in node.record.stage_outputs[stage_index]:
+    #         stage_output: MapArtifactRepresentation = self.artifacts[stage_output_index]
+    #         if not stage_output.cached:
+    #             cached = False
+
+    #     # -- overwrite seek mode --
+    #     # (in this mode we add the node if and only if there's a sub node that's being overwritten.)
+
+    #     overwrite_stage_found = False
+    #     """set to true if either this stage is overwrite subtree finds overwrite"""
+
+    #     if node.stage_name in node.record.manager.overwrite_stages:
+    #         overwrite_stage_found = True
+
+    #     # we don't bother stepping into this part if _this_ stage is specified to overwrite,
+    #     # because in the dependencies required mode below we'll be going on to check dependency
+    #     # stages normally anyway.
+    #     if (cached and not node.record.manager.overwrite and not overwrite_stage_found) or overwrite_check_only:
+
+    #         # recursively go through previous stages whose output is needed for this one and
+    #         # look for a stage on the manager's overwrite stages list.
+    #         for stage_input_index in node.record.stage_inputs[stage_index]:
+    #             stage_input: MapArtifactRepresentation = self.artifacts[stage_input_index]
+
+    #             prereq_record = self.records[stage_input.record_index]
+    #             prereq_stage = stage_input.stage_name
+    #             overwrite_found = self.determine_execution_list_recursive(prereq_record, prereq_stage, True)
+
+    #             if overwrite_found:
+    #                 overwrite_stage_found = True
+
+    #         # if no dependencies need to be overwritten, we're good to stop going down.
+    #         if not overwrite_stage_found:
+    #             return False
+    #         # otherwise continue into dependencies required mode (because we need to execute
+    #         # this stage)
+
+    #     # -- dependencies required mode --
+
+    #     # need to execute, off with its head!
+    #     if node.chain_rep() not in self.execution_list:
+    #         self.execution_list.append(node.chain_rep())
+
+    #     # now recursively go through previous stages whose output is needed for this one and
+    #     # continue to build execution list.
+    #     for stage_input_index in node.record.stage_inputs[stage_index]:
+    #         stage_input: MapArtifactRepresentation = self.artifacts[stage_input_index]
+
+    #         # TODO will need diff logic for aggregate? (no I actually don't think so, I think the expected
+    #         # state addition just makes this work)
+    #         prereq_record = self.records[stage_input.record_index]
+    #         prereq_stage = stage_input.stage_name
+    #         self.determine_execution_list_recursive(prereq_record, prereq_stage, False)
+
+    #     # the output from this is technically only checked for inside the overwrite seek mode
+    #     # I think
+    #     return overwrite_stage_found
