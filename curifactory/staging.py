@@ -32,8 +32,25 @@ class EmptyCachersError(Exception):
     pass
 
 
+class ExecutingWithSkippedInputError(Exception):
+    pass
+
+
 class CachersMismatchError(Exception):
     pass
+
+
+# TODO: this doesn't belong here but not sure where to put it
+class SkippedOutput:
+    """An object placed into record state when a stage's execution is skipped based
+    on the DAG. This is so that the inputs check at the beginning of the stage (prior
+    to DAG execution check) does not fail."""
+
+    def __init__(
+        self, record: Record, stage_name: str, artifact_rep: ArtifactRepresentation
+    ):
+        self.artifact = artifact_rep
+        self.dag_rep = (record.get_record_index(), stage_name)
 
 
 def _log_stats(
@@ -289,26 +306,50 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                 _get_output_representations_for_map(record, outputs, cachers, None)
                 return record
 
-            # check for cached outputs and lazy load inputs if needed
+            # determine if we need to execute this stage and handle any
+            # cached values.
+            execute_stage = True
             pre_cache_time_start = time.perf_counter()  # time to load from cache
             record.manager.lock()
-            cache_valid = _check_cached_outputs(name, record, outputs, cachers)
-            if cache_valid:
-                # get previous reportables if available
-                _check_cached_reportables(name, record)
 
-                # if we've hit this point, we will be returning early/not executing
-                # the stage because all outputs are found. The process of checking
-                # cached outputs should correctly add all the necessary tracked paths,
-                # so to transfer these paths into a store full run, we just need
-                # the below call
-                # NOTE: I _believe_ that we also get metadata from this because
-                # the load_metadata will have entered the metadata path already.
-                # this will need to be tested
-                record.store_tracked_paths()
+            # if we have an execution list from our stage DAG, use that
+            # to determine if this stage executes or not.
+            if record.manager.map is not None:
+                stage_rep = (record.get_record_index(), name)
+                if stage_rep not in record.manager.map.execution_list:
+                    logging.debug('DAG-indicated stage skip "%s".' % str(stage_rep))
+                    _dag_skip_check_cached_outputs(name, record, outputs, cachers)
+
+                    # grab any possible previous reportables so they still end up in report.
+                    _check_cached_reportables(name, record)
+                    record.store_tracked_paths()
+                    execute_stage = False
+                else:
+                    # the representation is in the execution list, so execute!
+                    execute_stage = True
+            # otherwise, proceed normally with cache and load checks
+            else:
+                cache_valid = _check_cached_outputs(name, record, outputs, cachers)
+                if cache_valid:
+                    # get previous reportables if available
+                    _check_cached_reportables(name, record)
+
+                    # if we've hit this point, we will be returning early/not executing
+                    # the stage because all outputs are found. The process of checking
+                    # cached outputs should correctly add all the necessary tracked paths,
+                    # so to transfer these paths into a store full run, we just need
+                    # the below call
+                    # NOTE: I _believe_ that we also get metadata from this because
+                    # the load_metadata will have entered the metadata path already.
+                    # this will need to be tested
+                    record.store_tracked_paths()
+                    execute_stage = False
+                else:
+                    # at least one output wasn't cached, so execute order 66!
+                    execute_stage = True
 
             # check each input for Lazy objects and load them if we know we have to execute this stage
-            if not cache_valid:
+            if execute_stage:
                 for function_input in function_inputs:
                     if (
                         type(function_inputs[function_input]) == Lazy
@@ -320,10 +361,18 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                         function_inputs[function_input] = function_inputs[
                             function_input
                         ].load()
+                    # make sure a skipped output hasn't made it through - this would indicate
+                    # a mistake in the DAG or perhaps the user didn't correctly list all expected
+                    # state inputs in an aggregate
+                    if type(function_inputs[function_input]) == SkippedOutput:
+                        raise ExecutingWithSkippedInputError(
+                            "Input '%s' was never computed, indicating a DAG error. Try running with '--no-map'."
+                            % function_input
+                        )
 
             record.manager.unlock()
             pre_cache_time_end = time.perf_counter()
-            if cache_valid:
+            if not execute_stage:
                 post_mem_usage = psutil.Process().memory_info().rss
                 post_footprint = 0
                 if os.name != "nt":
@@ -778,6 +827,40 @@ def _get_output_representations_for_map(
     return artifacts
 
 
+def _dag_skip_check_cached_outputs(
+    stage_name: str, record, outputs: list[str], cachers, records=None
+):
+    """Checks for cached values and loads any relevant metadata into artifact representations.
+    This function does not actually load values themselves, meant to be called for a skipped stage
+    in dag-based execution."""
+    if cachers == []:
+        raise EmptyCachersError(
+            "Do not use '[]' for cachers. This will always short-circuit because there is nothing that isn't cached."
+        )
+
+    skipped_function_outputs = []
+    for i, output_name in enumerate(outputs):
+        logging.debug("Checking cache status (not loading into memory.)")
+
+        cacher = None
+        metadata = None
+        is_cached = False
+        if cachers is not None:
+            if cachers[i].check():
+                cachers[i].load_metadata()
+
+                cacher = cachers[i]
+                metadata = cachers[i].metadata
+                is_cached = True
+        artifact = _add_output_artifact(
+            record, None, outputs, i, metadata, cacher, is_cached
+        )
+        # TODO: skippedoutput only if not cached. Otherwise, add a resolve ref
+        output = SkippedOutput(record, stage_name, artifact)
+        skipped_function_outputs.append(output)
+        record.state[str(outputs[i])] = output
+
+
 def _check_cached_outputs(
     stage_name: str, record, outputs: list[str], cachers, records=None
 ) -> bool:
@@ -803,9 +886,6 @@ def _check_cached_outputs(
                     outputs[i].cacher = cachers[i]
                     # we set the output to just be the Lazy instance for now
                     output = outputs[i]
-                    # TODO: (3/21/2023) is this going to correctly send to store if we
-                    # never actually call load in later stages? at least the base path will,
-                    # from load_metadata below which calls get_path, but this seems...?
                 else:
                     output = cachers[i].load()
                 cachers[i].load_metadata()
