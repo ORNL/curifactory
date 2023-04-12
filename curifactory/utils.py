@@ -7,6 +7,7 @@ import platform
 import shutil
 import subprocess
 import sys
+from typing import Any
 
 from rich import get_console, reconfigure
 from rich.logging import RichHandler
@@ -18,6 +19,8 @@ CONFIGURATION_FILE = "curifactory_config.json"
 
 EDITORS = ["vim", "nvim", "emacs", "nano", "vi"]
 """The list of possible editor exec names to test for getting a valid text editor."""
+
+OBJECT_PREVIEW_STRING_LENGTH = 30
 
 
 def get_configuration() -> dict[str, str]:
@@ -306,6 +309,24 @@ def set_logging_prefix(prefix):
         return record
 
     logging.setLogRecordFactory(new_factory)
+
+
+def preview_object(object: Any) -> str:
+    """Get a small string representation of an object that fits nicely
+    in a single line and includes shape information if relevant."""
+    preview = f"({type(object).__name__}) {str(object)[:OBJECT_PREVIEW_STRING_LENGTH]}"
+    if len(str(object)) > OBJECT_PREVIEW_STRING_LENGTH:
+        preview += "..."
+    if hasattr(object, "shape"):
+        shape = None
+        if callable(getattr(object, "shape", None)):
+            shape = object.shape()
+        else:
+            shape = object.shape
+        preview += f" shape: {shape}"
+    elif hasattr(object, "__len__"):
+        preview += f" len: {len(object)}"
+    return preview
 
 
 def init_logging(

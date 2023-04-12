@@ -6,7 +6,7 @@ import logging
 import os
 import shutil
 
-from curifactory import hashing
+from curifactory import hashing, utils
 from curifactory.caching import Lazy
 from curifactory.reporting import Reportable
 
@@ -383,21 +383,13 @@ class ArtifactRepresentation:
         # TODO: (3/21/2023) possibly have "files" which would be cachers.cached_files?
         self.init_record = record
         self.name = name
-        self.string = f"({type(artifact).__name__}) {str(artifact)[:20]}"
-        if len(str(artifact)) > 20:
-            self.string += "..."
-        if hasattr(artifact, "shape"):
-            shape = None
-            if callable(getattr(artifact, "shape", None)):
-                shape = artifact.shape()
-            else:
-                shape = artifact.shape
-            self.string += f" shape: {shape}"
-        elif hasattr(artifact, "__len__"):
-            self.string += f" len: {len(artifact)}"
+        self.string = utils.preview_object(artifact)
 
         self.cacher = cacher
         self.metadata = metadata
+
+        if artifact is None and metadata is not None and "preview" in metadata:
+            self.string = metadata["preview"]
 
         self.file = "no file"
 

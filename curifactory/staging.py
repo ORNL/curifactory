@@ -1094,6 +1094,7 @@ def _store_outputs(
             # note that if we got to this point, we actually ran the stage code, so
             # we generate _new_ metadata
             cachers[index].collect_metadata()
+            cachers[index].metadata["preview"] = artifact.string
             metadata = cachers[index].save_metadata()
             artifact.metadata = metadata
 
