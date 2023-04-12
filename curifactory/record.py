@@ -82,6 +82,9 @@ class Record:
         self.stored_paths: list[str] = []
         """A list of paths that have been copied into a full store folder. These are
         the source paths, not the destination paths."""
+        self.stage_cachers: list = None
+        """A list of the initialized cachers set for the current stage, if any. This is so that a stage
+        can get access to output path information if it needs."""
 
         self.set_hash()
         if not hide:

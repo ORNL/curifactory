@@ -3,9 +3,11 @@
 import json
 import os
 
+import pytest
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
 from curifactory import ExperimentArgs, Record, aggregate, hashing, stage
+from curifactory.caching import JsonCacher
 
 
 def test_record_sets_hash(configured_test_manager):
@@ -156,3 +158,15 @@ def test_record_make_copy_doesnot_add_record_to_manager_when_specified(
 
     r0.make_copy(ExperimentArgs(name="test1"), add_to_manager=False)
     assert len(configured_test_manager.records) == 1
+
+
+@pytest.mark.skip
+def test_record_has_access_to_cachers_in_stage(configured_test_manager):
+    """Inside a stage, record.stage_cachers should reflect the instantiated
+    cachers that will be used to save associated outputs."""
+
+    @stage(outputs=["test1", "test2"], cachers=[JsonCacher, JsonCacher(prefix="wat")])
+    def do_things(record):
+        assert len(record.state_cachers) == 2
+        # path1 = record.state_cachers[0].get_path()
+        # path2 = record.state_cachers[1].get_path()

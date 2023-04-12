@@ -291,6 +291,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                             cachers[i].name = outputs[i].name
                         else:
                             cachers[i].name = outputs[i]
+            record.stage_cachers = cachers
 
             # at this point we've grabbed all information we would need if we're
             # just mapping out the stages, so return at this point.
@@ -302,6 +303,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                 # we obviously can't add the actual artifacts (there are none without running!),
                 # we just add the string key and a name, so record __repr__ has something to use
                 _get_output_representations_for_map(record, outputs, cachers, None)
+                record.stage_cachers = None
                 return record
 
             # determine if we need to execute this stage and handle any
@@ -393,6 +395,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                 utils.set_logging_prefix("")
                 record.manager.stage_active = False
                 record.manager.update_map_progress(record, "continue")
+                record.stage_cachers = None
                 return record
 
             # run the function
@@ -476,6 +479,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             utils.set_logging_prefix("")
             record.manager.stage_active = False
             record.manager.update_map_progress(record, "continue")
+            record.stage_cachers = None
             return record
 
         return wrapper
@@ -655,6 +659,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                             cachers[i].name = outputs[i].name
                         else:
                             cachers[i].name = outputs[i]
+            record.stage_cachers = cachers
 
             # at this point we've grabbed all information we would need if we're
             # just mapping out the stages, so return at this point.
@@ -666,6 +671,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 # we obviously can't add the actual artifacts (there are none without running!),
                 # we just add the string key and a name, so record __repr__ has something to use
                 _get_output_representations_for_map(record, outputs, cachers, records)
+                record.stage_cachers = None
                 return record
 
             # determine if we need to execute this stage and handle any
@@ -740,6 +746,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 utils.set_logging_prefix("")
                 record.manager.stage_active = False
                 record.manager.update_map_progress(record, "continue")
+                record.stage_cachers = None
                 return record
 
             # run the function
@@ -819,6 +826,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             utils.set_logging_prefix("")
             record.manager.stage_active = False
             record.manager.update_map_progress(record, "continue")
+            record.stage_cachers = None
             return record
 
         return wrapper
