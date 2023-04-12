@@ -295,24 +295,26 @@ class ArtifactManager:
     # update_type can either be "start" or "continue"
     # start type means "stage start", not record start, though we could check if
     # it hasn't been started yet.
-    def update_map_progress(self, record, update_type: str = ""):
+    def update_map_progress(self, record: Record, update_type: str = ""):
         if self.map_progress is not None and not self.map_mode:
             # self.map_progress.update(self.map_progress.task_ids[0], advance=1)
             # find appropriate record
             # TODO: use aggregate (or non) hash as the way to find the correct
             # record.
             taskid = -1
-            name = record.args.name if record.args is not None else "None"
-            record_hash = record.get_hash()
-            record_index = -1
+            record_name = record.get_reference_name()
+            # name = record.args.name if record.args is not None else "None"
+            # record_hash = record.get_hash()
+            # record_index = -1
             for i, map_record in enumerate(self.map.records):
-                map_record_hash = map_record.get_hash()
+                # map_record_hash = map_record.get_hash()
                 # map_name = (
                 #     map_record.args.name if map_record.args is not None else "None"
                 # )
-                if map_record_hash == record_hash:
+                # if map_record_hash == record_hash:
+                if map_record.get_reference_name(True) == record_name:
                     taskid = map_record.taskid
-                    record_index = i
+                    # record_index = i
 
             map_task = None
             for task in self.map_progress.tasks:
@@ -339,7 +341,7 @@ class ArtifactManager:
                     self.map_progress.start_task(taskid)
                 self.map_progress.update(
                     self.map_progress_overall_task_id,
-                    name=f"Record {record_index} ({name})",
+                    name=record_name,
                 )
 
     def _load_config(self):
