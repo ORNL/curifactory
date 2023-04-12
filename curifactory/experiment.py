@@ -632,7 +632,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     TimeElapsedColumn(),
                     TextColumn("{task.fields[name]}"),
                 )
-                for i, record in enumerate(mngr.map):
+                for i, record in enumerate(mngr.map.records):
                     name = record.args.name if record.args is not None else "None"
                     if record.is_aggregate:
                         name += " (aggregate)"
@@ -651,7 +651,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     record.taskid = taskid
                 overalltaskid = mngr.map_progress.add_task(
                     f"Total ({mngr.get_reference_name()})",
-                    total=len(mngr.map),
+                    total=len(mngr.map.records),
                     visible=True,
                     name="",
                     hash_big="",
