@@ -75,8 +75,6 @@ def _log_stats(
 
     footprint_change = post_max_footprint - pre_max_footprint
 
-    # TODO: total_time =
-
     logging.debug(
         "Memory (current usage/max allocated) - %s / %s"
         % (
@@ -670,27 +668,56 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 _get_output_representations_for_map(record, outputs, cachers, records)
                 return record
 
+            # determine if we need to execute this stage and handle any
+            # cached values.
+            execute_stage = True
             pre_cache_time_start = time.perf_counter()  # time to load from cache
             record.manager.lock()
-            cache_valid = _check_cached_outputs(name, record, outputs, cachers, records)
-            if cache_valid:
-                # get previous reportables if available
-                _check_cached_reportables(name, record, records)
 
-                # if we've hit this point, we will be returning early/not executing
-                # the stage because all outputs are found. The process of checking
-                # cached outputs should correctly add all the necessary tracked paths,
-                # so to transfer these paths into a store full run, we just need
-                # the below call
-                # NOTE: I _believe_ that we also get metadata from this because
-                # the load_metadata will have entered the metadata path already.
-                # this will need to be tested
-                record.store_tracked_paths()
+            # if we have an execution list from our stage DAG, use that
+            # to determine if this stage executes or not.
+            if record.manager.map is not None:
+                stage_rep = (record.get_record_index(), name)
+                if stage_rep not in record.manager.map.execution_list:
+                    logging.debug('DAG-indicated stage skip "%s".' % str(stage_rep))
+                    _dag_skip_check_cached_outputs(
+                        name, record, outputs, cachers, records
+                    )
+
+                    # grab any possible previous reportables so they still end up in report.
+                    _check_cached_reportables(name, record)
+                    record.store_tracked_paths()
+                    execute_stage = False
+                else:
+                    # the representation is in the execution list, so execute!
+                    execute_stage = True
+            # otherwise, proceed normally with cache and load checks
+            else:
+                cache_valid = _check_cached_outputs(
+                    name, record, outputs, cachers, records
+                )
+                if cache_valid:
+                    # get previous reportables if available
+                    _check_cached_reportables(name, record, records)
+
+                    # if we've hit this point, we will be returning early/not executing
+                    # the stage because all outputs are found. The process of checking
+                    # cached outputs should correctly add all the necessary tracked paths,
+                    # so to transfer these paths into a store full run, we just need
+                    # the below call
+                    # NOTE: I _believe_ that we also get metadata from this because
+                    # the load_metadata will have entered the metadata path already.
+                    # this will need to be tested
+                    record.store_tracked_paths()
+                    execute_stage = False
+                else:
+                    # at least one output wasn't cached, so execute order 66!
+                    execute_stage = True
 
             record.manager.unlock()
             pre_cache_time_end = time.perf_counter()
 
-            if cache_valid:
+            if not execute_stage:
                 post_mem_usage = psutil.Process().memory_info().rss
                 post_footprint = 0
                 if os.name != "nt":
