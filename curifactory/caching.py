@@ -58,6 +58,19 @@ class Lazy:
         return self.name
 
 
+# class Ref:
+#     def __init__(self, name: str, resolve: bool = True):
+#         self.name = name
+#         self.cacher: Cacheable = None
+#         self.resolve = resolve
+
+#     def load(self):
+#         return self.cacher.load()
+
+#     def __str__(self):
+#         return self.name
+
+
 class Cacheable:
     """The base caching class, any caching strategy should extend this.
 

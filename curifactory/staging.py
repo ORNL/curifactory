@@ -845,9 +845,18 @@ def _dag_skip_check_cached_outputs(
         cacher = None
         metadata = None
         is_cached = False
+        output = None
         if cachers is not None:
             if cachers[i].check():
                 cachers[i].load_metadata()
+                if type(outputs[i]) == Lazy:
+                    outputs[i].cacher = cachers[i]
+                    # we set the output to just be the Lazy instance for now
+                    output = outputs[i]
+                else:
+                    # TODO: make a lazy for it anyway? Evnetually use ref instead
+                    output = Lazy(output_name)
+                    output.cacher = cachers[i]
 
                 cacher = cachers[i]
                 metadata = cachers[i].metadata
@@ -855,8 +864,11 @@ def _dag_skip_check_cached_outputs(
         artifact = _add_output_artifact(
             record, None, outputs, i, metadata, cacher, is_cached
         )
-        # TODO: skippedoutput only if not cached. Otherwise, add a resolve ref
-        output = SkippedOutput(record, stage_name, artifact)
+        if is_cached:
+            artifact.file = cachers[i].get_path()
+        # add a skippedoutput instance if it's not a cached value
+        if output is None:
+            output = SkippedOutput(record, stage_name, artifact)
         skipped_function_outputs.append(output)
         record.state[str(outputs[i])] = output
 
