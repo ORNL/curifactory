@@ -692,6 +692,14 @@ def _add_record_subgraph(dot, record_index, record, manager, detailed=True):
         for index, input_set in enumerate(record.stage_inputs):
             for input_index in input_set:
                 if input_index != -1:
+                    # check if the input is from this record or not
+                    found_in_this_record = False
+                    for output_set in record.stage_outputs:
+                        if input_index in output_set:
+                            found_in_this_record = True
+                    # don't include if not from this record and a detailed map
+                    if detailed and not found_in_this_record:
+                        continue
                     dot.edge(
                         f"a{input_index}",
                         f"{record_index}_{record.stages[index]}",
