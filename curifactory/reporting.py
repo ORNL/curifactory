@@ -306,6 +306,7 @@ class LinePlotReporter(Reportable):
             if isinstance(self.y, dict):
                 for key in self.y:
                     plt.plot(self.x[key], self.y[key], label=key, **self.plot_kwargs)
+                plt.legend()
             else:
                 plt.plot(self.x, self.y, **self.plot_kwargs)
         plt.grid(True)

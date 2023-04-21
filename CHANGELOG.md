@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * Record `make_copy` adding the new record to the artifact manager twice.
 * Reportables ToC in report not correctly using the qualified names when cached reportables found.
+* `LinePlotReporter` not adding a legend when dictionaries provided for both `x` and `y`.
 
 
 ## [0.12.0] - 2023-03-30
