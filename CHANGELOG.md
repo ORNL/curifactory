@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unreleased]
+## [0.13.0] - 2023-04-21
 
 ### Added
 * Check for `get_params()` functions that aren't returning lists.
@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Reportables ToC in report not correctly using the qualified names when cached reportables found.
 * `LinePlotReporter` not adding a legend when dictionaries provided for both `x` and `y`.
 * Potential error when collecting metadata if manager run info doesn't have "status".
+
+
 
 
 ## [0.12.0] - 2023-03-30
