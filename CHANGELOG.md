@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+* Check for `get_params()` functions that aren't returning lists.
+
 ### Changed
 * An aggregate stage that is not explicitly given a set of records now takes manager records minus
   the record containing the currently running aggregate stage.

@@ -373,6 +373,15 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                 raise e
 
         param_argsets = param_module.get_params()
+        if type(param_argsets) != list:
+            logging.error(
+                "Parameter file '%s' did not return a list, please make sure any `get_params()` functions are returning non-empty arrays."
+                % params
+            )
+            raise RuntimeError(
+                "Parameter file '%s' did not return a list, please make sure any `get_params()` functions are returning non-empty arrays."
+                % params
+            )
         argsets_to_add = []
 
         # NOTE: we don't want to set override in parent proc on parallel runs.
