@@ -44,6 +44,8 @@ def train_model(record, training_data):
     clf = MLPClassifier(args.layers, activation=args.activation).fit(
         training_data[0], training_data[1]
     )
+
+    record.report(LinePlotReporter(clf.loss_curve_, name="loss"))
     return clf
 
 
