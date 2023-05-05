@@ -12,17 +12,19 @@ def test_build_docker(mocker):  # noqa: F811 -- mocker has to be passed in as fi
     docker.build_docker("test_name", "./test_cache_folder", "some_version_string")
 
     curifactory.utils.run_command.assert_called_once_with(
-        "docker",
-        "build",
-        "-f",
-        "docker/dockerfile",
-        "--tag",
-        "test_name:some_version_string",
-        "--tag",
-        "test_name",
-        "--build-arg",
-        "run_folder=./test_cache_folder",
-        ".",
-        "--progress",
-        "tty",
+        [
+            "docker",
+            "build",
+            "-f",
+            "docker/dockerfile",
+            "--tag",
+            "test_name:some_version_string",
+            "--tag",
+            "test_name",
+            "--build-arg",
+            "run_folder=./test_cache_folder",
+            ".",
+            "--progress",
+            "tty",
+        ]
     )
