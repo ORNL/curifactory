@@ -716,7 +716,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             )
             docker.build_docker(
                 experiment_name,
-                mngr.get_run_output_path()[:-1],
+                mngr.get_run_output_path(),
                 f"{mngr.experiment_run_number}_{mngr.run_timestamp.strftime('%Y-%m-%d')}",
             )
 

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * Docker module incorrectly using the `run_command` function.
+* Experiment passing in a cutoff run folder to the docker command
 
 
 
