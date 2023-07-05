@@ -411,6 +411,9 @@ def test_double_record_triple_stage_execution_lists(
     dag.artifacts[2].cached = cached[2]
     dag.determine_execution_list()
 
+    assert len(dag.execution_list) == len(expected_execution_list)
+    assert set(dag.execution_list) == set(expected_execution_list)
+
 
 @pytest.mark.parametrize(
     "cached,overwrite_stages,expected_execution_list",
