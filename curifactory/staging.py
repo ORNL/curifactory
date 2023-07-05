@@ -522,7 +522,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
     Example:
         .. code-block:: python
 
-            @aggregate(["final_results"], [JsonCacher])
+            @aggregate(["results"], ["final_results"], [JsonCacher])
             def compile_results(record: Record, records: List[Record]):
                 results = {}
                 for prev_record in records:

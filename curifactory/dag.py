@@ -107,6 +107,8 @@ class DAG:
         # is in any of the inputs
         # TODO: instead of checking by name, we should be checking by the artifact id
         for i in range(stage_search_start_index, len(record.stages)):
+            # NOTE: this works for both stages _and_ aggregates because expected_state
+            # reps for aggregates get added to record.stage_inputs in the aggregate decorator
             for stage_input_index in record.stage_inputs[i]:
                 stage_input = self.artifacts[stage_input_index]
                 if stage_input.name == output:
@@ -119,11 +121,6 @@ class DAG:
             explicitly_used = self.is_output_used_anywhere(child, 0, output)
             if explicitly_used:
                 return True
-
-            # check if there's an aggregate in which we _might_ be using it.
-            # if child.is_aggregate:
-            #     # TODO: will eventually want to use the "expects_state" here
-            #     return True
 
         return False
 
