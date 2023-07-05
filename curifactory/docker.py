@@ -33,4 +33,4 @@ def build_docker(experiment_name, cache_folder, version):
         "tty",
     ]  # use plain to see all output
     # cmd_array = ["docker", "build", "-f", "docker/dockerfile", "."]
-    utils.run_command(*cmd_array)
+    utils.run_command(cmd_array)

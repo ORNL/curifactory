@@ -396,7 +396,7 @@ def test_empty_parameters_errors(clear_filesystem):
 
 
 def test_invalid_args_names_errors(clear_filesystem):
-    """Using a --names flag but with a non-existant parameterset name should error.."""
+    """Using a --names flag but with a non-existant parameterset name should error."""
     with pytest.raises(RuntimeError) as exc_info:
         results, manager = run_experiment(
             "basic", ["params1", "params2"], args_names=["test4"]
@@ -405,6 +405,17 @@ def test_invalid_args_names_errors(clear_filesystem):
     assert (
         str(exc_info.value)
         == "Paramset name 'test4' not found in any of the provided parameter files."
+    )
+
+
+def test_single_args_not_in_array_errors(clear_filesystem):
+    """A get_params that returns a single args instance not in an array should error."""
+    with pytest.raises(RuntimeError) as exc_info:
+        results, manager = run_experiment("basic", ["nonarrayargs"])
+
+    assert (
+        str(exc_info.value)
+        == "Parameter file 'nonarrayargs' did not return a list, please make sure any `get_params()` functions are returning non-empty arrays."
     )
 
 
@@ -425,4 +436,4 @@ def test_experiments_completer():
 
 def test_params_completer():
     output = params_completer()
-    assert output == ["empty", "params1", "params2"]
+    assert output == ["empty", "nonarrayargs", "params1", "params2"]

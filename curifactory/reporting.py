@@ -232,11 +232,11 @@ class FigureReporter(Reportable):
         if "format" not in self.kwargs:
             self.kwargs["format"] = "png"
         self.fig.savefig(
-            f"{self.path}/{self.name}.{self.kwargs['format']}", **self.kwargs
+            f"{self.path}/{self.qualified_name}.{self.kwargs['format']}", **self.kwargs
         )
 
     def html(self):
-        return f"<img src='{self.path}/{self.name}.{self.kwargs['format']}'>"
+        return f"<img src='{self.path}/{self.qualified_name}.{self.kwargs['format']}'>"
 
 
 class LinePlotReporter(Reportable):
@@ -306,6 +306,7 @@ class LinePlotReporter(Reportable):
             if isinstance(self.y, dict):
                 for key in self.y:
                     plt.plot(self.x[key], self.y[key], label=key, **self.plot_kwargs)
+                plt.legend()
             else:
                 plt.plot(self.x, self.y, **self.plot_kwargs)
         plt.grid(True)
@@ -314,13 +315,13 @@ class LinePlotReporter(Reportable):
         if "format" not in self.savefig_kwargs:
             self.savefig_kwargs["format"] = "png"
         fig.savefig(
-            f"{self.path}/{self.name}.{self.savefig_kwargs['format']}",
+            f"{self.path}/{self.qualified_name}.{self.savefig_kwargs['format']}",
             **self.savefig_kwargs,
         )
         plt.close()
 
     def html(self):
-        return f"<img src='{self.path}/{self.name}.{self.savefig_kwargs['format']}'>"
+        return f"<img src='{self.path}/{self.qualified_name}.{self.savefig_kwargs['format']}'>"
 
 
 def render_report_head(manager) -> list[str]:

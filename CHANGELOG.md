@@ -4,7 +4,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
 ## [unreleased]
+
+### Fixed
+* Wrong progress bar updating if multiple records/args had the same hash
+
+
+
+
+## [0.13.2] - 2023-05-05
+
+### Fixed
+* Docker module incorrectly using the `run_command` function.
+* Experiment passing in a cutoff run folder to the docker command.
+
+
+
+
+## [0.13.1] - 2023-04-26
+
+### Fixed
+* Reportables that implement render using the old `name` instead of `qualified_name`, causing
+  unintended figure image overwrites.
+
+
+
+
+## [0.13.0] - 2023-04-21
+
+### Added
+* Check for `get_params()` functions that aren't returning lists.
 
 ### Changed
 * An aggregate stage that is not explicitly given a set of records now takes manager records minus
@@ -13,7 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * Record `make_copy` adding the new record to the artifact manager twice.
 * Reportables ToC in report not correctly using the qualified names when cached reportables found.
-* Wrong progress bar updating if multiple records/args had the same hash
+* `LinePlotReporter` not adding a legend when dictionaries provided for both `x` and `y`.
+* Potential error when collecting metadata if manager run info doesn't have "status".
 
 
 

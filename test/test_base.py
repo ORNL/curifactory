@@ -49,4 +49,7 @@ def test_experiment_ls_output(mocker, capfd):
     )
     test = main()  # noqa: F841
     out, err = capfd.readouterr()
-    assert out == "EXPERIMENTS:\n\tbasic\n\nPARAMS:\n\tempty\n\tparams1\n\tparams2\n"
+    assert (
+        out
+        == "EXPERIMENTS:\n\tbasic\n\nPARAMS:\n\tempty\n\tnonarrayargs\n\tparams1\n\tparams2\n"
+    )
