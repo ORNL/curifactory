@@ -413,6 +413,9 @@ def init_logging(
     if log_errors:
         sys.stderr = StreamToLogger(logging.ERROR)
 
+    if quiet:
+        root_logger.setLevel(logging.ERROR)
+
     # logging.getLogger("torch").setLevel(logging.WARNING)
     # logging.getLogger("transformers").setLevel(logging.WARNING)
     # logging.getLogger("requests").setLevel(logging.WARNING)

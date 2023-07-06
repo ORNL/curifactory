@@ -195,7 +195,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         if no_dag:
             run_string += " --no-dag"
         if map_only:
-            run_string += " --map-only"
+            run_string += " --map"
         if no_color:
             run_string += " --no-color"
         if quiet:
