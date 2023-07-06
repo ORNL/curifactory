@@ -58,39 +58,41 @@ class Lazy:
         return self.name
 
 
-class Ref:
-    """A 'reference' output is very similar to the ``Lazy`` class, but handled differently semantically by
-    curifactory. A ``Ref`` is assumed to be a load-only output, where the stage that creates it is assumed
-    to handle creating and saving the object, and the cacher associated with the ``Ref`` is only in charge
-    of loading it when and if it's needed by later stages.
+# NOTE: this isn't a requirement for DAGs to work, leaving here as a reminder, but deciding if
+# this versus simply a pathcacher works better should be a different issue
+# class Ref:
+#     """A 'reference' output is very similar to the ``Lazy`` class, but handled differently semantically by
+#     curifactory. A ``Ref`` is assumed to be a load-only output, where the stage that creates it is assumed
+#     to handle creating and saving the object, and the cacher associated with the ``Ref`` is only in charge
+#     of loading it when and if it's needed by later stages.
 
-    This is useful in cases where a stage is making an external system call to a script that's creating some
-    file, and we only want to directly bring the results of that file into curifactory rather than loading
-    and returning it in the stage, for it to just be re-saved again by the cacher.
-
-
-    Example:
-        .. code-block:: python
-
-            @stage(outputs=[Ref("some_json")], cachers=[JsonCacher])
-            def save_outside_of_cacher(record):
-                pass
+#     This is useful in cases where a stage is making an external system call to a script that's creating some
+#     file, and we only want to directly bring the results of that file into curifactory rather than loading
+#     and returning it in the stage, for it to just be re-saved again by the cacher.
 
 
-                # TODO
+#     Example:
+#         .. code-block:: python
 
-    """
+#             @stage(outputs=[Ref("some_json")], cachers=[JsonCacher])
+#             def save_outside_of_cacher(record):
+#                 pass
 
-    def __init__(self, name: str, resolve: bool = True):
-        self.name = name
-        self.cacher: Cacheable = None
-        self.resolve = resolve
 
-    def load(self):
-        return self.cacher.load()
+#                 # TODO
 
-    def __str__(self):
-        return self.name
+#     """
+
+#     def __init__(self, name: str, resolve: bool = True):
+#         self.name = name
+#         self.cacher: Cacheable = None
+#         self.resolve = resolve
+
+#     def load(self):
+#         return self.cacher.load()
+
+#     def __str__(self):
+#         return self.name
 
 
 class Cacheable:

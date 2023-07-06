@@ -50,7 +50,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     run_ts_override: datetime.datetime = None,
     lazy: bool = False,
     ignore_lazy: bool = False,
-    no_map: bool = False,
+    no_dag: bool = False,
     map_only: bool = False,
     no_color: bool = False,
     quiet: bool = False,
@@ -118,7 +118,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             handle pickle serialization correctly may cause errors.
         ignore_lazy (bool): Run the experiment disabling any lazy object caching/keeping everything in memory.
             This can save time when memory is less of an issue.
-        no_map (bool): Prevent pre-execution mapping of experiment records and stages. Recommended if doing
+        no_dag (bool): Prevent pre-execution mapping of experiment records and stages. Recommended if doing
             anything fancy with records like dynamically creating them based on results of previous records.
             Mapping is done by running the experiment but skipping all stage execution.
         map_only (bool): Runs the pre-execution mapping of an experiment and immediately exits, printing the
@@ -192,8 +192,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             run_string += " --lazy"
         if ignore_lazy:
             run_string += " --ignore-lazy"
-        if no_map:
-            run_string += " --no-map"
+        if no_dag:
+            run_string += " --no-dag"
         if map_only:
             run_string += " --map-only"
         if no_color:
@@ -563,7 +563,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     mngr.run_timestamp,
                     lazy,
                     ignore_lazy,
-                    no_map,
+                    no_dag,
                     map_only,
                     no_color,
                     quiet,
@@ -612,7 +612,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     )
     try:
         # run experiment mapping and set up progress bars
-        if not parallel_mode and not no_map:
+        if not parallel_mode and not no_dag:
             logging.info("Pre-mapping stages and records")
             mngr.map_mode = True
             experiment_module.run(argsets, mngr)
@@ -672,14 +672,14 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
         results = experiment_module.run(argsets, mngr)
 
-        if not parallel_mode and not no_map and progress:
+        if not parallel_mode and not no_dag and progress:
             mngr.map_progress.stop()
 
         # don't change status if we logged an error from a parallel process
         if not mngr.error_thrown:
             mngr.status = "complete"
     except Exception as e:
-        if not parallel_mode and not no_map and progress:
+        if not parallel_mode and not no_dag and progress:
             mngr.map_progress.stop()
         results = None
         error_thrown = True
@@ -1098,6 +1098,12 @@ Examples:
         default=False,
         help="Associate some notes with this run. You can either directly specify a string to this flag, or leave it blank to open a notes file in your editor.",
     )
+    parser.add_argument(
+        "--no-dag",
+        dest="no_dag",
+        action="store_true",
+        help="Specifying this flag disables DAG-mode execution and prevents the pre-execution mapping of the experiment. Instead, the experiment will be run straight through using only the cache to determine if a stage needs to execute or not.",
+    )
 
     parameters_group = parser.add_argument_group(
         "Parameterization",
@@ -1235,16 +1241,10 @@ Examples:
         help="Log at debug level.",
     )
     display_group.add_argument(
-        "--no-map",
-        dest="no_map",
-        action="store_true",
-        help="Specifying will prevent the pre - execution mapping of the experiment records and stages. If doing non - DAG or creating dynamic records based on results of previous ones (where the map will be incorrect) use this flag.",
-    )
-    display_group.add_argument(
-        "--map-only",
+        "--map",
         dest="map_only",
         action="store_true",
-        help="Specifying this runs _only_ the pre-execution record/stage mapping and then immediately exits. Specifying this flag implies --dry as well.",
+        help="Specifying this _only_ runs the pre-execution record and stage mapping for the experiment, and prints out the resulting DAG information before immediately exiting. Specifying this implies --dry. You can use this flag to check which artifacts are found in cache.",
     )
     display_group.add_argument(
         "--quiet",
@@ -1386,7 +1386,7 @@ Examples:
         parallel_mode=args.parallel_mode,
         lazy=args.lazy,
         ignore_lazy=args.ignore_lazy,
-        no_map=args.no_map,
+        no_dag=args.no_dag,
         map_only=args.map_only,
         no_color=args.no_color,
         quiet=args.quiet,
