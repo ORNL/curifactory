@@ -295,7 +295,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
 
             # at this point we've grabbed all information we would need if we're
             # just mapping out the stages, so return at this point.
-            # TODO: 3/8/2023 - not true, we're not getting outputs
+            # TODO: 3/8/2023 - not true, we're not getting outputs (7/6/2023 is this still an issue? seems fine?)
             if record.manager.map_mode:
                 record.manager.stage_active = False
                 # in order to get a more detailed map that accurately shows input/output names,
@@ -308,7 +308,8 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
 
             # determine if we need to execute this stage and handle any
             # cached values.
-            execute_stage = True
+            execute_stage = False  # false by default so the non-dag condition below can distinguish whether
+            # the dag condition actually set execute stage to true or if just default
             pre_cache_time_start = time.perf_counter()  # time to load from cache
             record.manager.lock()
 
@@ -327,8 +328,17 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                 else:
                     # the representation is in the execution list, so execute!
                     execute_stage = True
-            # otherwise, proceed normally with cache and load checks
-            else:
+
+            # otherwise, proceed normally with cache/load checks
+            # NOTE: this is an explicit _separate_ check because if our DAG indicates that
+            # this stage executes, we still want to actually double check the cache and determine
+            # if we _still_ need to execute this stage. This is primarily for cases where a
+            # stage happens to get run multiple times with different records that have the same args/
+            # same outputs. The DAG doesn't dynamically update with cached values during the actual
+            # experiment run, so it won't catch this case by itself.
+            # So the flow is: if we have a DAG, and it says to execute this stage, or if we don't have
+            # a DAG, check if we actually need to run this based on cached values.
+            if record.manager.map is None or execute_stage:
                 cache_valid = _check_cached_outputs(name, record, outputs, cachers)
                 if cache_valid:
                     # get previous reportables if available
@@ -676,7 +686,8 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
 
             # determine if we need to execute this stage and handle any
             # cached values.
-            execute_stage = True
+            execute_stage = False  # false by default so the non-dag condition below can distinguish whether
+            # the dag condition actually set execute stage to true or if just default
             pre_cache_time_start = time.perf_counter()  # time to load from cache
             record.manager.lock()
 
@@ -697,8 +708,17 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 else:
                     # the representation is in the execution list, so execute!
                     execute_stage = True
+
             # otherwise, proceed normally with cache and load checks
-            else:
+            # NOTE: this is an explicit _separate_ check because if our DAG indicates that
+            # this stage executes, we still want to actually double check the cache and determine
+            # if we _still_ need to execute this stage. This is primarily for cases where a
+            # stage happens to get run multiple times with different records that have the same args/
+            # same outputs. The DAG doesn't dynamically update with cached values during the actual
+            # experiment run, so it won't catch this case by itself.
+            # So the flow is: if we have a DAG, and it says to execute this stage, or if we don't have
+            # a DAG, check if we actually need to run this based on cached values.
+            if record.manager.map is None or execute_stage:
                 cache_valid = _check_cached_outputs(
                     name, record, outputs, cachers, records
                 )

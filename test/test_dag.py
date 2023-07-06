@@ -1,6 +1,7 @@
 import pytest
 
 import curifactory as cf
+from curifactory.caching import PickleCacher
 
 
 def test_child_records_empty_for_blank_records(configured_test_manager):
@@ -488,3 +489,75 @@ def test_triple_record_quadruple_stage_execution_lists(
 # TODO: tests with two records two stages (single record first stage, two records run second stage)
 
 # TODO: also tests where the outputs of a stage are each used as an input in a different stage
+
+
+def test_dag_will_not_force_recompute_of_similar_stages(configured_test_manager):
+    """A stage that is called multiple times with the same arguments and is not _initially_ cached
+    should not be run more than once. (The fact that the DAG execution list doesn't update shouldn't
+    preclude stage from determining a stage still doesn't actually need to run if it finds the right
+    cached values.)"""
+
+    run_count = 0
+
+    @cf.stage(outputs=["thing"], cachers=[PickleCacher])
+    def do_thing(record):
+        nonlocal run_count
+        run_count += 1
+        return "hi"
+
+    configured_test_manager.map_mode = True
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    do_thing(r0)
+    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    do_thing(r1)
+
+    configured_test_manager.map_mode = False
+    configured_test_manager.map_records()
+    dag = configured_test_manager.map
+
+    assert len(dag.execution_list) == 2
+    assert run_count == 0
+
+    actual_r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    do_thing(actual_r0)
+    actual_r1 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    do_thing(actual_r1)
+
+    assert run_count == 1
+
+
+def test_dag_will_not_force_recompute_of_similar_aggregate_stages(
+    configured_test_manager,
+):
+    """An agg stage that is called multiple times with the same arguments and is not _initially_ cached
+    should not be run more than once. (The fact that the DAG execution list doesn't update shouldn't
+    preclude stage from determining a stage still doesn't actually need to run if it finds the right
+    cached values.)"""
+
+    run_count = 0
+
+    @cf.aggregate(outputs=["thing"], cachers=[PickleCacher])
+    def do_thing(record, records):
+        nonlocal run_count
+        run_count += 1
+        return "hi"
+
+    configured_test_manager.map_mode = True
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    do_thing(r0, [])
+    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    do_thing(r1, [])
+
+    configured_test_manager.map_mode = False
+    configured_test_manager.map_records()
+    dag = configured_test_manager.map
+
+    assert len(dag.execution_list) == 2
+    assert run_count == 0
+
+    actual_r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    do_thing(actual_r0, [])
+    actual_r1 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    do_thing(actual_r1, [])
+
+    assert run_count == 1
