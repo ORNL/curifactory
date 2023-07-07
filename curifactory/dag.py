@@ -1,5 +1,23 @@
 """Classes for managing an experiment's map/DAG logic."""
 
+# NOTE: the "tree" concept is a little confusing linguistically in this file
+# because the graph is being looked at both forwards and backwards. A "leaf
+# stage" is a stage at the _end_ of the experiment graph, where its outputs are
+# not needed as inputs in any other stages. However, for the DAG and treating
+# the stage as a node, the leaf stages are actually "root nodes" for the
+# execution trees, because we model all of a node's/stage's dependencies as its
+# children/its subtree.
+
+# It's also important to note that obviously trees are subsets of possible
+# graphs, the DAG is not literally represented as the full actual graph, but a
+# collection of the aforementioned execution trees, because for the purposes of
+# the DAG we only care about this recursive backwards dependency pass. This
+# means there's very possibly duplication across trees, in the case of nodes
+# with outputs that are used in multiple other stages, but size isn't really
+# going to be an issue, and (I think) it's much simpler to programatically
+# construct and analyze it this way.
+
+
 from curifactory.record import MapArtifactRepresentation, Record
 
 
@@ -16,6 +34,10 @@ class ExecutionNode:
         self.record = record
         self.stage_name = stage_name
         self.parent: ExecutionNode = None
+        """The parent is a node that depends on this one/uses its outputs.
+        (This means that the same execution node might appear in multiple
+        execution trees, if it's output is used by more than one other stage)"""
+
         self.dependencies: list[ExecutionNode] = []
         """Dependencies are the 'subtree' - the other nodes/stages that create
         the outputs that match this node's inputs."""

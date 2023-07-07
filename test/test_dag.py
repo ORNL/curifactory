@@ -242,6 +242,11 @@ def test_output_used_elsewhere_is_not_leaf(configured_test_manager):
 def test_single_record_execution_lists(
     configured_test_manager, cached, overwrite_stages, expected_execution_list
 ):
+    """DAG-based execution determination should be correct for all possible
+    cached/overwrite combinations for one stage in one record:
+
+        (r0:thing1)
+    """
     configured_test_manager.map_mode = True
     configured_test_manager.overwrite_stages = overwrite_stages
 
@@ -282,6 +287,11 @@ def test_single_record_execution_lists(
 def test_single_record_double_stage_execution_lists(
     configured_test_manager, cached, overwrite_stages, expected_execution_list
 ):
+    """DAG-based execution determination should be correct for all possible
+    cached/overwrite combinations for two stages in one record:
+
+        (r0:thing1)--(r0:thing2)
+    """
     configured_test_manager.map_mode = True
     configured_test_manager.overwrite_stages = overwrite_stages
 
@@ -326,6 +336,11 @@ def test_single_record_double_stage_execution_lists(
 def test_single_record_triple_stage_execution_lists(
     configured_test_manager, cached, overwrite_stages, expected_execution_list
 ):
+    """DAG-based execution determination should be correct for all possible
+    cached/overwrite combinations for three stages in one record:
+
+        (r0:thing1)--(r0:thing2)--(r0:thing3)
+    """
     configured_test_manager.map_mode = True
     configured_test_manager.overwrite_stages = overwrite_stages
 
@@ -343,6 +358,74 @@ def test_single_record_triple_stage_execution_lists(
 
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
     thing3(thing2(thing1(r0)))
+
+    configured_test_manager.map_mode = False
+    configured_test_manager.map_records()
+    dag = configured_test_manager.map
+
+    dag.artifacts[0].cached = cached[0]
+    dag.artifacts[1].cached = cached[1]
+    dag.artifacts[2].cached = cached[2]
+    dag.determine_execution_list()
+
+    assert len(dag.execution_list) == len(expected_execution_list)
+    assert set(dag.execution_list) == set(expected_execution_list)
+
+
+@pytest.mark.parametrize(
+    "cached,overwrite_stages,expected_execution_list",
+    [
+        # fmt: off
+        ([False, False, False], [], [(0, "thing1"), (0, "thing2"), (0, "thing3")]),
+        ([True, False, False], [], [(0, "thing2"), (0, "thing3")]),
+        ([True, True, True], [], []),
+        ([False, True, True], [], []),
+        ([False, False, True], [], [(0, "thing1"), (0, "thing2")]),
+        ([False, True, False], [], [(0, "thing1"), (0, "thing3")]),
+        ([True, True, False], [], [(0, "thing3")]),
+        ([True, False, True], [], [(0, "thing2")]),
+        ([True, True, True], ["thing1"], [(0, "thing1"), (0, "thing2"), (0, "thing3")]),
+        ([False, True, True], ["thing1"], [(0, "thing1"), (0, "thing2"), (0, "thing3")]),
+        ([False, False, True], ["thing1"], [(0, "thing1"), (0, "thing2"), (0, "thing3")]),
+        ([True, True, True], ["thing2"], [(0, "thing2")]),
+        ([True, True, True], ["thing3"], [(0, "thing3")]),
+        ([False, True, True], ["thing2"], [(0, "thing1"), (0, "thing2")]),
+        ([False, True, True], ["thing3"], [(0, "thing1"), (0, "thing3")]),
+        # fmt: on
+    ],
+)
+def test_single_record_triple_stage_nonsinglechain_execution_lists(
+    configured_test_manager, cached, overwrite_stages, expected_execution_list
+):
+    """DAG-based execution determination should be correct for all possible
+    cached/overwrite combinations for three stages in one record, where two stages
+    don't impact each other but both use the same outputs from the first stage
+
+                    (r0:thing2)
+                   /
+        (r0:thing1)
+                   \
+                    (r0:thing3)
+    """
+    configured_test_manager.map_mode = True
+    configured_test_manager.overwrite_stages = overwrite_stages
+
+    @cf.stage(outputs=["thing1"])
+    def thing1(record):
+        return 1
+
+    @cf.stage(inputs=["thing1"], outputs=["thing2"])
+    def thing2(record, thing1):
+        return thing1 + 1
+
+    @cf.stage(inputs=["thing1"], outputs=["thing3"])
+    def thing3(record, thing1):
+        return thing1 + 2
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    thing1(r0)
+    thing2(r0)
+    thing3(r0)
 
     configured_test_manager.map_mode = False
     configured_test_manager.map_records()
@@ -382,6 +465,16 @@ def test_single_record_triple_stage_execution_lists(
 def test_double_record_triple_stage_execution_lists(
     configured_test_manager, cached, overwrite_stages, expected_execution_list
 ):
+    """DAG-based execution determination should be correct for all possible
+    cached/overwrite combinations for three stages in two records, where one
+    record is a copy of the other after the first stage:
+
+                    (r0:thing2)
+                   /
+        (r0:thing1)
+                   \
+                    (r1:thing3)
+    """
     configured_test_manager.map_mode = True
     configured_test_manager.overwrite_stages = overwrite_stages
 
@@ -442,6 +535,17 @@ def test_double_record_triple_stage_execution_lists(
 def test_triple_record_quadruple_stage_execution_lists(
     configured_test_manager, cached, overwrite_stages, expected_execution_list
 ):
+    """DAG-based execution determination should be correct for all possible
+    cached/overwrite combinations for four stages in three records, where one
+    record is a copy of the other after the first stage and the final stage
+    aggregates the two former records:
+
+                    (r0:thing2)
+                   /           \
+        (r0:thing1)             (r2:thing4)
+                   \\           /
+                    (r1:thing3)
+    """
     configured_test_manager.map_mode = True
     configured_test_manager.overwrite_stages = overwrite_stages
 
