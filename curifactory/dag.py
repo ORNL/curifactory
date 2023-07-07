@@ -17,6 +17,8 @@ class ExecutionNode:
         self.stage_name = stage_name
         self.parent: ExecutionNode = None
         self.dependencies: list[ExecutionNode] = []
+        """Dependencies are the 'subtree' - the other nodes/stages that create
+        the outputs that match this node's inputs."""
 
     def chain_rep(self) -> tuple[int, str]:
         """Return this node represented as a tuple of the record index and stage name."""
@@ -64,6 +66,10 @@ class DAG:
         representations: ``(RECORD_ID, STAGE_NAME)``"""
 
         self.execution_trees: list[ExecutionNode] = []
+        """The set of node execution trees - each node here is a "leaf stage", or
+        stage with no outputs that other stages depend on. This is essentially the
+        inverted tree, because stage "leafs" will each be a root of an execution
+        tree, where the sub-trees are all the dependencies required for it to run."""
 
     def analyze(self):
         """Construct execution trees and execution list."""
@@ -230,11 +236,8 @@ class DAG:
     def determine_execution_list_recursive(
         self, node: ExecutionNode, overwrite_check_only: False
     ) -> bool:
-        """Determines if the requested stage will need to execute or not, and if so prepends itself
-        and all prior stages needed to execute through recursive calls.
-
-        This function runs in two modes - in overwrite check mode
-        """
+        """Determines if the requested stage will need to execute or not, and if so prepends
+        itself and all prior stages needed to execute through recursive calls."""
         stage_index = node.record.stages.index(node.stage_name)
 
         # first check if all of the outputs for this stage are cached, if any one of them is not,
@@ -249,7 +252,8 @@ class DAG:
         # (in this mode we add the node if and only if there's a sub node that's being overwritten.)
 
         overwrite_stage_found = False
-        """set to true if either this stage is overwrite subtree finds overwrite"""
+        """set to true if either this stage is set to overwrite, or if something in the subtree is
+        going to be overwritten"""
 
         if node.stage_name in node.record.manager.overwrite_stages:
             overwrite_stage_found = True
