@@ -10,12 +10,12 @@
 
 # It's also important to note that obviously trees are subsets of possible
 # graphs, the DAG is not literally represented as the full actual graph, but a
-# collection of the aforementioned execution trees, because for the purposes of
-# the DAG we only care about this recursive backwards dependency pass. This
-# means there's very possibly duplication across trees, in the case of nodes
-# with outputs that are used in multiple other stages, but size isn't really
-# going to be an issue, and (I think) it's much simpler to programatically
-# construct and analyze it this way.
+# collection of the aforementioned execution trees. This is because for the
+# purposes of the DAG we only care about this recursive backwards dependency
+# pass. This means there's very possibly duplication across trees, in the case
+# of nodes with outputs that are used in multiple other stages, but size isn't
+# really going to be an issue, and (I think) it's much simpler to
+# programatically construct and analyze it this way.
 
 
 from curifactory.record import MapArtifactRepresentation, Record
@@ -36,7 +36,7 @@ class ExecutionNode:
         self.parent: ExecutionNode = None
         """The parent is a node that depends on this one/uses its outputs.
         (This means that the same execution node might appear in multiple
-        execution trees, if it's output is used by more than one other stage)"""
+        execution trees, if its output is used by more than one other stage)"""
 
         self.dependencies: list[ExecutionNode] = []
         """Dependencies are the 'subtree' - the other nodes/stages that create
@@ -71,10 +71,10 @@ class DAG:
     short circuits before execution and after collecting information about it
     (the record it's part of, what outputs are cached, etc.) This information is then
     used to determine which stages actually need to execute, working backwards from
-    the leaf nodes. This differs from curifactory's base ``no_dag`` mode because the
+    the leaf stages. This differs from curifactory's base ``no_dag`` mode because the
     need-to-execute for every stage is based primarily on whether any future stage
     actually requires this one's outputs and has a need-to-execute (resulting in a
-    recursive check backwards from the leaves.)
+    recursive check backwards from the leaf stages.)
     """
 
     def __init__(self):
