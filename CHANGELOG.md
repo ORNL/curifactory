@@ -7,12 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+DAG-based execution of stages is finally here!
+
 ### Added
+* DAG representation of experiment, this is created and analyzed during the experiment
+  mapping phase. The DAG is used to more intelligently determine which stages need to
+  execute, based on which outputs are ever actually needed for the final experiment
+  outputs (leaf nodes).
+* `--map` CLI flag, this runs the mapping phase of the experiment and then exits, printing
+  out the experiment DAG and showing which artifacts it found in cache and the run name
+  that generated them.
+* `expected_state` to aggregate stage decorator. This is a (weaker) analog of `inputs`
+  on the regular stage: it's the set of artifacts the stage expects to find in the state
+  of each record passed to the aggregate. A warning will be thrown if any of them are
+  not found on every record. This feature is primarily to support DAG-based execution,
+  the DAG needs to know what artifacts are actually necessary for computation. Setting
+  `expected_state` is technically optional, but DAG execution will likely be incorrect
+  without it.
 * `stage_cachers` list to record, at the beginning of every stage this will contain
   references to the initialized cachers for that stage - this can be used to get
   output path information.
 
+### Changed
+* `--no-map` CLI flag to `--no-dag`, which disables both the mapping phase and the
+  DAG analysis/DAG-based execution determination. This returns curifactory to its
+  regular stage-by-stage cache short-circuit determination.
+  NOTE: if any weird bugs are encountered, or if `expected_state` isn't set on
+  aggregate stages, it's advisable to use this flag.
+
 ### Fixed
+* Record copy not also containing a copy of the state artifact representations.
 * Wrong progress bar updating if multiple records/args had the same hash
 
 
