@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+* `stage_cachers` list to record, at the beginning of every stage this will contain
+  references to the initialized cachers for that stage - this can be used to get
+  output path information.
+
 ### Fixed
 * Wrong progress bar updating if multiple records/args had the same hash
 
