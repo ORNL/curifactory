@@ -1,9 +1,17 @@
-"""Class for managing an experiment's map/dag logic."""
+"""Classes for managing an experiment's map/DAG logic."""
 
 from curifactory.record import MapArtifactRepresentation, Record
 
 
 class ExecutionNode:
+    """Represents a particular stage for a particular record - a node in the
+    overall experiment graph.
+
+    Args:
+        record (Record): The record in which this stage would execute.
+        stage_name (str): The name of the stage that would execute.
+    """
+
     def __init__(self, record: Record, stage_name: str):
         self.record = record
         self.stage_name = stage_name
@@ -18,6 +26,8 @@ class ExecutionNode:
         return self.string_rep()
 
     def string_rep(self, level=0) -> str:
+        """Recursively collect and return this node's index and name and that of
+        its subtrees."""
         string = "\n"
         string += "  " * level
         string += f"({self.record.get_record_index(True)}, {self.stage_name})"
@@ -27,6 +37,22 @@ class ExecutionNode:
 
 
 class DAG:
+    """A DAG represents an entire mapped version of an experiment as a graph, where
+    the nodes are stages and the connections are the outputs of one stage mapped to
+    the associated inputs of another.
+
+    The DAG is constructed as the first step of an experiment run (provided it isn't
+    run with ``no_dag=True`` or ``--no-dag`` on the CLI), by setting the artifact
+    manager to a special ``map_mode``. The experiment code is all run but every stage
+    short circuits before execution and after collecting information about it
+    (the record it's part of, what outputs are cached, etc.) This information is then
+    used to determine which stages actually need to execute, working backwards from
+    the leaf nodes. This differs from curifactory's base ``no_dag`` mode because the
+    need-to-execute for every stage is based primarily on whether any future stage
+    actually requires this one's outputs and has a need-to-execute (resulting in a
+    recursive check backwards from the leaves.)
+    """
+
     def __init__(self):
         self.records: list[Record] = []
         self.artifacts: list[MapArtifactRepresentation] = []
@@ -34,6 +60,8 @@ class DAG:
         All of record's stage inputs and outputs should correctly index into this."""
 
         self.execution_list: list[tuple[int, str]] = []
+        """This is the list of ExecutionNode individual (non-recursive) string
+        representations: ``(RECORD_ID, STAGE_NAME)``"""
 
         self.execution_trees: list[ExecutionNode] = []
 
@@ -43,7 +71,9 @@ class DAG:
         self.determine_execution_list()
 
     def get_record_string(self, record_index: int) -> str:
-        """Get a string representation for a record."""
+        """Get a string representation for the given record. This collects
+        all of the associated stages, inputs and outputs for each, and cache
+        status for each artifact."""
         record = self.records[record_index]
         output = (
             f"==== {record.get_reference_name(True)} hash: {record.get_hash()} ===="
@@ -74,13 +104,19 @@ class DAG:
         return output
 
     def print_experiment_map(self):
-        """Print representations for each record."""
+        """Print the representations for each record."""
         string = ""
         for index, record in enumerate(self.records):
             string += self.get_record_string(index) + "\n"
         print(string)
 
     def is_leaf(self, record: Record, stage_name: str) -> bool:
+        """Check if the given stage is a leaf, based on two conditions:
+
+        1. Stage is a leaf if it has no output artifacts.
+        2. Stage is a leaf if it has outputs but they aren't used as inputs in
+            any other stages.
+        """
         stage_index = record.stages.index(stage_name)
         outputs = record.stage_outputs[stage_index]
 
@@ -102,7 +138,7 @@ class DAG:
     def is_output_used_anywhere(
         self, record: Record, stage_search_start_index: int, output: str
     ) -> bool:
-        """Check if the specified output is used as input in any stage"""
+        """Check if the specified output is used as input in any stage."""
         # Iterate each following stage in that record and see if the requested output
         # is in any of the inputs
         # TODO: instead of checking by name, we should be checking by the artifact id
@@ -114,7 +150,7 @@ class DAG:
                 if stage_input.name == output:
                     return True
 
-        # check if any following records directly use in a stage or aggregate
+        # check if any following records directly use the output in a stage or aggregate
         children = self.child_records(record)
         for child in children:
             # check if we're directly using it in a normal stage
@@ -124,9 +160,9 @@ class DAG:
 
         return False
 
-    # TODO: don't like this name
     def child_records(self, record: Record) -> list[Record]:
-        """Return a list of all records for which the provided record is an input record."""
+        """Return a list of all records for which the provided record is an input record.
+        (This occurs when calling ``record.make_copy()`` and for aggregates.)"""
         children = [
             other_record
             for other_record in self.records
@@ -135,8 +171,15 @@ class DAG:
         return children
 
     def find_leaves(self) -> list[tuple[int, str]]:
-        """Returns a list of tuples where the first element is the record index and the
-        second is the name of the stage."""
+        """Get all of the nodes who have no outputs depended on by any others, these
+        should be all of the "last" stages in the experiment and/or utility stages
+        (e.g. a stage that just handles reporting or something like that/doesn't really
+        output any artifacts.)
+
+        Returns:
+            a list of tuples where the first element is the record index and the
+            second is the name of the stage.
+        """
         leaves = []
         for index, record in enumerate(self.records):
             for stage in record.stages:
@@ -145,7 +188,6 @@ class DAG:
 
         return leaves
 
-    # TODO: rename stage tree
     def build_execution_tree_recursive(
         self, record: Record, stage: str
     ) -> ExecutionNode:
@@ -154,8 +196,8 @@ class DAG:
         "inverted" stage path (provided stage is the root)."""
         this_node = ExecutionNode(record, stage)
 
-        # go through each input and get the record and stage that provides it as an output - these are the dependencies
-        # recursively create nodes for them
+        # go through each input and get the record and stage that provides it as an output.
+        # These are the dependencies, so recursively create nodes for them
         stage_index = record.stages.index(stage)
         for stage_input_index in record.stage_inputs[stage_index]:
             stage_input: MapArtifactRepresentation = self.artifacts[stage_input_index]
@@ -170,6 +212,7 @@ class DAG:
         return this_node
 
     def build_execution_trees(self):
+        """Build an execution tree (essentially the sub-DAG) for every leaf node found."""
         self.execution_trees = []
         leaves = self.find_leaves()
         for leaf in leaves:
@@ -188,7 +231,10 @@ class DAG:
         self, node: ExecutionNode, overwrite_check_only: False
     ) -> bool:
         """Determines if the requested stage will need to execute or not, and if so prepends itself
-        and all prior stages needed to execute by recursively calls."""
+        and all prior stages needed to execute through recursive calls.
+
+        This function runs in two modes - in overwrite check mode
+        """
         stage_index = node.record.stages.index(node.stage_name)
 
         # first check if all of the outputs for this stage are cached, if any one of them is not,
@@ -230,6 +276,8 @@ class DAG:
             # this stage)
 
         # -- dependencies required mode --
+        # (we hit this mode because we know this stage needs to execute, so now recursively go
+        # through its dependencies to see if _those_ need to execute as well.)
 
         # need to execute, off with its head!
         if node.chain_rep() not in self.execution_list:
@@ -247,70 +295,3 @@ class DAG:
         # the output from this is technically only checked for inside the overwrite seek mode
         # I think
         return overwrite_stage_found
-
-    # NOTE: this version actually works (I think) without having computed the trees.
-    # def determine_execution_list_recursive(self, node: ExecutionNode, overwrite_check_only: False) -> bool:
-    #     """Determines if the requested stage will need to execute or not, and if so prepends itself
-    #     and all prior stages needed to execute by recursively calls."""
-    #     stage_index = node.record.stages.index(node.stage_name)
-
-    #     # first check if all of the outputs for this stage are cached, if any one of them is not,
-    #     # will need to add to execution chain
-    #     cached = True
-    #     for stage_output_index in node.record.stage_outputs[stage_index]:
-    #         stage_output: MapArtifactRepresentation = self.artifacts[stage_output_index]
-    #         if not stage_output.cached:
-    #             cached = False
-
-    #     # -- overwrite seek mode --
-    #     # (in this mode we add the node if and only if there's a sub node that's being overwritten.)
-
-    #     overwrite_stage_found = False
-    #     """set to true if either this stage is overwrite subtree finds overwrite"""
-
-    #     if node.stage_name in node.record.manager.overwrite_stages:
-    #         overwrite_stage_found = True
-
-    #     # we don't bother stepping into this part if _this_ stage is specified to overwrite,
-    #     # because in the dependencies required mode below we'll be going on to check dependency
-    #     # stages normally anyway.
-    #     if (cached and not node.record.manager.overwrite and not overwrite_stage_found) or overwrite_check_only:
-
-    #         # recursively go through previous stages whose output is needed for this one and
-    #         # look for a stage on the manager's overwrite stages list.
-    #         for stage_input_index in node.record.stage_inputs[stage_index]:
-    #             stage_input: MapArtifactRepresentation = self.artifacts[stage_input_index]
-
-    #             prereq_record = self.records[stage_input.record_index]
-    #             prereq_stage = stage_input.stage_name
-    #             overwrite_found = self.determine_execution_list_recursive(prereq_record, prereq_stage, True)
-
-    #             if overwrite_found:
-    #                 overwrite_stage_found = True
-
-    #         # if no dependencies need to be overwritten, we're good to stop going down.
-    #         if not overwrite_stage_found:
-    #             return False
-    #         # otherwise continue into dependencies required mode (because we need to execute
-    #         # this stage)
-
-    #     # -- dependencies required mode --
-
-    #     # need to execute, off with its head!
-    #     if node.chain_rep() not in self.execution_list:
-    #         self.execution_list.append(node.chain_rep())
-
-    #     # now recursively go through previous stages whose output is needed for this one and
-    #     # continue to build execution list.
-    #     for stage_input_index in node.record.stage_inputs[stage_index]:
-    #         stage_input: MapArtifactRepresentation = self.artifacts[stage_input_index]
-
-    #         # TODO will need diff logic for aggregate? (no I actually don't think so, I think the expected
-    #         # state addition just makes this work)
-    #         prereq_record = self.records[stage_input.record_index]
-    #         prereq_stage = stage_input.stage_name
-    #         self.determine_execution_list_recursive(prereq_record, prereq_stage, False)
-
-    #     # the output from this is technically only checked for inside the overwrite seek mode
-    #     # I think
-    #     return overwrite_stage_found
