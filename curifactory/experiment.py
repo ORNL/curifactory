@@ -168,7 +168,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         if parallel is not None:
             run_string += f" --parallel {parallel}"
         if parallel_mode:
-            run_string += " --parallel-mode"
+            run_string += " --parallel-safe"
         if global_args_indices is not None:
             for index_range in global_args_indices:
                 run_string += f" --global-indices {index_range}"
@@ -1245,7 +1245,7 @@ Examples:
         help="Divide the parameters among n subprocesses in order to cache intermediate results in parallel, and then re-run in original process with cached data.",
     )
     parallel_group.add_argument(
-        "--parallel-mode",
+        "--parallel-safe",
         dest="parallel_mode",
         action="store_true",
         help="Runs an experiment and caches intermediate values but does not report or touch experiment store and parameter registry. Note that using this flag manually is not equivalent to running an experiment with the --parallel flag, as file locks don't get used when calling this manually, potentially creating race conditions.",
