@@ -1093,11 +1093,13 @@ Examples:
     # ---- PARAMETERS ----
     parameters_group.add_argument(
         "-p",
+        "--params",
         dest="parameters_name",
         action="append",
         help="The name of a parameters python file. Does not need to include path or .py. You can specify multiple -p arguments to run all parameters",
     ).completer = params_completer
     parameters_group.add_argument(
+        "-n",
         "--names",
         dest="args_name",
         action="append",
