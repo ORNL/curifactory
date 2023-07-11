@@ -293,7 +293,7 @@ class Cacheable:
             cacher_type=str(type(self)),
             record_prior_stages=self.record.stages[:-1],
             prior_records=input_record_names,
-            params=hashing.parameters_string_hash_representation(self.record.params)
+            params=hashing.param_set_string_hash_representations(self.record.params)
             if self.record.params is not None
             else None,
             extra=self.extra_metadata,  # cachers can store any additional info here they want.

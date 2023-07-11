@@ -94,7 +94,7 @@ def test_record_gets_combo_hash_for_aggregate(configured_test_manager):
     r0 = Record(configured_test_manager, None)
     r1 = Record(configured_test_manager, ExperimentParameters(name="test"))
     r0 = agg_stage(r0, [r1])
-    combo_hash = hashing.add_args_combo_hash(
+    combo_hash = hashing.add_params_combo_hash(
         r0, [r1], "", False
     )  # TODO: what about when None passed in? Empty array?
 

@@ -401,7 +401,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                 if index not in param_set_indices_resolved:
                     continue
 
-            param_set.hash = hashing.args_hash(
+            param_set.hash = hashing.hash_param_set(
                 param_set,
                 store_in_registry=(not dry and not parallel_mode),
                 registry_path=mngr.manager_cache_path,
@@ -414,7 +414,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             # on the args? Unclear exactly why that's necessary but that is technically
             # a side-effect
             if store_full:
-                hashing.args_hash(
+                hashing.hash_param_set(
                     param_set, store_in_registry=False
                 )  # don't try to store because get_run_output_path does not exist yet
             param_sets_to_add.append(param_set)
@@ -467,7 +467,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     # TODO: is this already being done in manager get_path?
     if store_full:
         for param_set in final_param_sets:
-            hashing.args_hash(
+            hashing.hash_param_set(
                 param_set,
                 store_in_registry=(not dry and not parallel_mode),
                 registry_path=mngr.get_run_output_path(),

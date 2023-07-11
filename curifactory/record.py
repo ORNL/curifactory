@@ -74,7 +74,7 @@ class Record:
         """If this record runs an aggregate stage, we flip this flag to true to know we need to use the
         combo hash rather than the individual args hash."""
         self.combo_hash = None
-        """This gets set on records that run an aggregate stage. This is set from ``utils.add_args_combo_hash.``"""
+        """This gets set on records that run an aggregate stage. This is set from ``utils.add_params_combo_hash.``"""
         self.unstored_tracked_paths: list[dict[str, str]] = []
         """Paths obtained with get_path/get_dir that should be copied to a full
         store folder. The last executed stage should manage copying anything
@@ -140,14 +140,14 @@ class Record:
         # odd place to establish a hash that more correctly indicates a record than the args themselves (e.g. like with
         # aggregate combo hashes)
         if self.params is not None and self.params.hash is None:
-            self.params.hash = hashing.args_hash(
+            self.params.hash = hashing.hash_param_set(
                 self.params,
                 store_in_registry=not (self.manager.dry or self.manager.parallel_mode),
                 registry_path=self.manager.manager_cache_path,
             )
 
             if self.manager.store_full:
-                hashing.args_hash(
+                hashing.hash_param_set(
                     self.params,
                     store_in_registry=not (
                         self.manager.dry or self.manager.parallel_mode
@@ -169,14 +169,14 @@ class Record:
         within this record need to reflect the combo hash of all records going into it.
         """
         self.is_aggregate = True
-        self.combo_hash = hashing.add_args_combo_hash(
+        self.combo_hash = hashing.add_params_combo_hash(
             self,
             aggregate_records,
             self.manager.manager_cache_path,
             not (self.manager.dry or self.manager.parallel_mode),
         )
         if self.manager.store_full:
-            hashing.add_args_combo_hash(
+            hashing.add_params_combo_hash(
                 self,
                 aggregate_records,
                 self.manager.get_run_output_path(),

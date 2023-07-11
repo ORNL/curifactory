@@ -1,4 +1,31 @@
-"""Utility functions for hashing parameter class instances."""
+"""Utility functions for generating hashes and for parameter sets.
+
+The hash of a parameter set is crucial to curifactory, as this hash gets
+prefixed to filenames stored in the cache and so is used to determine whether a
+particular artifact has already been computed for the given parameter set.
+
+The basic idea of this hash computation is that some representation for every
+parameter in a parameter set is retrieved, which is then turned into a string,
+and the md5 hash of that string is then computed. The integer value of the
+resulting md5 hashes of each parameter is added up, and the final integer is
+turned back into a string hex "hash".
+
+An important concept is the ability to modify any given parameter's
+representation that is used for the md5 hash, and whether it's included as part
+of the overall hash at all. Some types of objects in python by default will only
+return a memory pointer when ``repr`` is called (which is the default mechanism
+we use for getting a string representation,) which means that every time an
+experiment is run, even if the parameters _should_ be the exact same, the hash
+will be different. By setting a dictionary of ``hash_representations`` on the
+parameter class, we can indivdiually control the representation computation for
+each parameter. We can also set the parameter representation to ``None``, which
+means it will be ignored for the purposes of the hash. This is useful for
+"operational parameters", or configuration of an experimeriment that wouldn't
+actually modify the artifacts.  (e.g. the number of gpu's to train an ML model
+on and so forth.)
+
+TODO: examples? (prob put this in the non-python-file docs)
+"""
 
 import hashlib
 import json
@@ -8,7 +35,7 @@ from dataclasses import field, fields, is_dataclass
 from typing import Any, Callable, Union
 
 PARAMETERS_BLACKLIST = ["name", "hash", "overwrite", "hash_representations"]
-"""The default parameters on the ExperimentArgs class that we always
+"""The default parameters on the ExperimentParameters class that we always
 ignore as part of the hash."""
 
 
@@ -49,8 +76,8 @@ def set_hash_functions(*args, **kwargs):
 
 
 def get_parameter_hash_value(param_set, param_name: str) -> tuple[str, Any]:
-    """Determines which hashing representation mechanism to use, computes the result
-    of the mechanism, and returns both.
+    """Determines which hashing representation mechanism to use for the specified
+    parameter, computes the result of the mechanism, and returns both.
 
     This function takes any overriding ``hash_representations`` into account. The list of mechanisms
     it attempts to use to get a hashable representation of the parameter in order are:
@@ -118,13 +145,13 @@ def get_parameter_hash_value(param_set, param_name: str) -> tuple[str, Any]:
 
     # -- some sane default hashing mechanisms --
 
-    # 4. if it's a dataclass, recursively call get_parameters_hash_values on it, this allows
-    # user to separate out subsets of args and still set custom hashing functions
+    # 4. if it's a dataclass, recursively call get_param_set_hash_values on it, this allows
+    # user to separate out subsets of parameters and still set custom hashing functions
     # on those subsets if they want.
     elif is_dataclass(value):
         return (
-            f"get_parameters_hash_values(param_set, {param_name})",
-            get_parameters_hash_values(value),
+            f"get_param_set_hash_values(param_set, {param_name})",
+            get_param_set_hash_values(value),
         )
 
     # 5. use the function name if it's a callable, rather than a pointer address
@@ -135,7 +162,7 @@ def get_parameter_hash_value(param_set, param_name: str) -> tuple[str, Any]:
     return (f"repr(param_set.{param_name})", repr(value))
 
 
-def get_parameters_hash_values(param_set) -> dict[str, tuple[str, Any]]:
+def get_param_set_hash_values(param_set) -> dict[str, tuple[str, Any]]:
     """Collect the hash representations from every parameter in the passed parameter set.
 
     This essentially just calls ``get_parameter_hash_value`` on every parameter.
@@ -159,7 +186,7 @@ def _compute_hash_part(hash_representations: dict[str, tuple[str, Any]]) -> int:
             continue
 
         # make sure to recursively compute on any subdataclasses
-        if hash_rep.startswith("get_parameters_hash_values"):
+        if hash_rep.startswith("get_param_set_hash_values"):
             hash_total += _compute_hash_part(hash_rep_value)
         else:
             # Note that we concatenate the string of the value with the hash key, otherwise if two parameters had eachother's
@@ -183,40 +210,21 @@ def compute_hash(hash_representations: dict[str, tuple[str, Any]]) -> str:
     return final_hash
 
 
-# TODO: (3/10/2023) unclear how necessary this is, it's only used in this file
-# and the logic is simple enough it could directly be included in ``args_hash``
-def hash_parameterset(param_set, dry: bool = False) -> Union[str, dict]:
-    """Run all of the hashing mechanisms for the parameter set and either
-    return the hash or, if ``dry`` is ``True`` return the dictionary of representations.
-
-    Args:
-        dry (bool): Return a dictionary with each value as the tuple that contains
-            the strategy used to compute the values to be hashed as well as the
-            output from that hashing function code. Useful for debugging custom
-            hashing functions.
-    """
-    hash_reps = get_parameters_hash_values(param_set)
-    if dry:
-        return hash_reps
-    else:
-        return compute_hash(hash_reps)
-
-
 # TODO: (3/10/2023) allow flag to still at least show the values of ignored parameters
-def parameters_string_hash_representation(param_set) -> dict[str, str]:
+def param_set_string_hash_representations(param_set) -> dict[str, str]:
     """Get the hash representation of a parameter set into a json-dumpable dictionary.
 
     This is used both in the output report as well as in the params registry.
     """
-    hash_reps = get_parameters_hash_values(param_set)
+    hash_reps = get_param_set_hash_values(param_set)
     rep_dictionary = {}
     skipped = {}
     for key, rep_tuple in hash_reps.items():
         if key == "name":
             rep_dictionary[key] = param_set.name
         # check for a sub-dataclass, which might have ignored params of its own
-        elif rep_tuple[0].startswith("get_parameters_hash_values"):
-            rep_dictionary[key] = parameters_string_hash_representation(
+        elif rep_tuple[0].startswith("get_param_set_hash_values"):
+            rep_dictionary[key] = param_set_string_hash_representations(
                 getattr(param_set, key)
             )
         elif rep_tuple[1] is not None:
@@ -227,7 +235,7 @@ def parameters_string_hash_representation(param_set) -> dict[str, str]:
             try:
                 # separately handle a sub-dataclass, since we won't get the right strategy if it was skipped
                 if is_dataclass(getattr(param_set, key)):
-                    skipped[key] = parameters_string_hash_representation(
+                    skipped[key] = param_set_string_hash_representations(
                         getattr(param_set, key)
                     )
                 else:
@@ -239,17 +247,17 @@ def parameters_string_hash_representation(param_set) -> dict[str, str]:
     return rep_dictionary
 
 
-def args_hash(
+def hash_param_set(
     param_set,
     store_in_registry: bool = False,
     registry_path: str = None,
     dry: bool = False,
 ) -> Union[str, dict]:
     """Returns a hex string representing the passed arguments, optionally recording
-    the arguments and hash in the params registry.
+    the parameters and hash in the params registry.
 
-    Note that this hash is computed once and then stored on the args instance. If values
-    on args instance are changed and ``args_hash`` is called again, it won't be reflected
+    Note that this hash is computed once and then stored on the parameter set. If values
+    on parameter set are changed and ``hash_param_set`` is called again, it won't be reflected
     in the hash.
 
     Args:
@@ -258,21 +266,30 @@ def args_hash(
             If this is ``None``, ignore ``store_in_registry``.
         store_in_registry (bool): Whether to update the params registry with the passed
             arguments or not.
-        dry (bool): If this is set, don't store and instead of the hash return the
-            dictionary of "code" that will be used to hash - useful for debugging.
+        dry (bool): If ``True``, don't store and instead return a dictionary
+            with each value as the tuple that contains the strategy used to compute
+            the values to be hashed as well as the output from that hashing function
+            code. Useful for debugging custom hashing functions.
 
     Returns:
         The hash string computed from the arguments, or the dictionary of hashing functions
-        if ``dry`` is ``True``. (The output from ``get_parameters_hash_values``)
+        if ``dry`` is ``True``. (The output from ``get_param_set_hash_values``)
     """
+    hash_reps = get_param_set_hash_values(param_set)
     if dry:
-        return hash_parameterset(param_set, dry=True)
+        return hash_reps
 
+    # if the hash has already been calculated/stored in the parameter set, use that
+    # NOTE: I think this is also what allows someone to manually set a hash? This
+    # functionality is untested
     if param_set.hash is not None:
         hash_str = param_set.hash
     else:
-        hash_str = hash_parameterset(param_set, dry=False)
+        # otherwise compute the integer for the hash representations and get the hex
+        # string for it
+        hash_str = compute_hash(hash_reps)
 
+    # handle saving the hash and associated parameters in the registry
     if store_in_registry and registry_path is not None:
         registry_path = os.path.join(registry_path, "params_registry.json")
         registry = {}
@@ -281,18 +298,18 @@ def args_hash(
             with open(registry_path) as infile:
                 registry = json.load(infile)
 
-        registry[hash_str] = parameters_string_hash_representation(param_set)
+        registry[hash_str] = param_set_string_hash_representations(param_set)
         with open(registry_path, "w") as outfile:
             json.dump(registry, outfile, indent=4, default=lambda x: str(x))
 
     return hash_str
 
 
-# TODO: (3/5/2023) do I need the same default registry_path to None logic here as in args_hash?
-def add_args_combo_hash(
+# TODO: (3/5/2023) do I need the same default registry_path to None logic here as in hash_param_set?
+def add_params_combo_hash(
     active_record, records_list, registry_path: str, store_in_registry: bool = False
 ):
-    """Returns a hex string representing the the combined argument set hashes from the
+    """Returns a hex string representing the the combined parameter set hashes from the
     passed records list. This is mainly used for getting a hash for an aggregate stage,
     which may not have a meaningful argument set of its own.
 

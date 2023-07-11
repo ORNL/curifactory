@@ -62,7 +62,7 @@ class ExperimentParameters:
 
     # TODO: implement __eq__ based on args_hash
 
-    def args_hash(self, dry=False):
+    def params_hash(self, dry=False):
         """Convenience function to see the hash of these parameters that curifactory is
         computing, or debug them with ``dry=True``."""
-        return hashing.args_hash(self, store_in_registry=False, dry=dry)
+        return hashing.hash_param_set(self, store_in_registry=False, dry=dry)

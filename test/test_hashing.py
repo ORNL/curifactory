@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 import curifactory as cf
-from curifactory.hashing import parameters_string_hash_representation
+from curifactory.hashing import param_set_string_hash_representations
 
 
 def test_args_subclass_hash_includes_all_sub_params():
@@ -16,7 +16,7 @@ def test_args_subclass_hash_includes_all_sub_params():
         b: int = None
 
     args1 = MyExperimentArgs(name="test", a=6, b=7)
-    dry_hash_dict = args1.args_hash(dry=True)
+    dry_hash_dict = args1.params_hash(dry=True)
     assert dry_hash_dict["a"] == ("repr(param_set.a)", "6")
     assert dry_hash_dict["b"] == ("repr(param_set.b)", "7")
 
@@ -27,7 +27,7 @@ def test_args_subclass_hash_includes_all_sub_params():
     # double check that different args with different params is in fact
     # a different hash
     args2 = MyExperimentArgs(a=5, b=6)
-    assert args1.args_hash() != args2.args_hash()
+    assert args1.params_hash() != args2.params_hash()
 
 
 def test_static_hashing_function_same_when_vals_diff():
@@ -43,7 +43,7 @@ def test_static_hashing_function_same_when_vals_diff():
 
     args1 = MyExperimentArgs()
     args2 = MyExperimentArgs(a=6)
-    assert args1.args_hash() == args2.args_hash()
+    assert args1.params_hash() == args2.params_hash()
 
 
 def test_none_hashing_function_same_when_vals_diff():
@@ -59,9 +59,9 @@ def test_none_hashing_function_same_when_vals_diff():
 
     args1 = MyExperimentArgs()
     args2 = MyExperimentArgs(a=6)
-    assert args1.args_hash() == args2.args_hash()
+    assert args1.params_hash() == args2.params_hash()
     assert (
-        args1.args_hash(dry=True)["a"][0]
+        args1.params_hash(dry=True)["a"][0]
         == "SKIPPED: set to None in hash_representations"
     )
 
@@ -86,8 +86,8 @@ def test_none_value_not_hashed():
     args1 = MyExperimentArgs1()
     args2 = MyExperimentArgs2()
 
-    assert args1.args_hash() == args2.args_hash()
-    assert args1.args_hash(dry=True)["b"][0] == "SKIPPED: value is None"
+    assert args1.params_hash() == args2.params_hash()
+    assert args1.params_hash(dry=True)["b"][0] == "SKIPPED: value is None"
 
 
 def test_new_param_none_hash_same_result():
@@ -109,9 +109,9 @@ def test_new_param_none_hash_same_result():
     args1 = MyExperimentArgs1()
     args2 = MyExperimentArgs2()
 
-    assert args1.args_hash() == args2.args_hash()
+    assert args1.params_hash() == args2.params_hash()
     assert (
-        args2.args_hash(dry=True)["b"][0]
+        args2.params_hash(dry=True)["b"][0]
         == "SKIPPED: set to None in hash_representations"
     )
 
@@ -137,7 +137,7 @@ def test_invalid_dataclassparam_should_not_change_hash():
     args1 = MyExperimentArgs1()
     args2 = MyExperimentArgs2(b=7)
 
-    assert args1.args_hash() == args2.args_hash()
+    assert args1.params_hash() == args2.params_hash()
 
 
 def test_new_ignored_param_sub_dataclass():
@@ -165,7 +165,7 @@ def test_new_ignored_param_sub_dataclass():
     a1 = Args1()
     a2 = Args2()
 
-    assert a1.args_hash() == a2.args_hash()
+    assert a1.params_hash() == a2.params_hash()
 
 
 def test_parameter_name_included_in_hash():
@@ -179,7 +179,7 @@ def test_parameter_name_included_in_hash():
 
     args1 = MyExperimentArgs(a=5, b=6)
     args2 = MyExperimentArgs(a=6, b=5)
-    assert args1.args_hash() != args2.args_hash()
+    assert args1.params_hash() != args2.params_hash()
 
 
 def test_custom_hashing_composed_dataclasses():
@@ -201,10 +201,10 @@ def test_custom_hashing_composed_dataclasses():
 
     args1 = MyExperimentArgs()
     args2 = MyExperimentArgs(others=NormalDC(d=7))
-    assert args1.args_hash() == args2.args_hash()
-    assert type(args1.args_hash(True)["others"][1]) == dict
+    assert args1.params_hash() == args2.params_hash()
+    assert type(args1.params_hash(True)["others"][1]) == dict
     assert (
-        args1.args_hash(True)["others"][1]["d"][0]
+        args1.params_hash(True)["others"][1]["d"][0]
         == "SKIPPED: set to None in hash_representations"
     )
 
@@ -226,7 +226,7 @@ def test_composed_dataclasses_diff():
 
     args1 = MyExperimentArgs()
     args2 = MyExperimentArgs(others=NormalDC(d=7))
-    assert args1.args_hash() != args2.args_hash()
+    assert args1.params_hash() != args2.params_hash()
 
 
 def test_set_hash_functions_with_kwargs():
@@ -306,7 +306,7 @@ def test_set_hash_functions_on_args_instance():
     args1 = MyExperimentArgs()
 
     args0.hash_representations["c"] = None
-    assert args0.args_hash() != args1.args_hash()
+    assert args0.params_hash() != args1.params_hash()
 
 
 # TODO: (3/9/2023) I'm still unclear on if this should actually be the intended functionality
@@ -320,12 +320,12 @@ def test_hash_stays_same_after_param_change():
         c: int = 5
 
     args = MyExperimentArgs()
-    hash0 = args.args_hash()
+    hash0 = args.params_hash()
     args.hash = hash0  # this emulates what run_experiment is doing.
     assert args.hash == hash0
 
     args.c = 3
-    hash1 = args.args_hash()
+    hash1 = args.params_hash()
     assert hash1 == hash0
 
 
@@ -340,13 +340,13 @@ def test_hash_changes_after_param_change_and_hash_set_to_none():
         c: int = 5
 
     args = MyExperimentArgs()
-    hash0 = args.args_hash()
+    hash0 = args.params_hash()
     args.hash = hash0  # this emulates what run_experiment is doing.
     assert args.hash == hash0
 
     args.c = 3
     args.hash = None
-    hash1 = args.args_hash()
+    hash1 = args.params_hash()
     assert hash1 != hash0
 
 
@@ -362,7 +362,7 @@ def test_none_hashing_function_includes_val_in_str_rep():
         hash_representations: dict = cf.set_hash_functions(a=None)
 
     args = MyExperimentArgs(a=6)
-    rep = parameters_string_hash_representation(args)
+    rep = param_set_string_hash_representations(args)
     assert "a" in rep["IGNORED_PARAMS"]
     assert rep["IGNORED_PARAMS"]["a"] == "6"
 
@@ -385,7 +385,7 @@ def test_subdataclass_val_in_str_rep_correct():
         others: NormalDC = NormalDC()
 
     args = MyExperimentArgs(others=NormalDC(d=7))
-    rep = parameters_string_hash_representation(args)
+    rep = param_set_string_hash_representations(args)
     assert rep["others"]["c"] == "5"
     assert "d" in rep["others"]["IGNORED_PARAMS"]
     assert rep["others"]["IGNORED_PARAMS"]["d"] == "7"
@@ -411,7 +411,7 @@ def test_none_hash_subdataclass_val_in_str_rep_correct():
         hash_representations: dict = cf.set_hash_functions(others=None)
 
     args = MyExperimentArgs(others=NormalDC(d=7))
-    rep = parameters_string_hash_representation(args)
+    rep = param_set_string_hash_representations(args)
     assert "others" in rep["IGNORED_PARAMS"]
     assert "d" in rep["IGNORED_PARAMS"]["others"]["IGNORED_PARAMS"]
     assert rep["IGNORED_PARAMS"]["others"]["IGNORED_PARAMS"]["d"] == "7"

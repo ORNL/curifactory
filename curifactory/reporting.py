@@ -561,7 +561,7 @@ def render_report_argset_dump(manager) -> list[str]:
         html_lines.append(f"<h4>{name} - {args_hash}</h4>")
         html_lines.append("<pre>")
 
-        argset_data = hashing.parameters_string_hash_representation(argset)
+        argset_data = hashing.param_set_string_hash_representations(argset)
         html_lines.append(html.escape(json.dumps(argset_data, indent=2, default=str)))
         html_lines.append("</pre>")
 

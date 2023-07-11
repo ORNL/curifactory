@@ -285,7 +285,7 @@ def test_stage_hash_after_aggregate_with_no_args(configured_test_manager):
 
     r0 = normal_stage(agg_stage(r0, [r1]))
 
-    combo_hash = hashing.add_args_combo_hash(r0, [r1], "", False)
+    combo_hash = hashing.add_params_combo_hash(r0, [r1], "", False)
     output_path_agg = os.path.join(
         configured_test_manager.cache_path, f"test_{combo_hash}_agg_stage_testing.json"
     )
