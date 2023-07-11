@@ -5,15 +5,14 @@ import shutil
 import pytest
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
-from curifactory.args import ExperimentArgs
-
 # import curifactory.experiment  # noqa: F401 -- flake8 doesn't see it's used in mock
 from curifactory.manager import ArtifactManager
+from curifactory.params import ExperimentParameters
 
 
 @pytest.fixture()
 def sample_args():
-    return ExperimentArgs(name="sample_args", hash="sample_hash")
+    return ExperimentParameters(name="sample_args", hash="sample_hash")
 
 
 @pytest.fixture()

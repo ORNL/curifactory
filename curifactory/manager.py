@@ -252,7 +252,7 @@ class ArtifactManager:
         self.map = []
 
         for record in self.records:
-            mapped_record = Record(self, record.args, hide=True)
+            mapped_record = Record(self, record.params, hide=True)
             mapped_record.stages = record.stages
             mapped_record.stage_inputs = record.stage_inputs
             mapped_record.stage_outputs = record.stage_outputs
@@ -273,13 +273,13 @@ class ArtifactManager:
             # TODO: use aggregate (or non) hash as the way to find the correct
             # record.
             taskid = -1
-            name = record.args.name if record.args is not None else "None"
+            name = record.params.name if record.params is not None else "None"
             record_hash = record.get_hash()
             record_index = -1
             for i, map_record in enumerate(self.map):
                 map_record_hash = map_record.get_hash()
                 # map_name = (
-                #     map_record.args.name if map_record.args is not None else "None"
+                #     map_record.params.name if map_record.params is not None else "None"
                 # )
                 if map_record_hash == record_hash:
                     taskid = map_record.taskid
@@ -383,10 +383,10 @@ class ArtifactManager:
         master_list = []
         found_hashes = []
         for record in self.records:
-            if record.args is not None:
-                if record.args.hash not in found_hashes:
-                    master_list.append(record.args)
-                    found_hashes.append(record.args.hash)
+            if record.params is not None:
+                if record.params.hash not in found_hashes:
+                    master_list.append(record.params)
+                    found_hashes.append(record.params.hash)
 
         return master_list
 

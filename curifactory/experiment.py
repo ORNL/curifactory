@@ -24,7 +24,7 @@ CONFIGURATION_FILE = "curifactory_config.json"
 
 def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at some point
     experiment_name,
-    parameters_list,
+    param_files,
     overwrite_override=None,
     cache_dir_override=None,
     mngr: ArtifactManager = None,
@@ -39,9 +39,9 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     build_notebook: bool = False,
     run_string: str = None,
     stage_overwrites: list[str] = None,
-    args_names: list[str] = None,
-    args_indices: list[str] = None,
-    global_args_indices: list[str] = None,
+    param_set_names: list[str] = None,
+    param_set_indices: list[str] = None,
+    global_param_set_indices: list[str] = None,
     parallel: int = None,
     parallel_mode: bool = False,
     parallel_lock: mp.Lock = None,
@@ -61,11 +61,11 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     with the given parameters.
 
     Args:
-        experiment_name (str): The name of the experiment script (without the :code:`.py`).
-        parameters_list (List[str]): A list of names of parameter files (without the :code:`.py`).
+        experiment_name (str): The name of the experiment script (without the ``.py``).
+        param_files (List[str]): A list of names of parameter files (without the ``.py``).
         overwrite_override (bool): Whether to force overwrite on all cache data.
         cache_dir_override (str): Specify a non-default cache location. This would be used if
-            running with the cache from a previous --store-full run.
+            running with the cache from a previous ``--store-full`` run.
         mngr (ArtifactManager): An artifact manager to use for the experiment. One will be automatically
             created if none is passed.
         log (bool): Whether to write a log file or not.
@@ -73,8 +73,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         dry (bool): Setting dry to true will suppress saving any files (including logs), and will
             not update parameter stores. (It should have no effect on any files.)
         dry_cache (bool): Setting this to true only suppresses saving cache files. This is recommended
-            if you're running with a cache_dir_override for some previous --store-full run, so you
-            don't accidentally overwrite or add new data to the --store-full directory.
+            if you're running with a cache_dir_override for some previous ``--store-full`` run, so you
+            don't accidentally overwrite or add new data to the ``--store-full`` directory.
         store_full (bool): Store environment info, log, output report, and all cached files in a
             run-specific folder (:code:`data/runs` by default)
         log_errors (bool): Whether to include error messages in the log output.
@@ -87,17 +87,17 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         stage_overwrites (List[str]): A list of string stage names that you should overwrite, this is
             useful if there are specific stages you sometimes want to recompute but the remainder of
             the data can remain cached.
-        args_names (List[str]): A list of argument names to run. If this is specified only arguments
-            returned from the passed parameters, with these names, will be passed to the experiment.
-        args_indices (List[str]): A list of argument indices to run. If this is specified, only the
-            arguments returned from the passed parameter files, indexed by the ranges specified, will
+        param_set_names (List[str]): A list of parameter set names to run. If this is specified, only parameter
+            sets with these names will be passed on to the experiment.
+        param_set_indices (List[str]): A list of parameter set indices to run. If this is specified, only the
+            parameter sets returned from the passed parameter files, indexed by the ranges specified, will
             be passed to the experiment. Note that you can specify ranges delineated with '-', e.g. '3-7'.
-        global_args_indices (List[str]): A list of argument indices to run, indexing the entire set
-            of parameters passed to the experiment instead of each individual paarameters file. This
+        global_param_set_indices (List[str]): A list of parameter set indices to run, indexing the entire collection
+            of parameter sets passed to the experiment instead of each individual parameters file. This
             can be used to help more intelligently parallelize runs. Formatting follows the same rules
-            as args_indices.
+            as param_set_indices.
         parallel (int): How many subprocesses to split this run into. If specified, the experiment will
-            be run that many times with divided up global_args_indices in order to generated cached
+            be run that many times with divided up global_param_set_indices in order to generated cached
             data for all parameters, and then re-run a final time with all cached data combined. Note
             then that any speedup from this is based on how well and how many steps are cached.
         parallel_mode (bool): This is handled by the parallel parameter, informing a particular subproc
@@ -113,7 +113,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             do not get the same timestamp if started a few seconds later, the log gets stored in an
             incorrectly named file.
         lazy (bool): If true, attempts to set all stage outputs as Lazy objects. Outputs that do not have
-            a cacher specified will be given a PickleCacher. Note that objects without a cacher that do not
+            a cacher specified will be given a ``PickleCacher``. Note that objects without a cacher that do not
             handle pickle serialization correctly may cause errors.
         ignore_lazy (bool): Run the experiment disabling any lazy object caching/keeping everything in memory.
             This can save time when memory is less of an issue.
@@ -150,14 +150,14 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
     if run_string is None:
         run_string = f"experiment {experiment_name}"
-        for param_file in parameters_list:
+        for param_file in param_files:
             run_string += f" -p {param_file}"
-        if args_names is not None:
-            for arg_name in args_names:
-                run_string += f" --names {arg_name}"
-        if args_indices is not None:
-            for arg_index in args_indices:
-                run_string += f" --indices {arg_index}"
+        if param_set_names is not None:
+            for param_set_name in param_set_names:
+                run_string += f" --names {param_set_name}"
+        if param_set_indices is not None:
+            for param_set_index in param_set_indices:
+                run_string += f" --indices {param_set_index}"
         if stage_overwrites is not None:
             for stage_overwrite in stage_overwrites:
                 run_string += f" --overwrite-stage {stage_overwrite}"
@@ -169,8 +169,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             run_string += f" --parallel {parallel}"
         if parallel_mode:
             run_string += " --parallel-safe"
-        if global_args_indices is not None:
-            for index_range in global_args_indices:
+        if global_param_set_indices is not None:
+            for index_range in global_param_set_indices:
                 run_string += f" --global-indices {index_range}"
         if store_full:
             run_string += " --store-full"
@@ -260,7 +260,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             notes=notes,
         )
         # mngr.experiment_name = experiment_name
-        mngr.experiment_args_file_list = parameters_list
+        mngr.experiment_args_file_list = param_files
         if run_num_override is not None:
             mngr.experiment_run_number = run_num_override
         if run_ts_override is not None:
@@ -275,33 +275,33 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         mngr.cache_path = cache_dir_override
 
     # resolve args indices and any specified ranges
-    args_indices_resolved = []
-    if args_indices is not None:
-        for entry in args_indices:
+    param_set_indices_resolved = []
+    if param_set_indices is not None:
+        for entry in param_set_indices:
             if "-" in entry:
                 start = int(entry[: entry.index("-")])
                 end = int(entry[entry.index("-") + 1 :])
-                args_indices_resolved.extend(list(range(start, end)))
+                param_set_indices_resolved.extend(list(range(start, end)))
             else:
-                args_indices_resolved.append(int(entry))
+                param_set_indices_resolved.append(int(entry))
 
     # resolve global args indices and any specified ranges
-    global_args_indices_resolved = []
-    if global_args_indices is not None:
-        for entry in global_args_indices:
+    global_param_set_indices_resolved = []
+    if global_param_set_indices is not None:
+        for entry in global_param_set_indices:
             if "-" in entry:
                 start = int(entry[: entry.index("-")])
                 end = int(entry[entry.index("-") + 1 :])
-                global_args_indices_resolved.extend(list(range(start, end)))
+                global_param_set_indices_resolved.extend(list(range(start, end)))
             else:
-                global_args_indices_resolved.append(int(entry))
+                global_param_set_indices_resolved.append(int(entry))
 
     # handling logging. NOTE: we do have to keep this here because of parallel considerations
     if log:
         log_name = mngr.get_reference_name()
         if parallel_mode:
-            if global_args_indices is not None:
-                log_name += f"_{str(global_args_indices[0])}"
+            if global_param_set_indices is not None:
+                log_name += f"_{str(global_param_set_indices[0])}"
             else:
                 log_name += f"_p{str(os.getpid())}"
         log_path = os.path.join(mngr.logs_path, f"{log_name}.log")
@@ -329,12 +329,12 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         )
 
     # insert an implied parameter file that is the same as the experiment file, if no parameters were explicitly listed
-    if parameters_list is None or len(parameters_list) == 0:
+    if param_files is None or len(param_files) == 0:
         logging.info(
             "No parameter files listed, assuming an implied experiment file get_params(), inserting '%s'"
             % experiment_name
         )
-        parameters_list = [experiment_name]
+        param_files = [experiment_name]
 
     # let the user know if we detected a distributed run
     if distributed_mode_detected:
@@ -350,8 +350,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         )
 
     # load params files
-    argsets = []
-    for params in parameters_list:
+    final_param_sets = []
+    for params in param_files:
         mngr.experiment_args[params] = []
         # TODO: if we get a ModuleNotFoundError, suggest ensuring __init__.py as appropriate and that module paths don't have '/'
         param_module_string = f"{mngr.config['params_module_name']}.{params}"
@@ -372,8 +372,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                 )
                 raise e
 
-        param_argsets = param_module.get_params()
-        if type(param_argsets) != list:
+        param_sets = param_module.get_params()
+        if type(param_sets) != list:
             logging.error(
                 "Parameter file '%s' did not return a list, please make sure any `get_params()` functions are returning non-empty arrays."
                 % params
@@ -382,32 +382,31 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                 "Parameter file '%s' did not return a list, please make sure any `get_params()` functions are returning non-empty arrays."
                 % params
             )
-        argsets_to_add = []
+        param_sets_to_add = []
 
         # NOTE: we don't want to set override in parent proc on parallel runs.
         if overwrite_override and parallel is None:
-            for argset in param_argsets:
+            for argset in param_sets:
                 argset.overwrite = True
 
-        # TODO: if param_argsets is not of type List, throw exception and advise
         # compute the hash of every argset and store the params
-        for index, argset in enumerate(param_argsets):
+        for index, param_set in enumerate(param_sets):
             # if specific names requested, just grab those
-            if args_names is not None:
-                if argset.name not in args_names:
+            if param_set_names is not None:
+                if param_set.name not in param_set_names:
                     continue
 
             # if specific indices requested, just grab those
-            if len(args_indices_resolved) > 0:
-                if index not in args_indices_resolved:
+            if len(param_set_indices_resolved) > 0:
+                if index not in param_set_indices_resolved:
                     continue
 
-            argset.hash = hashing.args_hash(
-                argset,
+            param_set.hash = hashing.args_hash(
+                param_set,
                 store_in_registry=(not dry and not parallel_mode),
                 registry_path=mngr.manager_cache_path,
             )
-            mngr.experiment_args[params].append((argset.name, argset.hash))
+            mngr.experiment_args[params].append((param_set.name, param_set.hash))
             # TODO: (01/24/2022) I have no idea what the point of this args_hash is...
             # it's not storing anything, and args_hash has no side-effects, so unclear
             # on why this matters.
@@ -416,32 +415,32 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             # a side-effect
             if store_full:
                 hashing.args_hash(
-                    argset, store_in_registry=False
+                    param_set, store_in_registry=False
                 )  # don't try to store because get_run_output_path does not exist yet
-            argsets_to_add.append(argset)
+            param_sets_to_add.append(param_set)
 
-        argsets.extend(argsets_to_add)
+        final_param_sets.extend(param_sets_to_add)
 
     # check that there wasn't an invalid name and all requested parameterset names were found
-    if args_names is not None:
-        for args_name in args_names:
+    if param_set_names is not None:
+        for param_set_name in param_set_names:
             found = False
-            for argset in argsets:
-                if args_name == argset.name:
+            for param_set in final_param_sets:
+                if param_set_name == param_set.name:
                     found = True
                     break
             if not found:
                 logging.error(
                     "Paramset name '%s' not found in any of the provided parameter files."
-                    % args_name
+                    % param_set_name
                 )
                 raise RuntimeError(
                     "Paramset name '%s' not found in any of the provided parameter files."
-                    % args_name
+                    % param_set_name
                 )
 
     # check that we actually have parameters
-    if len(argsets) == 0:
+    if len(final_param_sets) == 0:
         logging.error(
             "No parameter sets found, please make sure any `get_params()` functions are returning non-empty arrays."
         )
@@ -449,8 +448,10 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             "No parameter sets found, please make sure any `get_params()` functions are returning non-empty arrays."
         )
 
-    if len(global_args_indices_resolved) > 0:
-        argsets = [argsets[i] for i in global_args_indices_resolved]
+    if len(global_param_set_indices_resolved) > 0:
+        final_param_sets = [
+            final_param_sets[i] for i in global_param_set_indices_resolved
+        ]
 
     if not parallel_mode:
         mngr.store()
@@ -465,9 +466,9 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     # store params registry in run folder
     # TODO: is this already being done in manager get_path?
     if store_full:
-        for argset in argsets:
+        for param_set in final_param_sets:
             hashing.args_hash(
-                argset,
+                param_set,
                 store_in_registry=(not dry and not parallel_mode),
                 registry_path=mngr.get_run_output_path(),
             )
@@ -488,15 +489,15 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     if parallel is not None:
         logging.info("Running experiment in parallel on %s processes..." % parallel)
         # divide up args list
-        countper = int(len(argsets) / parallel)
+        countper = int(len(final_param_sets) / parallel)
         counts = [countper] * parallel
-        remainder = len(argsets) % parallel
+        remainder = len(final_param_sets) % parallel
         index = 0
         while remainder > 0:
             counts[index] += 1
             remainder -= 1
             index += 1
-            if index >= len(argsets):
+            if index >= len(final_param_sets):
                 index = 0
 
         # get the formatted string range for each thread
@@ -521,7 +522,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                 target=run_experiment,
                 args=(
                     experiment_name,
-                    parameters_list,
+                    param_files,
                     overwrite_override,
                     cache_dir_override,
                     None,  # mngr
@@ -536,8 +537,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     False,  # build_notebook
                     None,  # run_string
                     stage_overwrites,
-                    args_names,  # args_names
-                    args_indices,  # args_indices
+                    param_set_names,  # param_set_names
+                    param_set_indices,  # param_set_indices
                     index_range,
                     None,  # parallel
                     True,  # parallel_mode
@@ -585,7 +586,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     if parallel_mode:
         logging.info(
             "Running experiment process for parameter range %s"
-            % str(global_args_indices)
+            % str(global_param_set_indices)
         )
 
     # run the experiment
@@ -598,7 +599,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         if not parallel_mode and not no_map:
             logging.info("Pre-mapping stages and records")
             mngr.map_mode = True
-            experiment_module.run(argsets, mngr)
+            experiment_module.run(final_param_sets, mngr)
             mngr.map_mode = False
             logging.debug("Constructing record map")
             mngr.map_records()
@@ -643,7 +644,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
                 mngr.map_progress.start()
 
-        results = experiment_module.run(argsets, mngr)
+        results = experiment_module.run(final_param_sets, mngr)
 
         if not parallel_mode and not no_map and progress:
             mngr.map_progress.stop()
@@ -666,7 +667,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
     # send the results from a parallel process to the main process
     if parallel_mode and parallel_queue is not None:
-        parallel_queue.put((global_args_indices[0], mngr.status, mngr.error))
+        parallel_queue.put((global_param_set_indices[0], mngr.status, mngr.error))
 
     if not parallel_mode:
         mngr.store()
@@ -692,8 +693,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             pass
         write_experiment_notebook(
             experiment_name,
-            parameters_list,
-            argsets,
+            param_files,
+            final_param_sets,
             mngr,
             path=os.path.join(notebook_loc, mngr.get_reference_name()),
             use_global_cache=None,
@@ -706,8 +707,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         else:
             write_experiment_notebook(
                 experiment_name,
-                parameters_list,
-                argsets,
+                param_files,
+                final_param_sets,
                 mngr,
                 mngr.get_run_output_path("run_notebook"),
                 use_global_cache=True,
@@ -728,7 +729,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
 def write_experiment_notebook(
     experiment_name,
-    parameters_list,
+    param_files,
     argsets,
     manager,
     path,
@@ -743,7 +744,7 @@ def write_experiment_notebook(
 
     Args:
         experiment_name (str): The name of the run experiment
-        parameters_list (List[str]): List of parameter file names
+        param_files (List[str]): List of parameter file names
         argsets (List[Args]): List of all used :code:`Args` from parameter files.
         manager (ArtifactManager): :code:`ArtifactManager` used in the experiment.
         path (str): The path to the directory to store the notebook in.
@@ -856,7 +857,7 @@ def write_experiment_notebook(
             "",
             "# %%",
             f'manager = ArtifactManager("{experiment_name}", {cache_dir_arg} dry=True)',
-            f'experiment.run_experiment("{experiment_name}", {str(parameters_list)}, dry=True, mngr=manager)',
+            f'experiment.run_experiment("{experiment_name}", {str(param_files)}, dry=True, mngr=manager)',
             "",
             "# %%",
         ]
@@ -870,10 +871,10 @@ def write_experiment_notebook(
             ]
         )
 
-        if manager.records[i].args is not None:
+        if manager.records[i].params is not None:
             output_lines.extend(
                 [
-                    f'print("state{i} - (" + records{i}.args.name + ") stages: " + str(records{i}.stages))',
+                    f'print("state{i} - (" + records{i}.params.name + ") stages: " + str(records{i}.stages))',
                     f'print("keys: " + str(state{i}.keys()) + "\\n")',
                 ]
             )
@@ -1101,15 +1102,15 @@ Examples:
     parameters_group.add_argument(
         "-n",
         "--names",
-        dest="args_name",
+        dest="param_set_names",
         action="append",
-        help="The name of a specific argset within one of the specified parameters files. Using this will run only the specified argset(s).",
+        help="The name of a specific parameter set within one of the specified parameters files. Using this will run only the specified parameter set(s).",
     )
     parameters_group.add_argument(
         "--indices",
-        dest="args_index",
+        dest="param_set_indices",
         action="append",
-        help="A single or range of indices of argsets to use within the specified parameters files. Note that specifying this will run those indices from all specified parameters files. Specify ranges like '1-5'.",
+        help="A single or range of indices of parameter sets to use within the specified parameters files. Note that specifying this will run those indices from all specified parameters files. Specify ranges like '1-5'.",
     )
     parameters_group.add_argument(
         "--global-indices",
@@ -1348,9 +1349,9 @@ Examples:
         build_notebook=args.notebook,
         run_string=run_string,
         stage_overwrites=args.overwrite_stages,
-        args_names=args.args_name,
-        args_indices=args.args_index,
-        global_args_indices=args.global_indices,
+        param_set_names=args.param_set_names,
+        param_set_indices=args.param_set_indices,
+        global_param_set_indices=args.global_indices,
         parallel=parallel,
         parallel_mode=args.parallel_mode,
         lazy=args.lazy,

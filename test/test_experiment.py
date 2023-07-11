@@ -19,7 +19,7 @@ from curifactory.manager import ArtifactManager
     "experiment_params,expected_manager_params",
     [
         (
-            dict(experiment_name="test", parameters_list=["params1", "params2"]),
+            dict(experiment_name="test", param_files=["params1", "params2"]),
             dict(
                 store_full=False,
                 dry=False,
@@ -33,7 +33,7 @@ from curifactory.manager import ArtifactManager
             ),
         ),
         (
-            dict(experiment_name="test", parameters_list=[]),
+            dict(experiment_name="test", param_files=[]),
             dict(
                 store_full=False,
                 dry=False,
@@ -49,7 +49,7 @@ from curifactory.manager import ArtifactManager
         (
             dict(
                 experiment_name="test",
-                parameters_list=["params1"],
+                param_files=["params1"],
                 cache_dir_override="test/examples/data/superspecialcache",
             ),
             dict(
@@ -67,7 +67,7 @@ from curifactory.manager import ArtifactManager
         (
             dict(
                 experiment_name="test",
-                parameters_list=["params1"],
+                param_files=["params1"],
                 store_full=True,
             ),
             dict(
@@ -85,7 +85,7 @@ from curifactory.manager import ArtifactManager
         (
             dict(
                 experiment_name="test",
-                parameters_list=["params1"],
+                param_files=["params1"],
                 dry=True,
                 dry_cache=True,
             ),
@@ -104,7 +104,7 @@ from curifactory.manager import ArtifactManager
         (
             dict(
                 experiment_name="test",
-                parameters_list=["params1"],
+                param_files=["params1"],
                 prefix="custom_test",
             ),
             dict(
@@ -120,7 +120,7 @@ from curifactory.manager import ArtifactManager
             ),
         ),
         (
-            dict(experiment_name="test", parameters_list=["params1"], lazy=True),
+            dict(experiment_name="test", param_files=["params1"], lazy=True),
             dict(
                 store_full=False,
                 dry=False,
@@ -134,7 +134,7 @@ from curifactory.manager import ArtifactManager
             ),
         ),
         (
-            dict(experiment_name="test", parameters_list=["params1"], ignore_lazy=True),
+            dict(experiment_name="test", param_files=["params1"], ignore_lazy=True),
             dict(
                 store_full=False,
                 dry=False,
@@ -198,7 +198,7 @@ def test_rank_manager_integration(
 
     mock = mocker.patch.object(ArtifactManager, "__init__", return_value=None)
     try:
-        run_experiment(experiment_name="test", parameters_list=["params1"])
+        run_experiment(experiment_name="test", param_files=["params1"])
     except AttributeError:
         # NOTE: I'm not actually sure a better way around this, all I want to test is that
         # manager was initialized with what I expect
@@ -247,9 +247,7 @@ def test_rank_manager_store_full_integration(
 
     mock = mocker.patch.object(ArtifactManager, "__init__", return_value=None)
     try:
-        run_experiment(
-            experiment_name="test", parameters_list=["params1"], store_full=True
-        )
+        run_experiment(experiment_name="test", param_files=["params1"], store_full=True)
     except AttributeError:
         # NOTE: I'm not actually sure a better way around this, all I want to test is that
         # manager was initialized with what I expect
@@ -365,7 +363,7 @@ def test_parallel_overwrite_removed_after_parallel(
 
     # assert mngr.overwrite_stages = [] # NOTE: unclear if this is desired functionality or not
     for record in mngr.records:
-        assert not record.args.overwrite
+        assert not record.params.overwrite
 
 
 # TODO: do args_names/args_indices get correctly factored into parallel index calls
@@ -394,7 +392,7 @@ def test_invalid_args_names_errors(clear_filesystem):
     """Using a --names flag but with a non-existant parameterset name should error."""
     with pytest.raises(RuntimeError) as exc_info:
         results, manager = run_experiment(
-            "basic", ["params1", "params2"], args_names=["test4"]
+            "basic", ["params1", "params2"], param_set_names=["test4"]
         )
 
     assert (
@@ -417,7 +415,7 @@ def test_single_args_not_in_array_errors(clear_filesystem):
 def test_valid_args_names_works(clear_filesystem):
     """Using a --names flag should correctly run only that parameterset."""
     results, manager = run_experiment(
-        "basic", ["params1", "params2"], args_names=["test3"]
+        "basic", ["params1", "params2"], param_set_names=["test3"]
     )
 
     assert len(manager.records) == 1

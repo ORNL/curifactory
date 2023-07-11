@@ -11,7 +11,7 @@ def test_args_subclass_hash_includes_all_sub_params():
     parameters."""
 
     @dataclass
-    class MyExperimentArgs(cf.ExperimentArgs):
+    class MyExperimentArgs(cf.ExperimentParameters):
         a: int = 0
         b: int = None
 
@@ -35,7 +35,7 @@ def test_static_hashing_function_same_when_vals_diff():
     is a function that returns the same value should both have the same hash."""
 
     @dataclass
-    class MyExperimentArgs(cf.ExperimentArgs):
+    class MyExperimentArgs(cf.ExperimentParameters):
         a: int = 0
         b: int = None
 
@@ -51,7 +51,7 @@ def test_none_hashing_function_same_when_vals_diff():
     taken into account in the output hash."""
 
     @dataclass
-    class MyExperimentArgs(cf.ExperimentArgs):
+    class MyExperimentArgs(cf.ExperimentParameters):
         a: int = 0
         b: int = 5
 
@@ -75,12 +75,12 @@ def test_none_value_not_hashed():
     """
 
     @dataclass
-    class MyExperimentArgs1(cf.ExperimentArgs):
+    class MyExperimentArgs1(cf.ExperimentParameters):
         a: int = 0
         b: int = None
 
     @dataclass
-    class MyExperimentArgs2(cf.ExperimentArgs):
+    class MyExperimentArgs2(cf.ExperimentParameters):
         a: int = 0
 
     args1 = MyExperimentArgs1()
@@ -96,11 +96,11 @@ def test_new_param_none_hash_same_result():
     """
 
     @dataclass
-    class MyExperimentArgs1(cf.ExperimentArgs):
+    class MyExperimentArgs1(cf.ExperimentParameters):
         a: int = 0
 
     @dataclass
-    class MyExperimentArgs2(cf.ExperimentArgs):
+    class MyExperimentArgs2(cf.ExperimentParameters):
         a: int = 0
         b: int = 3
 
@@ -121,14 +121,14 @@ def test_invalid_dataclassparam_should_not_change_hash():
     the hash."""
 
     @dataclass
-    class MyExperimentArgs1(cf.ExperimentArgs):
+    class MyExperimentArgs1(cf.ExperimentParameters):
         a: int = 0
         b = 3
 
         hash_representations: dict = cf.set_hash_functions(b=None)
 
     @dataclass
-    class MyExperimentArgs2(cf.ExperimentArgs):
+    class MyExperimentArgs2(cf.ExperimentParameters):
         a: int = 0
         b: int = 4
 
@@ -155,11 +155,11 @@ def test_new_ignored_param_sub_dataclass():
         hash_representations: dict = cf.set_hash_functions(b=None)
 
     @dataclass
-    class Args1(cf.ExperimentArgs):
+    class Args1(cf.ExperimentParameters):
         sub: SubArgs1 = SubArgs1()
 
     @dataclass
-    class Args2(cf.ExperimentArgs):
+    class Args2(cf.ExperimentParameters):
         sub: SubArgs2 = SubArgs2()
 
     a1 = Args1()
@@ -173,7 +173,7 @@ def test_parameter_name_included_in_hash():
     opposite of eachother should not hash to the same value."""
 
     @dataclass
-    class MyExperimentArgs(cf.ExperimentArgs):
+    class MyExperimentArgs(cf.ExperimentParameters):
         a: int = 0
         b: int = 1
 
@@ -194,7 +194,7 @@ def test_custom_hashing_composed_dataclasses():
         hash_representations: dict = cf.set_hash_functions(d=None)
 
     @dataclass
-    class MyExperimentArgs(cf.ExperimentArgs):
+    class MyExperimentArgs(cf.ExperimentParameters):
         a: int = 0
         b: int = 1
         others: NormalDC = NormalDC()
@@ -219,7 +219,7 @@ def test_composed_dataclasses_diff():
         d: int = 6
 
     @dataclass
-    class MyExperimentArgs(cf.ExperimentArgs):
+    class MyExperimentArgs(cf.ExperimentParameters):
         a: int = 0
         b: int = 1
         others: NormalDC = NormalDC()
@@ -234,7 +234,7 @@ def test_set_hash_functions_with_kwargs():
     args as keys."""
 
     @dataclass
-    class MyExperimentArgs(cf.ExperimentArgs):
+    class MyExperimentArgs(cf.ExperimentParameters):
         a: int = 0
         b: int = None
 
@@ -250,7 +250,7 @@ def test_set_hash_functions_with_dict_arg():
     the hash_representations."""
 
     @dataclass
-    class MyExperimentArgs(cf.ExperimentArgs):
+    class MyExperimentArgs(cf.ExperimentParameters):
         a: int = 0
         b: int = None
 
@@ -266,7 +266,7 @@ def test_set_hash_functions_with_dict_and_kwargs():
     a merged dictionary."""
 
     @dataclass
-    class MyExperimentArgs(cf.ExperimentArgs):
+    class MyExperimentArgs(cf.ExperimentParameters):
         a: int = 0
         b: int = None
         c: int = 5
@@ -297,7 +297,7 @@ def test_set_hash_functions_on_args_instance():
     those same parameters."""
 
     @dataclass
-    class MyExperimentArgs(cf.ExperimentArgs):
+    class MyExperimentArgs(cf.ExperimentParameters):
         a: int = 0
         b: int = None
         c: int = 5
@@ -314,7 +314,7 @@ def test_hash_stays_same_after_param_change():
     """If you hash a parameter set, and then change a parameter the hash shouldn't change."""
 
     @dataclass
-    class MyExperimentArgs(cf.ExperimentArgs):
+    class MyExperimentArgs(cf.ExperimentParameters):
         a: int = 0
         b: int = None
         c: int = 5
@@ -334,7 +334,7 @@ def test_hash_changes_after_param_change_and_hash_set_to_none():
     hash should recompute and then change."""
 
     @dataclass
-    class MyExperimentArgs(cf.ExperimentArgs):
+    class MyExperimentArgs(cf.ExperimentParameters):
         a: int = 0
         b: int = None
         c: int = 5
@@ -355,7 +355,7 @@ def test_none_hashing_function_includes_val_in_str_rep():
     in a sub IGNORED_PARAMS dictionary."""
 
     @dataclass
-    class MyExperimentArgs(cf.ExperimentArgs):
+    class MyExperimentArgs(cf.ExperimentParameters):
         a: int = 0
         b: int = 5
 
@@ -379,7 +379,7 @@ def test_subdataclass_val_in_str_rep_correct():
         hash_representations: dict = cf.set_hash_functions(d=None)
 
     @dataclass
-    class MyExperimentArgs(cf.ExperimentArgs):
+    class MyExperimentArgs(cf.ExperimentParameters):
         a: int = 0
         b: int = 1
         others: NormalDC = NormalDC()
@@ -404,7 +404,7 @@ def test_none_hash_subdataclass_val_in_str_rep_correct():
         hash_representations: dict = cf.set_hash_functions(d=None)
 
     @dataclass
-    class MyExperimentArgs(cf.ExperimentArgs):
+    class MyExperimentArgs(cf.ExperimentParameters):
         a: int = 0
         b: int = 1
         others: NormalDC = NormalDC()

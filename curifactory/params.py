@@ -1,4 +1,4 @@
-"""Contains the parent dataclass ExperimentArgs, containing run-specific config params."""
+"""Contains the base parameter class ExperimentArgs, a dataclass meant to configure an experiment."""
 
 from dataclasses import dataclass, field
 from typing import Callable, Union
@@ -7,8 +7,8 @@ from curifactory import hashing
 
 
 @dataclass
-class ExperimentArgs:
-    """Base arguments class, for handling naming and hashing.
+class ExperimentParameters:
+    """Base parameter class, for handling naming and hashing.
 
     In any given repo, this class should be extended to contain any needed
     local configuration.
@@ -22,17 +22,17 @@ class ExperimentArgs:
         .. code-block:: python
 
             from dataclasses import dataclass
-            from curifactory import ExperimentArgs
+            from curifactory import ExperimentParameters
 
             @dataclass
-            class Args(ExperimentArgs):
+            class Params(ExperimentParameters):
                 some_parameter: int = 0
                 # ...
     """
 
     name: str = "UNNAMED"
-    """Argument set name. This can be used to easily distinguish/refer to specific
-        configurations in aggregate stages. This should be unique for every args instance."""
+    """Parameter set name. This can be used to easily distinguish/refer to specific
+        configurations in aggregate stages. This should be unique for every parameter set."""
     hash: str = None
     """Curifactory automatically fills this, but it can be overriden if you need to use
         very specific cache naming. (Should not normally be necessary.)"""
@@ -51,7 +51,7 @@ class ExperimentArgs:
         cache miss/cache hit. Sane defaults are applied to any parameters that don't
         have a representation function specified here. (see ``hashing.get_parameter_hash_value``)
 
-        Any function provided is expected to take self (the entire args instance) and
+        Any function provided is expected to take self (the entire parameter set instance) and
         the value of the named parameter to be hashed.
 
         You can also provide ``None`` for any parameters in order to exclude their value
@@ -63,6 +63,6 @@ class ExperimentArgs:
     # TODO: implement __eq__ based on args_hash
 
     def args_hash(self, dry=False):
-        """Convenience function to see the hash of these args that curifactory is
+        """Convenience function to see the hash of these parameters that curifactory is
         computing, or debug them with ``dry=True``."""
         return hashing.args_hash(self, store_in_registry=False, dry=dry)

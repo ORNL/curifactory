@@ -4,7 +4,7 @@ import os
 
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
-from curifactory import ExperimentArgs, Record, aggregate, hashing, stage
+from curifactory import ExperimentParameters, Record, aggregate, hashing, stage
 from curifactory.caching import JsonCacher, Lazy, PickleCacher
 
 # -----------------------------------------
@@ -251,21 +251,21 @@ def test_aggregate_stage_record_uses_combo_hash(configured_test_manager):
 
     @stage(None, ["normal_hash"])
     def normal_stage(record):
-        return record.args.hash
+        return record.params.hash
 
     @aggregate(["agg_hash"])
     def agg_stage(record, records):
-        return record.args.hash
+        return record.params.hash
 
-    r0 = Record(configured_test_manager, ExperimentArgs(name="test"))
+    r0 = Record(configured_test_manager, ExperimentParameters(name="test"))
     r0 = normal_stage(r0)
 
     # r1 = Record(configured_test_manager, None)
-    r1 = Record(configured_test_manager, ExperimentArgs(name="test"))
+    r1 = Record(configured_test_manager, ExperimentParameters(name="test"))
     r1 = agg_stage(r1, [r0])
 
     assert r1.combo_hash is not None
-    assert r1.combo_hash != r0.args.hash
+    assert r1.combo_hash != r0.params.hash
     # TODO: move this to test_record
 
 
@@ -281,7 +281,7 @@ def test_stage_hash_after_aggregate_with_no_args(configured_test_manager):
         return "test2"
 
     r0 = Record(configured_test_manager, None)
-    r1 = Record(configured_test_manager, ExperimentArgs(name="test"))
+    r1 = Record(configured_test_manager, ExperimentParameters(name="test"))
 
     r0 = normal_stage(agg_stage(r0, [r1]))
 

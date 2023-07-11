@@ -105,7 +105,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             apply to each of the return outputs. If specified, for each output, an instance
             of the corresponding cacher is initialized, and the :code:`save()` function is called.
             Before the wrapped function is called, the output path is first checked, and if it
-            exists and the current record args are not set to overwrite, the :code:`load()` function
+            exists and the current record parameter set is not configured to overwrite, the ``load()`` function
             is called and the wrapped function **does not execute.** Note that caching is all
             or nothing for a single function, you cannot cache only one returned value out of
             several.
@@ -130,8 +130,8 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
         @wraps(function)
         def wrapper(record: Record, *args, **kwargs):
             # set the logging prefix to the args name
-            if record.args is not None:
-                utils.set_logging_prefix(f"[{record.args.name}] ")
+            if record.params is not None:
+                utils.set_logging_prefix(f"[{record.params.name}] ")
             else:
                 utils.set_logging_prefix("")
 
@@ -451,7 +451,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             apply to each of the return outputs. If specified, for each output, an instance
             of the corresponding cacher is initialized, and the :code:`save()` function is called.
             Before the wrapped function is called, the output path is first checked, and if it
-            exists and the current record args are not set to overwrite, the :code:`load()` function
+            exists and the current record params are not set to overwrite, the :code:`load()` function
             is called and the wrapped function **does not execute.** Note that caching is all
             or nothing for a single function, you cannot cache only one returned value out of
             several.
@@ -464,7 +464,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             def compile_results(record: Record, records: List[Record]):
                 results = {}
                 for prev_record in records:
-                    results[prev_record.args.name] = prev_record.state["results"]
+                    results[prev_record.params.name] = prev_record.state["results"]
                 return results
     """
 
@@ -472,8 +472,8 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
         @wraps(function)
         def wrapper(record: Record, records: list[Record] = None, **kwargs):
             # set the logging prefix to the args name
-            if record.args is not None:
-                utils.set_logging_prefix(f"[{record.args.name}] ")
+            if record.params is not None:
+                utils.set_logging_prefix(f"[{record.params.name}] ")
             else:
                 utils.set_logging_prefix("")
 

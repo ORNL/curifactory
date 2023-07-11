@@ -37,20 +37,22 @@ class Record:
 
     Args:
         manager (ArtifactManager): The artifact manager this record is associated with.
-        args: The :code:`ExperimentArgs` instance to apply to any stages this record is run through.
-        hide (bool): If :code:`True`, don't add this record to the artifact manager.
+        param_set: The parameter set (subclass of ``ExperimentParameters``) to apply to
+            any stages this record is run through.
+        hide (bool): If ``True``, don't add this record to the artifact manager.
     """
 
-    def __init__(self, manager, args, hide=False):
+    def __init__(self, manager, param_set, hide=False):
         # TODO: would be nice to be able to initialize a record with a pre-defined state dictionary
         self.manager = manager
-        """The :code:`ArtifactManager` associated with this record."""
-        self.args = args
-        """The :code:`ExperimentArgs` to apply to any stages this record is passed through."""
+        """The ``ArtifactManager`` associated with this record."""
+        self.params = param_set
+        """The parameter set (subclass of ``ExperimentParameters``) to apply to any stages
+        this record is passed through."""
         self.state = CacheAwareDict()
         """The dictionary of all variables created by stages this record is passed through. (AKA 'Artifacts')
-        All :code:`inputs` from stage decorators are pulled from this dictionary, and all
-        :code:`outputs` are stored here."""
+        All ``inputs`` from stage decorators are pulled from this dictionary, and all
+        ``outputs`` are stored here."""
         self.state_artifact_reps = {}
         """Dictionary mimicking state that keeps an :code:`ArtifactRepresentation` associated with
         each variable stored in :code:`self.state`."""
@@ -72,12 +74,12 @@ class Record:
         """If this record runs an aggregate stage, we flip this flag to true to know we need to use the
         combo hash rather than the individual args hash."""
         self.combo_hash = None
-        """This gets set on records that run an aggregate stage. This is set from utils.add_args_combo_hash."""
+        """This gets set on records that run an aggregate stage. This is set from ``utils.add_args_combo_hash.``"""
         self.unstored_tracked_paths: list[dict[str, str]] = []
         """Paths obtained with get_path/get_dir that should be copied to a full
         store folder. The last executed stage should manage copying anything
         listed here and then clearing it. This is a list of dicts that would be
-        passed to the artifact manager's ``get_artifact_path` function: (obj_name, subdir, prefix, and path)
+        passed to the artifact manager's ``get_artifact_path`` function: (obj_name, subdir, prefix, and path)
         """
         self.stored_paths: list[str] = []
         """A list of paths that have been copied into a full store folder. These are
@@ -137,16 +139,16 @@ class Record:
         # NOTE: we used to set this directly in manager's get_path, but there's potentially weird effects and it's an
         # odd place to establish a hash that more correctly indicates a record than the args themselves (e.g. like with
         # aggregate combo hashes)
-        if self.args is not None and self.args.hash is None:
-            self.args.hash = hashing.args_hash(
-                self.args,
+        if self.params is not None and self.params.hash is None:
+            self.params.hash = hashing.args_hash(
+                self.params,
                 store_in_registry=not (self.manager.dry or self.manager.parallel_mode),
                 registry_path=self.manager.manager_cache_path,
             )
 
             if self.manager.store_full:
                 hashing.args_hash(
-                    self.args,
+                    self.params,
                     store_in_registry=not (
                         self.manager.dry or self.manager.parallel_mode
                     ),
@@ -154,11 +156,11 @@ class Record:
                 )
 
     def get_hash(self) -> str:
-        """Returns either the hash of the args, or the combo hash if this record is an aggregate."""
+        """Returns either the hash of the parameter set, or the combo hash if this record is an aggregate."""
         if self.is_aggregate:
             return self.combo_hash
-        elif self.args is not None:
-            return self.args.hash
+        elif self.params is not None:
+            return self.params.hash
         else:
             return "None"
 
@@ -194,8 +196,8 @@ class Record:
         qualified_name = ""
         if reportable.record.is_aggregate:
             qualified_name = "(Aggregate)_"
-        if reportable.record.args is not None:
-            qualified_name += f"{reportable.record.args.name}_"
+        if reportable.record.params is not None:
+            qualified_name += f"{reportable.record.params.name}_"
         qualified_name += f"{reportable.stage}_"
 
         if reportable.name is None:
@@ -206,7 +208,7 @@ class Record:
 
         self.manager.reportables.append(reportable)
 
-    def make_copy(self, args=None, add_to_manager=True):
+    def make_copy(self, param_set=None, add_to_manager=True):
         """Make a new record that has a deep-copied version of the current state.
 
         This is useful for a long running procedure that creates a common dataset for
@@ -220,13 +222,13 @@ class Record:
         record, since it may draw on data in its state.
 
         Args:
-            args: The new :code:`ExperimentArgs` argset to apply to the new record. Leave as None
+            param_set: The new :code:`ExperimentArgs` argset to apply to the new record. Leave as None
                 to retain the same args as the current record.
             add_to_manager: Whether to automatically add this record to the current manager or not.
         """
-        if args is None:
-            args = self.args
-        new_record = Record(self.manager, args, hide=(not add_to_manager))
+        if param_set is None:
+            param_set = self.params
+        new_record = Record(self.manager, param_set, hide=(not add_to_manager))
         new_record.input_records = [self]
         new_record.state = copy.deepcopy(self.state)
         # TODO: (02/02/2022) state without state artifact reps might cause issues
@@ -331,7 +333,9 @@ class Record:
         """
         for i, record in enumerate(self.manager.records):
             if self == record:
-                paramset_name = record.args.name if record.args is not None else "None"
+                paramset_name = (
+                    record.params.name if record.params is not None else "None"
+                )
                 return f"Record {i} ({paramset_name})"
         return None
 

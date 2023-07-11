@@ -1,4 +1,4 @@
-"""Utility functions for hashing args class instances."""
+"""Utility functions for hashing parameter class instances."""
 
 import hashlib
 import json
@@ -15,7 +15,7 @@ ignore as part of the hash."""
 def set_hash_functions(*args, **kwargs):
     """Convenience function for easily setting the hash_representations dictionary
     with the appropriate dataclass field. Parameters passed to this function should
-    be the same as the parameter name in the args class itself.
+    be the same as the parameter name in the parameters class itself.
 
     You can either call this function and pass in a dictionary with the hashing functions,
     or pass each hashing function as a kwarg. If you pass in both a dictionary as the first
@@ -26,11 +26,11 @@ def set_hash_functions(*args, **kwargs):
         .. code-block:: python
 
             from dataclasses import dataclass
-            from curifactory import ExperimentArgs
-            from curifactory.args import set_hash_functions
+            from curifactory import ExperimentParameters
+            from curifactory.params import set_hash_functions
 
             @dataclass
-            class Args(ExperimentArgs):
+            class Params(ExperimentParameters):
                 a: int = 0
                 b: int = 0
 
@@ -70,7 +70,7 @@ def get_parameter_hash_value(param_set, param_name: str) -> tuple[str, Any]:
             import curifactory as cf
 
             @dataclass
-            class Args(cf.ExperimentArgs):
+            class Params(cf.ExperimentParameters):
                 some_other_dataclass: OtherDataclass = None
 
                 hash_representations = cf.set_hash_functions(
@@ -111,8 +111,8 @@ def get_parameter_hash_value(param_set, param_name: str) -> tuple[str, Any]:
 
     # 3. if the value of the argument is none, ignore it. This is so that we can default
     # arguments to not be included without setting the hash function for it, and may allow
-    # fancier mechanisms in the future to better allow reproducing old experiments using an
-    # args class that has since been added to.
+    # fancier mechanisms in the future to better allow reproducing old experiments using a
+    # parameters class that has since been added to.
     elif value is None:
         return ("SKIPPED: value is None", None)
 
@@ -163,7 +163,7 @@ def _compute_hash_part(hash_representations: dict[str, tuple[str, Any]]) -> int:
             hash_total += _compute_hash_part(hash_rep_value)
         else:
             # Note that we concatenate the string of the value with the hash key, otherwise if two parameters had eachother's
-            # values in another args instance, they'd compute the same hash which is decidedly not correct.
+            # values in another parameter set, they'd compute the same hash which is decidedly not correct.
             hash_hex = hashlib.md5(f"{hash_key}{hash_rep_value}".encode()).hexdigest()
             hash_total += int(hash_hex, 16)
     return hash_total
@@ -185,7 +185,7 @@ def compute_hash(hash_representations: dict[str, tuple[str, Any]]) -> str:
 
 # TODO: (3/10/2023) unclear how necessary this is, it's only used in this file
 # and the logic is simple enough it could directly be included in ``args_hash``
-def hash_parameterset(args, dry: bool = False) -> Union[str, dict]:
+def hash_parameterset(param_set, dry: bool = False) -> Union[str, dict]:
     """Run all of the hashing mechanisms for the parameter set and either
     return the hash or, if ``dry`` is ``True`` return the dictionary of representations.
 
@@ -195,7 +195,7 @@ def hash_parameterset(args, dry: bool = False) -> Union[str, dict]:
             output from that hashing function code. Useful for debugging custom
             hashing functions.
     """
-    hash_reps = get_parameters_hash_values(args)
+    hash_reps = get_parameters_hash_values(param_set)
     if dry:
         return hash_reps
     else:
@@ -240,7 +240,10 @@ def parameters_string_hash_representation(param_set) -> dict[str, str]:
 
 
 def args_hash(
-    args, store_in_registry: bool = False, registry_path: str = None, dry: bool = False
+    param_set,
+    store_in_registry: bool = False,
+    registry_path: str = None,
+    dry: bool = False,
 ) -> Union[str, dict]:
     """Returns a hex string representing the passed arguments, optionally recording
     the arguments and hash in the params registry.
@@ -250,7 +253,7 @@ def args_hash(
     in the hash.
 
     Args:
-        args (ExperimentArgs): The argument set to hash.
+        param_set (ExperimentParameters): The argument set to hash.
         registry_path (str): The location to keep the :code:`params_registry.json`.
             If this is ``None``, ignore ``store_in_registry``.
         store_in_registry (bool): Whether to update the params registry with the passed
@@ -263,12 +266,12 @@ def args_hash(
         if ``dry`` is ``True``. (The output from ``get_parameters_hash_values``)
     """
     if dry:
-        return hash_parameterset(args, dry=True)
+        return hash_parameterset(param_set, dry=True)
 
-    if args.hash is not None:
-        hash_str = args.hash
+    if param_set.hash is not None:
+        hash_str = param_set.hash
     else:
-        hash_str = hash_parameterset(args, dry=False)
+        hash_str = hash_parameterset(param_set, dry=False)
 
     if store_in_registry and registry_path is not None:
         registry_path = os.path.join(registry_path, "params_registry.json")
@@ -278,7 +281,7 @@ def args_hash(
             with open(registry_path) as infile:
                 registry = json.load(infile)
 
-        registry[hash_str] = parameters_string_hash_representation(args)
+        registry[hash_str] = parameters_string_hash_representation(param_set)
         with open(registry_path, "w") as outfile:
             json.dump(registry, outfile, indent=4, default=lambda x: str(x))
 
@@ -308,16 +311,16 @@ def add_args_combo_hash(
 
     hashes = []
     for agg_record in records_list:
-        if agg_record.args is not None:
-            hashes.append(agg_record.args.hash)
+        if agg_record.params is not None:
+            hashes.append(agg_record.params.hash)
         else:
             hashes.append("None")
     hashes = sorted(hashes)
 
     hashes_for_key = deepcopy(hashes)
     active_key = "None"
-    if active_record.args is not None:
-        active_key = active_record.args.hash
+    if active_record.params is not None:
+        active_key = active_record.params.hash
     hashes_for_key.insert(0, active_key)
 
     hash_key = str(hashes_for_key)

@@ -284,15 +284,17 @@ class Cacheable:
         self.metadata = dict(
             artifact_generated=datetime.now().strftime(utils.TIMESTAMP_FORMAT),
             params_hash=self.record.get_hash(),
-            params_name=self.record.args.name if self.record.args is not None else None,
+            params_name=self.record.params.name
+            if self.record.params is not None
+            else None,
             record_name=self.record.get_reference_name(),
             stage=self.record.manager.current_stage_name,
             artifact_name=self.name,
             cacher_type=str(type(self)),
             record_prior_stages=self.record.stages[:-1],
             prior_records=input_record_names,
-            params=hashing.parameters_string_hash_representation(self.record.args)
-            if self.record.args is not None
+            params=hashing.parameters_string_hash_representation(self.record.params)
+            if self.record.params is not None
             else None,
             extra=self.extra_metadata,  # cachers can store any additional info here they want.
             manager_run_info=manager_run_info,
@@ -314,17 +316,17 @@ class Cacheable:
         """Check to see if this cacheable needs to be written or not.
 
         Note:
-            This function will always return False if the args are :code:`None`.
+            This function will always return False if the args are ``None``.
 
         Returns:
-            True if we find the cached file and the current :code:`Args`
-            don't specify to overwrite, otherwise False.
+            ``True`` if we find the cached file and the current parameter set
+            doesn't specify to overwrite, otherwise ``False``.
         """
         logging.debug("Searching for cached file at '%s'...", self.get_path())
         if os.path.exists(self.get_path()):
             if (
                 self.record is not None
-                and self.record.args is None
+                and self.record.params is None
                 and self.record.is_aggregate
                 and len(self.record.input_records) > 0
             ):
@@ -339,7 +341,7 @@ class Cacheable:
                 # if it's an aggregate stage with no provided args, we check
                 # to see if any of the associated records are set to overwrite
                 for record in self.record.input_records:
-                    if record.args is not None and record.args.overwrite:
+                    if record.params is not None and record.params.overwrite:
                         logging.debug("Record with overwrite found")
                         return False
                 # we made it through each record and they weren't overwrite, we're good
@@ -348,8 +350,8 @@ class Cacheable:
                 return True
             elif (
                 self.record is not None
-                and self.record.args is not None
-                and not self.record.args.overwrite
+                and self.record.params is not None
+                and not self.record.params.overwrite
             ):
                 logging.info("Cached object '%s' found", self.get_path())
                 return True

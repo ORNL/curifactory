@@ -5,26 +5,26 @@ import os
 
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
-from curifactory import ExperimentArgs, Record, aggregate, hashing, stage
+from curifactory import ExperimentParameters, Record, aggregate, hashing, stage
 
 
 def test_record_sets_hash(configured_test_manager):
     """A record that is passed an argset should appropriately set the hash on it immediately."""
-    record = Record(configured_test_manager, ExperimentArgs(name="testing"))
-    assert record.args.hash is not None
+    record = Record(configured_test_manager, ExperimentParameters(name="testing"))
+    assert record.params.hash is not None
 
 
 def test_record_doesnot_set_hash_for_none_args(configured_test_manager):
     """A record that is passed an argset should appropriately set the hash on it immediately."""
     record = Record(configured_test_manager, None)
-    assert record.args is None
+    assert record.params is None
 
 
 def test_record_stores_hash_when_not_dry(configured_test_manager):
     """A record that is passed an argset with a non-dry-mode manager should store the args in the
     param_registry.json."""
     record = Record(  # noqa: F841
-        configured_test_manager, ExperimentArgs(name="testing")
+        configured_test_manager, ExperimentParameters(name="testing")
     )
 
     reg_path = os.path.join(
@@ -43,7 +43,7 @@ def test_record_doesnot_store_hash_when_dry(configured_test_manager):
     the param_registry.json."""
     configured_test_manager.dry = True
     record = Record(  # noqa: F841
-        configured_test_manager, ExperimentArgs(name="testing")
+        configured_test_manager, ExperimentParameters(name="testing")
     )
 
     reg_path = os.path.join(
@@ -57,7 +57,7 @@ def test_record_doesnot_store_hash_when_parallelmode(configured_test_manager):
     args in the param_registry.json."""
     configured_test_manager.parallel_mode = True
     record = Record(  # noqa: F841
-        configured_test_manager, ExperimentArgs(name="testing")
+        configured_test_manager, ExperimentParameters(name="testing")
     )
 
     reg_path = os.path.join(
@@ -76,7 +76,7 @@ def test_record_doesnot_store_combo_hash_when_parallel_mode(configured_test_mana
         return "test"
 
     r0 = Record(configured_test_manager, None)
-    r1 = Record(configured_test_manager, ExperimentArgs(name="test"))
+    r1 = Record(configured_test_manager, ExperimentParameters(name="test"))
     r0 = agg_stage(r0, [r1])
 
     reg_path = os.path.join(
@@ -92,7 +92,7 @@ def test_record_gets_combo_hash_for_aggregate(configured_test_manager):
         return "test"
 
     r0 = Record(configured_test_manager, None)
-    r1 = Record(configured_test_manager, ExperimentArgs(name="test"))
+    r1 = Record(configured_test_manager, ExperimentParameters(name="test"))
     r0 = agg_stage(r0, [r1])
     combo_hash = hashing.add_args_combo_hash(
         r0, [r1], "", False
@@ -114,14 +114,14 @@ def test_record_make_copy_retains_state(configured_test_manager):
         return "hello world"
 
     r0 = Record(
-        configured_test_manager, ExperimentArgs(name="test1")
+        configured_test_manager, ExperimentParameters(name="test1")
     )  # TODO: include args
     r0 = output_stage(r0)
 
-    r1 = r0.make_copy(ExperimentArgs(name="test2"))
+    r1 = r0.make_copy(ExperimentParameters(name="test2"))
     assert "test" in r1.state
     assert r1.state["test"] == "hello world"
-    assert r1.args.name == "test2"
+    assert r1.params.name == "test2"
 
 
 def test_record_make_copy_adds_record_to_manager(configured_test_manager):
@@ -132,11 +132,11 @@ def test_record_make_copy_adds_record_to_manager(configured_test_manager):
     def output_stage(record):
         return "hello world"
 
-    r0 = Record(configured_test_manager, ExperimentArgs(name="test0"))
+    r0 = Record(configured_test_manager, ExperimentParameters(name="test0"))
     r0 = output_stage(r0)
     assert len(configured_test_manager.records) == 1
 
-    r0.make_copy(ExperimentArgs(name="test1"))
+    r0.make_copy(ExperimentParameters(name="test1"))
     assert len(configured_test_manager.records) == 2
 
 
@@ -150,9 +150,9 @@ def test_record_make_copy_doesnot_add_record_to_manager_when_specified(
     def output_stage(record):
         return "hello world"
 
-    r0 = Record(configured_test_manager, ExperimentArgs(name="test0"))
+    r0 = Record(configured_test_manager, ExperimentParameters(name="test0"))
     r0 = output_stage(r0)
     assert len(configured_test_manager.records) == 1
 
-    r0.make_copy(ExperimentArgs(name="test1"), add_to_manager=False)
+    r0.make_copy(ExperimentParameters(name="test1"), add_to_manager=False)
     assert len(configured_test_manager.records) == 1

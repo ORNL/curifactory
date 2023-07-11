@@ -645,15 +645,15 @@ def _add_record_subgraph(dot, record_index, record, manager, detailed=True):
     with dot.subgraph(name=f"cluster_{record_index}") as c:
         c.attr(color=str(_get_color(record_index)))
         c.attr(style="filled")
-        if record.args is not None:
+        if record.params is not None:
             c.attr(
                 label="record "
                 + str(record_index)
                 + "\\nargs: "
-                + str(record.args.name)
+                + str(record.params.name)
             )
         else:
-            c.attr(label="record " + str(record_index) + "\\nargs: None")
+            c.attr(label="record " + str(record_index) + "\\nparams: None")
         for stage in record.stages:
             stage_name = f"{record_index}_{stage}"
             c.node(stage_name, stage, style="filled", fillcolor="white", fontsize="12")
