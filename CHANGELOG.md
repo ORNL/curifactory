@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * `-n` CLI flag shorthand for `--names`
 * `--params` CLI flag long form of `-p`
+* `RawJupyterNotebookCacher`, which takes a list of cells of raw strings of python code and
+  stores them as a notebook. This is useful for exporting an interactive analysis with each
+  experiment run.
 
 ### Changed
 * `--parallel-mode` flag to `--parallel-safe`
