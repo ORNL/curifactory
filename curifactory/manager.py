@@ -177,7 +177,8 @@ class ArtifactManager:
         self.overwrite_stages = []
         """The list of individual stages for which to ignore the cache."""
         self.overwrite = False
-        """For live session managers where you don't wish to set overwrite on individual args, you can universely set the manager to overwrite by changing this flag to True."""
+        """For live session managers where you don't wish to set overwrite on individual parameter sets, you
+        can universely set the manager to overwrite by changing this flag to True."""
 
         self.error_thrown = False
         """A flag indicating whether an error was thrown by the experiment."""
@@ -202,7 +203,8 @@ class ArtifactManager:
         This can save time when memory is less of an issue."""
 
         self.live_report_path_generated = False
-        """A flag indicting if the default report's graphs/reportables folders exist, this helps prevent live displays from breaking if multiple display functions called."""
+        """A flag indicting if the default report's graphs/reportables folders exist, this helps prevent
+        live displays from breaking if multiple display functions called."""
         self.live_report_paths = None
 
         self.map_mode = False
@@ -238,7 +240,9 @@ class ArtifactManager:
                 self.run_line = " ".join(sys.argv)
 
         if not self.parallel_mode:
-            # NOTE: by this point we don't technically have things like experiment args, but subsequent store calls will appropriately update it (see update_run in store.py) The reason this is important is so that the log init below has the correct run number etc.
+            # NOTE: by this point we don't technically have things like experiment parameters, but
+            # subsequent store calls will appropriately update it (see update_run in store.py)
+            # The reason this is important is so that the log init below has the correct run number etc.
             self.store()
 
         # start logging if from a live environment (otherwise experiment script handles this)
@@ -271,6 +275,7 @@ class ArtifactManager:
     # start type means "stage start", not record start, though we could check if
     # it hasn't been started yet.
     def update_map_progress(self, record, update_type: str = ""):
+        """Update the rich progress bar for the specified record."""
         if self.map_progress is not None and not self.map_mode:
             # self.map_progress.update(self.map_progress.task_ids[0], advance=1)
             # find appropriate record
@@ -336,7 +341,7 @@ class ArtifactManager:
             self.report_css_path = self.config["report_css_path"]
 
     def store(self):
-        """Update the ManagerStore with this manager's run metadata."""
+        """Update the ``ManagerStore`` with this manager's run metadata."""
         if self.dry:
             return
         if self.stored:
@@ -359,7 +364,7 @@ class ArtifactManager:
                 self.write_run_env_output()
 
     def write_run_env_output(self):
-        """Write all environment metadata to a run folder for a --store-full run."""
+        """Write all environment metadata to a run folder for a ``--store-full`` run."""
         self.pip_freeze = utils.get_pip_freeze()
         self.conda_env = utils.get_conda_env()
         self.os = utils.get_os()
@@ -382,10 +387,11 @@ class ArtifactManager:
             with open(self.get_run_output_path("run_info.json"), "w") as outfile:
                 json.dump(self.run_info, outfile, indent=4)
 
-    def get_all_argsets(self) -> list:
-        """This is important to get argsets that aren't obtained through parameter files, e.g. in an interactive session."""
+    def get_all_param_sets(self) -> list:
+        """This is important to get parameter sets that aren't obtained through parameter files
+        , e.g. in an interactive session."""
         master_list = []
-        found_hashes = []
+        found_hashes = []  # track which parameter sets we've already added by hash
         for record in self.records:
             if record.params is not None:
                 if record.params.hash not in found_hashes:
@@ -483,14 +489,16 @@ class ArtifactManager:
             return self.experiment_name
         return self.prefix
 
+    # NOTE: reference name is for the experiment run name, so we don't use prefix for this.
+    # Prefix is only intended for caching purposes.
     def get_reference_name(self) -> str:
         """Get the reference name of this run in the experiment registry.
 
-        The format for this name is [experiment_name]_[run_number]_[timestamp]."""
+        The format for this name is ``[experiment_name]_[run_number]_[timestamp]``."""
         return f"{self.experiment_name}_{self.experiment_run_number}_{self.get_str_timestamp()}"
 
-    def get_run_output_path(self, obj_name: str = None):
-        """Get the path for a --store-full run folder for this manager. Similar to get_path, but
+    def get_run_output_path(self, obj_name: str = None) -> str:
+        """Get the path for a ``--store-full`` run folder for this manager. Similar to get_path, but
         with an always assumed output=True.
 
         Returns:
@@ -521,7 +529,8 @@ class ArtifactManager:
             self.parallel_lock.release()
 
     def generate_report(self):
-        """Output report files to a run-specific report folder, the reports/_latest, and the store-full folder if applicable."""
+        """Output report files to a run-specific report folder, the reports/_latest, and the
+        store-full folder if applicable."""
         if self.dry:
             return
         logging.info("Generating report...")
@@ -542,7 +551,8 @@ class ArtifactManager:
         )
 
     def display_info(self):
-        """Returns an IPython HTML display object with the report info block. This is mostly only useful for making displays in a Juptyer notebook."""
+        """Returns an IPython HTML display object with the report info block. This is mostly
+        only useful for making displays in a Juptyer notebook."""
         try:
             from IPython.display import HTML
         except ModuleNotFoundError:
@@ -552,7 +562,10 @@ class ArtifactManager:
         return HTML("".join(reporting.render_report_info_block(self)))
 
     def _reportable_display_prep(self):
-        from IPython.display import HTML  # TODO: better error handling for this?
+        try:
+            from IPython.display import HTML
+        except ModuleNotFoundError:
+            return "Unable to import IPython."
 
         self.store()
 
@@ -564,7 +577,7 @@ class ArtifactManager:
         return HTML
 
     def display_all_reportables(self):
-        """Displays (via html) all produced reportables.
+        """Returns an HTML IPython display all produced reportables.
 
         Note:
             This only works within an IPython context.
@@ -582,7 +595,8 @@ class ArtifactManager:
         return HTML("".join(html))
 
     def display_record_reportables(self, record: Record):
-        """Displays (via html) all reportables produced within the passed record.
+        """Returns an HTML IPython display of all reportables produced
+        within the passed record.
 
         Note:
             This only works within an IPython context.
@@ -608,7 +622,7 @@ class ArtifactManager:
         return HTML("".join(html_lines))
 
     def display_group_reportables(self, group_name: str):
-        """Displays (via html) all reportables in the passed group.
+        """Returns an HTML IPython display of all reportables in the passed group.
 
         Note:
             This only works within an IPython context.
@@ -634,7 +648,7 @@ class ArtifactManager:
         return HTML("".join(html_lines))
 
     def display_stage_reportables(self, stage_name: str):
-        """Displays (via html) all reportables produced by the given stage.
+        """Returns an HTML IPython display of all reportables produced by the given stage.
 
         Note:
             This only works within an IPython context.
@@ -660,7 +674,7 @@ class ArtifactManager:
         return HTML("".join(html_lines))
 
     def display_reportable(self, reportable: Reportable):
-        """Displays (via html) the rendered passed reportable.
+        """Returns an HTML IPython display of the rendered passed reportable.
 
         Note:
             This only works within an IPython context.
@@ -679,7 +693,7 @@ class ArtifactManager:
         return HTML("".join(html))
 
     def display_stage_graph(self):
-        """Displays (via html) the graphviz SVG map of the records and the stages they were run through.
+        """Returns an HTML IPython display of the graphviz SVG map of the records and the stages they were run through.
 
         Note:
             This only works within an IPython context.

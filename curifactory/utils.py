@@ -7,6 +7,7 @@ import platform
 import shutil
 import subprocess
 import sys
+import warnings
 
 from rich import get_console, reconfigure
 from rich.logging import RichHandler
@@ -392,6 +393,9 @@ def init_logging(
     if log_errors:
         sys.stderr = StreamToLogger(logging.ERROR)
 
+    # ensure deprecation warnings display
+    warnings.filterwarnings("always", "", DeprecationWarning)
+
     # logging.getLogger("torch").setLevel(logging.WARNING)
     # logging.getLogger("transformers").setLevel(logging.WARNING)
     # logging.getLogger("requests").setLevel(logging.WARNING)
@@ -410,3 +414,34 @@ class StreamToLogger:
     def write(self, buf):
         for line in buf.rstrip().splitlines():
             logging.log(self.level, line.rstrip())
+
+
+def _warn_deprecation(msg):
+    warnings.warn(msg, DeprecationWarning, stacklevel=3)
+
+
+class _DeprecationHelper:
+    """Use this to warn about deprecated/changed class names.
+
+    NOTE: this doesn't work for dataclasses, just make the old dataclass inherit from the new dataclass and throw the warning in __post_init__ and __init_subclass__
+
+    See https://stackoverflow.com/questions/9008444/how-to-warn-about-class-name-deprecation
+    """
+
+    def __init__(self, original_name, new_target, extra_msg=""):
+        self.original_name = original_name
+        self.new_target = new_target
+        self.extra_msg = extra_msg
+
+    def _warn(self):
+        _warn_deprecation(
+            f"{self.original_name} has been deprecated. Please use {self.new_target.__class__} instead. {self.extra_msg}"
+        )
+
+    def __call__(self, *args, **kwargs):
+        self._warn()
+        return self.new_target(*args, **kwargs)
+
+    def __getattr__(self, attr):
+        self._warn()
+        return getattr(self.new_target, attr)

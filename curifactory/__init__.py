@@ -15,11 +15,12 @@ from curifactory import (
     store,
     utils,
 )
+
+# make super important things accessible directly off of the top level module
+from curifactory.args import ExperimentArgs  # TODO: remove once fully deprecated
 from curifactory.caching import Lazy
 from curifactory.hashing import set_hash_functions
 from curifactory.manager import ArtifactManager
-
-# make super important things accessible directly off of the top level module
 from curifactory.params import ExperimentParameters
 from curifactory.procedure import Procedure
 from curifactory.record import Record

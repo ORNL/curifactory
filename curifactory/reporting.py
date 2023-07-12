@@ -390,7 +390,7 @@ def render_report_info_block(  # noqa: C901 -- TODO: yeaaaaah break it up at som
     handled_non_params_header = (
         False  # did we print out a header for non-file based params yet?
     )
-    for argset in manager.get_all_argsets():
+    for argset in manager.get_all_param_sets():
         if argset.hash not in handled_hashes:
             if not handled_non_params_header:
                 html_lines.append("<li>Non-file (live) argsets <ul>")
@@ -554,7 +554,7 @@ def render_report_argset_dump(manager) -> list[str]:
     """Dump out the JSON for all args used by manager."""
     html_lines = []
 
-    argsets = manager.get_all_argsets()
+    argsets = manager.get_all_param_sets()
     for argset in argsets:
         name = argset.name
         args_hash = argset.hash
