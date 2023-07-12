@@ -1,4 +1,5 @@
-"""Contains the base parameter class ExperimentArgs, a dataclass meant to configure an experiment."""
+"""Contains the base parameter class ExperimentParameters, a dataclass meant to represent
+a configuration for an experiment run."""
 
 from dataclasses import dataclass, field
 from typing import Callable, Union
@@ -15,7 +16,7 @@ class ExperimentParameters:
 
     .. note::
 
-        Extending with a :code:`@dataclass` is recommended to make it syntactically
+        Extending with a ``@dataclass`` is recommended to make it syntactically
         easier to read and define.
 
     Example:
