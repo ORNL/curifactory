@@ -97,22 +97,26 @@ class ArtifactManager:
         self.run_timestamp = datetime.now()
         """The datetime timestamp for when the manager is initialized (and usually
         also when the experiment starts running.)"""
-        self.experiment_run_number = 0
+        self.experiment_run_number: int = 0
         """The run counter for experiments with the given name."""
-        self.experiment_args_file_list = []
+        self.parameter_files: list[str] = []
         """The list of parameter file names to be used in the experiment."""
-        self.experiment_args = {}
-        """A dictionary keyed by parameter file names, where the values are arrays of the name of the
-        argset and arg hashes for all argsets from that parameter file. (See the 'args' field in the
-        metadata blocks in ManagerStore.)"""
+        self.param_file_param_sets: dict[str, list[list[str, str]]] = {}
+        """A dictionary of parameter file names for keys, where each value is an array of arrays,
+        each inner array containing the parameter set name and the parameter set hash, for the
+        parameter sets that come from that parameter file. (See the ``params`` field in the
+        metadata blocks in ``ManagerStore``.)
+
+        e.g. ``{"my_param_file": [ [ "my_param_set", "44b5e428e7165975a3e4f0d1674dbe5f" ] ] }``
+        """
         self.git_commit_hash = ""
         """The current commit hash if a git repo is in use."""
         self.git_workdir_dirty = False
         """Whether there are uncommited changes in the git repo or not."""
         self.pip_freeze = ""
-        """The output from a :code:`pip freeze` command."""
+        """The output from a ``pip freeze`` command."""
         self.conda_env = ""
-        """The output from a conda env command (:code:`conda env export --from-history`)."""
+        """The output from a conda env command (``conda env export --from-history``)."""
         self.os = ""
         """The name of the current OS running curifactory."""
         self.hostname = gethostname()
@@ -121,14 +125,14 @@ class ArtifactManager:
         self.prefix = prefix
         """If specified, the name to use for grouping cached data instead of the experiment name."""
         self.notes = notes
-        """A notes associated with a session/run to output into the report etc."""
+        """User-entered notes associated with a session/run to output into the report etc."""
 
         self.manager_cache_path = manager_cache_path
         """The path where the parameter registry and experiment store data are kept."""
         self.cache_path = cache_path
         """The path where all intermediate data is cached."""
         self.runs_path = runs_path
-        """The path where full experiment stores (run with :code:`--store-full`) are kept."""
+        """The path where full experiment stores (run with ``--store-full``) are kept."""
         self.logs_path = logs_path
         """The path where run logs get stored."""
         self.notebooks_path = notebooks_path

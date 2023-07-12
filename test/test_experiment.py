@@ -271,10 +271,10 @@ def test_rank_manager_store_full_integration(
 def test_basic_params_get_loaded():
     """Loading from the two example parameter files (params1 and params2) should load a total of 3 args instances."""
     results, mngr = run_experiment("basic", ["params1", "params2"], dry=True)
-    assert len(mngr.experiment_args_file_list) == 2
+    assert len(mngr.parameter_files) == 2
     total_args_count = 0
-    for key in mngr.experiment_args:
-        total_args_count += len(mngr.experiment_args[key])
+    for key in mngr.param_file_param_sets:
+        total_args_count += len(mngr.param_file_param_sets[key])
     assert total_args_count == 3
     assert len(mngr.records) == 3
 

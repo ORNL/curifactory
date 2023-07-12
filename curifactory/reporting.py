@@ -374,16 +374,16 @@ def render_report_info_block(  # noqa: C901 -- TODO: yeaaaaah break it up at som
             f"Hostname: <b>{manager.hostname}</b></br>",
             f"Run status: {status_line}</br>",
             f"{commit_line}</br>",
-            f"Params files: {str(manager.experiment_args_file_list)}</br></p>",
+            f"Params files: {str(manager.parameter_files)}</br></p>",
         ]
     )
 
     # output the list of parameters used and assoc hashes
     html_lines.append("<ul>")
     handled_hashes = []
-    for key in manager.experiment_args:
+    for key in manager.param_file_param_sets:
         html_lines.append(f"<li>{key} <ul>")
-        for name, args_hash in manager.experiment_args[key]:
+        for name, args_hash in manager.param_file_param_sets[key]:
             html_lines.append(f"<li>{name} - {args_hash}</li>")
             handled_hashes.append(args_hash)
         html_lines.append("</ul></li>")
@@ -1006,8 +1006,12 @@ def _get_run_index_line(run):
         desc_line += "<span style='color: cyan'><b>(from stored)</b></span> "
 
     # params
-    for params in run["args"]:
-        args = [pair[0] for pair in run["args"][params]]
+    # TODO: (7/12/2023) eventually remove this, doing this for some backwards consistency
+    params_attr = "params"
+    if params_attr not in run:
+        params_attr = "args"
+    for params in run[params_attr]:
+        args = [pair[0] for pair in run[params_attr][params]]
         desc_line += f"<b>{params}</b>({','.join(args)}) "
 
     # add notes if applicable

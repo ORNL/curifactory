@@ -9,7 +9,7 @@ from curifactory import utils
 class ManagerStore:
     """Manages the mini database of metadata on previous experiment runs. This is how we
     keep track of experiment run numbers etc. A metadata block for each run is stored in
-    the manager cache path under :code:`store.json`.
+    the manager cache path under ``store.json``.
 
     Note that the metadata blocks we keep track of for each run follows the following example:
 
@@ -21,8 +21,8 @@ class ManagerStore:
             "run_number": 1,
             "timestamp": "2021-06-15-T100003",
             "commit": "",
-            "params_files": ["example_params"],
-            "args": { "example_params": [ [ "test_params", "44b5e428e7165975a3e4f0d1674dbe5f" ] ] },
+            "param_files": ["example_params"],
+            "params": { "example_params": [ [ "test_params", "44b5e428e7165975a3e4f0d1674dbe5f" ] ] },
             "full_store": false,
             "status": "complete",
             "cli": "experiment example_experiment -p example_params",
@@ -115,8 +115,8 @@ class ManagerStore:
             "timestamp": mngr.get_str_timestamp(),
             "commit": mngr.git_commit_hash,
             "workdir_dirty": mngr.git_workdir_dirty,
-            "params_files": mngr.experiment_args_file_list,
-            "args": mngr.experiment_args,
+            "param_files": mngr.parameter_files,
+            "params": mngr.param_file_param_sets,
             "full_store": mngr.store_full,
             "status": "incomplete",
             "cli": mngr.run_line,
@@ -175,8 +175,8 @@ class ManagerStore:
         run_info["status"] = mngr.status
         if mngr.status == "error":
             run_info["error"] = mngr.error
-        run_info["params_files"] = mngr.experiment_args_file_list
-        run_info["args"] = mngr.experiment_args
+        run_info["param_files"] = mngr.parameter_files
+        run_info["params"] = mngr.param_file_param_sets
 
         if mngr.store_full:
             run_info = self._get_reproduction_line(mngr, run_info)

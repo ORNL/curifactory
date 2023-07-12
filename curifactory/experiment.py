@@ -260,7 +260,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             notes=notes,
         )
         # mngr.experiment_name = experiment_name
-        mngr.experiment_args_file_list = param_files
+        mngr.parameter_files = param_files
         if run_num_override is not None:
             mngr.experiment_run_number = run_num_override
         if run_ts_override is not None:
@@ -351,11 +351,13 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
     # load params files
     final_param_sets = []
-    for params in param_files:
-        mngr.experiment_args[params] = []
+    for param_file_name in param_files:
+        mngr.param_file_param_sets[param_file_name] = []
         # TODO: if we get a ModuleNotFoundError, suggest ensuring __init__.py as appropriate and that module paths don't have '/'
-        param_module_string = f"{mngr.config['params_module_name']}.{params}"
-        experiment_module_string = f"{mngr.config['experiments_module_name']}.{params}"
+        param_module_string = f"{mngr.config['params_module_name']}.{param_file_name}"
+        experiment_module_string = (
+            f"{mngr.config['experiments_module_name']}.{param_file_name}"
+        )
         try:
             logging.debug("Trying to load params module '%s'" % param_module_string)
             param_module = importlib.import_module(param_module_string)
@@ -368,7 +370,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             except ModuleNotFoundError as e:
                 logging.error(
                     "Parameter file '%s' could not be found in either experiments or parameters directory. Ensure curifactory_config.json is correct and if module subpaths are used, try including an __init__.py in each folder."
-                    % params
+                    % param_file_name
                 )
                 raise e
 
@@ -376,11 +378,11 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         if type(param_sets) != list:
             logging.error(
                 "Parameter file '%s' did not return a list, please make sure any `get_params()` functions are returning non-empty arrays."
-                % params
+                % param_file_name
             )
             raise RuntimeError(
                 "Parameter file '%s' did not return a list, please make sure any `get_params()` functions are returning non-empty arrays."
-                % params
+                % param_file_name
             )
         param_sets_to_add = []
 
@@ -406,7 +408,9 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                 store_in_registry=(not dry and not parallel_mode),
                 registry_path=mngr.manager_cache_path,
             )
-            mngr.experiment_args[params].append((param_set.name, param_set.hash))
+            mngr.param_file_param_sets[param_file_name].append(
+                (param_set.name, param_set.hash)
+            )
             # TODO: (01/24/2022) I have no idea what the point of this args_hash is...
             # it's not storing anything, and args_hash has no side-effects, so unclear
             # on why this matters.
@@ -773,14 +777,14 @@ def write_experiment_notebook(
         f"Run timestamp: **{manager.run_timestamp.strftime('%m/%d/%Y %H:%M:%S')}**  ",
         f"Reference: **{manager.get_reference_name()}**  ",
         f"Git commit: {manager.git_commit_hash}  ",
-        f"Params files: {str(manager.experiment_args_file_list)}",
+        f"Param files: {str(manager.parameter_files)}",
         "\n**Parameters**:",
     ]
 
     # output the list of parameters used and assoc hashes
-    for key in manager.experiment_args:
+    for key in manager.param_file_param_sets:
         output_lines.append(f"* {key}")
-        for name, hash in manager.experiment_args[key]:
+        for name, hash in manager.param_file_param_sets[key]:
             output_lines.append(f"\t* {name} - {hash}")
 
     output_lines.extend(
