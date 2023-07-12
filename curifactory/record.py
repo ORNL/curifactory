@@ -1,5 +1,5 @@
-"""Contains relevant classes for records, objects that track a particular state
-through some set of stages."""
+"""Contains relevant classes for records, objects that track a persistant state
+through some set of stages for a given parameter set."""
 
 import copy
 import logging
@@ -83,7 +83,8 @@ class Record:
         """Paths obtained with get_path/get_dir that should be copied to a full
         store folder. The last executed stage should manage copying anything
         listed here and then clearing it. This is a list of dicts that would be
-        passed to the artifact manager's ``get_artifact_path`` function: (obj_name, subdir, prefix, and path)
+        passed to the artifact manager's ``get_artifact_path`` function:
+        (obj_name, subdir, prefix, and path)
         """
         self.stored_paths: list[str] = []
         """A list of paths that have been copied into a full store folder. These are
@@ -147,9 +148,9 @@ class Record:
         self.unstored_tracked_paths = []
 
     def set_hash(self):
-        """Establish the hash for the current args (and set it on the args instance)."""
+        """Establish the hash for the current parameter set (and set it on the parameter set instance)."""
         # NOTE: we used to set this directly in manager's get_path, but there's potentially weird effects and it's an
-        # odd place to establish a hash that more correctly indicates a record than the args themselves (e.g. like with
+        # odd place to establish a hash that more correctly indicates a record than the parameter set themselves (e.g. like with
         # aggregate combo hashes)
         if self.params is not None and self.params.hash is None:
             self.params.hash = hashing.hash_param_set(
@@ -224,19 +225,22 @@ class Record:
         """Make a new record that has a deep-copied version of the current state.
 
         This is useful for a long running procedure that creates a common dataset for
-        many other stages, so that it can be replicated across multiple argsets without
-        having to recompute for each argset.
+        many other stages, so that it can be replicated across multiple parameter sets without
+        having to recompute for each individual parameter set.
 
         Note that state is really the only thing transferred to the new record, the stage and
         inputs/outputs lists will be empty.
 
-        Also note that the current record will be added to the :code:`input_records` of the new
+        Also note that the current record will be added to the ``input_records`` of the new
         record, since it may draw on data in its state.
 
         Args:
-            param_set: The new :code:`ExperimentArgs` argset to apply to the new record. Leave as None
-                to retain the same args as the current record.
+            param_set: The new ``ExperimentParameters`` to apply to the new record. Leave as ``None``
+                to retain the same parameter set as the current record.
             add_to_manager: Whether to automatically add this record to the current manager or not.
+
+        Returns:
+            A new record with the same state as this one, but under a different parameter set.
         """
         if param_set is None:
             param_set = self.params
@@ -256,10 +260,10 @@ class Record:
         stage_name: str = None,
         track: bool = True,
     ) -> str:
-        """Return an args-appropriate cache path with passed object name.
+        """Return a cache path with passed object name and the correct hash based on the parameter set.
 
         This should be equivalent to what a cacher for a stage should get. Note that this
-        is calling the manager's get_path, which will include the stage name. If calling
+        is calling the manager's ``get_path``, which will include the stage name. If calling
         this outside of a stage, it will include whatever stage was last run.
 
         Args:
@@ -301,7 +305,7 @@ class Record:
         stage_name: str = None,
         track: bool = True,
     ) -> str:
-        """Returns an args-appropriate cache path with the passed name, (similar to get_path) and creates it as a directory.
+        """Returns a cache path with the passed name and appropriate hash (similar to ``get_path``) and creates it as a directory.
 
         Args:
             dir_name_suffix (str): the name to add as a suffix to the created directory name.

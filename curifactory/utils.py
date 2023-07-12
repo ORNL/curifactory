@@ -393,17 +393,6 @@ def init_logging(
     if log_errors:
         sys.stderr = StreamToLogger(logging.ERROR)
 
-    # ensure deprecation warnings display
-    warnings.filterwarnings("always", "", DeprecationWarning)
-
-    # logging.getLogger("torch").setLevel(logging.WARNING)
-    # logging.getLogger("transformers").setLevel(logging.WARNING)
-    # logging.getLogger("requests").setLevel(logging.WARNING)
-    # logging.getLogger("urllib3").setLevel(logging.WARNING)
-    # logging.getLogger("snorkel").setLevel(logging.WARNING)
-    # logging.getLogger("snorkel.labeling.model").setLevel(logging.WARNING)
-    # logging.getLogger("snorkel.labeling.model.logger").setLevel(logging.WARNING)
-
 
 # https://stackoverflow.com/questions/19425736/how-to-redirect-stdout-and-stderr-to-logger-in-python
 class StreamToLogger:
@@ -417,7 +406,9 @@ class StreamToLogger:
 
 
 def _warn_deprecation(msg):
+    warnings.simplefilter("always", DeprecationWarning)  # turn off filter
     warnings.warn(msg, DeprecationWarning, stacklevel=3)
+    warnings.simplefilter("default", DeprecationWarning)  # reset filter
 
 
 class _DeprecationHelper:

@@ -1,7 +1,7 @@
 """This is the 'meta' curifactory CLI, which is a runnable to help set up a
 project structure.
 
-This file contains a :code:`__name__ == "__main__"` and can be run directly.
+This file contains a ``__name__ == "__main__"`` and can be run directly.
 """
 
 import argparse
