@@ -31,14 +31,14 @@ class ManagerStore:
         }
 
     Args:
-        manager_cache_path (str): The path to the directory to keep the :code:`store.json`.
+        manager_cache_path (str): The path to the directory to keep the ``store.json``.
     """
 
     def __init__(self, manager_cache_path: str):
         self.runs = []
         """The list of metadata blocks for each run."""
         self.path = manager_cache_path
-        """The location to store the :code:`store.json`."""
+        """The location to store the ``store.json``."""
 
         if self.path[-1] != "/":
             self.path += "/"
@@ -48,17 +48,17 @@ class ManagerStore:
         self.load()
 
     def load(self):
-        """Load the current experiment database from :code:`sore.json` into :code:`self.runs`."""
+        """Load the current experiment database from ``store.json`` into ``self.runs``."""
         if os.path.exists(self.path):
             with open(self.path) as infile:
                 self.runs = json.load(infile)
 
     def save(self):
-        """Save the current database in :code:`self.runs` into the :code:`store.json` file."""
+        """Save the current database in ``self.runs`` into the ``store.json`` file."""
         with open(self.path, "w") as outfile:
             json.dump(self.runs, outfile, indent=4)
 
-    def get_experiment_runs(self, experiment_name: str):
+    def get_experiment_runs(self, experiment_name: str) -> list[dict]:
         """Get all the runs associated with the specified experiment name from the database.
 
         Args:
@@ -73,7 +73,7 @@ class ManagerStore:
                 experiment_runs.append(run)
         return experiment_runs
 
-    def get_run(self, ref_name: str):
+    def get_run(self, ref_name: str) -> tuple[dict, int]:
         """Get the metadata block for the run with the specified reference name.
 
         Args:
@@ -88,10 +88,10 @@ class ManagerStore:
                 return run, index
         return None, -1
 
-    def add_run(self, mngr):
-        """Add a new metadata block to the store for the passed :code:`ArtifactManager` instance.
+    def add_run(self, mngr) -> dict:
+        """Add a new metadata block to the store for the passed ``ArtifactManager`` instance.
 
-        Note that this automatically calls the :code:`save()` function.
+        Note that this automatically calls the ``save()`` function.
 
         Args:
             mngr (ArtifactManager): The manager to grab run metadata from.
@@ -133,8 +133,9 @@ class ManagerStore:
         self.save()
         return run
 
-    # NOTE: we have to call this both from add_run and update_run because manager stores itself on init, but if someone _later_ sets store_full (maybe in a live run) we need to be able to handle this being added to the run_info
-    def _get_reproduction_line(self, mngr, run):
+    # NOTE: we have to call this both from add_run and update_run because manager stores itself on init, but if
+    # someone _later_ sets store_full (maybe in a live run) we need to be able to handle this being added to the run_info
+    def _get_reproduction_line(self, mngr, run: dict) -> dict:
         sanitized_run_line = mngr.run_line
         if "--overwrite " in sanitized_run_line:
             sanitized_run_line = sanitized_run_line.replace("--overwrite ", "")
@@ -152,13 +153,13 @@ class ManagerStore:
         run["reproduce"] = mngr.reproduction_line
         return run
 
-    def update_run(self, mngr):
-        """Updates the metadata in the database for the run associated with the passed :code:`ArtifactManager`.
+    def update_run(self, mngr) -> dict:
+        """Updates the metadata in the database for the run associated with the passed ``ArtifactManager``.
 
         This is currently just used to update the status and include any error messages if relevant, when an experiment
         finishes running.
 
-        Note that this automatically calls the :code:`save()` function.
+        Note that this automatically calls the ``save()`` function.
 
         Args:
             mngr (ArtifactManager): The manager to grab run metadata from.
