@@ -1,7 +1,7 @@
 """Classes for handling reporting - adding customizable pieces of information
 to an HTML experiement run report.
 
-This is handled through a base :code:`Reportable` class, and each reporter class
+This is handled through a base ``Reportable`` class, and each reporter class
 extends it.
 """
 
@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import shutil
+from typing import Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -50,22 +51,22 @@ class Reportable:
 
     Args:
         name (str): A (optional) reference name to give this piece of reported info, it is used
-            as the title string suffix. If :code:`None` is supplied, it will be suffixed
-            with the number of the reportable.
+            as the title string suffix. If ``None`` is supplied, it will be suffixed with the
+            number of the reportable.
         group (str): An optional string to use for grouping multiple related reportables
             together in the report. By default, all reportables are ordered by record. This
             will create a separate entry on the TOC and put them next to each other in the
             report.
 
     Note:
-        When subclassing a reportable, :code:`html()` must be overriden, and :code:`render()`
+        When subclassing a reportable, ``html()`` must be overriden, and ``render()``
         optionally may be depending on the nature of the reportable. If a reportable relies on
-        some form of external file, such as an image or figure, implement :code:`render()` to save
-        it (using this class's :code:`path` variable as the directory), and then reference it
-        in the output from :code:`html()`. The internal reporting mechanisms handle calling
+        some form of external file, such as an image or figure, implement ``render()`` to save
+        it (using this class's ``path`` variable as the directory), and then reference it
+        in the output from ``html()``. The internal reporting mechanisms handle calling
         both of these functions as needed.
 
-        A simplified example of the :code:`FigureReporter` is shown here:
+        A simplified example of the ``FigureReporter`` is shown here:
 
         .. code-block:: python
 
@@ -75,10 +76,10 @@ class Reportable:
                     super().__init__(name=name, group=group)
 
                 def render(self):
-                    self.fig.savefig(os.path.join(self.path, f"{self.name}.png"))
+                    self.fig.savefig(os.path.join(self.path, f"{self.qualified_name}.png"))
 
                 def html(self):
-                    return f"<img src='{self.path}/{self.name}.png'>"
+                    return f"<img src='{self.path}/{self.qualified_name}.png'>"
     """
 
     def __init__(self, name=None, group=None):
@@ -89,19 +90,21 @@ class Reportable:
         reportable can save files (e.g. images) as needed. This is available to access both
         in :code:`render()` and :code:`html()`"""
         self.name: str = name
-        """The suffix to title the reportable with."""
+        """The suffix to title the reportable with. NOTE: if a custom reportable is saving anything
+        in a render function, don't use just name in the path. ``self.qualified_name`` should be
+        preferred, as it is the fully prefixed name."""
         self.qualified_name: str = name
         """The full prefixed name including the stage name and aggregate indicator. This is
         set by the record when a ``report()`` is called."""
         self.group: str = group
-        """If specified, reports group all reportables with the same :code:`group` value together."""
+        """If specified, reports group all reportables with the same ``group`` value together."""
         self.record = None
-        """Record: The record this reportable came from, automatically populated via :code:`record.report()`"""
+        """Record: The record this reportable came from, automatically populated via ``record.report()``"""
         self.stage: str = ""
         """The name of the stage this reportable comes from, used as part of the title."""
 
-    def html(self):
-        """When a report is created, the :code:`html()` function for every reportable is
+    def html(self) -> Union[str, list[str]]:
+        """When a report is created, the ``html()`` function for every reportable is
         called and appended to the report. This function should either return a single
         string of html, or can return a list of lines of html.
 
@@ -130,12 +133,14 @@ class HTMLReporter(Reportable):
 
     """
 
-    def __init__(self, html_string, name=None, group=None):
+    def __init__(
+        self, html_string: Union[str, list[str]], name: str = None, group: str = None
+    ):
         self.html_string = html_string
         """The raw string of HTML to include."""
         super().__init__(name=name, group=group)
 
-    def html(self):
+    def html(self) -> Union[str, list[str]]:
         return self.html_string
 
 
@@ -147,11 +152,13 @@ class DFReporter(Reportable):
         float_prec (int): the floating point precision to round all values to.
 
     Note:
-        If you need to use any of the pandas stylers, apply them and pass :code:`df.render()` to
-        an :code:`HTMLReporter` instead.
+        If you need to use any of the pandas stylers, apply them and pass ``df.render()`` to
+        an ``HTMLReporter`` instead.
     """
 
-    def __init__(self, df: pd.DataFrame, name=None, group=None, float_prec=4):
+    def __init__(
+        self, df: pd.DataFrame, name: str = None, group: str = None, float_prec: int = 4
+    ):
         self.df = df
         self.float_prec = float_prec
         super().__init__(name=name, group=group)
@@ -164,7 +171,7 @@ class DFReporter(Reportable):
     #     # doing this so easily browsable in excel
     #     self.df.to_csv(f"{self.path}{self.name}.csv")
 
-    def html(self):
+    def html(self) -> list[str]:
         output = ["<table border='1' cellspacing='0'><tr><th></th>"]
 
         # column row
@@ -197,17 +204,19 @@ class DFReporter(Reportable):
 
 
 class JsonReporter(Reportable):
-    """Adds an indented JSON dump in a :code:`<pre>` tag for a passed dictionary.
+    """Adds an indented JSON dump in a ``<pre>`` tag for a passed dictionary.
 
     Args:
-        dictionary (Dict): The python dictionary to write to a JSON string.
+        dictionary (Dict): The python dictionary to write to a JSON string. Technically
+            this can be anything json-serializable, so this includes single values and
+            lists.
     """
 
-    def __init__(self, dictionary, name=None, group=None):
+    def __init__(self, dictionary, name: str = None, group: str = None):
         self.data = dictionary
         super().__init__(name=name, group=group)
 
-    def html(self):
+    def html(self) -> list[str]:
         return [
             "<pre>",
             json.dumps(self.data, indent=4, default=lambda x: str(x)),
@@ -220,11 +229,12 @@ class FigureReporter(Reportable):
 
     Args:
         fig: A matplotlib figure to render.
-        kwargs: All keywords args are passed to the figures :code:`savefig()` call in render.
+        kwargs: All keywords args are passed to the figures ``savefig()`` call in render.
     """
 
-    def __init__(self, fig, name=None, group=None, **kwargs):
+    def __init__(self, fig, name: str = None, group: str = None, **kwargs):
         self.kwargs = kwargs
+        """All keywords args are passed to the figures ``savefig()`` call in render."""
         self.fig = fig
         super().__init__(name=name, group=group)
 
@@ -235,7 +245,7 @@ class FigureReporter(Reportable):
             f"{self.path}/{self.qualified_name}.{self.kwargs['format']}", **self.kwargs
         )
 
-    def html(self):
+    def html(self) -> str:
         return f"<img src='{self.path}/{self.qualified_name}.{self.kwargs['format']}'>"
 
 
@@ -256,8 +266,8 @@ class LinePlotReporter(Reportable):
         y: a single list/numpy array or dictionary of lists/numpy arrays of y data.
         x: (optional), a single list/numpy array or dictionary of lists/numpy arrays of x data.
             If specified, this must match y.
-        plot_kwargs (Dict): The **kwargs to pass to the matplotlib :code:`plt.plot()` call.
-        savefig_kwargs (Dict): The **kwargs to pass to the :code:`fig.savefig()` call on render.
+        plot_kwargs (Dict): The **kwargs to pass to the matplotlib ``plt.plot()`` call.
+        savefig_kwargs (Dict): The **kwargs to pass to the ``fig.savefig()`` call on render.
 
     Example:
         .. code-block:: python
@@ -284,7 +294,13 @@ class LinePlotReporter(Reportable):
     """
 
     def __init__(
-        self, y, x=None, name=None, group=None, plot_kwargs={}, savefig_kwargs={}
+        self,
+        y,
+        x=None,
+        name: str = None,
+        group: str = None,
+        plot_kwargs: dict = {},
+        savefig_kwargs: dict = {},
     ):
         self.savefig_kwargs = savefig_kwargs
         self.plot_kwargs = plot_kwargs
@@ -295,6 +311,7 @@ class LinePlotReporter(Reportable):
     def render(self):
         plt.figure(facecolor="white")
 
+        # plot the figure
         if self.x is None:
             if isinstance(self.y, dict):
                 for key in self.y:
@@ -311,6 +328,7 @@ class LinePlotReporter(Reportable):
                 plt.plot(self.x, self.y, **self.plot_kwargs)
         plt.grid(True)
 
+        # save the figure to file
         fig = plt.gcf()
         if "format" not in self.savefig_kwargs:
             self.savefig_kwargs["format"] = "png"
@@ -320,7 +338,7 @@ class LinePlotReporter(Reportable):
         )
         plt.close()
 
-    def html(self):
+    def html(self) -> str:
         return f"<img src='{self.path}/{self.qualified_name}.{self.savefig_kwargs['format']}'>"
 
 
@@ -374,28 +392,28 @@ def render_report_info_block(  # noqa: C901 -- TODO: yeaaaaah break it up at som
             f"Hostname: <b>{manager.hostname}</b></br>",
             f"Run status: {status_line}</br>",
             f"{commit_line}</br>",
-            f"Params files: {str(manager.parameter_files)}</br></p>",
+            f"Param files: {str(manager.parameter_files)}</br></p>",
         ]
     )
 
     # output the list of parameters used and assoc hashes
     html_lines.append("<ul>")
     handled_hashes = []
-    for key in manager.param_file_param_sets:
-        html_lines.append(f"<li>{key} <ul>")
-        for name, args_hash in manager.param_file_param_sets[key]:
-            html_lines.append(f"<li>{name} - {args_hash}</li>")
-            handled_hashes.append(args_hash)
+    for param_file in manager.param_file_param_sets:
+        html_lines.append(f"<li>{param_file} <ul>")
+        for name, params_hash in manager.param_file_param_sets[param_file]:
+            html_lines.append(f"<li>{name} - {params_hash}</li>")
+            handled_hashes.append(params_hash)
         html_lines.append("</ul></li>")
     handled_non_params_header = (
         False  # did we print out a header for non-file based params yet?
     )
-    for argset in manager.get_all_param_sets():
-        if argset.hash not in handled_hashes:
+    for param_set in manager.get_all_param_sets():
+        if param_set.hash not in handled_hashes:
             if not handled_non_params_header:
                 html_lines.append("<li>Non-file (live) argsets <ul>")
                 handled_non_params_header = True
-            html_lines.append(f"<li>{argset.name} - {argset.hash}</li>")
+            html_lines.append(f"<li>{param_set.name} - {param_set.hash}</li>")
     if handled_non_params_header:
         html_lines.append("</ul></li>")
 
@@ -554,22 +572,30 @@ def render_report_argset_dump(manager) -> list[str]:
     """Dump out the JSON for all args used by manager."""
     html_lines = []
 
-    argsets = manager.get_all_param_sets()
-    for argset in argsets:
-        name = argset.name
-        args_hash = argset.hash
-        html_lines.append(f"<h4>{name} - {args_hash}</h4>")
+    param_sets = manager.get_all_param_sets()
+    for param_set in param_sets:
+        html_lines.append(f"<h4>{param_set.name} - {param_set.hash}</h4>")
         html_lines.append("<pre>")
 
-        argset_data = hashing.param_set_string_hash_representations(argset)
-        html_lines.append(html.escape(json.dumps(argset_data, indent=2, default=str)))
+        param_representations = hashing.param_set_string_hash_representations(param_set)
+        html_lines.append(
+            html.escape(json.dumps(param_representations, indent=2, default=str))
+        )
         html_lines.append("</pre>")
 
     return html_lines
 
 
-def prepare_report_path(output_path, report_name):
-    """Set up any necessary folders for a report at the given location. This will not error if the location already has a report in it, but will remove existing reportables and graphs."""
+def prepare_report_path(output_path: str, report_name: str) -> tuple[str, str, str]:
+    """Set up any necessary folders for a report at the given location.
+    This will not error if the location already has a report in it, but
+    will remove existing reportables and graphs.
+
+    Returns:
+        A tuple containing the folder path to place the report html, the
+        subdirectory within that folder to place the graphviz files, and
+        the subdirectory to place any rendered reportable files.
+    """
 
     folder_path = os.path.join(output_path, report_name)
     logging.info("Preparing report path '%s'..." % folder_path)
@@ -590,7 +616,9 @@ def prepare_report_path(output_path, report_name):
     return folder_path, graphs_path, reportables_path
 
 
-def run_report(manager, output_path, name, css_path=None):
+def run_report(
+    manager, output_path: str, name: str, css_path: str = None
+) -> tuple[str, str, str]:
     """Generate a full HTML report for the given manager and passed argsets.
 
     Args:
@@ -600,6 +628,12 @@ def run_report(manager, output_path, name, css_path=None):
             output_path.
         css_path (str): The path to a css file to use for styling the report. (This file will get
             copied into the output_path/name folder.)
+
+
+    Returns:
+        A tuple containing the folder path to place the report html, the
+        subdirectory within that folder to place the graphviz files, and
+        the subdirectory to place any rendered reportable files.
     """
 
     # TODO: (01/26/2022) in principle this is where we could check manager if stored, and store if not.
@@ -690,6 +724,7 @@ def _add_record_subgraph(dot, record_index, record, manager, detailed=True):
                         height=".20",
                     )
 
+        # iterate each stage in this record and connect any input artifacts _to_ the stage
         for index, input_set in enumerate(record.stage_inputs):
             for input_index in input_set:
                 if input_index != -1:
@@ -698,6 +733,8 @@ def _add_record_subgraph(dot, record_index, record, manager, detailed=True):
                         f"{record_index}_{record.stages[index]}",
                         arrowsize=".65",
                     )
+
+        # iterate each stage in this record and connect the stage _to_ the artifacts it outputs
         for index, output_set in enumerate(record.stage_outputs):
             for output_index in output_set:
                 dot.edge(
@@ -707,7 +744,7 @@ def _add_record_subgraph(dot, record_index, record, manager, detailed=True):
                 )
 
 
-def update_report_index(experiments_path, reports_root_dir):
+def update_report_index(experiments_path: str, reports_root_dir: str):
     """Generate a nice index.html with a summary line for each experiment run report in the
     passed directory.
 
@@ -828,7 +865,12 @@ def update_report_index(experiments_path, reports_root_dir):
         outfile.writelines(html)
 
 
-def map_single_svg(manager, record, detailed=True, colors=None):
+def map_single_svg(
+    manager,
+    record,
+    detailed: bool = True,
+    colors: Union[list[str], dict[str, str]] = None,
+) -> Digraph:
     """Create a graphviz dot graph of the stages/artifacts for the given record.
 
     Args:
@@ -855,7 +897,9 @@ def map_single_svg(manager, record, detailed=True, colors=None):
     return dot
 
 
-def map_full_svg(manager, detailed=False, colors=None):
+def map_full_svg(
+    manager, detailed: bool = False, colors: Union[list[str], dict[str, str]] = None
+) -> Digraph:
     """Create a graphviz dot graph for the entire experiment. (Maps out each stage and
     the input/output artifacts for each.)
 
