@@ -13,6 +13,7 @@ import logging
 import os
 import pickle
 from datetime import datetime
+from pathlib import Path
 from typing import Union
 
 import pandas as pd
@@ -597,3 +598,66 @@ class FileReferenceCacher(Cacheable):
         with open(path, "w") as outfile:
             json.dump(files, outfile, indent=4)
         return path
+
+
+class RawJupyterNotebookCacher(Cacheable):
+    """Take a list of code cells (where each cell is a list of strings containing python code)
+    and turn it into a jupyter notebook. This is useful in situations where you want each
+    experiment to have some form of automatically populated analysis that a reportable wouldn't
+    sufficiently cover, e.g. an interactive set of widgets or dashboard.
+
+    Example:
+
+        .. code-block:: python
+
+            @stage(inputs=["results_path"], outputs=["exploration_notebook"], cachers=[RawJupyterNotebookCacher])
+            def make_exploration_notebook(record, results_path):
+                def convert_path(path):
+                    '''A function to translate paths to local folder path.'''
+                    p = Path(path)
+                    p = Path(*p.parts[2:])
+                    return str(p)
+
+                cells = [
+                    [
+                        "# imports",
+                        "from curifactory.caching import JsonCacher",
+                    ],
+                    [
+                        "# load things",
+                        f"cacher = JsonCacher('./{convert_path(results_path)})",
+                        "results = cacher.load()",
+                        "results_metadata = cacher.metadata",
+                    ],
+                    [
+                        "# analysis",
+                        "...",
+                    ],
+                ]
+
+                return cells
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, extension=".ipynb", **kwargs)
+
+    def load(self):
+        cells_path = self.get_path("_cells.json")
+        return JsonCacher(cells_path).load()
+
+    def save(self, obj: list[list[str]]):
+        """This saves the raw cell strings to a _cells.json, and then uses
+        ipynb-py-convert to change the output python script into a notebook
+        format."""
+        notebook_path = Path(self.get_path())
+        cells_path = self.get_path("_cells.json")
+        script_path = notebook_path.with_suffix(".py")
+
+        cell_text = "\n\n# %%\n".join(["\n".join(inner_cell) for inner_cell in obj])
+
+        with open(script_path, "w") as outfile:
+            outfile.write(cell_text)
+        utils.run_command(["ipynb-py-convert", script_path, notebook_path])
+        os.remove(script_path)
+
+        JsonCacher(cells_path).save(obj)

@@ -27,6 +27,11 @@ DAG-based execution of stages is finally here!
 * `stage_cachers` list to record, at the beginning of every stage this will contain
   references to the initialized cachers for that stage - this can be used to get
   output path information.
+* `-n` CLI flag shorthand for `--names`
+* `--params` CLI flag long form of `-p`
+* `RawJupyterNotebookCacher`, which takes a list of cells of raw strings of python code and
+  stores them as a notebook. This is useful for exporting an interactive analysis with each
+  experiment run.
 
 ### Changed
 * `--no-map` CLI flag to `--no-dag`, which disables both the mapping phase and the
@@ -34,6 +39,7 @@ DAG-based execution of stages is finally here!
   regular stage-by-stage cache short-circuit determination.
   NOTE: if any weird bugs are encountered, or if `expected_state` isn't set on
   aggregate stages, it's advisable to use this flag.
+* `--parallel-mode` flag to `--parallel-safe`
 
 ### Fixed
 * Record copy not also containing a copy of the state artifact representations.

@@ -17,6 +17,7 @@ from curifactory.caching import (
     PandasCsvCacher,
     PandasJsonCacher,
     PickleCacher,
+    RawJupyterNotebookCacher,
 )
 from curifactory.reporting import JsonReporter
 
@@ -1187,3 +1188,35 @@ def test_custom_cacher_using_get_dir_store_full(configured_test_manager):
     assert os.path.exists(f"{full_path}/what.txt")
 
     assert cacher.load()["message"] == "hello world!"
+
+
+def test_raw_jupyter_notebook_cacher_saves_outputs(configured_test_manager):
+    """The RawJuypterNotebookCacher should store both the cell content and
+    the notebook file."""
+
+    @cf.stage(outputs=["notebook"], cachers=[RawJupyterNotebookCacher])
+    def write_notebook(record):
+        cells = [
+            ["print('hello world!')", "print('this is a test!')"],
+            ["# this is another cell", "..."],
+        ]
+        return cells
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    write_notebook(r0)
+
+    path = os.path.join(
+        configured_test_manager.cache_path,
+        f"test_{r0.args.hash}_write_notebook_notebook",
+    )
+    assert os.path.exists(f"{path}.ipynb")
+    assert os.path.exists(f"{path}_cells.json")
+    assert not os.path.exists(f"{path}.py")
+
+    contents = JsonCacher(f"{path}.ipynb").load()
+    assert len(contents["cells"]) == 2
+    assert contents["cells"][0]["source"] == [
+        "print('hello world!')\n",
+        "print('this is a test!')",
+    ]
+    assert contents["cells"][1]["source"] == ["# this is another cell\n", "..."]
