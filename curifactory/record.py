@@ -338,9 +338,10 @@ class Record:
         return f"Record {index} ({paramset_name})"
 
     def get_record_index(self, map=False) -> int:
-        record_list = self.manager.records
         if map:
             record_list = self.manager.map.records
+        else:
+            record_list = self.manager.records
         for i, record in enumerate(record_list):
             if self == record:
                 return i

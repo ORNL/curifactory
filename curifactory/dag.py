@@ -265,6 +265,7 @@ class DAG:
             stage_output: MapArtifactRepresentation = self.artifacts[stage_output_index]
             if not stage_output.cached:
                 cached = False
+                break
 
         # -- overwrite seek mode --
         # (in this mode we add the node if and only if there's a sub node that's being overwritten.)
@@ -290,6 +291,7 @@ class DAG:
                 )
                 if overwrite_found:
                     overwrite_stage_found = True
+                    break
 
             # if no dependencies need to be overwritten, we're good to stop going down.
             if not overwrite_stage_found:

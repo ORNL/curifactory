@@ -698,6 +698,7 @@ def _add_record_subgraph(dot, record_index, record, manager, detailed=True):
                     for output_set in record.stage_outputs:
                         if input_index in output_set:
                             found_in_this_record = True
+                            break
                     # don't include if not from this record and a detailed map
                     if detailed and not found_in_this_record:
                         continue
