@@ -498,7 +498,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
 
 
 def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
-    expected_state: list[str] = None, outputs: list[str] = None, cachers: list = None
+    inputs: list[str] = None, outputs: list[str] = None, cachers: list = None
 ):
     """Decorator to wrap around a function that represents some step that must operate across
     multiple different argsets or "experiment lines" within an experiment. This is normally
@@ -511,11 +511,14 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
         that this function needs to aggregate across.
 
     Args:
-        expected_state (list[str]): A list of variable names this stage expects to find in the
+        inputs (list[str]): A list of variable names this stage expects to find in the
             state of each record passed into it. A warning will be thrown on any records that
             do not have the requested variable in state. Variables listed here are used for the
             DAG/map calculation to determine which stages are actually required to run for this
-            stage to have everything it needs.
+            stage to have everything it needs. **Note that all inputs listed here must have a
+            corresponding input parameter in the function definition line, each with the exact
+            same name as in this list.** These arguments are each dictionaries of the requested
+            state artifacts, keyed by the record they come from.
         outputs (list[str]): A list of variable names that this stage will return and store
             in the record state. These represent, in order, the tuple of returned values from
             the function being wrapped.
@@ -533,11 +536,11 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
         .. code-block:: python
 
             @aggregate(["results"], ["final_results"], [JsonCacher])
-            def compile_results(record: Record, records: List[Record]):
-                results = {}
-                for prev_record in records:
-                    results[prev_record.args.name] = prev_record.state["results"]
-                return results
+            def compile_results(record: Record, records: List[Record], results: dict[Record, float]):
+                final_results = {}
+                for in_record, result in results.items():
+                    results[in_record.args.name] = result
+                return final_results
     """
 
     def decorator(function):
@@ -584,9 +587,9 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             record.manager.update_map_progress(record, "start")
 
             # apply consistent handling
-            nonlocal expected_state, outputs, cachers
-            if expected_state is None:
-                expected_state = []
+            nonlocal inputs, outputs, cachers
+            if inputs is None:
+                inputs = []
             if outputs is None:
                 outputs = []
 
@@ -635,21 +638,38 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 )
 
             # similar to how inputs are checked on the state for a regular stage, we use
-            # `expected_state` to (softly) check each input record for the requested state
-            # variables. We don't actually load/pass anything differently to the function,
-            # but this is useful from a documentation and debugging standpoint, and is required
-            # for DAG computation to work as expected.
-            for expected_input in expected_state:
+            # `inputs` to (softly) check each input record for the requested state
+            # variables. This is useful both from a documentation standpoint and also
+            # is required for the DAG computation to work as expected.
+            #
+            # For each requested artifact in inputs, we construct a dictionary where the
+            # values are those artifacts from the input records, and keyed by the associated
+            # records themselves.
+            function_inputs = {}
+            for function_input in inputs:
+                function_inputs[function_input] = {}
                 for prev_record in records:
-                    if expected_input not in prev_record.state_artifact_reps:
+                    if function_input not in prev_record.state_artifact_reps:
+                        # TODO: (7/18/2023) unclear if this warning is still necessary or
+                        # not, possibly just make this a regular info level?
                         logging.warning(
-                            "Expected state variable '%s' not found in %s"
-                            % (expected_input, prev_record.get_reference_name())
+                            "Artifact '%s' not found in %s"
+                            % (function_input, prev_record.get_reference_name())
                         )
                     else:
                         record.stage_inputs[-1].append(
-                            prev_record.state_artifact_reps[expected_input]
+                            prev_record.state_artifact_reps[function_input]
                         )
+                        # populate the dictionary associated with this input and record
+                        # note that we keep resolve off, same as in stage, to keep it the
+                        # lazy instance (since we don't know if this is actually needed
+                        # yet or not)
+                        prev_record.state.resolve = False
+                        function_inputs[function_input][
+                            prev_record
+                        ] = prev_record.state[function_input]
+                        prev_record.state.resolve = True
+            function_inputs.update(kwargs)
 
             # see note in stage
             if cachers is not None:
@@ -740,6 +760,21 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                     # at least one output wasn't cached, so execute order 66!
                     execute_stage = True
 
+            # check each input for Lazy objects and load them if we know we have to execute this stage
+            if execute_stage:
+                for function_input in function_inputs:
+                    for prev_record, artifact in function_inputs[
+                        function_input
+                    ].items():
+                        if isinstance(artifact, Lazy) and artifact.resolve:
+                            logging.debug(
+                                "Resolving lazy load object '%s' from record %s"
+                                % (function_input, prev_record.get_reference_name())
+                            )
+                        function_inputs[function_input][prev_record] = function_inputs[
+                            function_input
+                        ][prev_record].load()
+
             record.manager.unlock()
             pre_cache_time_end = time.perf_counter()
 
@@ -774,7 +809,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             exec_time_start = time.perf_counter()
             # NOTE: passing additional args to an aggregate stage is sort of undefined functionality,
             # this probably should be discouraged.
-            function_outputs = function(record, records, **kwargs)
+            function_outputs = function(record, records, **function_inputs)
             exec_time_end = time.perf_counter()
 
             # handle storing outputs in record
