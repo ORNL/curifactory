@@ -859,7 +859,7 @@ def _get_output_representations_for_map(
 ) -> list[MapArtifactRepresentation]:
     """Check if the requested outputs are cached but do not load them, simply return
     a list of statuses for found."""
-    if cachers == []:
+    if cachers is not None and len(cachers) == 0:
         raise EmptyCachersError(
             "Do not use '[]' for cachers. This will always short-circuit because there is nothing that isn't cached."
         )
@@ -888,15 +888,13 @@ def _dag_skip_check_cached_outputs(
     """Checks for cached values and loads any relevant metadata into artifact representations.
     This function does not actually load values themselves, meant to be called for a skipped stage
     in dag-based execution."""
-    if cachers == []:
+    if cachers is not None and len(cachers) == 0:
         raise EmptyCachersError(
             "Do not use '[]' for cachers. This will always short-circuit because there is nothing that isn't cached."
         )
 
     skipped_function_outputs = []
     for i, output_name in enumerate(outputs):
-        logging.debug("Checking cache status (not loading into memory.)")
-
         cacher = None
         metadata = None
         is_cached = False
@@ -904,7 +902,7 @@ def _dag_skip_check_cached_outputs(
         if cachers is not None:
             if cachers[i].check():
                 cachers[i].load_metadata()
-                if type(outputs[i]) == Lazy:
+                if isinstance(outputs[i], Lazy):
                     outputs[i].cacher = cachers[i]
                     # we set the output to just be the Lazy instance for now
                     output = outputs[i]
@@ -932,7 +930,7 @@ def _check_cached_outputs(
     stage_name: str, record, outputs: list[str], cachers, records=None
 ) -> bool:
     """Check if the requested outputs are cached and load them if so."""
-    if cachers == []:
+    if cachers is not None and len(cachers) == 0:
         raise EmptyCachersError(
             "Do not use '[]' for cachers. This will always short-circuit because there is nothing that isn't cached."
         )
