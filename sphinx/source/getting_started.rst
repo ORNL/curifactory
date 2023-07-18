@@ -12,7 +12,7 @@ notebook, REPL, or non-experiment script.)
 These components are:
 
 * the artifact manager
-* arguments
+* parameters
 * records
 * stages
 
@@ -42,47 +42,47 @@ report.
 
     The artifact manager contains and keeps track of the overall session for the experiment stuff.
 
-Arguments
----------
+Parameters
+----------
 
-The next component is **arguments**. Argument classes are a way to
-define how research code can be parameterized, e.g. how many layers to
+The next component is **parameters**. parameter classes are a way to
+define how research code can be configured, e.g. how many layers to
 include in a neural network. By defining and initializing these directly
 in python, we have the ability to dynamically create experiment
 parameter configurations, compose them, etc.
 
-Curifactory comes with an ``ExperimentArgs`` superclass that all argument
-classes should inherit from. ``ExperimentArgs`` includes a ``name``
-parameter, allowing you to provide a label for an args set.
+Curifactory comes with an ``ExperimentParameters`` base class that all
+custom parameter classes should inherit from. ``ExperimentParameters``
+includes a ``name`` parameter, allowing you to provide a label for the
+parameter sets.
 
 .. note::
 
-    For best ergonomics, we recommend defining an args class with the python
+    For best ergonomics, we recommend defining an parameter class with the python
     ``@dataclass`` decorator. This makes it easy to define defaults and
-    quickly view your argument definitions simply as a collection of
-    parameters.
+    quickly view your parameter definitions simply as a collection of
+    attributes.
 
-Arg sets can then be initialized, passed around, and used within your
-research code, making it easy to organize and keep track of
-hyperparameters.
+parameter sets can then be initialized, passed around, and used within your
+research code, making it easy to organize and keep track of hyperparameters.
 
 .. code-block:: ipython3
 
     from dataclasses import dataclass
-    from curifactory import ExperimentArgs
+    from curifactory import ExperimentParameters
 
     @dataclass
-    class MyArgs(ExperimentArgs):
+    class MyParams(ExperimentParameters):
         some_scalar_multiplier: float = 1.0
 
     # define a couple argument sets
-    default_args = MyArgs(name="default")
-    doubled_args = MyArgs(name="doubled", some_scalar_multiplier=2.0)
+    default_params = MyParams(name="default")
+    doubled_params = MyParams(name="doubled", some_scalar_multiplier=2.0)
 
 .. figure:: images/components_args.png
     :align: center
 
-    Creating and passing different argument sets through the experiment stuff
+    Creating and passing different parameter sets through the experiment stuff
     will give us different sets of results in the manager we can compare.
 
 Records
@@ -90,8 +90,8 @@ Records
 
 A **record** is how curifactory keeps track of state in an experiment
 run. "State" includes the data, objects, and results associated with a set of
-arguments, e.g. a trained model that came from using a particular
-``MyArgs`` instance. The ``Record`` class is initialized with the
+parameters, e.g. a trained model that came from using a particular
+``MyParams`` instance. The ``Record`` class is initialized with the
 current manager as well as the argument set to use. Records
 have a ``state`` dictionary, which holds intermediate data and objects
 as research code is evaluated.
@@ -100,13 +100,13 @@ as research code is evaluated.
 
     from curifactory import Record
 
-    r0 = Record(manager, default_args)
-    r1 = Record(manager, doubled_args)
+    r0 = Record(manager, default_params)
+    r1 = Record(manager, doubled_params)
 
-    print(r0.state, r0.args)
-    #> {} MyArgs(name='default', hash=None, overwrite=False, some_scalar_multiplier=1.0)
-    print(r1.state, r1.args)
-    #> {} MyArgs(name='doubled', hash=None, overwrite=False, some_scalar_multiplier=2.0)
+    print(r0.state, r0.params)
+    #> {} my_params(name='default', hash=None, overwrite=False, some_scalar_multiplier=1.0)
+    print(r1.state, r1.params)
+    #> {} MyParams(name='doubled', hash=None, overwrite=False, some_scalar_multiplier=2.0)
 
 
 
@@ -114,7 +114,7 @@ as research code is evaluated.
     :align: center
 
     The state for each record is what's actually storing the results from the
-    experiment stuff for each given arg set.
+    experiment stuff for each given parameter set.
 
 Stages
 ------
@@ -128,9 +128,9 @@ that are then stored in the record’s state. This is implemented with a
 array of string output names. Functions with the ``@stage`` decorator
 must accept a record as the first argument.
 
-Inside the stage, the record parameter can be used to obtain the arguments
-necessary to parameterize the computation, via the ``record.args``
-attribute.
+Inside the stage, the record object that is passed in can be used to get
+the current parameter set and parameterize the computation,
+via the ``record.params`` attribute.
 
 In the example below, we’ve defined a very simple stage that will store
 a number in the record’s state under the “initial_value” key.
@@ -147,7 +147,7 @@ stages, which we demonstate later on.
     @stage(inputs=None, outputs=["initial_value"])
     def get_initial_value(record):
         my_value = 5
-        return my_value * record.args.some_scalar_multiplier
+        return my_value * record.params.some_scalar_multiplier
 
     r0 = get_initial_value(r0)
     r1 = get_initial_value(r1)
@@ -171,7 +171,7 @@ the returned ``initial_value`` data.
 
 Specifying inputs on the stage decorator tells curifactory to search for
 those keys in the state of the passed record. Those values are then
-injected into the record call as kwargs. Note that the parameter names
+injected into the record call as kwargs. Note that the Argument names
 in the function definition must match the string values of the inputs
 array.
 
@@ -183,7 +183,7 @@ that piece of data and computes a new value based on it.
 
     @stage(inputs=["initial_value"], outputs=["final_value"])
     def multiply_again(record, initial_value):
-        return initial_value * record.args.some_scalar_multiplier
+        return initial_value * record.params.some_scalar_multiplier
 
     r1 = multiply_again(r1)
     print(r1.state)
@@ -198,8 +198,8 @@ can be functionally chained together:
     r2 = Record(manager, MyArgs(name="uber-double", some_scalar_multiplier=4.0))
 
     r2 = multiply_again(get_initial_value(r2))
-    print(r2.state, r2.args)
-    #> {'initial_value': 20.0, 'final_value': 80.0} MyArgs(name='uber-double', hash=None, overwrite=False, some_scalar_multiplier=4.0)
+    print(r2.state, r2.params)
+    #> {'initial_value': 20.0, 'final_value': 80.0} MyParams(name='uber-double', hash=None, overwrite=False, some_scalar_multiplier=4.0)
 
 
 
@@ -226,6 +226,9 @@ In the example below, we iterate through the records to create a
 dictionary of all associated ``final_value`` entries from each record’s
 state, and then determine the maximum.
 
+..
+    TODO: these bits need to be modified to reflect the new expected_state for agg
+
 .. code-block:: ipython3
 
     from curifactory import aggregate
@@ -235,14 +238,14 @@ state, and then determine the maximum.
         all_vals = {}
         for r in records:
             if "final_value" in r.state:
-                all_vals[r.args.name] = r.state["final_value"]
+                all_vals[r.params.name] = r.state["final_value"]
 
         maximum = max(all_vals.values())
         return all_vals, maximum
 
-Sometimes an aggregate doesn't really need its own set of arguments, e.g. if it's
+Sometimes an aggregate doesn't really need its own parameter set, e.g. if it's
 simply comparing results from other records. In these cases, records can be initialized with ``None`` passed as the
-argset. In the cell below, we manually pass our previous records into
+parameter sets. In the cell below, we manually pass our previous records into
 the stage, but note that if we pass ``None`` for records (the default) it will take all existing records in the manager.
 
 .. code-block:: ipython3
@@ -258,12 +261,12 @@ the stage, but note that if we pass ``None`` for records (the default) it will t
     :align: center
 
 To recap, the artifact manager keeps track of the overall session for a
-run, the “experiment run container”. Sets of arguments are created with
+run, the “experiment run container”. Parameter steps are created with
 different hyperparameters to test a hypothesis or vary the experiment.
-Records track state changes and intermediate data associated with some
-set of arguments throughout the experiment. Stages are what modify record state,
+Records track state changes and intermediate data associated with a
+parameter set throughout the experiment. Stages are what modify record state,
 they apply research code
-to the passed records based on their associated arguments, and the
+to the passed records based on their associated Parameters, and the
 results for each stage are stored back into the record’s now modified
 state.
 
@@ -273,6 +276,9 @@ state.
 
 Caching and reporting
 =====================
+
+..
+    TODO: continue modifying params/args language below
 
 This section follows the `1_CachingAndReporting <https://github.com/ORNL/curifactory/blob/main/examples/notebook-based/notebooks/1_CachingAndReporting.ipynb>`_ notebook. Here we demonstrate some features the previously discussed components
 enable. Two major abilities are easily caching

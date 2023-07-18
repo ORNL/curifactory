@@ -13,8 +13,9 @@ concept in curifactory. The ``args`` module has been renamed to ``params``, and 
 base parameter class ``ExperimentArgs`` has been renamed to ``ExperimentParameters``.
 
 The following changes will need to be made in any previous experiments:
-* ``Record.args`` -> ``Record.params``. This will likely effect every stage that uses
-    parameters, e.g.
+
+* | ``Record.args`` -> ``Record.params``. This will likely effect every stage that uses
+  | parameters, e.g.
 
 .. code-block:: python
 
@@ -30,11 +31,11 @@ Should now become:
     def train_model(record: cf.Record):
         model = LogisticRegression(random_state=record.params.seed_args)
 
-* ``curifactory.args.ExperimentArgs`` -> ``curifactory.params.ExperimentParameters``, the
-    module has been renamed, so any imports that explicitly reference ``curifactory.args``
-    will need to be changed to ``curifactory.params``. Similarly, the base parameter class
-    that you extend from will need to be changed from ``ExperimentArgs`` to
-    ``ExperimentParameters``:
+* | ``curifactory.args.ExperimentArgs`` -> ``curifactory.params.ExperimentParameters``, the
+  | module has been renamed, so any imports that explicitly reference ``curifactory.args``
+  | will need to be changed to ``curifactory.params``. Similarly, the base parameter class
+  | that you extend from will need to be changed from ``ExperimentArgs`` to
+  | ``ExperimentParameters``:
 
 .. code-block:: python
 
