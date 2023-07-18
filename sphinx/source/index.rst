@@ -51,6 +51,7 @@ Features
     cli_guide.rst
     tips.rst
     example.rst
+    cookbook.rst
 
 
 

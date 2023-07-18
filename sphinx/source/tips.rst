@@ -130,3 +130,9 @@ To re-run, checkout that hash in git, and enter the reproduce command given in t
     # to exactly reproduce:
     git checkout [COMMIT_HASH]
     experiment some_experiment -p some_params --cache data/runs/[RUN_REF_NAME] --dry-cache
+
+
+Softlinking data directories
+----------------------------
+
+TODO
