@@ -52,6 +52,7 @@ Features
     tips.rst
     example.rst
     cookbook.rst
+    migration.rst
 
 
 
