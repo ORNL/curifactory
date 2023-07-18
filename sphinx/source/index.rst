@@ -42,6 +42,7 @@ Features
     :maxdepth: 2
     :caption: Usage
 
+    installation.rst
     getting_started.rst
     components.rst
     parameters.rst

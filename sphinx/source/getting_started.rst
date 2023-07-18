@@ -1,38 +1,6 @@
 Getting Started
 ###############
 
-
-Installation
-============
-
-Curifactory can be installed from pip via:
-
-.. code-block:: bash
-
-    pip install curifactory
-
-Note that graphviz must be installed for certain reporting features to work.
-In conda, you can do this with:
-
-.. code-block:: bash
-
-    conda install python-graphviz
-
-
-Curifactory comes with a CLI :code:`curifactory` runnable, which can bootstrap a
-curifactory-enabled project directory for you.
-
-.. code-block:: bash
-
-    curifactory init
-
-This command will step you through the process. You can run it either in a new
-folder or in an existing project, and it will create any necessary paths for
-curifactory to work. Descriptions of the various folders created in the
-initialization process are in the
-:ref:`configuration and directory structure` section.
-
-
 Basic components
 ================
 
