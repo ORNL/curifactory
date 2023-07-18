@@ -153,15 +153,11 @@ class DAG:
             return True
 
         # it's a leaf if outputs are not used anywhere
-        found_used = False
         for output_index in outputs:
             output = self.artifacts[output_index]
             if self.is_output_used_anywhere(record, stage_index + 1, output.name):
-                found_used = True
-        if not found_used:
-            return True
-
-        return False
+                return False
+        return True
 
     def is_output_used_anywhere(
         self, record: Record, stage_search_start_index: int, output: str
