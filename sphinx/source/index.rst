@@ -33,7 +33,6 @@ Features
 * HTML report output from each run with graphviz-rendered diagram of experiment
 * Easily report plots and values to HTML report
 * Configuration files are python scripts, allowing programmatic definition, parameter composition, and parameter inheritance
-* Companion `cookiecutter project <https://github.com/ORNL/cookiecutter-curifactory>`_
 * Output logs from every run
 * Run experiments directly from CLI or other python code, notebooks, etc.
 

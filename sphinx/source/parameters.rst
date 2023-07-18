@@ -23,8 +23,7 @@ The :code:`Args` class
 
 As discussed on the :ref:`Getting Started` page, To define possible arguments, there should be a
 class that inherits :code:`curifactory.ExperimentArgs`, and for ease of use should have the
-:code:`@dataclass` decorator. By default, the cookiecutter project places an :code:`Args` class
-for this inside of the :code:`params/__init__.py`. Possible arguments are the variables within
+:code:`@dataclass` decorator. Possible arguments are the variables within
 this class, and by defining default values for each one, this allows an arguments file to define
 only what it needs to change from the defaults.
 

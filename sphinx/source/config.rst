@@ -67,5 +67,4 @@ experiments run with :code:`--notebook` are stored.
 generated.
 
 :code:`report_css_path` - The CSS file to copy into each report directory. A default
-stylesheet comes with the cookiecutter project
-`cookiecutter project <https://github.com/ORNL/cookiecutter-curifactory>`_
+stylesheet comes when a project is set up with ``curifactory init``.

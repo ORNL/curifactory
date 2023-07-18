@@ -593,8 +593,8 @@ Export experiment in docker container (:code:`--docker`)
 
 After the experiment completes, build a docker image with a complete copy of the current
 codebase, all data from the experiment run, and the output notebook. Assuming the default
-dockerfile that comes from the `cookiecutter project <https://github.com/ORNL/cookiecutter-curifactory>`,
-the resulting image, when run, hosts a file server with the data cache as well as the run notebook.
+dockerfile that is created when running ``curifactory init``, the resulting image, when
+run, hosts a file server with the data cache as well as the run notebook.
 
 Note that a wheel of Curifactory will need to be built, placed in the docker folder and referenced in the
 dockerfile in order for the notebook to run correctly. (This will be addressed in a later version.)
