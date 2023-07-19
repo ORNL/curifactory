@@ -660,6 +660,11 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                         record.stage_inputs[-1].append(
                             prev_record.state_artifact_reps[function_input]
                         )
+
+                    # NOTE: this is distinct from handling in stage because it's not necessarily
+                    # an error here if one of the previous records doesn't have a particular input,
+                    # and we already warn about that in the previous conditional.
+                    if function_input in prev_record.state:
                         # populate the dictionary associated with this input and record
                         # note that we keep resolve off, same as in stage, to keep it the
                         # lazy instance (since we don't know if this is actually needed
@@ -771,9 +776,9 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                                 "Resolving lazy load object '%s' from record %s"
                                 % (function_input, prev_record.get_reference_name())
                             )
-                        function_inputs[function_input][prev_record] = function_inputs[
-                            function_input
-                        ][prev_record].load()
+                            function_inputs[function_input][
+                                prev_record
+                            ] = function_inputs[function_input][prev_record].load()
 
             record.manager.unlock()
             pre_cache_time_end = time.perf_counter()

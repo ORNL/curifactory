@@ -122,8 +122,8 @@ def test_output_used_check_in_aggregate(configured_test_manager):
     def thing1(record):
         return "green eggs and ham"
 
-    @cf.aggregate(expected_state=["thing"], outputs=["things"])
-    def all_the_things(record, records):
+    @cf.aggregate(inputs=["thing"], outputs=["things"])
+    def all_the_things(record, records, thing):
         return "no"
 
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
@@ -153,7 +153,9 @@ def test_output_used_check_finds_output_in_later_input(configured_test_manager):
         return "Sam I am"
 
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
-    thing2(thing1(r0))
+    thing1(r0)
+    thing2(r0)
+    # thing2(thing1(r0))
 
     configured_test_manager.map_mode = False
     configured_test_manager.map_records()
@@ -561,11 +563,11 @@ def test_triple_record_quadruple_stage_execution_lists(
     def thing3(record, thing1):
         return thing1 + 2
 
-    @cf.aggregate(expected_state=["thing"], outputs=["things"])
-    def agg_things(record, records):
+    @cf.aggregate(inputs=["thing"], outputs=["things"])
+    def agg_things(record, records, thing):
         total = 0
-        for record in records:
-            total += record.state["thing"]
+        for r, value in thing.items():
+            total += value
         return total
 
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))

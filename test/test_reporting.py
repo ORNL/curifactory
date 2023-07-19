@@ -86,8 +86,8 @@ def test_detailed_record_subgraph_aggregate_doesnot_include_previous_artifacts(
     def test(record):
         return "test"
 
-    @cf.aggregate(expected_state=["test_output"], outputs=["final"])
-    def agg(record, records):
+    @cf.aggregate(inputs=["test_output"], outputs=["final"])
+    def agg(record, records, test_output):
         return "things"
 
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test1"))
