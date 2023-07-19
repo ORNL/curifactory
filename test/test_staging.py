@@ -750,3 +750,174 @@ def test_aggregate_auto_resolve_lazy_state(configured_test_manager):
 
     small_aggregate(record2, [record1])
     assert record2.state["reproduced_output"] == "hello world"
+
+
+def test_aggregate_populates_inputs_when_all_records_have_artifact(
+    configured_test_manager,
+):
+    """Inputs for an aggregate state should correctly populate the input-specific argument when all records have
+    the requested artifact."""
+
+    @stage([], ["value"])
+    def make_value(record):
+        return 3
+
+    @aggregate(["value"], ["total"])
+    def combine_values(record, records, value):
+        total = 0
+        assert len(value) == len(records)
+        for r in records:
+            assert r in list(value.keys())
+        for r, val in value.items():
+            total += val
+
+        return total
+
+    r0 = Record(configured_test_manager, None)
+    r1 = Record(configured_test_manager, None)
+    r2 = Record(configured_test_manager, None)
+
+    combine_values(r2, [make_value(r0), make_value(r1)])
+    assert r2.state["total"] == 6
+
+
+def test_aggregate_populates_inputs_when_some_records_have_artifact(
+    configured_test_manager,
+):
+    """Inputs for an aggregate state should correctly populate the input-specific argument when only some of
+    the records have the requested artifact."""
+
+    @stage([], ["value"])
+    def make_value(record):
+        return 3
+
+    @stage([], ["not_value"])
+    def make_not_value(record):
+        return 3
+
+    @aggregate(["value", "not_value"], ["total"])
+    def combine_values(record, records, value, not_value):
+        total = 0
+        assert len(value) == 1
+        assert len(not_value) == 1
+        assert list(value.keys())[0] in records
+        assert list(not_value.keys())[0] in records
+        for r in records:
+            if r in value:
+                total += value[r]
+            elif r in not_value:
+                total += 2 * not_value[r]
+
+        return total
+
+    r0 = Record(configured_test_manager, None)
+    r1 = Record(configured_test_manager, None)
+    r2 = Record(configured_test_manager, None)
+
+    combine_values(r2, [make_value(r0), make_not_value(r1)])
+    assert r2.state["total"] == 9
+
+
+def test_aggregate_populates_inputs_when_no_records_have_artifact(
+    configured_test_manager,
+):
+    """Inputs for an aggregate state should correctly populate the input-specific argument when none of the
+    records have the requested artifact."""
+
+    @stage([], ["not_value"])
+    def make_not_value(record):
+        return 3
+
+    @aggregate(["value"], ["total"])
+    def combine_values(record, records, value):
+        total = 0
+        assert len(value) == 0
+        assert len(records) != 0
+
+        for r, val in value.items():
+            total += val
+
+        return total
+
+    r0 = Record(configured_test_manager, None)
+    r1 = Record(configured_test_manager, None)
+    r2 = Record(configured_test_manager, None)
+
+    combine_values(r2, [make_not_value(r0), make_not_value(r1)])
+    assert r2.state["total"] == 0
+
+
+def test_aggregate_can_cross_reference_inputs_by_record(configured_test_manager):
+    """In a case where two input records to an aggregate state have one common input in state and each have
+    one not in the other, you should be able to correctly key the dictionaries based on the record.
+    """
+
+    @stage([], ["value", "common"])
+    def make_value(record):
+        return 3, 1
+
+    @stage([], ["not_value", "common"])
+    def make_not_value(record):
+        return 8, 2
+
+    @aggregate(["value", "not_value", "common"], ["total"])
+    def combine_values(record, records, value, not_value, common):
+        total = 0
+
+        assert len(value) == 1
+        assert len(not_value) == 1
+        assert len(common) == len(records)
+        assert list(value.keys())[0] in records
+        assert list(not_value.keys())[0] in records
+        for r in records:
+            assert r in common.keys()
+        for r in value:
+            assert r in common.keys()
+        for r in not_value:
+            assert r in common.keys()
+
+        for r, val in value.items():
+            total += val
+            total += common[r]
+
+        for r, val in not_value.items():
+            total += val
+            total += common[r]
+
+        return total
+
+    r0 = Record(configured_test_manager, None)
+    r1 = Record(configured_test_manager, None)
+    r2 = Record(configured_test_manager, None)
+
+    combine_values(r2, [make_value(r0), make_not_value(r1)])
+    assert r2.state["total"] == 14
+
+
+def test_aggregate_populates_inputs_when_all_records_have_lazy_artifact(
+    configured_test_manager,
+):
+    """Inputs for an aggregate state should correctly populate the input-specific argument when all records have
+    the requested artifact, and that it resolves correctly if lazy."""
+
+    @stage([], [Lazy("value")], [PickleCacher])
+    def make_value(record):
+        return 3
+
+    @aggregate(["value"], ["total"])
+    def combine_values(record, records, value):
+        total = 0
+        assert len(value) == len(records)
+        for r in records:
+            assert r in list(value.keys())
+        for r, val in value.items():
+            total += val
+
+        return total
+
+    r0 = Record(configured_test_manager, None)
+    r1 = Record(configured_test_manager, None)
+    r2 = Record(configured_test_manager, None)
+
+    combine_values(r2, [make_value(r0), make_value(r1)])
+    assert r2.state["total"] == 6
