@@ -4,9 +4,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unreleased]
+
+## [0.14.0] - 2023-07-19
+
+DAG-based execution of stages is finally here!
 
 ### Added
+* DAG representation of experiment, this is created and analyzed during the experiment
+  mapping phase. The DAG is used to more intelligently determine which stages need to
+  execute, based on which outputs are ever actually needed for the final experiment
+  outputs (leaf nodes).
+* `--map` CLI flag, this runs the mapping phase of the experiment and then exits, printing
+  out the experiment DAG and showing which artifacts it found in cache and the run name
+  that generated them.
+* `inputs` to aggregate stage decorator. This acts similarly to `inputs` on a regular
+  stage, except these input artifacts are searched for in the list of records the aggregate
+  is running across, rather than the aggregate's own record. It is also not a requirement
+  that the requested artifact exist in every passed record (though it will throw a warning
+  on any records where it doesn't exist.) Similar to `stage`, each input needs to have a
+  corresponding argument (with the same name as in the string) in the function definition.
+  The artifacts for each input will be passed as a dictionary, where the values are the
+  artifacts, and the keys are the records they come from. Note that while you can technically
+  have `None` as the inputs and still access each record's state, in order for the DAG
+  to compute properly, you must specify each needed state artifact in the inputs. (or use the
+  `--no-dag` flag listed below.)
+* `stage_cachers` list to record, at the beginning of every stage this will contain
+  references to the initialized cachers for that stage - this can be used to get
+  output path information.
 * `-n` CLI flag shorthand for `--names`
 * `--params` CLI flag long form of `-p`
 * `RawJupyterNotebookCacher`, which takes a list of cells of raw strings of python code and
@@ -14,8 +38,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   experiment run.
 
 ### Changed
+* `--no-map` CLI flag to `--no-dag`, which disables both the mapping phase and the
+  DAG analysis/DAG-based execution determination. This returns curifactory to its
+  regular stage-by-stage cache short-circuit determination.
+  NOTE: if any weird bugs are encountered, or if `inputs` isn't set on
+  aggregate stages, it's advisable to use this flag.
 * `--parallel-mode` flag to `--parallel-safe`
 
+### Fixed
+* Record copy not also containing a copy of the state artifact representations.
+* Wrong progress bar updating if multiple records/args had the same hash
 
 
 

@@ -6,6 +6,7 @@ import os
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
 from curifactory import ExperimentParameters, Record, aggregate, hashing, stage
+from curifactory.caching import JsonCacher
 
 
 def test_record_sets_hash(configured_test_manager):
@@ -71,7 +72,7 @@ def test_record_doesnot_store_combo_hash_when_parallel_mode(configured_test_mana
     aggregate stage in the param_registry.json."""
     configured_test_manager.parallel_mode = True
 
-    @aggregate(["testing"])
+    @aggregate(None, ["testing"])
     def agg_stage(record, records):
         return "test"
 
@@ -87,7 +88,7 @@ def test_record_doesnot_store_combo_hash_when_parallel_mode(configured_test_mana
 
 # TODO: test_record_gets_combo_hash_for_aggregate (check that is_aggregate sets)
 def test_record_gets_combo_hash_for_aggregate(configured_test_manager):
-    @aggregate(["testing"])
+    @aggregate(None, ["testing"])
     def agg_stage(record, records):
         return "test"
 
@@ -156,3 +157,21 @@ def test_record_make_copy_doesnot_add_record_to_manager_when_specified(
 
     r0.make_copy(ExperimentParameters(name="test1"), add_to_manager=False)
     assert len(configured_test_manager.records) == 1
+
+
+def test_record_has_access_to_cachers_in_stage(configured_test_manager):
+    """Inside a stage, record.stage_cachers should reflect the instantiated
+    cachers that will be used to save associated outputs."""
+
+    @stage(outputs=["test1", "test2"], cachers=[JsonCacher, JsonCacher(prefix="wat")])
+    def do_things(record):
+        assert len(record.stage_cachers) == 2
+        path1 = record.stage_cachers[0].get_path()
+        path2 = record.stage_cachers[1].get_path()
+
+        return path1, path2
+
+    r0 = Record(configured_test_manager, ExperimentParameters(name="test0"))
+    r0 = do_things(r0)
+    assert r0.state["test1"] == "test/examples/data/cache/test_0_do_things_test1.json"
+    assert r0.state["test2"] == "test/examples/data/cache/wat_0_do_things_test2.json"

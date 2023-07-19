@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Caching &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Docker" href="docker.html" />
+    <link rel="prev" title="Args" href="args.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and argsets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="args.html">Args</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Caching</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/caching.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="module-curifactory.caching">
+<span id="caching"></span><h1>Caching<a class="headerlink" href="#module-curifactory.caching" title="Permalink to this headline"></a></h1>
+<p>Classes for various caching strategies, known as “cachers”</p>
+<p>This is handled through a base <code class="code docutils literal notranslate"><span class="pre">Cacheable</span></code> class, and each “strategy”
+cacher class extends it.</p>
+<p>Note that there are effectively two ways to use cacheables -
+# TODO finish this</p>
+<p><strong>Classes:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable" title="curifactory.caching.Cacheable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Cacheable</span></code></a>(path_override, name, subdir, …)</p></td>
+<td><p>The base caching class, any caching strategy should extend this.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.FileReferenceCacher" title="curifactory.caching.FileReferenceCacher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileReferenceCacher</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Saves a file path or list of file paths generated from a stage as a json file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.JsonCacher" title="curifactory.caching.JsonCacher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JsonCacher</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Dumps an object to indented JSON.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.Lazy" title="curifactory.caching.Lazy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Lazy</span></code></a>(name, resolve)</p></td>
+<td><p>A class to indicate a stage output as a lazy-cache object - curifactory will attempt to keep this out of memory as much as possible, immediately caching and deleting, and loading back into memeory only when needed.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.PandasCsvCacher" title="curifactory.caching.PandasCsvCacher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandasCsvCacher</span></code></a>(path_override, to_csv_args, …)</p></td>
+<td><p>Saves a pandas dataframe to CSV.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.PandasJsonCacher" title="curifactory.caching.PandasJsonCacher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PandasJsonCacher</span></code></a>(path_override, …)</p></td>
+<td><p>Saves a pandas dataframe to JSON.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.PickleCacher" title="curifactory.caching.PickleCacher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PickleCacher</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Dumps an object to a pickle file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.RawJupyterNotebookCacher" title="curifactory.caching.RawJupyterNotebookCacher"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RawJupyterNotebookCacher</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Take a list of code cells (where each cell is a list of strings containing python code) and turn it into a jupyter notebook.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt id="curifactory.caching.Cacheable">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.caching.</span></code><code class="sig-name descname"><span class="pre">Cacheable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_override</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subdir</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extension</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.Cacheable" title="Permalink to this definition"></a></dt>
+<dd><p>The base caching class, any caching strategy should extend this.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_override</strong> (<em>str</em>) – Use a specific path for the cacheable, rather than
+automatically setting it based on name etc.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – The obj name to use in automatically constructing a path. If
+a cacheable is used in stage header, this is automatically provided as
+the output string name from the stage outputs list.</p></li>
+<li><p><strong>subdir</strong> (<em>str</em>) – An optional string of one or more nested subdirectories to
+prepend to the artifact filepath.  This can be used if you want to
+subdivide cache and run artifacts into logical subsets, e.g. similar to
+<a class="reference external" href="https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71">https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71</a>.</p></li>
+<li><p><strong>prefix</strong> (<em>str</em>) – An optional alternative prefix to the experiment-wide
+prefix (either the experiment name or custom-specified experiment
+prefix). This can be used if you want a cached object to work easier
+across multiple experiments, rather than being experiment specific.
+WARNING: use with caution, cross-experiment caching can mess with
+provenance.</p></li>
+<li><p><strong>extension</strong> (<em>str</em>) – The filetype extension to add at the end of the path.</p></li>
+<li><p><strong>record</strong> (<a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><em>Record</em></a>) – The current record this cacheable is caching under.
+This can be used to get a copy of the current args instance and is also
+how artifact metadata is collected.</p></li>
+<li><p><strong>track</strong> (<em>bool</em>) – whether to include returned path in a store full copy or not.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is strongly recommended that any subclasses of Cacheable take <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> in init and pass
+along to <code class="docutils literal notranslate"><span class="pre">super()</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CustomCacher</span><span class="p">(</span><span class="n">cf</span><span class="o">.</span><span class="n">Cacheable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path_override</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">custom_attribute</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">path_override</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">some_custom_attribute</span> <span class="o">=</span> <span class="n">custom_attribute</span>
+</pre></div>
+</div>
+<p>This allows consistent handling of paths in the parent <code class="docutils literal notranslate"><span class="pre">get_path()</span></code> and <code class="docutils literal notranslate"><span class="pre">check()</span></code> functions.</p>
+<p>If no custom attributes are needed, also pass in <a href="#id1"><span class="problematic" id="id2">*</span></a>args, so path_override can be specified without
+a kwarg:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CustomCacher</span><span class="p">(</span><span class="n">cf</span><span class="o">.</span><span class="n">Cacheable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;.custom&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<p><strong>Attributes:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.cache_paths" title="curifactory.caching.Cacheable.cache_paths"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cache_paths</span></code></a></p></td>
+<td><p>The running list of paths this cacher is using, as appended by <code class="docutils literal notranslate"><span class="pre">get_path</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.extension" title="curifactory.caching.Cacheable.extension"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extension</span></code></a></p></td>
+<td><p>The filetype extension to add at the end of the path.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.extra_metadata" title="curifactory.caching.Cacheable.extra_metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extra_metadata</span></code></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">collect_metadata</span></code> uses but does not overwrite this, placing into the <cite>extra</cite> key in the actual metadata.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.metadata" title="curifactory.caching.Cacheable.metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">metadata</span></code></a></p></td>
+<td><p>Metadata about the artifact cached with this cacheable.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.name" title="curifactory.caching.Cacheable.name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></a></p></td>
+<td><p>The obj name to use in automatically constructing a path.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.path_override" title="curifactory.caching.Cacheable.path_override"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path_override</span></code></a></p></td>
+<td><p>Use a specific path for the cacheable, rather than automatically setting it based on name etc.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.prefix" title="curifactory.caching.Cacheable.prefix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prefix</span></code></a></p></td>
+<td><p>An optional alternative prefix to the experiment-wide prefix (either the experiment name or custom-specified experiment prefix).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.record" title="curifactory.caching.Cacheable.record"><code class="xref py py-obj docutils literal notranslate"><span class="pre">record</span></code></a></p></td>
+<td><p>The current record this cacheable is caching under.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.stage" title="curifactory.caching.Cacheable.stage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stage</span></code></a></p></td>
+<td><p>The stage associated with this cacher, if applicable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.subdir" title="curifactory.caching.Cacheable.subdir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subdir</span></code></a></p></td>
+<td><p>An optional string of one or more nested subdirectories to prepend to the artifact filepath.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.track" title="curifactory.caching.Cacheable.track"><code class="xref py py-obj docutils literal notranslate"><span class="pre">track</span></code></a></p></td>
+<td><p>Whether to store the artifact this cacher is used with in the run folder on store-full runs or not.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.check" title="curifactory.caching.Cacheable.check"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check</span></code></a>()</p></td>
+<td><p>Check to see if this cacheable needs to be written or not.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.get_dir" title="curifactory.caching.Cacheable.get_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dir</span></code></a>([suffix])</p></td>
+<td><p>Returns a path for a directory with the given suffix (if provided), appropriate for use in a <code class="docutils literal notranslate"><span class="pre">save</span></code> and <code class="docutils literal notranslate"><span class="pre">load</span></code> function.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.get_path" title="curifactory.caching.Cacheable.get_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_path</span></code></a>([suffix])</p></td>
+<td><p>Retrieve the full filepath to use for saving and loading.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.load" title="curifactory.caching.Cacheable.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a>()</p></td>
+<td><p>Load the cacheable from disk.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.Cacheable.save" title="curifactory.caching.Cacheable.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>(obj)</p></td>
+<td><p>Save the passed object to disk.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt id="curifactory.caching.Cacheable.cache_paths">
+<code class="sig-name descname"><span class="pre">cache_paths</span></code><em class="property"><span class="pre">:</span> <span class="pre">list</span></em><a class="headerlink" href="#curifactory.caching.Cacheable.cache_paths" title="Permalink to this definition"></a></dt>
+<dd><p>The running list of paths this cacher is using, as appended by <code class="docutils literal notranslate"><span class="pre">get_path</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.caching.Cacheable.check">
+<code class="sig-name descname"><span class="pre">check</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#curifactory.caching.Cacheable.check" title="Permalink to this definition"></a></dt>
+<dd><p>Check to see if this cacheable needs to be written or not.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function will always return False if the args are <code class="code docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if we find the cached file and the current <code class="code docutils literal notranslate"><span class="pre">Args</span></code>
+don’t specify to overwrite, otherwise False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.caching.Cacheable.extension">
+<code class="sig-name descname"><span class="pre">extension</span></code><a class="headerlink" href="#curifactory.caching.Cacheable.extension" title="Permalink to this definition"></a></dt>
+<dd><p>The filetype extension to add at the end of the path. (Optional, automatically used as suffix in get_path if provided)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.caching.Cacheable.extra_metadata">
+<code class="sig-name descname"><span class="pre">extra_metadata</span></code><em class="property"><span class="pre">:</span> <span class="pre">dict</span></em><a class="headerlink" href="#curifactory.caching.Cacheable.extra_metadata" title="Permalink to this definition"></a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">collect_metadata</span></code> uses but does not overwrite this, placing into the <cite>extra</cite> key
+in the actual metadata. This can be used by the cacher’s save function to store additional
+information that would then be available if the ‘load’ function calls <code class="docutils literal notranslate"><span class="pre">load_metadata()</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.caching.Cacheable.get_dir">
+<code class="sig-name descname"><span class="pre">get_dir</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.caching.Cacheable.get_dir" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a path for a directory with the given suffix (if provided), appropriate for use in a <code class="docutils literal notranslate"><span class="pre">save</span></code>
+and <code class="docutils literal notranslate"><span class="pre">load</span></code> function. This will create any subdirectories in the path if they don’t exist.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.caching.Cacheable.get_path">
+<code class="sig-name descname"><span class="pre">get_path</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.caching.Cacheable.get_path" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieve the full filepath to use for saving and loading. This should be called in the <code class="docutils literal notranslate"><span class="pre">save()</span></code> and
+<code class="docutils literal notranslate"><span class="pre">load()</span></code> implementations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>suffix</strong> (<em>str</em>) – The suffix to append to the path. If not set, this will default to the cachable’s extension.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">path_override</span></code> is set on this cacher, this cacher _does not handle storing in the full store
+directory._ The assumption is that either you’re referring to a static external path (which doesn’t make
+sense to copy), or you’re manually passing in a <code class="docutils literal notranslate"><span class="pre">record.get_path</span></code> in which case the record has already
+dealt with any logic necessary to add the path to the record’s <code class="docutils literal notranslate"><span class="pre">unstored_tracked</span> <span class="pre">paths</span></code> which get copied
+over. Note also that this can be problematic for cachers that store multiple files since anything that isn’t
+the path_override won’t get copied. <strong>For multiple file cachers you should use ``name``/``subdir``/``prefix``
+instead of setting a ``path_override``.</strong></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.caching.Cacheable.load">
+<code class="sig-name descname"><span class="pre">load</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.Cacheable.load" title="Permalink to this definition"></a></dt>
+<dd><p>Load the cacheable from disk.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.caching.Cacheable.metadata">
+<code class="sig-name descname"><span class="pre">metadata</span></code><em class="property"><span class="pre">:</span> <span class="pre">dict</span></em><a class="headerlink" href="#curifactory.caching.Cacheable.metadata" title="Permalink to this definition"></a></dt>
+<dd><p>Metadata about the artifact cached with this cacheable.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.caching.Cacheable.name">
+<code class="sig-name descname"><span class="pre">name</span></code><a class="headerlink" href="#curifactory.caching.Cacheable.name" title="Permalink to this definition"></a></dt>
+<dd><p>The obj name to use in automatically constructing a path. If a cacheable is used in stage header, this is automatically
+provided as the output string name from the stage outputs list.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.caching.Cacheable.path_override">
+<code class="sig-name descname"><span class="pre">path_override</span></code><a class="headerlink" href="#curifactory.caching.Cacheable.path_override" title="Permalink to this definition"></a></dt>
+<dd><p>Use a specific path for the cacheable, rather than automatically setting it based on name etc.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.caching.Cacheable.prefix">
+<code class="sig-name descname"><span class="pre">prefix</span></code><a class="headerlink" href="#curifactory.caching.Cacheable.prefix" title="Permalink to this definition"></a></dt>
+<dd><p>An optional alternative prefix to the experiment-wide prefix (either the experiment name or
+custom-specified experiment prefix). This can be used if you want a cached object to work easier across
+multiple experiments, rather than being experiment specific. WARNING: use with caution, cross-experiment
+caching can mess with provenance.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.caching.Cacheable.record">
+<code class="sig-name descname"><span class="pre">record</span></code><a class="headerlink" href="#curifactory.caching.Cacheable.record" title="Permalink to this definition"></a></dt>
+<dd><p>The current record this cacheable is caching under. This can be used to get a copy of the current args instance and is also
+how artifact metadata is collected.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.caching.Cacheable.save">
+<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.Cacheable.save" title="Permalink to this definition"></a></dt>
+<dd><p>Save the passed object to disk.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.caching.Cacheable.stage">
+<code class="sig-name descname"><span class="pre">stage</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#curifactory.caching.Cacheable.stage" title="Permalink to this definition"></a></dt>
+<dd><p>The stage associated with this cacher, if applicable.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.caching.Cacheable.subdir">
+<code class="sig-name descname"><span class="pre">subdir</span></code><a class="headerlink" href="#curifactory.caching.Cacheable.subdir" title="Permalink to this definition"></a></dt>
+<dd><p>An optional string of one or more nested subdirectories to prepend to the artifact filepath.
+This can be used if you want to subdivide cache and run artifacts into logical subsets, e.g. similar to
+<a class="reference external" href="https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71">https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71</a>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.caching.Cacheable.track">
+<code class="sig-name descname"><span class="pre">track</span></code><a class="headerlink" href="#curifactory.caching.Cacheable.track" title="Permalink to this definition"></a></dt>
+<dd><p>Whether to store the artifact this cacher is used with in the run folder on store-full runs or not.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="curifactory.caching.FileReferenceCacher">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.caching.</span></code><code class="sig-name descname"><span class="pre">FileReferenceCacher</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.FileReferenceCacher" title="Permalink to this definition"></a></dt>
+<dd><p>Saves a file path or list of file paths generated from a stage as a json file.
+The <code class="code docutils literal notranslate"><span class="pre">check</span></code> function will check existence of all file paths.</p>
+<p>This is useful for instances where there may be a large number of files stored or
+generated to disk, as it would be unwieldy to return them all (or infeasible to keep them
+in memory) directly from the stage. When this cacher is checked for pre-existing,
+it tries to load the json file storing the filenames, and then checks for the existence of
+each path in that json file. If all of them exist, it will short-circuit computation.</p>
+<p>Using this cacher does mean the user is in charge of loading/saving the file paths correctly,
+but in some cases that may be desirable.</p>
+<p>This can also be used for storing a reference to a single file outside the normal cache.</p>
+<p>When combined with the <code class="code docutils literal notranslate"><span class="pre">get_dir</span></code> call on the record, you can create a cached directory of
+files similarly to a regular cacher and simply keep a reference to them as part of the actual
+cacher process.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;many_text_files&quot;</span><span class="p">],</span> <span class="n">cachers</span><span class="o">=</span><span class="p">[</span><span class="n">FileReferenceCacher</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">output_text_files</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+    <span class="n">file_path</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get_dir</span><span class="p">(</span><span class="s2">&quot;my_files&quot;</span><span class="p">)</span>
+    <span class="n">my_file_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;my_file_</span><span class="si">{</span><span class="n">num</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">)]</span>
+
+    <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">my_file_list</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
+            <span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">my_file_list</span>
+</pre></div>
+</div>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.FileReferenceCacher.check" title="curifactory.caching.FileReferenceCacher.check"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check</span></code></a>()</p></td>
+<td><p>Check to see if this cacheable needs to be written or not.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.FileReferenceCacher.load" title="curifactory.caching.FileReferenceCacher.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a>()</p></td>
+<td><p>Load the cacheable from disk.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.FileReferenceCacher.save" title="curifactory.caching.FileReferenceCacher.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>(files)</p></td>
+<td><p>Save the passed object to disk.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="curifactory.caching.FileReferenceCacher.check">
+<code class="sig-name descname"><span class="pre">check</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#curifactory.caching.FileReferenceCacher.check" title="Permalink to this definition"></a></dt>
+<dd><p>Check to see if this cacheable needs to be written or not.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function will always return False if the args are <code class="code docutils literal notranslate"><span class="pre">None</span></code>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if we find the cached file and the current <code class="code docutils literal notranslate"><span class="pre">Args</span></code>
+don’t specify to overwrite, otherwise False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.caching.FileReferenceCacher.load">
+<code class="sig-name descname"><span class="pre">load</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#curifactory.caching.FileReferenceCacher.load" title="Permalink to this definition"></a></dt>
+<dd><p>Load the cacheable from disk.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.caching.FileReferenceCacher.save">
+<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.caching.FileReferenceCacher.save" title="Permalink to this definition"></a></dt>
+<dd><p>Save the passed object to disk.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="curifactory.caching.JsonCacher">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.caching.</span></code><code class="sig-name descname"><span class="pre">JsonCacher</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.JsonCacher" title="Permalink to this definition"></a></dt>
+<dd><p>Dumps an object to indented JSON.</p>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.JsonCacher.load" title="curifactory.caching.JsonCacher.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a>()</p></td>
+<td><p>Load the cacheable from disk.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.JsonCacher.save" title="curifactory.caching.JsonCacher.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>(obj)</p></td>
+<td><p>Save the passed object to disk.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="curifactory.caching.JsonCacher.load">
+<code class="sig-name descname"><span class="pre">load</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.JsonCacher.load" title="Permalink to this definition"></a></dt>
+<dd><p>Load the cacheable from disk.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.caching.JsonCacher.save">
+<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.caching.JsonCacher.save" title="Permalink to this definition"></a></dt>
+<dd><p>Save the passed object to disk.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="curifactory.caching.Lazy">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.caching.</span></code><code class="sig-name descname"><span class="pre">Lazy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolve</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.Lazy" title="Permalink to this definition"></a></dt>
+<dd><p>A class to indicate a stage output as a lazy-cache object - curifactory will
+attempt to keep this out of memory as much as possible, immediately caching and deleting,
+and loading back into memeory only when needed.</p>
+<p>This object is used by “wrapping” a stage output string with the class.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;small_output&quot;</span><span class="p">,</span> <span class="n">cf</span><span class="o">.</span><span class="n">Lazy</span><span class="p">(</span><span class="s2">&quot;large_output&quot;</span><span class="p">)],</span> <span class="n">cachers</span><span class="o">=</span><span class="p">[</span><span class="n">PickleCacher</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">some_stage</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">Record</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – the name of the output to put into state.</p></li>
+<li><p><strong>resolve</strong> (<em>bool</em>) – Whether this lazy object should automatically reload the initial
+object when accessed from state. By default this is <code class="docutils literal notranslate"><span class="pre">True</span></code> - when a stage specifies
+the string name as an input and this object is requested from the record state, it
+loads and passes in the originally stored object. If set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, the stage
+input will instead be populated with the lazy object itself, giving the inner stage
+code direct access to the cacher. This is useful if you need to keep objects out of
+memory and just want to refer to the cacher path (e.g. to send this path along
+to an external CLI/script.)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="curifactory.caching.PandasCsvCacher">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.caching.</span></code><code class="sig-name descname"><span class="pre">PandasCsvCacher</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_override</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_csv_args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_csv_args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{'index_col':</span> <span class="pre">0}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.PandasCsvCacher" title="Permalink to this definition"></a></dt>
+<dd><p>Saves a pandas dataframe to CSV.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>to_csv_args</strong> (<em>Dict</em>) – Dictionary of arguments to use in the pandas
+<code class="code docutils literal notranslate"><span class="pre">to_csv()</span></code> call.</p></li>
+<li><p><strong>read_csv_args</strong> (<em>Dict</em>) – Dictionary of arguments to use in the pandas
+<code class="code docutils literal notranslate"><span class="pre">read_csv()</span></code> call.</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.PandasCsvCacher.load" title="curifactory.caching.PandasCsvCacher.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a>()</p></td>
+<td><p>Load the cacheable from disk.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.PandasCsvCacher.save" title="curifactory.caching.PandasCsvCacher.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>(obj)</p></td>
+<td><p>Save the passed object to disk.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="curifactory.caching.PandasCsvCacher.load">
+<code class="sig-name descname"><span class="pre">load</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.PandasCsvCacher.load" title="Permalink to this definition"></a></dt>
+<dd><p>Load the cacheable from disk.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.caching.PandasCsvCacher.save">
+<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.caching.PandasCsvCacher.save" title="Permalink to this definition"></a></dt>
+<dd><p>Save the passed object to disk.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="curifactory.caching.PandasJsonCacher">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.caching.</span></code><code class="sig-name descname"><span class="pre">PandasJsonCacher</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_override</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_json_args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{'double_precision':</span> <span class="pre">15}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_json_args</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.PandasJsonCacher" title="Permalink to this definition"></a></dt>
+<dd><p>Saves a pandas dataframe to JSON.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Using this cacher is inadvisable for floating point data, as precision
+will be lost, creating the potential for different results when using
+cached values with this cacher as opposed to the first non-cached run.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>to_json_args</strong> (<em>Dict</em>) – Dictionary of arguments to use in the pandas
+<code class="code docutils literal notranslate"><span class="pre">to_json()</span></code> call.</p></li>
+<li><p><strong>read_json_args</strong> (<em>Dict</em>) – Dictionary of arguments to use in the pandas
+<code class="code docutils literal notranslate"><span class="pre">read_json()</span></code> call.</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.PandasJsonCacher.load" title="curifactory.caching.PandasJsonCacher.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a>()</p></td>
+<td><p>Load the cacheable from disk.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.PandasJsonCacher.save" title="curifactory.caching.PandasJsonCacher.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>(obj)</p></td>
+<td><p>Save the passed object to disk.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="curifactory.caching.PandasJsonCacher.load">
+<code class="sig-name descname"><span class="pre">load</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.PandasJsonCacher.load" title="Permalink to this definition"></a></dt>
+<dd><p>Load the cacheable from disk.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.caching.PandasJsonCacher.save">
+<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.caching.PandasJsonCacher.save" title="Permalink to this definition"></a></dt>
+<dd><p>Save the passed object to disk.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="curifactory.caching.PickleCacher">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.caching.</span></code><code class="sig-name descname"><span class="pre">PickleCacher</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.PickleCacher" title="Permalink to this definition"></a></dt>
+<dd><p>Dumps an object to a pickle file.</p>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.PickleCacher.load" title="curifactory.caching.PickleCacher.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a>()</p></td>
+<td><p>Load the cacheable from disk.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.PickleCacher.save" title="curifactory.caching.PickleCacher.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>(obj)</p></td>
+<td><p>Save the passed object to disk.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="curifactory.caching.PickleCacher.load">
+<code class="sig-name descname"><span class="pre">load</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.PickleCacher.load" title="Permalink to this definition"></a></dt>
+<dd><p>Load the cacheable from disk.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.caching.PickleCacher.save">
+<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.caching.PickleCacher.save" title="Permalink to this definition"></a></dt>
+<dd><p>Save the passed object to disk.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="curifactory.caching.RawJupyterNotebookCacher">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.caching.</span></code><code class="sig-name descname"><span class="pre">RawJupyterNotebookCacher</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.RawJupyterNotebookCacher" title="Permalink to this definition"></a></dt>
+<dd><p>Take a list of code cells (where each cell is a list of strings containing python code)
+and turn it into a jupyter notebook. This is useful in situations where you want each
+experiment to have some form of automatically populated analysis that a reportable wouldn’t
+sufficiently cover, e.g. an interactive set of widgets or dashboard.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;results_path&quot;</span><span class="p">],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;exploration_notebook&quot;</span><span class="p">],</span> <span class="n">cachers</span><span class="o">=</span><span class="p">[</span><span class="n">RawJupyterNotebookCacher</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">make_exploration_notebook</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">results_path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">convert_path</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;A function to translate paths to local folder path.&#39;&#39;&#39;</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="n">cells</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">[</span>
+            <span class="s2">&quot;# imports&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;from curifactory.caching import JsonCacher&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="p">[</span>
+            <span class="s2">&quot;# load things&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;cacher = JsonCacher(&#39;./</span><span class="si">{</span><span class="n">convert_path</span><span class="p">(</span><span class="n">results_path</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;results = cacher.load()&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;results_metadata = cacher.metadata&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+        <span class="p">[</span>
+            <span class="s2">&quot;# analysis&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;...&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+    <span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">cells</span>
+</pre></div>
+</div>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.caching.RawJupyterNotebookCacher.load" title="curifactory.caching.RawJupyterNotebookCacher.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a>()</p></td>
+<td><p>Load the cacheable from disk.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.caching.RawJupyterNotebookCacher.save" title="curifactory.caching.RawJupyterNotebookCacher.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a>(obj)</p></td>
+<td><p>This saves the raw cell strings to a _cells.json, and then uses ipynb-py-convert to change the output python script into a notebook format.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="curifactory.caching.RawJupyterNotebookCacher.load">
+<code class="sig-name descname"><span class="pre">load</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.RawJupyterNotebookCacher.load" title="Permalink to this definition"></a></dt>
+<dd><p>Load the cacheable from disk.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.caching.RawJupyterNotebookCacher.save">
+<code class="sig-name descname"><span class="pre">save</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.caching.RawJupyterNotebookCacher.save" title="Permalink to this definition"></a></dt>
+<dd><p>This saves the raw cell strings to a _cells.json, and then uses
+ipynb-py-convert to change the output python script into a notebook
+format.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="args.html" class="btn btn-neutral float-left" title="Args" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="docker.html" class="btn btn-neutral float-right" title="Docker" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

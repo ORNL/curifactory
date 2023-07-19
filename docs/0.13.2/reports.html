@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Configuration and directory structure" href="config.html" />
+    <link rel="prev" title="Cache" href="cache.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and argsets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Reports</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#report-structure">Report structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reportables">Reportables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reportable-groups">Reportable groups</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="args.html">Args</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Reports</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/reports.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="reports">
+<h1>Reports<a class="headerlink" href="#reports" title="Permalink to this headline"></a></h1>
+<p>Every experiment that runs to completion generates an HTML run report stored in a run-specific folder in
+the <code class="code docutils literal notranslate"><span class="pre">reports/</span></code> directory, and adds a listing with a link to it in the main reports <code class="code docutils literal notranslate"><span class="pre">index.html</span></code>.</p>
+<div class="section" id="report-structure">
+<h2>Report structure<a class="headerlink" href="#report-structure" title="Permalink to this headline"></a></h2>
+<p>Reports have 5 sections:</p>
+<ul class="simple">
+<li><p><strong>Experiment metadata</strong> - this includes information about the run, such as timestamp, current git commit hash, and
+the list of hashes of the argsets that were used. Additionally, the CLI command that was used to run the experiment
+is included, as well as the command necessary to directly reproduce it if run with <code class="code docutils literal notranslate"><span class="pre">--full-store</span></code>.</p></li>
+<li><p><strong>Reportables</strong> - any reportables added in any of the stages are rendered here, along with a ToC for them. By default
+they are ordered by the record they came from, but this can be changed with <a class="reference internal" href="#reportable-groups"><span class="std std-ref">Reportable groups</span></a>.</p></li>
+<li><p><strong>Map</strong> - assuming graphviz is installed, an svg “graph” or rough DAG of the experiment is displayed, with ovals
+representing each stage, and the boxes representing the outputs from that stage. This maps the flow of
+data from one stage to another. Each colored box corresponds to a record, and the name of the argset used in that
+record is displayed at the top.</p></li>
+<li><p><strong>Stage Detail</strong> - this renders an svg graph with graphviz similar to the map, but each record is displayed separately,
+and shows additional details for each piece of data represented. It attempts to preview the content of the data, and
+will try to show the length or shape of it, as relevant. If the data is cached, it will show the full path to the
+cached file.</p></li>
+<li><p><strong>Args</strong> - the final section is a full JSON dump of all arguments in all argsets.</p></li>
+</ul>
+<p>Examples of these sections are displayed below:</p>
+<div class="figure align-default" id="id1">
+<a class="reference internal image-reference" href="_images/report_metadata.png"><img alt="_images/report_metadata.png" src="_images/report_metadata.png" style="width: 542.4px; height: 403.8px;" /></a>
+<p class="caption"><span class="caption-text">An experiment metadata section. The hashes are the hash strings that are used to prefix
+cached data from records using that argset.</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+</div>
+<div class="figure align-default" id="id2">
+<img alt="_images/report_reportables.png" src="_images/report_reportables.png" />
+<p class="caption"><span class="caption-text">A reportables section, in this case most reportables came from an aggregate stage named
+“compile_results”, and one from “report_results”, reflected in the title for each
+reportable. The small colored box to the right of each reportable corresponds to the
+color of the record it came from as shown in the maps below.</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+</div>
+<div class="figure align-default" id="id3">
+<img alt="_images/report_map.png" src="_images/report_map.png" />
+<p class="caption"><span class="caption-text">An example experiment map. The <code class="code docutils literal notranslate"><span class="pre">compile_results</span></code> stage is an aggregate stage in this
+case, and you can visually identify which records are passed into it.</span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+</div>
+<div class="figure align-default" id="id4">
+<img alt="_images/report_map_complicated.png" src="_images/report_map_complicated.png" />
+<p class="caption"><span class="caption-text">A more complicated experiment map. This can be a useful tool to help determine where
+specific variables in a record state are coming from and where they’re used.</span><a class="headerlink" href="#id4" title="Permalink to this image"></a></p>
+</div>
+<div class="figure align-default" id="id5">
+<a class="reference internal image-reference" href="_images/record_detail.png"><img alt="_images/record_detail.png" src="_images/record_detail.png" style="width: 430.8px; height: 328.2px;" /></a>
+<p class="caption"><span class="caption-text">An example of a record in the stage detail section. In order, the details for each
+piece of data show 1) the name, 2) the data type and preview (and length or shape if
+possible), and 3) the path to the cache file if it was cached.</span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
+</div>
+</div>
+<div class="section" id="reportables">
+<h2>Reportables<a class="headerlink" href="#reportables" title="Permalink to this headline"></a></h2>
+<p>Reportables are renderable things you can create inside of stages that show up in the
+report, making it easier to get information and results output for analysis without
+having to dig through cached data to visualize it. This can include things like tables,
+plots, etc.</p>
+<p>The design for reportables is similar to cacheables in that there are several
+pre-defined types of reportables as part of Curifactory, and you can define custom ones
+by extending the base <code class="code docutils literal notranslate"><span class="pre">Reportable</span></code> class.</p>
+<p>The pre-defined reportable classes are:</p>
+<ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">DFReporter</span></code> - Renders an HTML table for a given pandas dataframe.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">FigureReporter</span></code> - Renders a given matplotlib figure.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">HTMLReporter</span></code> - Directly renders given HTML.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">JsonReporter</span></code> - Renders an indented JSON dump of a dictionary.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">LinePlotReporter</span></code> - Creates and renders a matplotlib figure for passed data.</p></li>
+</ul>
+<p>Check the <a class="reference internal" href="reporting.html#module-curifactory.reporting"><span class="std std-ref">Reporting</span></a> API documentation for each of these for more information on individual usage.</p>
+<p>Reportables are added to the report by calling <code class="code docutils literal notranslate"><span class="pre">record.report(REPORTABLE_CLASS(...))</span></code> and optionally
+providing a name and group string. (A reportable with no name is simply assigned a 0-based index number.)</p>
+<p>When defining a custom reportable, you must extend the <a class="reference internal" href="reporting.html#curifactory.reporting.Reportable" title="curifactory.reporting.Reportable"><code class="xref py py-class docutils literal notranslate"><span class="pre">reporting.Reportable</span></code></a>
+class and override the <code class="code docutils literal notranslate"><span class="pre">html()</span></code> function, which should return the HTML snippet to be included in the
+report. Depending on the nature of the reportable, you may also wish to override the
+<code class="code docutils literal notranslate"><span class="pre">render()</span></code> function as well. If a reportable relies on some form of external file,
+such as an image or figure, implement <code class="code docutils literal notranslate"><span class="pre">render()</span></code> to save it (using this class’s
+<code class="code docutils literal notranslate"><span class="pre">path</span></code> variable as the directory), and then reference it in the output from
+<code class="code docutils literal notranslate"><span class="pre">html()</span></code>. The internal reporting mechanisms handle calling both of these functions
+as needed.</p>
+<p>A simplified example of the <code class="code docutils literal notranslate"><span class="pre">FigureReporter</span></code> is shown here:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FigureReporter</span><span class="p">(</span><span class="n">Reportable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="o">=</span> <span class="n">fig</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">html</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;img src=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">.png&#39;&gt;&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="reportable-groups">
+<h2>Reportable groups<a class="headerlink" href="#reportable-groups" title="Permalink to this headline"></a></h2>
+<p>By default, the reportables are rendered to the report grouped by record and in the order
+in which they are added. However, if there are a lot of things reported in each record, it can
+sometimes be difficult to compare specific reportables across the records. This can be
+addressed by specifying the <code class="code docutils literal notranslate"><span class="pre">group</span></code> string parameter in the reportable constructors. All
+reportables with the same group value are rendered next to eachother in the output report.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cache.html" class="btn btn-neutral float-left" title="Cache" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="config.html" class="btn btn-neutral float-right" title="Configuration and directory structure" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

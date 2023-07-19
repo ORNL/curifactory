@@ -7,7 +7,7 @@ import os
 import shutil
 from typing import Any
 
-from curifactory import hashing
+from curifactory import hashing, utils
 from curifactory.caching import Lazy
 from curifactory.reporting import Reportable
 from curifactory.utils import _warn_deprecation
@@ -57,20 +57,20 @@ class Record:
         """The dictionary of all variables created by stages this record is passed through. (AKA 'Artifacts')
         All ``inputs`` from stage decorators are pulled from this dictionary, and all
         ``outputs`` are stored here."""
-        self.state_artifact_reps = {}
-        """Dictionary mimicking state that keeps an :code:`ArtifactRepresentation` associated with
-        each variable stored in :code:`self.state`."""
+        self.state_artifact_reps: dict[str, int] = {}
+        """Dictionary mimicking state that keeps an index to the associated artifact representation in
+         manager's artifact representation list."""
         self.output = None
         """The returned value from the last stage that was run with this record."""
         self.stages = []
         """The list of stage names that this record has run through so far."""
-        self.stage_inputs = []
-        """A list of lists per stage with the state inputs that stage requested."""
-        # TODO: what's the type? Are these indices? or artifact representations? Keys to the artifact representations?
-        self.stage_outputs = []
-        """A list of lists per stage with the state outputs that stage produced."""
-        # TODO: what's the type? Are these indices? or artifact representations? Keys to the artifact representations?
-        self.input_records = []
+        self.stage_inputs: list[list[int]] = []
+        """A list of lists per stage with the state inputs that stage requested.
+        These are lists of indices into state_artifact_reps."""
+        self.stage_outputs: list[list[int]] = []
+        """A list of lists per stage with the state outputs that stage produced.
+        These are lists of indices into state_artifact_reps."""
+        self.input_records: list[Record] = []
         """A list of any records used as input to this one. This mostly only occurs when aggregate
         stages are run."""
         # NOTE: these are actual record references
@@ -89,6 +89,9 @@ class Record:
         self.stored_paths: list[str] = []
         """A list of paths that have been copied into a full store folder. These are
         the source paths, not the destination paths."""
+        self.stage_cachers: list = None
+        """A list of the initialized cachers set for the current stage, if any. This is so that a stage
+        can get access to output path information if it needs."""
 
         self.set_hash()
         if not hide:
@@ -247,8 +250,9 @@ class Record:
         new_record = Record(self.manager, param_set, hide=(not add_to_manager))
         new_record.input_records = [self]
         new_record.state = copy.deepcopy(self.state)
-        # TODO: (02/02/2022) state without state artifact reps might cause issues
-        # new_record.state_artifact_reps = self.state_artifact_reps
+        # we shallow copy because this new list needs to be modified with new artifact_reps without
+        # modifying the one in the old record
+        new_record.state_artifact_reps = copy.copy(self.state_artifact_reps)
         return new_record
 
     # TODO: should also take an optional 'sub-path' and 'extension'
@@ -342,18 +346,46 @@ class Record:
         os.makedirs(dir_path, exist_ok=True)
         return dir_path
 
-    def get_reference_name(self) -> str:
+    def get_reference_name(self, map=False) -> str:
         """This returns a name describing the record, in the format 'Record [index on manager] (paramset name)
 
         This should be the same as what's shown in the stage map in the output report.
         """
-        for i, record in enumerate(self.manager.records):
+        index = self.get_record_index(map)
+        paramset_name = self.params.name if self.params is not None else "None"
+        return f"Record {index} ({paramset_name})"
+
+    def get_record_index(self, map=False) -> int:
+        if map:
+            record_list = self.manager.map.records
+        else:
+            record_list = self.manager.records
+        for i, record in enumerate(record_list):
             if self == record:
-                paramset_name = (
-                    record.params.name if record.params is not None else "None"
-                )
-                return f"Record {i} ({paramset_name})"
-        return None
+                return i
+        return -1
+
+
+class MapArtifactRepresentation:
+    def __init__(
+        self,
+        record_index: int,
+        stage_name: str,
+        name: str,
+        cached: bool,
+        metadata=None,
+        cacher=None,
+    ):
+        # NOTE: we're not keeping track of record because when the map stuff
+        # is transfered from the manager over into the DAG, we make a separate
+        # record instance anyway.
+        # NOTE: (4/5/2023) we may want to at least keep a record index.
+        self.record_index = record_index
+        self.stage_name = stage_name
+        self.name = name
+        self.cached = cached
+        self.metadata = metadata
+        self.cacher = cacher
 
 
 class ArtifactRepresentation:
@@ -369,24 +401,17 @@ class ArtifactRepresentation:
         artifact: The artifact itself.
     """
 
-    def __init__(self, record, name, artifact, metadata=None):
+    def __init__(self, record, name, artifact, metadata=None, cacher=None):
         # TODO: (3/21/2023) possibly have "files" which would be cachers.cached_files?
         self.init_record = record
         self.name = name
-        self.string = f"({type(artifact).__name__}) {str(artifact)[:20]}"
-        if len(str(artifact)) > 20:
-            self.string += "..."
-        if hasattr(artifact, "shape"):
-            shape = None
-            if callable(getattr(artifact, "shape", None)):
-                shape = artifact.shape()
-            else:
-                shape = artifact.shape
-            self.string += f" shape: {shape}"
-        elif hasattr(artifact, "__len__"):
-            self.string += f" len: {len(artifact)}"
+        self.string = utils.preview_object(artifact)
 
+        self.cacher = cacher
         self.metadata = metadata
+
+        if artifact is None and metadata is not None and "preview" in metadata:
+            self.string = metadata["preview"]
 
         self.file = "no file"
 

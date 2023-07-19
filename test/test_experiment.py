@@ -168,6 +168,11 @@ def test_manager_integration(
     )
 
 
+def test_experiment_map():
+    run_experiment("basic", param_files=["params1"], map_only=True)
+    # TODO: will obviously need to add a great deal more to this
+
+
 @pytest.mark.parametrize(
     "local_rank,node_rank,expect_parallel",
     [
@@ -307,9 +312,9 @@ def test_parallel_calls_count_correct(
     mock_queue.return_value.get = lambda: [None, "success"]
     run_experiment("basic", ["params1", "params2"], parallel=3)
     # ensure index_range is correct
-    assert mock.call_args_list[0].kwargs["args"][-14] == ["0-1"]
-    assert mock.call_args_list[1].kwargs["args"][-14] == ["1-2"]
-    assert mock.call_args_list[2].kwargs["args"][-14] == ["2-3"]
+    assert mock.call_args_list[0].kwargs["args"][-15] == ["0-1"]
+    assert mock.call_args_list[1].kwargs["args"][-15] == ["1-2"]
+    assert mock.call_args_list[2].kwargs["args"][-15] == ["2-3"]
     assert mock.call_count == 3
 
 
@@ -324,9 +329,9 @@ def test_parallel_calls_count_correct_limits_threads(
     mock_queue.return_value.get = lambda: [None, "success"]
     run_experiment("basic", ["params1", "params2"], parallel=4)
     # ensure index_range is correct
-    assert mock.call_args_list[0].kwargs["args"][-14] == ["0-1"]
-    assert mock.call_args_list[1].kwargs["args"][-14] == ["1-2"]
-    assert mock.call_args_list[2].kwargs["args"][-14] == ["2-3"]
+    assert mock.call_args_list[0].kwargs["args"][-15] == ["0-1"]
+    assert mock.call_args_list[1].kwargs["args"][-15] == ["1-2"]
+    assert mock.call_args_list[2].kwargs["args"][-15] == ["2-3"]
     assert mock.call_count == 3
 
 

@@ -1,6 +1,7 @@
 """Contains the relevant classes for experiment state, namely the artifact manager and
 record classes, as well as experiment store/parameter store management."""
 
+import copy
 import json
 import logging
 import multiprocessing as mp
@@ -10,6 +11,7 @@ from datetime import datetime
 from socket import gethostname
 
 from curifactory import reporting, utils
+from curifactory.dag import DAG
 from curifactory.record import Record
 from curifactory.reporting import Reportable
 from curifactory.store import ManagerStore
@@ -157,6 +159,8 @@ class ArtifactManager:
         self.artifacts = []
         """The list of :code:`ArtifactRepresentation` instances for all artifacts stored in all
         record states."""
+        self.mapped_artifacts = []
+        """The list of :code:`MapArtifactRepresentation` instances found during the mapping process."""
         self.reportables = []
         """The list of all reportables reported from all records."""
 
@@ -211,7 +215,7 @@ class ArtifactManager:
         """If we're in map mode, don't actually execute any stages, we're only
         recording the 'DAG' (really just the set of stages associated with each
         record)"""
-        self.map: list[Record] = None
+        self.map: DAG = None
 
         self.map_progress = None
         self.map_progress_overall_task_id = None
@@ -254,10 +258,11 @@ class ArtifactManager:
                 log_path = None
             utils.init_logging(log_path, level, False)
 
+    # TODO: move this into dag
     def map_records(self):
         """Run through every record currently stored and grab the stage and
         stage i/o list and store it. Then clean the records."""
-        self.map = []
+        self.map = DAG()
 
         for record in self.records:
             mapped_record = Record(self, record.params, hide=True)
@@ -266,15 +271,39 @@ class ArtifactManager:
             mapped_record.stage_outputs = record.stage_outputs
             mapped_record.is_aggregate = record.is_aggregate
             mapped_record.combo_hash = record.combo_hash
-            self.map.append(mapped_record)
-            # TODO: input_records?
+
+            # NOTE: the state artifact representations are _not_ the actual state artifact representaitons (obviously)
+            # instead we're just directly using the string names
+            mapped_record.state_artifact_reps = copy.deepcopy(
+                record.state_artifact_reps
+            )
+
+            self.map.records.append(mapped_record)
+
+        # go through and add input_records now (can't directly add
+        # inside previous loop because we have to add references to
+        # the corresponding mapped_record instances rather than the
+        # self.records instances which are about to be deleted)
+        for i, record in enumerate(self.records):
+            for input_record in record.input_records:
+                input_record_index = self.records.index(input_record)
+                self.map.records[i].input_records.append(
+                    self.map.records[input_record_index]
+                )
+
+        # Move over all of the artifact representations into the map
+        for artifact_rep in self.artifacts:
+            self.map.artifacts.append(artifact_rep)
 
         self.records.clear()
+        self.artifacts.clear()
+
+        self.map.analyze()
 
     # update_type can either be "start" or "continue"
     # start type means "stage start", not record start, though we could check if
     # it hasn't been started yet.
-    def update_map_progress(self, record, update_type: str = ""):
+    def update_map_progress(self, record: Record, update_type: str = ""):
         """Update the rich progress bar for the specified record."""
         if self.map_progress is not None and not self.map_mode:
             # self.map_progress.update(self.map_progress.task_ids[0], advance=1)
@@ -282,17 +311,19 @@ class ArtifactManager:
             # TODO: use aggregate (or non) hash as the way to find the correct
             # record.
             taskid = -1
-            name = record.params.name if record.params is not None else "None"
-            record_hash = record.get_hash()
-            record_index = -1
-            for i, map_record in enumerate(self.map):
-                map_record_hash = map_record.get_hash()
+            record_name = record.get_reference_name()
+            # name = record.args.name if record.args is not None else "None"
+            # record_hash = record.get_hash()
+            # record_index = -1
+            for i, map_record in enumerate(self.map.records):
+                # map_record_hash = map_record.get_hash()
                 # map_name = (
                 #     map_record.params.name if map_record.params is not None else "None"
                 # )
-                if map_record_hash == record_hash:
+                # if map_record_hash == record_hash:
+                if map_record.get_reference_name(True) == record_name:
                     taskid = map_record.taskid
-                    record_index = i
+                    # record_index = i
 
             map_task = None
             for task in self.map_progress.tasks:
@@ -319,7 +350,7 @@ class ArtifactManager:
                     self.map_progress.start_task(taskid)
                 self.map_progress.update(
                     self.map_progress_overall_task_id,
-                    name=f"Record {record_index} ({name})",
+                    name=record_name,
                 )
 
     def _load_config(self):

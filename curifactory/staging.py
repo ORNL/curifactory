@@ -7,13 +7,13 @@ import os
 import pickle
 import time
 from functools import wraps
-from typing import Union
+from typing import Any, Union
 
 import psutil
 
 from curifactory import utils
 from curifactory.caching import Cacheable, FileReferenceCacher, Lazy, PickleCacher
-from curifactory.record import ArtifactRepresentation, Record
+from curifactory.record import ArtifactRepresentation, MapArtifactRepresentation, Record
 
 # NOTE: resource only exists on unix systems
 if os.name != "nt":
@@ -32,8 +32,25 @@ class EmptyCachersError(Exception):
     pass
 
 
+class ExecutingWithSkippedInputError(Exception):
+    pass
+
+
 class CachersMismatchError(Exception):
     pass
+
+
+# TODO: this doesn't belong here but not sure where to put it
+class SkippedOutput:
+    """An object placed into record state when a stage's execution is skipped based
+    on the DAG. This is so that the inputs check at the beginning of the stage (prior
+    to DAG execution check) does not fail."""
+
+    def __init__(
+        self, record: Record, stage_name: str, artifact_rep: ArtifactRepresentation
+    ):
+        self.artifact = artifact_rep
+        self.dag_rep = (record.get_record_index(), stage_name)
 
 
 def _log_stats(
@@ -57,8 +74,6 @@ def _log_stats(
     mem_change = post_mem_usage - pre_mem_usage
 
     footprint_change = post_max_footprint - pre_max_footprint
-
-    # TODO: total_time =
 
     logging.debug(
         "Memory (current usage/max allocated) - %s / %s"
@@ -248,12 +263,6 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             function_inputs.update(kwargs)
             record.state.resolve = True
 
-            # at this point we've grabbed all information we would need if we're
-            # just mapping out the stages, so return at this point.
-            if record.manager.map_mode:
-                record.manager.stage_active = False
-                return record
-
             # note to future self and anyone else who's IDE says this is repeated code (with aggregate below)
             # no, you cannot abstract this into _check_cached_outputs - if you try to reassign to cachers from
             # another function, because of the deep voodoo black magic sorcery that is decorators with arguments,
@@ -275,27 +284,75 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                             cachers[i].name = outputs[i].name
                         else:
                             cachers[i].name = outputs[i]
+            record.stage_cachers = cachers
 
-            # check for cached outputs and lazy load inputs if needed
+            # at this point we've grabbed all information we would need if we're
+            # just mapping out the stages, so return at this point.
+            # TODO: 3/8/2023 - not true, we're not getting outputs (7/6/2023 is this still an issue? seems fine?)
+            if record.manager.map_mode:
+                record.manager.stage_active = False
+                # in order to get a more detailed map that accurately shows input/output names,
+                # we need to create pseudo-state-artifact-representations for the outputs. Since
+                # we obviously can't add the actual artifacts (there are none without running!),
+                # we just add the string key and a name, so record __repr__ has something to use
+                _get_output_representations_for_map(record, outputs, cachers, None)
+                record.stage_cachers = None
+                return record
+
+            # determine if we need to execute this stage and handle any
+            # cached values.
+            execute_stage = False  # false by default so the non-dag condition below can distinguish whether
+            # the dag condition actually set execute stage to true or if just default
             pre_cache_time_start = time.perf_counter()  # time to load from cache
             record.manager.lock()
-            cache_valid = _check_cached_outputs(name, record, outputs, cachers)
-            if cache_valid:
-                # get previous reportables if available
-                _check_cached_reportables(name, record)
 
-                # if we've hit this point, we will be returning early/not executing
-                # the stage because all outputs are found. The process of checking
-                # cached outputs should correctly add all the necessary tracked paths,
-                # so to transfer these paths into a store full run, we just need
-                # the below call
-                # NOTE: I _believe_ that we also get metadata from this because
-                # the load_metadata will have entered the metadata path already.
-                # this will need to be tested
-                record.store_tracked_paths()
+            # if we have an execution list from our stage DAG, use that
+            # to determine if this stage executes or not.
+            if record.manager.map is not None:
+                stage_rep = (record.get_record_index(), name)
+                if stage_rep not in record.manager.map.execution_list:
+                    logging.debug('DAG-indicated stage skip "%s".' % str(stage_rep))
+                    _dag_skip_check_cached_outputs(name, record, outputs, cachers)
+
+                    # grab any possible previous reportables so they still end up in report.
+                    _check_cached_reportables(name, record)
+                    record.store_tracked_paths()
+                    execute_stage = False
+                else:
+                    # the representation is in the execution list, so execute!
+                    execute_stage = True
+
+            # otherwise, proceed normally with cache/load checks
+            # NOTE: this is an explicit _separate_ check because if our DAG indicates that
+            # this stage executes, we still want to actually double check the cache and determine
+            # if we _still_ need to execute this stage. This is primarily for cases where a
+            # stage happens to get run multiple times with different records that have the same args/
+            # same outputs. The DAG doesn't dynamically update with cached values during the actual
+            # experiment run, so it won't catch this case by itself.
+            # So the flow is: if we have a DAG, and it says to execute this stage, or if we don't have
+            # a DAG, check if we actually need to run this based on cached values.
+            if record.manager.map is None or execute_stage:
+                cache_valid = _check_cached_outputs(name, record, outputs, cachers)
+                if cache_valid:
+                    # get previous reportables if available
+                    _check_cached_reportables(name, record)
+
+                    # if we've hit this point, we will be returning early/not executing
+                    # the stage because all outputs are found. The process of checking
+                    # cached outputs should correctly add all the necessary tracked paths,
+                    # so to transfer these paths into a store full run, we just need
+                    # the below call
+                    # NOTE: I _believe_ that we also get metadata from this because
+                    # the load_metadata will have entered the metadata path already.
+                    # this will need to be tested
+                    record.store_tracked_paths()
+                    execute_stage = False
+                else:
+                    # at least one output wasn't cached, so execute order 66!
+                    execute_stage = True
 
             # check each input for Lazy objects and load them if we know we have to execute this stage
-            if not cache_valid:
+            if execute_stage:
                 for function_input in function_inputs:
                     if (
                         type(function_inputs[function_input]) == Lazy
@@ -307,10 +364,18 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                         function_inputs[function_input] = function_inputs[
                             function_input
                         ].load()
+                    # make sure a skipped output hasn't made it through - this would indicate
+                    # a mistake in the DAG or perhaps the user didn't correctly list all expected
+                    # state inputs in an aggregate
+                    if type(function_inputs[function_input]) == SkippedOutput:
+                        raise ExecutingWithSkippedInputError(
+                            "Input '%s' was never computed, indicating a DAG error. Try running with '--no-map'."
+                            % function_input
+                        )
 
             record.manager.unlock()
             pre_cache_time_end = time.perf_counter()
-            if cache_valid:
+            if not execute_stage:
                 post_mem_usage = psutil.Process().memory_info().rss
                 post_footprint = 0
                 if os.name != "nt":
@@ -333,6 +398,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                 utils.set_logging_prefix("")
                 record.manager.stage_active = False
                 record.manager.update_map_progress(record, "continue")
+                record.stage_cachers = None
                 return record
 
             # run the function
@@ -416,6 +482,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             utils.set_logging_prefix("")
             record.manager.stage_active = False
             record.manager.update_map_progress(record, "continue")
+            record.stage_cachers = None
             return record
 
         return wrapper
@@ -424,7 +491,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
 
 
 def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
-    outputs: list[str] = None, cachers: list = None
+    inputs: list[str] = None, outputs: list[str] = None, cachers: list = None
 ):
     """Decorator to wrap around a function that represents some step that must operate across
     multiple different parameter sets or "execution chains" within an experiment. This is normally
@@ -437,6 +504,14 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
         that this function needs to aggregate across.
 
     Args:
+        inputs (list[str]): A list of variable names this stage expects to find in the
+            state of each record passed into it. A warning will be thrown on any records that
+            do not have the requested variable in state. Variables listed here are used for the
+            DAG/map calculation to determine which stages are actually required to run for this
+            stage to have everything it needs. **Note that all inputs listed here must have a
+            corresponding input parameter in the function definition line, each with the exact
+            same name as in this list.** These arguments are each dictionaries of the requested
+            state artifacts, keyed by the record they come from.
         outputs (list[str]): A list of variable names that this stage will return and store
             in the record state. These represent, in order, the tuple of returned values from
             the function being wrapped.
@@ -452,12 +527,12 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
     Example:
         .. code-block:: python
 
-            @aggregate(["final_results"], [JsonCacher])
-            def compile_results(record: Record, records: list[Record]):
-                results = {}
-                for prev_record in records:
-                    results[prev_record.params.name] = prev_record.state["results"]
-                return results
+            @aggregate(["results"], ["final_results"], [JsonCacher])
+            def compile_results(record: Record, records: List[Record], results: dict[Record, float]):
+                final_results = {}
+                for in_record, result in results.items():
+                    results[in_record.params.name] = result
+                return final_results
     """
 
     def decorator(function):
@@ -504,7 +579,9 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             record.manager.update_map_progress(record, "start")
 
             # apply consistent handling
-            nonlocal outputs, cachers
+            nonlocal inputs, outputs, cachers
+            if inputs is None:
+                inputs = []
             if outputs is None:
                 outputs = []
 
@@ -552,11 +629,44 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                     f"Stage '{name}' - the number of cachers does not match the number of outputs to cache"
                 )
 
-            # at this point we've grabbed all information we would need if we're
-            # just mapping out the stages, so return at this point.
-            if record.manager.map_mode:
-                record.manager.stage_active = False
-                return record
+            # similar to how inputs are checked on the state for a regular stage, we use
+            # `inputs` to (softly) check each input record for the requested state
+            # variables. This is useful both from a documentation standpoint and also
+            # is required for the DAG computation to work as expected.
+            #
+            # For each requested artifact in inputs, we construct a dictionary where the
+            # values are those artifacts from the input records, and keyed by the associated
+            # records themselves.
+            function_inputs = {}
+            for function_input in inputs:
+                function_inputs[function_input] = {}
+                for prev_record in records:
+                    if function_input not in prev_record.state_artifact_reps:
+                        # TODO: (7/18/2023) unclear if this warning is still necessary or
+                        # not, possibly just make this a regular info level?
+                        logging.warning(
+                            "Artifact '%s' not found in %s"
+                            % (function_input, prev_record.get_reference_name())
+                        )
+                    else:
+                        record.stage_inputs[-1].append(
+                            prev_record.state_artifact_reps[function_input]
+                        )
+
+                    # NOTE: this is distinct from handling in stage because it's not necessarily
+                    # an error here if one of the previous records doesn't have a particular input,
+                    # and we already warn about that in the previous conditional.
+                    if function_input in prev_record.state:
+                        # populate the dictionary associated with this input and record
+                        # note that we keep resolve off, same as in stage, to keep it the
+                        # lazy instance (since we don't know if this is actually needed
+                        # yet or not)
+                        prev_record.state.resolve = False
+                        function_inputs[function_input][
+                            prev_record
+                        ] = prev_record.state[function_input]
+                        prev_record.state.resolve = True
+            function_inputs.update(kwargs)
 
             # see note in stage
             if cachers is not None:
@@ -576,28 +686,96 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                             cachers[i].name = outputs[i].name
                         else:
                             cachers[i].name = outputs[i]
+            record.stage_cachers = cachers
 
+            # at this point we've grabbed all information we would need if we're
+            # just mapping out the stages, so return at this point.
+            # TODO: 3/8/2023 - not true, we're not getting outputs
+            if record.manager.map_mode:
+                record.manager.stage_active = False
+                # in order to get a more detailed map that accurately shows input/output names,
+                # we need to create pseudo-state-artifact-representations for the outputs. Since
+                # we obviously can't add the actual artifacts (there are none without running!),
+                # we just add the string key and a name, so record __repr__ has something to use
+                _get_output_representations_for_map(record, outputs, cachers, records)
+                record.stage_cachers = None
+                return record
+
+            # determine if we need to execute this stage and handle any
+            # cached values.
+            execute_stage = False  # false by default so the non-dag condition below can distinguish whether
+            # the dag condition actually set execute stage to true or if just default
             pre_cache_time_start = time.perf_counter()  # time to load from cache
             record.manager.lock()
-            cache_valid = _check_cached_outputs(name, record, outputs, cachers, records)
-            if cache_valid:
-                # get previous reportables if available
-                _check_cached_reportables(name, record, records)
 
-                # if we've hit this point, we will be returning early/not executing
-                # the stage because all outputs are found. The process of checking
-                # cached outputs should correctly add all the necessary tracked paths,
-                # so to transfer these paths into a store full run, we just need
-                # the below call
-                # NOTE: I _believe_ that we also get metadata from this because
-                # the load_metadata will have entered the metadata path already.
-                # this will need to be tested
-                record.store_tracked_paths()
+            # if we have an execution list from our stage DAG, use that
+            # to determine if this stage executes or not.
+            if record.manager.map is not None:
+                stage_rep = (record.get_record_index(), name)
+                if stage_rep not in record.manager.map.execution_list:
+                    logging.debug('DAG-indicated stage skip "%s".' % str(stage_rep))
+                    _dag_skip_check_cached_outputs(
+                        name, record, outputs, cachers, records
+                    )
+
+                    # grab any possible previous reportables so they still end up in report.
+                    _check_cached_reportables(name, record)
+                    record.store_tracked_paths()
+                    execute_stage = False
+                else:
+                    # the representation is in the execution list, so execute!
+                    execute_stage = True
+
+            # otherwise, proceed normally with cache and load checks
+            # NOTE: this is an explicit _separate_ check because if our DAG indicates that
+            # this stage executes, we still want to actually double check the cache and determine
+            # if we _still_ need to execute this stage. This is primarily for cases where a
+            # stage happens to get run multiple times with different records that have the same args/
+            # same outputs. The DAG doesn't dynamically update with cached values during the actual
+            # experiment run, so it won't catch this case by itself.
+            # So the flow is: if we have a DAG, and it says to execute this stage, or if we don't have
+            # a DAG, check if we actually need to run this based on cached values.
+            if record.manager.map is None or execute_stage:
+                cache_valid = _check_cached_outputs(
+                    name, record, outputs, cachers, records
+                )
+                if cache_valid:
+                    # get previous reportables if available
+                    _check_cached_reportables(name, record, records)
+
+                    # if we've hit this point, we will be returning early/not executing
+                    # the stage because all outputs are found. The process of checking
+                    # cached outputs should correctly add all the necessary tracked paths,
+                    # so to transfer these paths into a store full run, we just need
+                    # the below call
+                    # NOTE: I _believe_ that we also get metadata from this because
+                    # the load_metadata will have entered the metadata path already.
+                    # this will need to be tested
+                    record.store_tracked_paths()
+                    execute_stage = False
+                else:
+                    # at least one output wasn't cached, so execute order 66!
+                    execute_stage = True
+
+            # check each input for Lazy objects and load them if we know we have to execute this stage
+            if execute_stage:
+                for function_input in function_inputs:
+                    for prev_record, artifact in function_inputs[
+                        function_input
+                    ].items():
+                        if isinstance(artifact, Lazy) and artifact.resolve:
+                            logging.debug(
+                                "Resolving lazy load object '%s' from record %s"
+                                % (function_input, prev_record.get_reference_name())
+                            )
+                            function_inputs[function_input][
+                                prev_record
+                            ] = function_inputs[function_input][prev_record].load()
 
             record.manager.unlock()
             pre_cache_time_end = time.perf_counter()
 
-            if cache_valid:
+            if not execute_stage:
                 post_mem_usage = psutil.Process().memory_info().rss
                 post_footprint = 0
                 if os.name != "nt":
@@ -620,6 +798,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 utils.set_logging_prefix("")
                 record.manager.stage_active = False
                 record.manager.update_map_progress(record, "continue")
+                record.stage_cachers = None
                 return record
 
             # run the function
@@ -627,7 +806,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             exec_time_start = time.perf_counter()
             # NOTE: passing additional args to an aggregate stage is sort of undefined functionality,
             # this probably should be discouraged.
-            function_outputs = function(record, records, **kwargs)
+            function_outputs = function(record, records, **function_inputs)
             exec_time_end = time.perf_counter()
 
             # handle storing outputs in record
@@ -699,6 +878,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             utils.set_logging_prefix("")
             record.manager.stage_active = False
             record.manager.update_map_progress(record, "continue")
+            record.stage_cachers = None
             return record
 
         return wrapper
@@ -706,8 +886,84 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
     return decorator
 
 
+def _get_output_representations_for_map(
+    record, outputs: list[str], cachers: list[Cacheable], records: list[Record] = None
+) -> list[MapArtifactRepresentation]:
+    """Check if the requested outputs are cached but do not load them, simply return
+    a list of statuses for found."""
+    if cachers is not None and len(cachers) == 0:
+        raise EmptyCachersError(
+            "Do not use '[]' for cachers. This will always short-circuit because there is nothing that isn't cached."
+        )
+
+    artifacts = []
+    for i in range(len(outputs)):
+        metadata = None
+        cacher = None
+        is_cached = False
+        if cachers is not None:
+            cacher = cachers[i]
+            is_cached = cacher.check()
+            if is_cached:
+                metadata = cacher.load_metadata()
+        artifact = _add_output_artifact(
+            record, None, outputs, i, metadata, cacher, is_cached
+        )
+        artifacts.append(artifact)
+
+    return artifacts
+
+
+def _dag_skip_check_cached_outputs(
+    stage_name: str,
+    record,
+    outputs: list[str],
+    cachers: list[Cacheable],
+    records: list[Record] = None,
+):
+    """Checks for cached values and loads any relevant metadata into artifact representations.
+    This function does not actually load values themselves, meant to be called for a skipped stage
+    in dag-based execution."""
+    if cachers is not None and len(cachers) == 0:
+        raise EmptyCachersError(
+            "Do not use '[]' for cachers. This will always short-circuit because there is nothing that isn't cached."
+        )
+
+    skipped_function_outputs = []
+    for i, output_name in enumerate(outputs):
+        cacher = None
+        metadata = None
+        is_cached = False
+        output = None
+        if cachers is not None:
+            if cachers[i].check():
+                cachers[i].load_metadata()
+                if isinstance(outputs[i], Lazy):
+                    outputs[i].cacher = cachers[i]
+                    # we set the output to just be the Lazy instance for now
+                    output = outputs[i]
+                else:
+                    # TODO: make a lazy for it anyway? Evnetually use ref instead
+                    output = Lazy(output_name)
+                    output.cacher = cachers[i]
+
+                cacher = cachers[i]
+                metadata = cachers[i].metadata
+                is_cached = True
+        artifact = _add_output_artifact(
+            record, None, outputs, i, metadata, cacher, is_cached
+        )
+        if is_cached:
+            artifact.file = cachers[i].get_path()
+        # add a skippedoutput instance if it's not a cached value
+        if output is None:
+            output = SkippedOutput(record, stage_name, artifact)
+        skipped_function_outputs.append(output)
+        record.state[str(outputs[i])] = output
+
+
 def _check_cached_outputs(
-    stage_name,
+    stage_name: str,
     record: Record,
     outputs: list[Union[str, Lazy]],
     cachers: list[Cacheable],
@@ -718,7 +974,7 @@ def _check_cached_outputs(
 
     NOTE: this function _does_ load metadata into the cachers if found.
     """
-    if cachers == []:
+    if cachers is not None and len(cachers) == 0:
         raise EmptyCachersError(
             "Do not use '[]' for cachers. This will always short-circuit because there is nothing that isn't cached."
         )
@@ -739,9 +995,6 @@ def _check_cached_outputs(
                     outputs[i].cacher = cachers[i]
                     # we set the output to just be the Lazy instance for now
                     output = outputs[i]
-                    # TODO: (3/21/2023) is this going to correctly send to store if we
-                    # never actually call load in later stages? at least the base path will,
-                    # from load_metadata below which calls get_path, but this seems...?
                 else:
                     output = cachers[i].load()
                 cachers[i].load_metadata()
@@ -750,7 +1003,13 @@ def _check_cached_outputs(
                 record.state[str(outputs[i])] = output
 
                 artifact = _add_output_artifact(
-                    record, output, outputs, i, metadata=cachers[i].metadata
+                    record,
+                    output,
+                    outputs,
+                    i,
+                    metadata=cachers[i].metadata,
+                    cacher=cachers[i],
+                    is_cached=True,
                 )
                 # TODO: (3/21/2023) possibly have "files" which would be cachers.cached_files?
                 artifact.file = cachers[i].get_path()
@@ -770,10 +1029,32 @@ def _check_cached_outputs(
 
 
 def _add_output_artifact(
-    record, object, outputs: list[Union[str, Lazy]], index: int, metadata=None
-) -> ArtifactRepresentation:
-    """Record the artifact and its information on the manager."""
-    artifact = ArtifactRepresentation(record, outputs[index], object, metadata=metadata)
+    record,
+    object: Any,
+    outputs: list[Union[str, Lazy]],
+    index: int,
+    metadata=None,
+    cacher=None,
+    is_cached=False,
+):
+    """Manage representation recording - this creates an artifact representation and adds
+    to the manager's artifacts."""
+    if not record.manager.map_mode:
+        artifact = ArtifactRepresentation(
+            record, outputs[index], object, metadata=metadata, cacher=cacher
+        )
+    else:
+        artifact = MapArtifactRepresentation(
+            # NOTE: we don't use map=True for the get record index because we're still in map mode...
+            # this should probably change at some point, where getindex also takes the current map_mode
+            # into account
+            record.get_record_index(),
+            record.manager.current_stage_name,
+            outputs[index],
+            is_cached,
+            metadata,
+            cacher,
+        )
     new_index = len(record.manager.artifacts)
     record.manager.artifacts.append(artifact)
     # if new_index not in record.stage_outputs[-1]:
@@ -894,6 +1175,7 @@ def _store_outputs(
             # note that if we got to this point, we actually ran the stage code, so
             # we generate _new_ metadata
             cachers[index].collect_metadata()
+            cachers[index].metadata["preview"] = artifact.string
             metadata = cachers[index].save_metadata()
             artifact.metadata = metadata
 

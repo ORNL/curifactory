@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Example Experiment &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Args" href="args.html" />
+    <link rel="prev" title="Tips and tricks" href="tips.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and argsets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Example Experiment</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="args.html">Args</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Example Experiment</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/example.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="example-experiment">
+<h1>Example Experiment<a class="headerlink" href="#example-experiment" title="Permalink to this headline"></a></h1>
+<p>Below is a fully functioning experiment script example that implements all the
+necessary stages for training an sklearn model on the iris dataset. This script
+implements both the <code class="code docutils literal notranslate"><span class="pre">run()</span></code> and a <code class="code docutils literal notranslate"><span class="pre">get_params()</span></code>, and is fully self
+contained. This script can be found in the curifactory repo under
+<code class="code docutils literal notranslate"><span class="pre">examples/minimal/experiments/iris.py</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+
+<span class="kn">import</span> <span class="nn">curifactory</span> <span class="k">as</span> <span class="nn">cf</span>
+<span class="kn">from</span> <span class="nn">curifactory.caching</span> <span class="kn">import</span> <span class="n">PickleCacher</span>
+<span class="kn">from</span> <span class="nn">curifactory.reporting</span> <span class="kn">import</span> <span class="n">JsonReporter</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">ClassifierMixin</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_iris</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Args</span><span class="p">(</span><span class="n">cf</span><span class="o">.</span><span class="n">ExperimentArgs</span><span class="p">):</span>
+    <span class="n">balanced</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether class weights should be balanced or not.&quot;&quot;&quot;</span>
+    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The number of trees for a random forest.&quot;&quot;&quot;</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The random state seed for data splitting and model training.&quot;&quot;&quot;</span>
+    <span class="n">model_type</span><span class="p">:</span> <span class="n">ClassifierMixin</span> <span class="o">=</span> <span class="n">LogisticRegression</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The sklearn model to use.&quot;&quot;&quot;</span>
+    <span class="n">test_percent</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.25</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The percentage of data to use for testing.&quot;&quot;&quot;</span>
+
+
+<span class="nd">@cf</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span>
+    <span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;training_data&quot;</span><span class="p">,</span> <span class="s2">&quot;testing_data&quot;</span><span class="p">],</span> <span class="n">cachers</span><span class="o">=</span><span class="p">[</span><span class="n">PickleCacher</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+    <span class="n">args</span><span class="p">:</span> <span class="n">Args</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">args</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">()</span>
+    <span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">test_percent</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">seed</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span> <span class="p">(</span><span class="n">x_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span>
+
+
+<span class="nd">@cf</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;training_data&quot;</span><span class="p">],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">],</span> <span class="n">cachers</span><span class="o">=</span><span class="p">[</span><span class="n">PickleCacher</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">train_model</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">training_data</span><span class="p">):</span>
+    <span class="n">args</span><span class="p">:</span> <span class="n">Args</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">args</span>
+
+    <span class="c1"># set up common arguments from passed parameters</span>
+    <span class="n">weight</span> <span class="o">=</span> <span class="s2">&quot;balanced&quot;</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">balanced</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">model_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="n">weight</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="c1"># set up model-specific from parameters</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">model_type</span><span class="p">)</span> <span class="o">==</span> <span class="n">RandomForestClassifier</span><span class="p">:</span>
+        <span class="n">model_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>
+
+    <span class="c1"># fit the parameterized model</span>
+    <span class="n">clf</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">model_type</span><span class="p">(</span><span class="o">**</span><span class="n">model_args</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">training_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">training_data</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">clf</span>
+
+
+<span class="nd">@cf</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">],</span> <span class="n">cachers</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">test_models</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">records</span><span class="p">):</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># iterate through every record and score its associated model</span>
+    <span class="k">for</span> <span class="n">prev_record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;model&quot;</span> <span class="ow">in</span> <span class="n">prev_record</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
+            <span class="n">score</span> <span class="o">=</span> <span class="n">prev_record</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">score</span><span class="p">(</span>
+                <span class="n">prev_record</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;testing_data&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">prev_record</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;testing_data&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+            <span class="p">)</span>
+
+            <span class="c1"># store the result keyed to the argument set name</span>
+            <span class="n">scores</span><span class="p">[</span><span class="n">prev_record</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">score</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+    <span class="n">record</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">JsonReporter</span><span class="p">(</span><span class="n">scores</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">scores</span>
+
+
+<span class="k">def</span> <span class="nf">get_params</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">Args</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;simple_lr&quot;</span><span class="p">,</span> <span class="n">balanced</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="n">LogisticRegression</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">Args</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;simple_rf&quot;</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="n">RandomForestClassifier</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">argsets</span><span class="p">,</span> <span class="n">manager</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">argset</span> <span class="ow">in</span> <span class="n">argsets</span><span class="p">:</span>
+        <span class="n">record</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">argset</span><span class="p">)</span>
+        <span class="n">train_model</span><span class="p">(</span><span class="n">load_data</span><span class="p">(</span><span class="n">record</span><span class="p">))</span>
+
+    <span class="n">test_models</span><span class="p">(</span><span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tips.html" class="btn btn-neutral float-left" title="Tips and tricks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="args.html" class="btn btn-neutral float-right" title="Args" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

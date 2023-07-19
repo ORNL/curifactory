@@ -253,7 +253,7 @@ def test_aggregate_stage_record_uses_combo_hash(configured_test_manager):
     def normal_stage(record):
         return record.params.hash
 
-    @aggregate(["agg_hash"])
+    @aggregate(None, ["agg_hash"])
     def agg_stage(record, records):
         return record.params.hash
 
@@ -272,7 +272,7 @@ def test_aggregate_stage_record_uses_combo_hash(configured_test_manager):
 def test_stage_hash_after_aggregate_with_no_args(configured_test_manager):
     """Outputs from a normal stage after an aggregate stage with None arguments should be cached under the combo hash."""
 
-    @aggregate(["testing"], [JsonCacher])
+    @aggregate(None, ["testing"], [JsonCacher])
     def agg_stage(record, records):
         return "test"
 

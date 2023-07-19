@@ -50,7 +50,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     run_ts_override: datetime.datetime = None,
     lazy: bool = False,
     ignore_lazy: bool = False,
-    no_map: bool = False,
+    no_dag: bool = False,
+    map_only: bool = False,
     no_color: bool = False,
     quiet: bool = False,
     progress: bool = False,
@@ -117,9 +118,11 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             handle pickle serialization correctly may cause errors.
         ignore_lazy (bool): Run the experiment disabling any lazy object caching/keeping everything in memory.
             This can save time when memory is less of an issue.
-        no_map (bool): Prevent pre-execution mapping of experiment records and stages. Recommended if doing
+        no_dag (bool): Prevent pre-execution mapping of experiment records and stages. Recommended if doing
             anything fancy with records like dynamically creating them based on results of previous records.
             Mapping is done by running the experiment but skipping all stage execution.
+        map_only (bool): Runs the pre-execution mapping of an experiment and immediately exits, printing the
+            map to stdout. **Note that setting this to True automatically sets dry.**
         no_color (bool): Suppress fancy colors in console output.
         quiet (bool): Suppress all console log output.
         progress (bool): Display fancy rich progress bars for each record.
@@ -147,6 +150,11 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 
     from curifactory import docker, hashing
+
+    # if we request a map only run, make sure we don't impact any files, so
+    # automatically set "dry"
+    if map_only:
+        dry = True
 
     if run_string is None:
         run_string = f"experiment {experiment_name}"
@@ -184,8 +192,10 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             run_string += " --lazy"
         if ignore_lazy:
             run_string += " --ignore-lazy"
-        if no_map:
-            run_string += " --no-map"
+        if no_dag:
+            run_string += " --no-dag"
+        if map_only:
+            run_string += " --map"
         if no_color:
             run_string += " --no-color"
         if quiet:
@@ -335,6 +345,12 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             % experiment_name
         )
         param_files = [experiment_name]
+
+    # let the user that using "map-only" implies dry
+    if map_only:
+        logging.info(
+            "Using 'map-only' mode - note that this implies --dry and no cache or store files will be modified."
+        )
 
     # let the user know if we detected a distributed run
     if distributed_mode_detected:
@@ -552,7 +568,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     mngr.run_timestamp,
                     lazy,
                     ignore_lazy,
-                    no_map,
+                    no_dag,
+                    map_only,
                     no_color,
                     quiet,
                     progress,
@@ -600,14 +617,24 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     )
     try:
         # run experiment mapping and set up progress bars
-        if not parallel_mode and not no_map:
+        if not parallel_mode and not no_dag:
             logging.info("Pre-mapping stages and records")
             mngr.map_mode = True
             experiment_module.run(final_param_sets, mngr)
             mngr.map_mode = False
             logging.debug("Constructing record map")
             mngr.map_records()
+            for tree in mngr.map.execution_trees:
+                logging.debug(str(tree))
+            logging.debug("Execution list: %s" % mngr.map.execution_list)
+            # logging.debug("Execution map: %s" % mngr.map.execution_chain)
             logging.info("Stage map collected")
+
+            if map_only:
+                dag = mngr.map
+                dag.print_experiment_map()
+                logging.info("Map-only mode, skipping remainder of experiment.")
+                return dag, mngr
 
             # create a (rich) progress bar and the associated tasks for each
             # mapped record.
@@ -619,7 +646,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     TimeElapsedColumn(),
                     TextColumn("{task.fields[name]}"),
                 )
-                for i, record in enumerate(mngr.map):
+                for i, record in enumerate(mngr.map.records):
                     name = record.args.name if record.args is not None else "None"
                     if record.is_aggregate:
                         name += " (aggregate)"
@@ -638,7 +665,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     record.taskid = taskid
                 overalltaskid = mngr.map_progress.add_task(
                     f"Total ({mngr.get_reference_name()})",
-                    total=len(mngr.map),
+                    total=len(mngr.map.records),
                     visible=True,
                     name="",
                     hash_big="",
@@ -650,14 +677,14 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
         results = experiment_module.run(final_param_sets, mngr)
 
-        if not parallel_mode and not no_map and progress:
+        if not parallel_mode and not no_dag and progress:
             mngr.map_progress.stop()
 
         # don't change status if we logged an error from a parallel process
         if not mngr.error_thrown:
             mngr.status = "complete"
     except Exception as e:
-        if not parallel_mode and not no_map and progress:
+        if not parallel_mode and not no_dag and progress:
             mngr.map_progress.stop()
         results = None
         error_thrown = True
@@ -1076,6 +1103,12 @@ Examples:
         default=False,
         help="Associate some notes with this run. You can either directly specify a string to this flag, or leave it blank to open a notes file in your editor.",
     )
+    parser.add_argument(
+        "--no-dag",
+        dest="no_dag",
+        action="store_true",
+        help="Specifying this flag disables DAG-mode execution and prevents the pre-execution mapping of the experiment. Instead, the experiment will be run straight through using only the cache to determine if a stage needs to execute or not.",
+    )
 
     parameters_group = parser.add_argument_group(
         "Parameterization",
@@ -1215,10 +1248,10 @@ Examples:
         help="Log at debug level.",
     )
     display_group.add_argument(
-        "--no-map",
-        dest="no_map",
+        "--map",
+        dest="map_only",
         action="store_true",
-        help="Specifying will prevent the pre - execution mapping of the experiment records and stages. If doing non - DAG or creating dynamic records based on results of previous ones (where the map will be incorrect) use this flag.",
+        help="Specifying this _only_ runs the pre-execution record and stage mapping for the experiment, and prints out the resulting DAG information before immediately exiting. Specifying this implies --dry. You can use this flag to check which artifacts are found in cache.",
     )
     display_group.add_argument(
         "--quiet",
@@ -1360,7 +1393,8 @@ Examples:
         parallel_mode=args.parallel_mode,
         lazy=args.lazy,
         ignore_lazy=args.ignore_lazy,
-        no_map=args.no_map,
+        no_dag=args.no_dag,
+        map_only=args.map_only,
         no_color=args.no_color,
         quiet=args.quiet,
         progress=args.progress,

@@ -728,6 +728,15 @@ def _add_record_subgraph(dot, record_index, record, manager, detailed=True):
         for index, input_set in enumerate(record.stage_inputs):
             for input_index in input_set:
                 if input_index != -1:
+                    # check if the input is from this record or not
+                    found_in_this_record = False
+                    for output_set in record.stage_outputs:
+                        if input_index in output_set:
+                            found_in_this_record = True
+                            break
+                    # don't include if not from this record and a detailed map
+                    if detailed and not found_in_this_record:
+                        continue
                     dot.edge(
                         f"a{input_index}",
                         f"{record_index}_{record.stages[index]}",
@@ -924,18 +933,20 @@ def map_full_svg(
         _add_record_subgraph(dot, index, record, manager, detailed)
 
     # add record connections to any aggregate stages
-    for index, record in enumerate(manager.records):
-        for prev_record in record.input_records:
-            if prev_record == record:
-                continue
-            # prev_record_index =
-            for jndex, manager_record in enumerate(manager.records):
-                if manager_record == prev_record:
-                    dot.edge(
-                        f"{jndex}_{manager.records[jndex].stages[-1]}",
-                        f"{index}_{record.stages[0]}",
-                        ltail=f"cluster_{jndex}",
-                    )
+    # NOTE: (4/6/23) - because of the new expected state stuff, this is
+    # actually no longer strictly necessary
+    # for index, record in enumerate(manager.records):
+    #     for prev_record in record.input_records:
+    #         if prev_record == record:
+    #             continue
+    #         # prev_record_index =
+    #         for jndex, manager_record in enumerate(manager.records):
+    #             if manager_record == prev_record:
+    #                 dot.edge(
+    #                     f"{jndex}_{manager.records[jndex].stages[-1]}",
+    #                     f"{index}_{record.stages[0]}",
+    #                     ltail=f"cluster_{jndex}",
+    #                 )
 
     dot.format = "svg"
     return dot

@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manager &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Procedure" href="procedure.html" />
+    <link rel="prev" title="Experiment" href="experiment.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and argsets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="args.html">Args</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Manager</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/manager.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="module-curifactory.manager">
+<span id="manager"></span><h1>Manager<a class="headerlink" href="#module-curifactory.manager" title="Permalink to this headline"></a></h1>
+<p>Contains the relevant classes for experiment state, namely the artifact manager and
+record classes, as well as experiment store/parameter store management.</p>
+<p><strong>Classes:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager" title="curifactory.manager.ArtifactManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ArtifactManager</span></code></a>(experiment_name, store_full, …)</p></td>
+<td><p>This class manages the records, metadata, and options for an experiment run.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt id="curifactory.manager.ArtifactManager">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.manager.</span></code><code class="sig-name descname"><span class="pre">ArtifactManager</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_full</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry_cache</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_line</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_lock</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">multiprocessing.context.BaseContext.Lock</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lazy</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_lazy</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notes</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manager_cache_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notebooks_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reports_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_css_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status_override</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'LIVE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_live_log</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">live_log_debug</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.manager.ArtifactManager" title="Permalink to this definition"></a></dt>
+<dd><p>This class manages the records, metadata, and options for an experiment run.</p>
+<p>Every experiment run needs an instance of this.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>experiment_name</strong> (<em>str</em>) – The name of the experiment. This is used as a prefix for
+most relevant information and affects caching paths. If a manager is being
+used primarily from jupyter notebooks, you could for instance set this to
+be the name of the notebook.</p></li>
+<li><p><strong>store_full</strong> (<em>bool</em>) – Store/copy environment info, log, output report, and
+all cached files in a run-specific folder (this is a –store-full run.)</p></li>
+<li><p><strong>dry</strong> (<em>bool</em>) – Setting dry to true will suppress saving any files (including logs), and will
+not update parameter stores. (It should have no effect on any files.)</p></li>
+<li><p><strong>dry_cache</strong> (<em>bool</em>) – Setting this to true only suppresses saving cache files. This is recommended
+if you’re running with a cache_dir_override for some previous –store-full run, so you
+don’t accidentally overwrite or add new data to the –store-full directory.</p></li>
+<li><p><strong>prefix</strong> (<em>str</em>) – Instead of using the experiment name to group cached data, use
+this name instead.</p></li>
+<li><p><strong>run_line</strong> (<em>str</em>) – The CLI command used to run the current experiment.</p></li>
+<li><p><strong>parallel_lock</strong> (<em>multiprocessing.Lock</em>) – If this function is called from a multiprocessing
+context, use this lock to help prevent files being written to and read simultaneously.</p></li>
+<li><p><strong>parallel_mode</strong> (<em>bool</em>) – This is handled by the parallel parameter, informing a particular subproc
+run that it is being executed from a parallel run.</p></li>
+<li><p><strong>lazy</strong> (<em>bool</em>) – If true, attempts to set all stage outputs as Lazy objects. Outputs that do not have
+a cacher specified will be given a PickleCacher. Note that objects without a cacher tht do not
+handle pickle serialization correctly may cause errors.</p></li>
+<li><p><strong>ignore_lazy</strong> (<em>bool</em>) – Run the experiment disabling any lazy object caching/keeping everything in memory.
+This can save time when memory is less of an issue.</p></li>
+<li><p><strong>notes</strong> (<em>str</em>) – A git-log-like message to store in the run info for the current run. If this is an
+empty string, query the user for an input string.</p></li>
+<li><p><strong>manager_cache_path</strong> (<em>str</em>) – The path where the parameter registry and experiment
+store data are kept.</p></li>
+<li><p><strong>cache_path</strong> (<em>str</em>) – The path where all intermediate data is cached.</p></li>
+<li><p><strong>runs_path</strong> (<em>str</em>) – The path where full experiment stores (run with <code class="code docutils literal notranslate"><span class="pre">--store-full</span></code>)
+are kept.</p></li>
+<li><p><strong>logs_path</strong> (<em>str</em>) – The path where run logs get stored.</p></li>
+<li><p><strong>notebooks_path</strong> (<em>str</em>) – The path where run notebooks are placed.</p></li>
+<li><p><strong>reports_path</strong> (<em>str</em>) – The path where experiment run reports are saved.</p></li>
+<li><p><strong>report_css_path</strong> (<em>str</em>) – The path to a CSS file to copy into each report directory.</p></li>
+<li><p><strong>status_override</strong> (<em>str</em>) – This variable is ‘LIVE’ by default, but is overriden by the experiment script.
+‘LIVE’ indicates that this manager is being run from a non-experiment script or interactive terminal.</p></li>
+<li><p><strong>suppress_live_log</strong> (<em>bool</em>) – If true, on live/interactive runs don’t automatically spawn a logger.</p></li>
+<li><p><strong>live_log_debug</strong> (<em>bool</em>) – If true, spawn live logger with the DEBUG level.</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Attributes:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.artifacts" title="curifactory.manager.ArtifactManager.artifacts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">artifacts</span></code></a></p></td>
+<td><p>The list of <code class="code docutils literal notranslate"><span class="pre">ArtifactRepresentation</span></code> instances for all artifacts stored in all record states.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.cache_path" title="curifactory.manager.ArtifactManager.cache_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cache_path</span></code></a></p></td>
+<td><p>The path where all intermediate data is cached.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.conda_env" title="curifactory.manager.ArtifactManager.conda_env"><code class="xref py py-obj docutils literal notranslate"><span class="pre">conda_env</span></code></a></p></td>
+<td><p>The output from a conda env command (<code class="code docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">export</span> <span class="pre">--from-history</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.config" title="curifactory.manager.ArtifactManager.config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">config</span></code></a></p></td>
+<td><p>The manager configuration loaded from the curifactory config file if present.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.current_stage_name" title="curifactory.manager.ArtifactManager.current_stage_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">current_stage_name</span></code></a></p></td>
+<td><p>The name of the stage currently executing.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.dry" title="curifactory.manager.ArtifactManager.dry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dry</span></code></a></p></td>
+<td><p>Flag for whether to suppress all file outputs (cached files, logs, registries etc.)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.dry_cache" title="curifactory.manager.ArtifactManager.dry_cache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dry_cache</span></code></a></p></td>
+<td><p>Flag for whether to suppress only writing cached files.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.error" title="curifactory.manager.ArtifactManager.error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">error</span></code></a></p></td>
+<td><p>The exception class and error string, if one was thrown.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.error_thrown" title="curifactory.manager.ArtifactManager.error_thrown"><code class="xref py py-obj docutils literal notranslate"><span class="pre">error_thrown</span></code></a></p></td>
+<td><p>A flag indicating whether an error was thrown by the experiment.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.experiment_args" title="curifactory.manager.ArtifactManager.experiment_args"><code class="xref py py-obj docutils literal notranslate"><span class="pre">experiment_args</span></code></a></p></td>
+<td><p>A dictionary keyed by parameter file names, where the values are arrays of the name of the argset and arg hashes for all argsets from that parameter file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.experiment_args_file_list" title="curifactory.manager.ArtifactManager.experiment_args_file_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">experiment_args_file_list</span></code></a></p></td>
+<td><p>The list of parameter file names to be used in the experiment.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.experiment_name" title="curifactory.manager.ArtifactManager.experiment_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">experiment_name</span></code></a></p></td>
+<td><p>The name of the experiment and/or the prefix used for caching.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.experiment_run_number" title="curifactory.manager.ArtifactManager.experiment_run_number"><code class="xref py py-obj docutils literal notranslate"><span class="pre">experiment_run_number</span></code></a></p></td>
+<td><p>The run counter for experiments with the given name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.git_commit_hash" title="curifactory.manager.ArtifactManager.git_commit_hash"><code class="xref py py-obj docutils literal notranslate"><span class="pre">git_commit_hash</span></code></a></p></td>
+<td><p>The current commit hash if a git repo is in use.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.git_workdir_dirty" title="curifactory.manager.ArtifactManager.git_workdir_dirty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">git_workdir_dirty</span></code></a></p></td>
+<td><p>Whether there are uncommited changes in the git repo or not.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.hostname" title="curifactory.manager.ArtifactManager.hostname"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hostname</span></code></a></p></td>
+<td><p>The hostname of the machine this experiment ran on.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.ignore_lazy" title="curifactory.manager.ArtifactManager.ignore_lazy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ignore_lazy</span></code></a></p></td>
+<td><p>Run the experiment disabling any lazy object caching/keeping everything in memory.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.interactive" title="curifactory.manager.ArtifactManager.interactive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interactive</span></code></a></p></td>
+<td><p>Indicates if this manager was spawned with LIVE status in an interactive environment (e.g.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.lazy" title="curifactory.manager.ArtifactManager.lazy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lazy</span></code></a></p></td>
+<td><p>If true, attempts to set all stage outputs as Lazy objects.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.live_report_path_generated" title="curifactory.manager.ArtifactManager.live_report_path_generated"><code class="xref py py-obj docutils literal notranslate"><span class="pre">live_report_path_generated</span></code></a></p></td>
+<td><p>A flag indicting if the default report’s graphs/reportables folders exist, this helps prevent live displays from breaking if multiple display functions called.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.logs_path" title="curifactory.manager.ArtifactManager.logs_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logs_path</span></code></a></p></td>
+<td><p>The path where run logs get stored.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.manager_cache_path" title="curifactory.manager.ArtifactManager.manager_cache_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">manager_cache_path</span></code></a></p></td>
+<td><p>The path where the parameter registry and experiment store data are kept.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.map_mode" title="curifactory.manager.ArtifactManager.map_mode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_mode</span></code></a></p></td>
+<td><p>If we’re in map mode, don’t actually execute any stages, we’re only recording the ‘DAG’ (really just the set of stages associated with each record)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.notebooks_path" title="curifactory.manager.ArtifactManager.notebooks_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">notebooks_path</span></code></a></p></td>
+<td><p>The path where run notebooks are placed.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.notes" title="curifactory.manager.ArtifactManager.notes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">notes</span></code></a></p></td>
+<td><p>A notes associated with a session/run to output into the report etc.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.os" title="curifactory.manager.ArtifactManager.os"><code class="xref py py-obj docutils literal notranslate"><span class="pre">os</span></code></a></p></td>
+<td><p>The name of the current OS running curifactory.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.overwrite" title="curifactory.manager.ArtifactManager.overwrite"><code class="xref py py-obj docutils literal notranslate"><span class="pre">overwrite</span></code></a></p></td>
+<td><p>For live session managers where you don’t wish to set overwrite on individual args, you can universely set the manager to overwrite by changing this flag to True.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.overwrite_stages" title="curifactory.manager.ArtifactManager.overwrite_stages"><code class="xref py py-obj docutils literal notranslate"><span class="pre">overwrite_stages</span></code></a></p></td>
+<td><p>The list of individual stages for which to ignore the cache.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.parallel_lock" title="curifactory.manager.ArtifactManager.parallel_lock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parallel_lock</span></code></a></p></td>
+<td><p>If this function is called from a multiprocessing context, use this lock to help prevent files being written to and read simultaneously.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.parallel_mode" title="curifactory.manager.ArtifactManager.parallel_mode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parallel_mode</span></code></a></p></td>
+<td><p>A flag indicating whether this manager is in a “subproc” run or not.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.pip_freeze" title="curifactory.manager.ArtifactManager.pip_freeze"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pip_freeze</span></code></a></p></td>
+<td><p>The output from a <code class="code docutils literal notranslate"><span class="pre">pip</span> <span class="pre">freeze</span></code> command.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.prefix" title="curifactory.manager.ArtifactManager.prefix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prefix</span></code></a></p></td>
+<td><p>If specified, the name to use for grouping cached data instead of the experiment name.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.records" title="curifactory.manager.ArtifactManager.records"><code class="xref py py-obj docutils literal notranslate"><span class="pre">records</span></code></a></p></td>
+<td><p>The list of records currently managed by this manager.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.report_css_path" title="curifactory.manager.ArtifactManager.report_css_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">report_css_path</span></code></a></p></td>
+<td><p>The path to a CSS file to copy into each report directory.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.reportables" title="curifactory.manager.ArtifactManager.reportables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reportables</span></code></a></p></td>
+<td><p>The list of all reportables reported from all records.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.reports_path" title="curifactory.manager.ArtifactManager.reports_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reports_path</span></code></a></p></td>
+<td><p>The path where experiment run reports are saved.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.reproduction_line" title="curifactory.manager.ArtifactManager.reproduction_line"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reproduction_line</span></code></a></p></td>
+<td><p>The CLI command to replicate the experiment this manager is for.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.run_info" title="curifactory.manager.ArtifactManager.run_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_info</span></code></a></p></td>
+<td><p>The metadata block associated with this manager from the <code class="code docutils literal notranslate"><span class="pre">ManagerStore</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.run_line" title="curifactory.manager.ArtifactManager.run_line"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_line</span></code></a></p></td>
+<td><p>The CLI command used to run the current experiment.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.run_timestamp" title="curifactory.manager.ArtifactManager.run_timestamp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_timestamp</span></code></a></p></td>
+<td><p>The datetime timestamp for when the manager is initialized (and usually also when the experiment starts running.)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.runs_path" title="curifactory.manager.ArtifactManager.runs_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">runs_path</span></code></a></p></td>
+<td><p>The path where full experiment stores (run with <code class="code docutils literal notranslate"><span class="pre">--store-full</span></code>) are kept.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.stage_active" title="curifactory.manager.ArtifactManager.stage_active"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stage_active</span></code></a></p></td>
+<td><p>Flag indicating whether a stage is actively running or not, used to detect if a stage has directly called another stage.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.status" title="curifactory.manager.ArtifactManager.status"><code class="xref py py-obj docutils literal notranslate"><span class="pre">status</span></code></a></p></td>
+<td><p>‘incomplete’, ‘complete’, ‘error’, or ‘LIVE’ if run from a notebook, interactive terminal, or non-experiment script.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.store_full" title="curifactory.manager.ArtifactManager.store_full"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_full</span></code></a></p></td>
+<td><p>Flag for whether to store/copy environment info, log, output report, and all cached files in a run-specific folder.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.stored" title="curifactory.manager.ArtifactManager.stored"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stored</span></code></a></p></td>
+<td><p>A flag keeping track of if the experiment <code class="code docutils literal notranslate"><span class="pre">store.json</span></code> has been updated with this run or not.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.display_all_reportables" title="curifactory.manager.ArtifactManager.display_all_reportables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">display_all_reportables</span></code></a>()</p></td>
+<td><p>Displays (via html) all produced reportables.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.display_group_reportables" title="curifactory.manager.ArtifactManager.display_group_reportables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">display_group_reportables</span></code></a>(group_name)</p></td>
+<td><p>Displays (via html) all reportables in the passed group.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.display_info" title="curifactory.manager.ArtifactManager.display_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">display_info</span></code></a>()</p></td>
+<td><p>Returns an IPython HTML display object with the report info block.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.display_record_reportables" title="curifactory.manager.ArtifactManager.display_record_reportables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">display_record_reportables</span></code></a>(record)</p></td>
+<td><p>Displays (via html) all reportables produced within the passed record.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.display_reportable" title="curifactory.manager.ArtifactManager.display_reportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">display_reportable</span></code></a>(reportable)</p></td>
+<td><p>Displays (via html) the rendered passed reportable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.display_stage_graph" title="curifactory.manager.ArtifactManager.display_stage_graph"><code class="xref py py-obj docutils literal notranslate"><span class="pre">display_stage_graph</span></code></a>()</p></td>
+<td><p>Displays (via html) the graphviz SVG map of the records and the stages they were run through.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.display_stage_reportables" title="curifactory.manager.ArtifactManager.display_stage_reportables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">display_stage_reportables</span></code></a>(stage_name)</p></td>
+<td><p>Displays (via html) all reportables produced by the given stage.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.generate_report" title="curifactory.manager.ArtifactManager.generate_report"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_report</span></code></a>()</p></td>
+<td><p>Output report files to a run-specific report folder, the reports/_latest, and the store-full folder if applicable.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.get_all_argsets" title="curifactory.manager.ArtifactManager.get_all_argsets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_argsets</span></code></a>()</p></td>
+<td><p>This is important to get argsets that aren’t obtained through parameter files, e.g.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.get_artifact_path" title="curifactory.manager.ArtifactManager.get_artifact_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_artifact_path</span></code></a>(obj_name, record[, …])</p></td>
+<td><p>Get a record-appropriate full path/filename for a given object name and record.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.get_grouped_reportables" title="curifactory.manager.ArtifactManager.get_grouped_reportables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_grouped_reportables</span></code></a>()</p></td>
+<td><p>Returns a dictionary of reportable groups, each group containing the list of reportables.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.get_reference_name" title="curifactory.manager.ArtifactManager.get_reference_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_reference_name</span></code></a>()</p></td>
+<td><p>Get the reference name of this run in the experiment registry.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.get_run_output_path" title="curifactory.manager.ArtifactManager.get_run_output_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_run_output_path</span></code></a>([obj_name])</p></td>
+<td><p>Get the path for a –store-full run folder for this manager.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.get_str_timestamp" title="curifactory.manager.ArtifactManager.get_str_timestamp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_str_timestamp</span></code></a>()</p></td>
+<td><p>Convert the manager’s run timestamp into a string representation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.get_ungrouped_reportables" title="curifactory.manager.ArtifactManager.get_ungrouped_reportables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_ungrouped_reportables</span></code></a>()</p></td>
+<td><p>Returns the list of reportables that have no group.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.lock" title="curifactory.manager.ArtifactManager.lock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lock</span></code></a>()</p></td>
+<td><p>Necessary to avoid file collisions when run in parallel mode.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.map_records" title="curifactory.manager.ArtifactManager.map_records"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_records</span></code></a>()</p></td>
+<td><p>Run through every record currently stored and grab the stage and stage i/o list and store it.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.store" title="curifactory.manager.ArtifactManager.store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store</span></code></a>()</p></td>
+<td><p>Update the ManagerStore with this manager’s run metadata.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.unlock" title="curifactory.manager.ArtifactManager.unlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unlock</span></code></a>()</p></td>
+<td><p>Necessary to avoid file collisions when run in parallel mode.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.manager.ArtifactManager.write_run_env_output" title="curifactory.manager.ArtifactManager.write_run_env_output"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_run_env_output</span></code></a>()</p></td>
+<td><p>Write all environment metadata to a run folder for a –store-full run.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.artifacts">
+<code class="sig-name descname"><span class="pre">artifacts</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.artifacts" title="Permalink to this definition"></a></dt>
+<dd><p>The list of <code class="code docutils literal notranslate"><span class="pre">ArtifactRepresentation</span></code> instances for all artifacts stored in all
+record states.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.cache_path">
+<code class="sig-name descname"><span class="pre">cache_path</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.cache_path" title="Permalink to this definition"></a></dt>
+<dd><p>The path where all intermediate data is cached.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.conda_env">
+<code class="sig-name descname"><span class="pre">conda_env</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.conda_env" title="Permalink to this definition"></a></dt>
+<dd><p>The output from a conda env command (<code class="code docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">export</span> <span class="pre">--from-history</span></code>).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.config">
+<code class="sig-name descname"><span class="pre">config</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.config" title="Permalink to this definition"></a></dt>
+<dd><p>The manager configuration loaded from the curifactory config file if present.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.current_stage_name">
+<code class="sig-name descname"><span class="pre">current_stage_name</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.current_stage_name" title="Permalink to this definition"></a></dt>
+<dd><p>The name of the stage currently executing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.display_all_reportables">
+<code class="sig-name descname"><span class="pre">display_all_reportables</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.display_all_reportables" title="Permalink to this definition"></a></dt>
+<dd><p>Displays (via html) all produced reportables.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This only works within an IPython context.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.display_group_reportables">
+<code class="sig-name descname"><span class="pre">display_group_reportables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.display_group_reportables" title="Permalink to this definition"></a></dt>
+<dd><p>Displays (via html) all reportables in the passed group.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This only works within an IPython context.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.display_info">
+<code class="sig-name descname"><span class="pre">display_info</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.display_info" title="Permalink to this definition"></a></dt>
+<dd><p>Returns an IPython HTML display object with the report info block. This is mostly only useful for making displays in a Juptyer notebook.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.display_record_reportables">
+<code class="sig-name descname"><span class="pre">display_record_reportables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><span class="pre">curifactory.record.Record</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.display_record_reportables" title="Permalink to this definition"></a></dt>
+<dd><p>Displays (via html) all reportables produced within the passed record.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This only works within an IPython context.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.display_reportable">
+<code class="sig-name descname"><span class="pre">display_reportable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reportable</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="reporting.html#curifactory.reporting.Reportable" title="curifactory.reporting.Reportable"><span class="pre">curifactory.reporting.Reportable</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.display_reportable" title="Permalink to this definition"></a></dt>
+<dd><p>Displays (via html) the rendered passed reportable.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This only works within an IPython context.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.display_stage_graph">
+<code class="sig-name descname"><span class="pre">display_stage_graph</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.display_stage_graph" title="Permalink to this definition"></a></dt>
+<dd><p>Displays (via html) the graphviz SVG map of the records and the stages they were run through.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This only works within an IPython context.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.display_stage_reportables">
+<code class="sig-name descname"><span class="pre">display_stage_reportables</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stage_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.display_stage_reportables" title="Permalink to this definition"></a></dt>
+<dd><p>Displays (via html) all reportables produced by the given stage.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This only works within an IPython context.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.dry">
+<code class="sig-name descname"><span class="pre">dry</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#curifactory.manager.ArtifactManager.dry" title="Permalink to this definition"></a></dt>
+<dd><p>Flag for whether to suppress all file outputs (cached files, logs, registries etc.)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.dry_cache">
+<code class="sig-name descname"><span class="pre">dry_cache</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#curifactory.manager.ArtifactManager.dry_cache" title="Permalink to this definition"></a></dt>
+<dd><p>Flag for whether to suppress only writing cached files.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.error">
+<code class="sig-name descname"><span class="pre">error</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.error" title="Permalink to this definition"></a></dt>
+<dd><p>The exception class and error string, if one was thrown.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.error_thrown">
+<code class="sig-name descname"><span class="pre">error_thrown</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.error_thrown" title="Permalink to this definition"></a></dt>
+<dd><p>A flag indicating whether an error was thrown by the experiment.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.experiment_args">
+<code class="sig-name descname"><span class="pre">experiment_args</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.experiment_args" title="Permalink to this definition"></a></dt>
+<dd><p>A dictionary keyed by parameter file names, where the values are arrays of the name of the
+argset and arg hashes for all argsets from that parameter file. (See the ‘args’ field in the
+metadata blocks in ManagerStore.)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.experiment_args_file_list">
+<code class="sig-name descname"><span class="pre">experiment_args_file_list</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.experiment_args_file_list" title="Permalink to this definition"></a></dt>
+<dd><p>The list of parameter file names to be used in the experiment.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.experiment_name">
+<code class="sig-name descname"><span class="pre">experiment_name</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.experiment_name" title="Permalink to this definition"></a></dt>
+<dd><p>The name of the experiment and/or the prefix used for caching.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.experiment_run_number">
+<code class="sig-name descname"><span class="pre">experiment_run_number</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.experiment_run_number" title="Permalink to this definition"></a></dt>
+<dd><p>The run counter for experiments with the given name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.generate_report">
+<code class="sig-name descname"><span class="pre">generate_report</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.generate_report" title="Permalink to this definition"></a></dt>
+<dd><p>Output report files to a run-specific report folder, the reports/_latest, and the store-full folder if applicable.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.get_all_argsets">
+<code class="sig-name descname"><span class="pre">get_all_argsets</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.get_all_argsets" title="Permalink to this definition"></a></dt>
+<dd><p>This is important to get argsets that aren’t obtained through parameter files, e.g. in an interactive session.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.get_artifact_path">
+<code class="sig-name descname"><span class="pre">get_artifact_path</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><span class="pre">curifactory.record.Record</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">subdir</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stage_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.get_artifact_path" title="Permalink to this definition"></a></dt>
+<dd><p>Get a record-appropriate full path/filename for a given object name and record.</p>
+<p>This is used by the cachers, it automatically handles generating a filename
+using appropriate experiment name prefixing etc. <strong>NOTE:</strong> This function sets the record’s args hash if it is None, or if an aggregate stage is involved.</p>
+<p>The output path will follow this convention: <code class="docutils literal notranslate"><span class="pre">[base</span> <span class="pre">path]/[prefix]_[parameterset</span> <span class="pre">hash]_[stage</span> <span class="pre">name]_[artifact</span> <span class="pre">name]</span></code>,
+where <code class="docutils literal notranslate"><span class="pre">base</span> <span class="pre">path</span></code> is determined based on the value of <code class="docutils literal notranslate"><span class="pre">store</span></code> and <code class="docutils literal notranslate"><span class="pre">subdir</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj_name</strong> (<em>str</em>) – The name to associate with the object as the last part of the filename.</p></li>
+<li><p><strong>record</strong> (<a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><em>Record</em></a>) – The record that this object is associated with. (Used to get experiment name, args hash
+and so on.)</p></li>
+<li><p><strong>subdir</strong> (<em>str</em>) – An optional string of one or more nested subdirectories to prepend to the artifact filepath.
+This can be used if you want to subdivide cache and run artifacts into logical subsets, e.g. similar to
+<a class="reference external" href="https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71">https://towardsdatascience.com/the-importance-of-layered-thinking-in-data-engineering-a09f685edc71</a>.</p></li>
+<li><p><strong>prefix</strong> (<em>str</em>) – An optional alternative prefix to the experiment-wide prefix (either the experiment name or
+custom-specified experiment prefix). This can be used if you want a cached object to work easier across
+multiple experiments, rather than being experiment specific. WARNING: use with caution, cross-experiment
+caching can mess with provenance.</p></li>
+<li><p><strong>stage_name</strong> (<em>str</em>) – The stage that produced an artifact. If not supplied, uses
+the currently executing stage name.</p></li>
+<li><p><strong>store</strong> (<em>bool</em>) – Set this to true if the path needs to go into a –store-full run folder.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A string filepath that an object can be written to.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.get_grouped_reportables">
+<code class="sig-name descname"><span class="pre">get_grouped_reportables</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.get_grouped_reportables" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a dictionary of reportable groups, each group containing the list of reportables.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.get_reference_name">
+<code class="sig-name descname"><span class="pre">get_reference_name</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.get_reference_name" title="Permalink to this definition"></a></dt>
+<dd><p>Get the reference name of this run in the experiment registry.</p>
+<p>The format for this name is [experiment_name]_[run_number]_[timestamp].</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.get_run_output_path">
+<code class="sig-name descname"><span class="pre">get_run_output_path</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.get_run_output_path" title="Permalink to this definition"></a></dt>
+<dd><p>Get the path for a –store-full run folder for this manager. Similar to get_path, but
+with an always assumed output=True.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A string filepath pointing to the runs folder with an optional object name attached at
+end. (Returns only the folder path if None is passed.)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.get_str_timestamp">
+<code class="sig-name descname"><span class="pre">get_str_timestamp</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.get_str_timestamp" title="Permalink to this definition"></a></dt>
+<dd><p>Convert the manager’s run timestamp into a string representation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.get_ungrouped_reportables">
+<code class="sig-name descname"><span class="pre">get_ungrouped_reportables</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.get_ungrouped_reportables" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the list of reportables that have no group.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.git_commit_hash">
+<code class="sig-name descname"><span class="pre">git_commit_hash</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.git_commit_hash" title="Permalink to this definition"></a></dt>
+<dd><p>The current commit hash if a git repo is in use.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.git_workdir_dirty">
+<code class="sig-name descname"><span class="pre">git_workdir_dirty</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.git_workdir_dirty" title="Permalink to this definition"></a></dt>
+<dd><p>Whether there are uncommited changes in the git repo or not.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.hostname">
+<code class="sig-name descname"><span class="pre">hostname</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.hostname" title="Permalink to this definition"></a></dt>
+<dd><p>The hostname of the machine this experiment ran on.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.ignore_lazy">
+<code class="sig-name descname"><span class="pre">ignore_lazy</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.ignore_lazy" title="Permalink to this definition"></a></dt>
+<dd><p>Run the experiment disabling any lazy object caching/keeping everything in memory.
+This can save time when memory is less of an issue.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.interactive">
+<code class="sig-name descname"><span class="pre">interactive</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.interactive" title="Permalink to this definition"></a></dt>
+<dd><p>Indicates if this manager was spawned with LIVE status in an interactive environment (e.g. a python
+terminal or Jupyter notebook.)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.lazy">
+<code class="sig-name descname"><span class="pre">lazy</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.lazy" title="Permalink to this definition"></a></dt>
+<dd><p>If true, attempts to set all stage outputs as Lazy objects. Outputs that do not have.
+a cacher specified will be given a PickleCacher. Note that objects without a cacher tht do not
+handle pickle serialization correctly may cause errors.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.live_report_path_generated">
+<code class="sig-name descname"><span class="pre">live_report_path_generated</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.live_report_path_generated" title="Permalink to this definition"></a></dt>
+<dd><p>A flag indicting if the default report’s graphs/reportables folders exist, this helps prevent live displays from breaking if multiple display functions called.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.lock">
+<code class="sig-name descname"><span class="pre">lock</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.lock" title="Permalink to this definition"></a></dt>
+<dd><p>Necessary to avoid file collisions when run in parallel mode.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.logs_path">
+<code class="sig-name descname"><span class="pre">logs_path</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.logs_path" title="Permalink to this definition"></a></dt>
+<dd><p>The path where run logs get stored.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.manager_cache_path">
+<code class="sig-name descname"><span class="pre">manager_cache_path</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.manager_cache_path" title="Permalink to this definition"></a></dt>
+<dd><p>The path where the parameter registry and experiment store data are kept.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.map_mode">
+<code class="sig-name descname"><span class="pre">map_mode</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.map_mode" title="Permalink to this definition"></a></dt>
+<dd><p>If we’re in map mode, don’t actually execute any stages, we’re only
+recording the ‘DAG’ (really just the set of stages associated with each
+record)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.map_records">
+<code class="sig-name descname"><span class="pre">map_records</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.map_records" title="Permalink to this definition"></a></dt>
+<dd><p>Run through every record currently stored and grab the stage and
+stage i/o list and store it. Then clean the records.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.notebooks_path">
+<code class="sig-name descname"><span class="pre">notebooks_path</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.notebooks_path" title="Permalink to this definition"></a></dt>
+<dd><p>The path where run notebooks are placed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.notes">
+<code class="sig-name descname"><span class="pre">notes</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.notes" title="Permalink to this definition"></a></dt>
+<dd><p>A notes associated with a session/run to output into the report etc.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.os">
+<code class="sig-name descname"><span class="pre">os</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.os" title="Permalink to this definition"></a></dt>
+<dd><p>The name of the current OS running curifactory.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.overwrite">
+<code class="sig-name descname"><span class="pre">overwrite</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.overwrite" title="Permalink to this definition"></a></dt>
+<dd><p>For live session managers where you don’t wish to set overwrite on individual args, you can universely set the manager to overwrite by changing this flag to True.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.overwrite_stages">
+<code class="sig-name descname"><span class="pre">overwrite_stages</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.overwrite_stages" title="Permalink to this definition"></a></dt>
+<dd><p>The list of individual stages for which to ignore the cache.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.parallel_lock">
+<code class="sig-name descname"><span class="pre">parallel_lock</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.parallel_lock" title="Permalink to this definition"></a></dt>
+<dd><p>If this function is called from a multiprocessing context, use this lock to help
+prevent files being written to and read simultaneously.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.parallel_mode">
+<code class="sig-name descname"><span class="pre">parallel_mode</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.parallel_mode" title="Permalink to this definition"></a></dt>
+<dd><p>A flag indicating whether this manager is in a “subproc” run or not. Do not set this manually.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.pip_freeze">
+<code class="sig-name descname"><span class="pre">pip_freeze</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.pip_freeze" title="Permalink to this definition"></a></dt>
+<dd><p>The output from a <code class="code docutils literal notranslate"><span class="pre">pip</span> <span class="pre">freeze</span></code> command.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.prefix">
+<code class="sig-name descname"><span class="pre">prefix</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.prefix" title="Permalink to this definition"></a></dt>
+<dd><p>If specified, the name to use for grouping cached data instead of the experiment name.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.records">
+<code class="sig-name descname"><span class="pre">records</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.records" title="Permalink to this definition"></a></dt>
+<dd><p>The list of records currently managed by this manager.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.report_css_path">
+<code class="sig-name descname"><span class="pre">report_css_path</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.report_css_path" title="Permalink to this definition"></a></dt>
+<dd><p>The path to a CSS file to copy into each report directory.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.reportables">
+<code class="sig-name descname"><span class="pre">reportables</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.reportables" title="Permalink to this definition"></a></dt>
+<dd><p>The list of all reportables reported from all records.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.reports_path">
+<code class="sig-name descname"><span class="pre">reports_path</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.reports_path" title="Permalink to this definition"></a></dt>
+<dd><p>The path where experiment run reports are saved.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.reproduction_line">
+<code class="sig-name descname"><span class="pre">reproduction_line</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.reproduction_line" title="Permalink to this definition"></a></dt>
+<dd><p>The CLI command to replicate the experiment this manager is for.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.run_info">
+<code class="sig-name descname"><span class="pre">run_info</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.run_info" title="Permalink to this definition"></a></dt>
+<dd><p>The metadata block associated with this manager from the <code class="code docutils literal notranslate"><span class="pre">ManagerStore</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.run_line">
+<code class="sig-name descname"><span class="pre">run_line</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.run_line" title="Permalink to this definition"></a></dt>
+<dd><p>The CLI command used to run the current experiment.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.run_timestamp">
+<code class="sig-name descname"><span class="pre">run_timestamp</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.run_timestamp" title="Permalink to this definition"></a></dt>
+<dd><p>The datetime timestamp for when the manager is initialized (and usually
+also when the experiment starts running.)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.runs_path">
+<code class="sig-name descname"><span class="pre">runs_path</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.runs_path" title="Permalink to this definition"></a></dt>
+<dd><p>The path where full experiment stores (run with <code class="code docutils literal notranslate"><span class="pre">--store-full</span></code>) are kept.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.stage_active">
+<code class="sig-name descname"><span class="pre">stage_active</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.stage_active" title="Permalink to this definition"></a></dt>
+<dd><p>Flag indicating whether a stage is actively running or not, used to
+detect if a stage has directly called another stage. (Technically not
+disallowed but a big no-no/prohibits any DAG features.)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.status">
+<code class="sig-name descname"><span class="pre">status</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.status" title="Permalink to this definition"></a></dt>
+<dd><p>‘incomplete’, ‘complete’, ‘error’, or ‘LIVE’ if run from a
+notebook, interactive terminal, or non-experiment script.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>The current status of the experiment</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.store">
+<code class="sig-name descname"><span class="pre">store</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.store" title="Permalink to this definition"></a></dt>
+<dd><p>Update the ManagerStore with this manager’s run metadata.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.store_full">
+<code class="sig-name descname"><span class="pre">store_full</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><a class="headerlink" href="#curifactory.manager.ArtifactManager.store_full" title="Permalink to this definition"></a></dt>
+<dd><p>Flag for whether to store/copy environment info, log, output report, and
+all cached files in a run-specific folder.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.manager.ArtifactManager.stored">
+<code class="sig-name descname"><span class="pre">stored</span></code><a class="headerlink" href="#curifactory.manager.ArtifactManager.stored" title="Permalink to this definition"></a></dt>
+<dd><p>A flag keeping track of if the experiment <code class="code docutils literal notranslate"><span class="pre">store.json</span></code> has been updated with this run
+or not.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.unlock">
+<code class="sig-name descname"><span class="pre">unlock</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.unlock" title="Permalink to this definition"></a></dt>
+<dd><p>Necessary to avoid file collisions when run in parallel mode.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.manager.ArtifactManager.write_run_env_output">
+<code class="sig-name descname"><span class="pre">write_run_env_output</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.manager.ArtifactManager.write_run_env_output" title="Permalink to this definition"></a></dt>
+<dd><p>Write all environment metadata to a run folder for a –store-full run.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="experiment.html" class="btn btn-neutral float-left" title="Experiment" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="procedure.html" class="btn btn-neutral float-right" title="Procedure" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

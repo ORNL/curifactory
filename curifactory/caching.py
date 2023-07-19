@@ -31,7 +31,7 @@ class Lazy:
     Example:
         .. code-block:: python
 
-            @stage(inputs=None, outputs=["small_output", cf.Lazy("large_output")], cachers=[PickleCacher]*2)
+            @stage(inputs=None, outputs=["small_output", Lazy("large_output")], cachers=[PickleCacher]*2)
             def some_stage(record: Record):
                 ...
 
@@ -57,6 +57,43 @@ class Lazy:
 
     def __str__(self):
         return self.name
+
+
+# NOTE: this isn't a requirement for DAGs to work, leaving here as a reminder, but deciding if
+# this versus simply a pathcacher works better should be a different issue
+# class Ref:
+#     """A 'reference' output is very similar to the ``Lazy`` class, but handled differently semantically by
+#     curifactory. A ``Ref`` is assumed to be a load-only output, where the stage that creates it is assumed
+#     to handle creating and saving the object, and the cacher associated with the ``Ref`` is only in charge
+#     of loading it when and if it's needed by later stages.
+
+#     This is useful in cases where a stage is making an external system call to a script that's creating some
+#     file, and we only want to directly bring the results of that file into curifactory rather than loading
+#     and returning it in the stage, for it to just be re-saved again by the cacher.
+
+
+#     Example:
+#         .. code-block:: python
+
+#             @stage(outputs=[Ref("some_json")], cachers=[JsonCacher])
+#             def save_outside_of_cacher(record):
+#                 pass
+
+
+#                 # TODO
+
+#     """
+
+#     def __init__(self, name: str, resolve: bool = True):
+#         self.name = name
+#         self.cacher: Cacheable = None
+#         self.resolve = resolve
+
+#     def load(self):
+#         return self.cacher.load()
+
+#     def __str__(self):
+#         return self.name
 
 
 class Cacheable:
@@ -256,7 +293,8 @@ class Cacheable:
 
     def set_record(self, record):
         self.record = record
-        self.collect_metadata()
+        if not self.record.manager.map_mode:
+            self.collect_metadata()
 
     def collect_metadata(self):
         if self.record is None:
@@ -346,14 +384,20 @@ class Cacheable:
                         return False
                 # we made it through each record and they weren't overwrite, we're good
                 logging.debug("No records had overwrite, will use cache")
-                logging.info("Cached object '%s' found", self.get_path())
+                if self.record.manager.map_mode:
+                    logging.debug("Cached object '%s' found", self.get_path())
+                else:
+                    logging.info("Cached object '%s' found", self.get_path())
                 return True
             elif (
                 self.record is not None
                 and self.record.params is not None
                 and not self.record.params.overwrite
             ):
-                logging.info("Cached object '%s' found", self.get_path())
+                if self.record.manager.map_mode:
+                    logging.debug("Cached object '%s' found", self.get_path())
+                else:
+                    logging.info("Cached object '%s' found", self.get_path())
                 return True
             elif self.record is None:
                 # if we don't have a record (e.g. running check on a manual cacher with a

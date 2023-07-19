@@ -2,10 +2,12 @@ import os
 from dataclasses import dataclass
 from enum import IntEnum
 
+from graphviz import Digraph
+
 import curifactory as cf
 from curifactory import reporting
 from curifactory.caching import JsonCacher, PickleCacher
-from curifactory.reporting import JsonReporter, render_reportable
+from curifactory.reporting import JsonReporter, _add_record_subgraph, render_reportable
 
 
 def test_reportables_cached(configured_test_manager):
@@ -72,3 +74,40 @@ def test_reportable_render_uses_qualified_name_in_title(configured_test_manager)
     )
     assert reportable.qualified_name in html[1]  # link
     assert reportable.qualified_name in html[2]  # title
+
+
+def test_detailed_record_subgraph_aggregate_doesnot_include_previous_artifacts(
+    configured_test_manager,
+):
+    """A detailed subgraph map for an aggregate shouldn't show the nameless artifact
+    nodes that are coming from other records."""
+
+    @cf.stage(None, ["test_output"])
+    def test(record):
+        return "test"
+
+    @cf.aggregate(inputs=["test_output"], outputs=["final"])
+    def agg(record, records, test_output):
+        return "things"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test1"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test2"))
+    r2 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test3"))
+
+    test(r0)
+    test(r1)
+    agg(r2, [r0, r1])
+
+    dot = Digraph()
+    dot.attr(compound="true")
+    dot.attr(nodesep=".2")
+    dot.attr(ranksep=".2")
+
+    _add_record_subgraph(dot, 2, r2, configured_test_manager)
+
+    # count connections
+    conn_count = 0
+    for line in dot.body:
+        if "->" in line:
+            conn_count += 1
+    assert conn_count == 1

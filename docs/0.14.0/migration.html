@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Migration Guide &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Args" href="args.html" />
+    <link rel="prev" title="Example Experiment" href="example.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and argsets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Migration Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">0.13.0 - 0.14.0</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#aggregate-stages-should-now-specify-inputs-in-the-decorator">Aggregate stages should now specify <code class="docutils literal notranslate"><span class="pre">inputs</span></code> in the decorator</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="args.html">Args</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Migration Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/migration.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="migration-guide">
+<h1>Migration Guide<a class="headerlink" href="#migration-guide" title="Permalink to this headline"></a></h1>
+<p>Any breaking API changes that will need to be accounted for/will likely require
+updates to your experiment code will be documented here with explanations of
+how to do so.</p>
+<div class="section" id="id1">
+<h2>0.13.0 - 0.14.0<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<div class="section" id="aggregate-stages-should-now-specify-inputs-in-the-decorator">
+<h3>Aggregate stages should now specify <code class="docutils literal notranslate"><span class="pre">inputs</span></code> in the decorator<a class="headerlink" href="#aggregate-stages-should-now-specify-inputs-in-the-decorator" title="Permalink to this headline"></a></h3>
+<p>Along with the addition of DAG-based stage execution, <code class="docutils literal notranslate"><span class="pre">&#64;aggregate</span></code> stages now
+have an <code class="docutils literal notranslate"><span class="pre">inputs</span></code> attribute in the decorator, which similarly to the <code class="docutils literal notranslate"><span class="pre">&#64;stage</span></code>
+decorator should include the string names of all artifacts in all aggregated
+records that will be needed in the aggregate stage code.</p>
+<p>Specifying <code class="docutils literal notranslate"><span class="pre">inputs</span></code> is required for the DAG to map the experiment correctly,
+not doing so will likely cause any stages before the aggregate (that it would
+otherwise rely on) to never execute.</p>
+<p>Similar to <code class="docutils literal notranslate"><span class="pre">&#64;stage</span></code>, any listed input strings need a corresponding argument
+of the same name in the function definition. Each of these arguments will be
+populated with a dictionary where each key is a record, and the value is the
+corresponding artifact of that name from that record’s state. This allows
+simplifying aggregate stage code, as you no longer need to directly access
+the state from each record.</p>
+<p>An example to demonstrate required/suggested changes follows, assume that
+this stage is trying to take all of the results from previous records and
+put them into a single dictionary, where the keys are the names of the parameter
+sets that generated the associated result metric:</p>
+<p>A previous aggregate stage would have been:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@aggregate</span><span class="p">(</span><span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;final_results&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">combine_results</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">Record</span><span class="p">,</span> <span class="n">records</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Record</span><span class="p">]):</span>
+    <span class="n">final_results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;results&quot;</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
+            <span class="n">final_results</span><span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">final_results</span>
+</pre></div>
+</div>
+<p>This code could now be changed to:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@aggregate</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;final_results&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">combine_results</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">Record</span><span class="p">,</span> <span class="n">records</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Record</span><span class="p">],</span> <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Record</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+    <span class="n">final_results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">final_results</span><span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+    <span class="k">return</span> <span class="n">final_results</span>
+</pre></div>
+</div>
+<p>Note that the <em>minimum amount of changes to still function</em> would simply involve
+adding the <code class="docutils literal notranslate"><span class="pre">inputs</span></code> and the corresponding function definition argument, the inner
+stage code itself doesn’t need to change.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@aggregate</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;final_results&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">combine_results</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">Record</span><span class="p">,</span> <span class="n">records</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Record</span><span class="p">],</span> <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Record</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+    <span class="n">final_results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;results&quot;</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
+            <span class="n">final_results</span><span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">final_results</span>
+</pre></div>
+</div>
+<p>Any specified <code class="docutils literal notranslate"><span class="pre">inputs</span></code> that don’t appear in one or more of the passed records’
+states will print a warning <strong>but will not error.</strong> The associated argument’s
+dictionary will simply not contain that record.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To temporarily retain previous <code class="docutils literal notranslate"><span class="pre">v0.13.x</span></code> behavior for aggregate stages that you
+do not yet specify <code class="docutils literal notranslate"><span class="pre">inputs</span></code> for, you can run the experiment with the <code class="docutils literal notranslate"><span class="pre">--no-dag</span></code>
+CLI flag.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="example.html" class="btn btn-neutral float-left" title="Example Experiment" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="args.html" class="btn btn-neutral float-right" title="Args" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>
