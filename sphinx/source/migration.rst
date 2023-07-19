@@ -80,6 +80,6 @@ dictionary will simply not contain that record.
 
 .. note::
 
-    To temporarily retain previous `0.13.x` behavior for aggregate stages that you
+    To temporarily retain previous ``v0.13.x`` behavior for aggregate stages that you
     do not yet specify ``inputs`` for, you can run the experiment with the ``--no-dag``
     CLI flag.
