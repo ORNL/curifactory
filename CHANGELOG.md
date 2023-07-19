@@ -17,13 +17,17 @@ DAG-based execution of stages is finally here!
 * `--map` CLI flag, this runs the mapping phase of the experiment and then exits, printing
   out the experiment DAG and showing which artifacts it found in cache and the run name
   that generated them.
-* `expected_state` to aggregate stage decorator. This is a (weaker) analog of `inputs`
-  on the regular stage: it's the set of artifacts the stage expects to find in the state
-  of each record passed to the aggregate. A warning will be thrown if any of them are
-  not found on every record. This feature is primarily to support DAG-based execution,
-  the DAG needs to know what artifacts are actually necessary for computation. Setting
-  `expected_state` is technically optional, but DAG execution will likely be incorrect
-  without it.
+* `inputs` to aggregate stage decorator. This acts similarly to `inputs` on a regular
+  stage, except these input artifacts are searched for in the list of records the aggregate
+  is running across, rather than the aggregate's own record. It is also not a requirement
+  that the requested artifact exist in every passed record (though it will throw a warning
+  on any records where it doesn't exist.) Similar to `stage`, each input needs to have a
+  corresponding argument (with the same name as in the string) in the function definition.
+  The artifacts for each input will be passed as a dictionary, where the values are the
+  artifacts, and the keys are the records they come from. Note that while you can technically
+  have `None` as the inputs and still access each record's state, in order for the DAG
+  to compute properly, you must specify each needed state artifact in the inputs. (or use the
+  `--no-dag` flag listed below.)
 * `stage_cachers` list to record, at the beginning of every stage this will contain
   references to the initialized cachers for that stage - this can be used to get
   output path information.
@@ -37,7 +41,7 @@ DAG-based execution of stages is finally here!
 * `--no-map` CLI flag to `--no-dag`, which disables both the mapping phase and the
   DAG analysis/DAG-based execution determination. This returns curifactory to its
   regular stage-by-stage cache short-circuit determination.
-  NOTE: if any weird bugs are encountered, or if `expected_state` isn't set on
+  NOTE: if any weird bugs are encountered, or if `inputs` isn't set on
   aggregate stages, it's advisable to use this flag.
 * `--parallel-mode` flag to `--parallel-safe`
 
