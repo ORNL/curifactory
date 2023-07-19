@@ -56,20 +56,21 @@ def train_model(record, training_data):
     return clf
 
 
-@cf.aggregate(outputs=["scores"], cachers=None)
-def test_models(record, records):
+@cf.aggregate(inputs=["model", "testing_data"], outputs=["scores"], cachers=None)
+def test_models(
+    record: cf.Record,
+    records: list[cf.Record],
+    model: dict[cf.Record, any],
+    testing_data: dict[cf.Record, any],
+):
     scores = {}
 
     # iterate through every record and score its associated model
-    for prev_record in records:
-        if "model" in prev_record.state:
-            score = prev_record.state["model"].score(
-                prev_record.state["testing_data"][0],
-                prev_record.state["testing_data"][1],
-            )
+    for r, r_model in model.items():
+        score = r_model.score(testing_data[r][0], testing_data[r][1])
 
-            # store the result keyed to the argument set name
-            scores[prev_record.args.name] = score
+        # store the result keyed to the argument set name
+        scores[r.args.name] = score
 
     print(scores)
     record.report(JsonReporter(scores))
