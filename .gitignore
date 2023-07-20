@@ -10,3 +10,9 @@ sphinx/build/*
 test/examples/data/*
 test/examples/logs/*
 **/.ipynb_checkpoints/*
+
+
+# JOSS paper stuff
+paper/paper.jats
+paper/paper.pdf
+paper/media

@@ -11,6 +11,7 @@ help:
 	@echo "style       : executes style formatting."
 	@echo "clean       : cleans all unnecessary files."
 	@echo "test        : runs unit tests."
+	@echo "paper-draft : generate JOSS paper draft"
 
 
 .PHONY: pre-commit
@@ -48,3 +49,12 @@ clean:
 .PHONY: test
 test:
 	pytest
+
+
+.PHONY: paper-draft
+paper-draft:
+	docker run --rm \
+		--volume ./paper:/data \
+		--user $(id -u):$(id -g) \
+		--env JOURNAL=joss \
+		openjournals/inara
