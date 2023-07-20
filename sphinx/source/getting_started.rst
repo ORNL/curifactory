@@ -45,7 +45,7 @@ report.
 Parameters
 ----------
 
-The next component is **parameters**. parameter classes are a way to
+The next component is **parameters**. Parameter classes are a way to
 define how research code can be configured, e.g. how many layers to
 include in a neural network. By defining and initializing these directly
 in python, we have the ability to dynamically create experiment
@@ -63,7 +63,7 @@ parameter sets.
     quickly view your parameter definitions simply as a collection of
     attributes.
 
-parameter sets can then be initialized, passed around, and used within your
+Parameter sets can then be initialized, passed around, and used within your
 research code, making it easy to organize and keep track of hyperparameters.
 
 .. code-block:: ipython3
@@ -89,8 +89,8 @@ Records
 -------
 
 A **record** is how curifactory keeps track of state in an experiment
-run. "State" includes the data, objects, and results associated with a set of
-parameters, e.g. a trained model that came from using a particular
+run. "State" includes the data, objects, and results associated with a specific
+parameter set, e.g. a trained model that came from using a particular
 ``MyParams`` instance. The ``Record`` class is initialized with the
 current manager as well as the argument set to use. Records
 have a ``state`` dictionary, which holds intermediate data and objects
@@ -171,7 +171,7 @@ the returned ``initial_value`` data.
 
 Specifying inputs on the stage decorator tells curifactory to search for
 those keys in the state of the passed record. Those values are then
-injected into the record call as kwargs. Note that the Argument names
+injected into the record call as kwargs. Note that the argument names
 in the function definition must match the string values of the inputs
 array.
 
@@ -195,7 +195,7 @@ can be functionally chained together:
 
 .. code-block:: ipython3
 
-    r2 = Record(manager, MyArgs(name="uber-double", some_scalar_multiplier=4.0))
+    r2 = Record(manager, MyParams(name="uber-double", some_scalar_multiplier=4.0))
 
     r2 = multiply_again(get_initial_value(r2))
     print(r2.state, r2.params)
@@ -219,33 +219,39 @@ still produce outputs and both take and return a single record associated
 with it, meaning additional regular stages can be chained after an aggregate
 stage.
 
-``@aggregate`` decorated stages must take a single record
-as the first parameter (like a normal stage,) and the collection of records to compute over as the second.
+We specify inputs to an ``@aggregate`` decorator the same way we do with
+``@stage``, with a list of string names of artifacts from record state, and the
+function definition still needs to have correspondingly named arguments for
+those inputs. However, since an aggregate takes multiple records, these input
+arguments are populated with dictionaries where each key is a record that has
+the requested input in its state, and the value is that object in the state. Any
+records that don't have the requested input will throw a warning, and will be
+absent from that dictionary.
+
+``@aggregate`` decorated stages must take the single record as the first parameter
+(like a normal stage,) and the collection of records to compute over as the
+second, followed by the arguments for any specified inputs.
 
 In the example below, we iterate through the records to create a
 dictionary of all associated ``final_value`` entries from each record’s
 state, and then determine the maximum.
 
-..
-    TODO: these bits need to be modified to reflect the new expected_state for agg
-
 .. code-block:: ipython3
 
     from curifactory import aggregate
 
-    @aggregate(outputs=["all_final_values", "maximum_value"])
-    def find_maximum_final_value(record, records):
+    @aggregate(inputs=["final_value"], outputs=["all_final_values", "maximum_value"])
+    def find_maximum_final_value(record, records, final_value: dict[Record, float]):
         all_vals = {}
-        for r in records:
-            if "final_value" in r.state:
-                all_vals[r.params.name] = r.state["final_value"]
+        for r, value in final_value.items():
+            all_vals[r.params.name] = value
 
         maximum = max(all_vals.values())
         return all_vals, maximum
 
 Sometimes an aggregate doesn't really need its own parameter set, e.g. if it's
 simply comparing results from other records. In these cases, records can be initialized with ``None`` passed as the
-parameter sets. In the cell below, we manually pass our previous records into
+parameter set. In the cell below, we manually pass our previous records into
 the stage, but note that if we pass ``None`` for records (the default) it will take all existing records in the manager.
 
 .. code-block:: ipython3
@@ -255,18 +261,22 @@ the stage, but note that if we pass ``None`` for records (the default) it will t
     print(final_record.state)
     #> {'all_final_values': {'doubled': 20.0, 'uber-double': 80.0}, 'maximum_value': 80.0}
 
-
+Note that we ran our aggregate stage on three records, the first one of which
+(``r0``) did not have a ``final_value`` artifact in state. While ``r0`` will still be
+passed in the ``records`` list that the aggregate stage has access to, the
+``final_value`` dictionary only had entries for ``r1`` and ``r2``, so the output
+artifact ``all_final_values`` only lists those two parameter sets.
 
 .. figure:: images/aggregates.png
     :align: center
 
 To recap, the artifact manager keeps track of the overall session for a
-run, the “experiment run container”. Parameter steps are created with
+run, the “experiment run container”. Parameter sets are created with
 different hyperparameters to test a hypothesis or vary the experiment.
 Records track state changes and intermediate data associated with a
 parameter set throughout the experiment. Stages are what modify record state,
 they apply research code
-to the passed records based on their associated Parameters, and the
+to the passed records based on their associated parameters, and the
 results for each stage are stored back into the record’s now modified
 state.
 
