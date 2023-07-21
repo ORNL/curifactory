@@ -267,6 +267,14 @@ class DAG:
                 cached = False
                 break
 
+        # there is a special case here where a stage has _no_ outputs. Since the
+        # above loop is assuming cached by default, and we have no non-cached things
+        # to prove otherwise, we will hit this point in the code with cached=True
+        # we want stages with no outputs to always execute, so we check for that and
+        # force cached False
+        if len(node.record.stage_outputs[stage_index]) == 0:
+            cached = False
+
         # -- overwrite seek mode --
         # (in this mode we add the node if and only if there's a sub node that's being overwritten.)
 
