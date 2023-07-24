@@ -167,19 +167,22 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                     "Stage '%s' executed while another stage ('%s') was already running. Directly executing a stage from another stage is not advised."
                     % (name, record.manager.current_stage_name)
                 )
-            record.manager.current_stage_name = name
-            record.manager.stage_active = True
-            record.stages.append(name)
-            record.stage_outputs.append([])
-            record.stage_inputs.append([])
-            record.manager.update_map_progress(record, "start")
-
             # apply consistent handling
             nonlocal inputs, outputs, cachers
             if inputs is None:
                 inputs = []
             if outputs is None:
                 outputs = []
+
+            record.manager.current_stage_name = name
+            record.manager.stage_active = True
+            record.stages.append(name)
+            record.stage_outputs.append([])
+            record.stage_inputs.append([])
+            record.stage_suppress_missing.append(suppress_missing_inputs)
+            record.stage_kwargs_keys.append(list(kwargs.keys()))
+            record.stage_inputs_names.append(inputs)
+            record.manager.update_map_progress(record, "start")
 
             # check for lazy object / cacher mismatch in outputs
             for output in outputs:
@@ -579,12 +582,6 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                     "Stage '%s' executed while another stage ('%s') was already running. Directly executing a stage from another stage is not advised."
                     % (name, record.manager.current_stage_name)
                 )
-            record.manager.current_stage_name = name
-            record.set_aggregate(records)
-            record.stages.append(name)
-            record.stage_outputs.append([])
-            record.stage_inputs.append([])
-            record.manager.update_map_progress(record, "start")
 
             # apply consistent handling
             nonlocal inputs, outputs, cachers
@@ -592,6 +589,21 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 inputs = []
             if outputs is None:
                 outputs = []
+
+            record.manager.current_stage_name = name
+            record.set_aggregate(records)
+            record.stages.append(name)
+            record.stage_outputs.append([])
+            record.stage_inputs.append([])
+            record.stage_suppress_missing.append(False)
+            # TODO: (7/24/2023) wait is False above correct, this is largely irrelevant for aggregate
+            # but unclear where exactly in dag mapping I'm going to be checking this.
+            record.stage_kwargs_keys.append(list(kwargs.keys()))
+            # TODO: (7/24/2023) if a user is passing kwargs to an aggregate, they'll need to make sure
+            # they're actually passing a dictionary of records. Eventually we could prob just check that
+            # here.
+            record.stage_inputs_names.append(inputs)
+            record.manager.update_map_progress(record, "start")
 
             # check for lazy object / cacher mismatch in outputs
             for output in outputs:

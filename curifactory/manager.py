@@ -261,6 +261,9 @@ class ArtifactManager:
             mapped_record.stages = record.stages
             mapped_record.stage_inputs = record.stage_inputs
             mapped_record.stage_outputs = record.stage_outputs
+            mapped_record.stage_suppress_missing = record.stage_suppress_missing
+            mapped_record.stage_kwargs_keys = record.stage_kwargs_keys
+            mapped_record.stage_inputs_names = record.stage_inputs_names
             mapped_record.is_aggregate = record.is_aggregate
             mapped_record.combo_hash = record.combo_hash
 

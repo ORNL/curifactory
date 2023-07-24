@@ -2,7 +2,6 @@ import pytest
 
 import curifactory as cf
 from curifactory.caching import PickleCacher
-from curifactory.staging import InputSignatureError
 
 
 def test_child_records_empty_for_blank_records(configured_test_manager):
@@ -259,9 +258,7 @@ def test_stage_with_missing_inputs_handled_correctly(
         inputs=["nothing"], outputs=outputs, suppress_missing_inputs=suppress_missing
     )
     def do_nothing(record, nothing):
-        thing = 5 + 1
-        thing += 1
-        return thing
+        return 6
 
     r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
     do_nothing(r0, **kwargs)
@@ -269,7 +266,7 @@ def test_stage_with_missing_inputs_handled_correctly(
 
     # TODO: check for error her
     if expect_error:
-        with pytest.raises(InputSignatureError):
+        with pytest.raises(KeyError):
             configured_test_manager.map_records()
             dag = configured_test_manager.map
             dag.determine_execution_list()
