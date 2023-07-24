@@ -2,6 +2,7 @@ import pytest
 
 import curifactory as cf
 from curifactory.caching import PickleCacher
+from curifactory.staging import InputSignatureError
 
 
 def test_child_records_empty_for_blank_records(configured_test_manager):
@@ -232,9 +233,57 @@ def test_output_used_elsewhere_is_not_leaf(configured_test_manager):
     assert dag.is_leaf(r0, "thing2")
 
 
+@pytest.mark.parametrize(
+    "outputs,kwargs,suppress_missing,expect_error",
+    [
+        (None, {}, False, True),
+        (None, {"nothing": 1}, False, False),
+        (None, {"nothing": 1}, True, False),
+        (None, {}, True, False),
+        # having an output shouldn't actually change the handling
+        (["thing"], {}, False, True),
+        (["thing"], {"nothing": 1}, False, False),
+        (["thing"], {"nothing": 1}, True, False),
+        (["thing"], {}, True, False),
+    ],
+)
+def test_stage_with_missing_inputs_handled_correctly(
+    configured_test_manager, outputs, kwargs, suppress_missing, expect_error
+):
+    """A stage requesting an input that doesn't exist in state should appropriately
+    handle kwargs and suppress_missing passed to a stage in determining whether
+    an error gets thrown or not."""
+    configured_test_manager.map_mode = True
+
+    @cf.stage(
+        inputs=["nothing"], outputs=outputs, suppress_missing_inputs=suppress_missing
+    )
+    def do_nothing(record, nothing):
+        thing = 5 + 1
+        thing += 1
+        return thing
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    do_nothing(r0, **kwargs)
+    configured_test_manager.map_mode = False
+
+    # TODO: check for error her
+    if expect_error:
+        with pytest.raises(InputSignatureError):
+            configured_test_manager.map_records()
+            dag = configured_test_manager.map
+            dag.determine_execution_list()
+    else:
+        configured_test_manager.map_records()
+        dag = configured_test_manager.map
+        dag.determine_execution_list()
+
+        # expect to always execute a stage that has missing inputs
+        assert dag.execution_list == [(0, "do_nothing")]
+
+
 def test_single_record_execution_list_with_no_outputs(configured_test_manager):
     """A stage with no outputs should count as a leaf and should be in the execution list."""
-
     configured_test_manager.map_mode = True
 
     @cf.stage()
