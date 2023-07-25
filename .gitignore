@@ -1,18 +1,25 @@
+# IDE stuff
 .vscode/*
 .idea/*
-**/*.pyc
-**/__pycache__
-data/*
-dist/*
-curifactory.egg-info/*
-sphinx/build/*
-**.stats
+
+# test outputs
 test/examples/data/*
 test/examples/logs/*
+
+# python stuff
+**/*.pyc
+**/__pycache__
+curifactory.egg-info/*
+**.stats
 **/.ipynb_checkpoints/*
 
+data/*
+dist/*
+sphinx/build/*
+sphinx/diagrams/*.bkp
 
 # JOSS paper stuff
 paper/paper.jats
 paper/paper.pdf
 paper/media
+
