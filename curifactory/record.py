@@ -64,6 +64,18 @@ class Record:
         """The returned value from the last stage that was run with this record."""
         self.stages = []
         """The list of stage names that this record has run through so far."""
+        self.stage_suppress_missing: list[bool] = []
+        """The list of whether the stage with the associated index in ``self.stages``
+        specified ``suppress_missing_inputs`` or not. This is primarly needed for the
+        DAG mapping phase."""
+        self.stage_kwargs_keys: list[list[str]] = []
+        """The keys of any kwargs passed into each stage from the experiment, the index associated
+        with ``self.stages``. We don't store the full dictionary because there could potentially be
+        large values and the user may not expect a reference to stick around etc. We really only
+        need this for checking correctness of an experiment setup during DAG mapping phase."""
+        self.stage_inputs_names: list[list[str]] = []
+        """The names of the stage inputs as specified in the decorator. This is primarily for
+        helping checking correctness during DAG mapping phase."""
         self.stage_inputs: list[list[int]] = []
         """A list of lists per stage with the state inputs that stage requested.
         These are lists of indices into state_artifact_reps."""

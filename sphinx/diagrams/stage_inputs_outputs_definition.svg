@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg8"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   sodipodi:docname="stage_inputs_outputs_definition.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="1"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.2415875"
+     inkscape:cx="-1779.9793"
+     inkscape:cy="285.52156"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1168"
+     inkscape:window-x="1920"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;line-height:1.25;font-family:'Lucida Console';-inkscape-font-specification:'Lucida Console, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="-598.9892"
+       y="53.151199"
+       id="text12"
+       inkscape:export-xdpi="80.237823"
+       inkscape:export-ydpi="80.237823"><tspan
+         sodipodi:role="line"
+         id="tspan10"
+         x="-598.9892"
+         y="53.151199"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">@stage(inputs=[&quot;data&quot;, &quot;other_var&quot;], outputs=[&quot;cleaned_data&quot;, &quot;removed_rows&quot;], cachers=[PandasCSVCacher]*2)</tspan><tspan
+         sodipodi:role="line"
+         x="-598.9892"
+         y="59.32481"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+         id="tspan20" /><tspan
+         sodipodi:role="line"
+         x="-598.9892"
+         y="65.498421"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+         id="tspan14">def clean_data(record, data, other_var):</tspan><tspan
+         sodipodi:role="line"
+         x="-598.9892"
+         y="71.672035"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+         id="tspan16">    # do stuff</tspan><tspan
+         sodipodi:role="line"
+         x="-598.9892"
+         y="77.84565"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+         id="tspan22" /><tspan
+         sodipodi:role="line"
+         x="-598.9892"
+         y="84.019264"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;font-family:'DejaVu Sans Mono';-inkscape-font-specification:'DejaVu Sans Mono, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+         id="tspan18">    return clean_df, removed</tspan></text>
+    <rect
+       id="rect24"
+       width="55.423729"
+       height="7.2648287"
+       x="-553.8067"
+       y="47.957047"
+       style="fill:none;stroke:#ff0000;stroke-width:0.52916667;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:export-xdpi="80.237823"
+       inkscape:export-ydpi="80.237823" />
+    <rect
+       id="rect861"
+       width="45.247852"
+       height="7.2894802"
+       x="-531.20044"
+       y="60.426113"
+       style="fill:none;stroke:#ff0000;stroke-width:0.52916667;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:export-xdpi="80.237823"
+       inkscape:export-ydpi="80.237823" />
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.52916667;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m -512.05385,55.374296 2.85109,5.068586"
+       id="path863"
+       sodipodi:nodetypes="cc"
+       inkscape:export-xdpi="80.237823"
+       inkscape:export-ydpi="80.237823" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#e90000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="-580.73322"
+       y="41.942547"
+       id="text867"
+       inkscape:export-xdpi="80.237823"
+       inkscape:export-ydpi="80.237823"><tspan
+         sodipodi:role="line"
+         id="tspan865"
+         x="-580.73322"
+         y="41.942547"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#e90000;fill-opacity:1;stroke-width:0.264583">function input variable names <tspan
+   style="font-weight:bold"
+   id="tspan286">must</tspan> match stage inputs/record state var names.</tspan></text>
+    <rect
+       id="rect869"
+       width="53.478588"
+       height="7.2738738"
+       x="-567.29797"
+       y="78.972"
+       style="fill:none;stroke:#0000ff;stroke-width:0.520122;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:export-xdpi="80.237823"
+       inkscape:export-ydpi="80.237823" />
+    <rect
+       id="rect871"
+       width="88.282387"
+       height="7.1322622"
+       x="-461.39697"
+       y="48.359505"
+       style="fill:none;stroke:#0000ff;stroke-width:0.661733;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       inkscape:export-xdpi="80.237823"
+       inkscape:export-ydpi="80.237823" />
+    <path
+       style="fill:none;stroke:#0000ff;stroke-width:0.52916667;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M -513.83548,83.800015 -428.3112,55.751724"
+       id="path873"
+       inkscape:export-xdpi="80.237823"
+       inkscape:export-ydpi="80.237823" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="-469.06836"
+       y="76.46489"
+       id="text877"
+       inkscape:export-xdpi="80.237823"
+       inkscape:export-ydpi="80.237823"><tspan
+         sodipodi:role="line"
+         x="-469.06836"
+         y="76.46489"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#0000ff;fill-opacity:1;stroke-width:0.264583"
+         id="tspan887">output variable names do <tspan
+   style="font-weight:bold"
+   id="tspan288">not</tspan> need to match stage outputs list.</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="-469.38443"
+       y="81.792412"
+       id="text893"
+       inkscape:export-xdpi="80.237823"
+       inkscape:export-ydpi="80.237823"><tspan
+         sodipodi:role="line"
+         x="-469.38443"
+         y="81.792412"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#0000ff;fill-opacity:1;stroke-width:0.264583"
+         id="tspan891">stage outputs list names are how data will be stored in record state.</tspan></text>
+  </g>
+</svg>

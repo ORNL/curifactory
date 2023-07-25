@@ -223,7 +223,34 @@ class DAG:
         # go through each input and get the record and stage that provides it as an output.
         # These are the dependencies, so recursively create nodes for them
         stage_index = record.stages.index(stage)
-        for stage_input_index in record.stage_inputs[stage_index]:
+        for literal_input_index, stage_input_index in enumerate(
+            record.stage_inputs[stage_index]
+        ):
+            # NOTE: literal_input_index is just the for loop index so we can index
+            # into the associated string input names list on the record
+
+            # Did we not find the input?
+            if stage_input_index == -1:
+                # if the stage's suppress missing inputs is set, just continue
+                if record.stage_suppress_missing[stage_index]:
+                    continue
+
+                # if kwargs passed this input name, just continue
+                if (
+                    record.stage_inputs_names[stage_index][literal_input_index]
+                    in record.stage_kwargs_keys[stage_index]
+                ):
+                    continue
+
+                # otherwise throw a KeyError (see 260 staging.py)
+                raise KeyError(
+                    "Stage '%s' input '%s' not found in record state and not passed to function call. Set 'suppress_missing_inputs=True' on the stage and give a default value in the function signature if this should run anyway."
+                    % (
+                        stage,
+                        record.stage_inputs_names[stage_index][literal_input_index],
+                    )
+                )
+
             stage_input: MapArtifactRepresentation = self.artifacts[stage_input_index]
 
             prereq_record = self.records[stage_input.record_index]
@@ -266,6 +293,14 @@ class DAG:
             if not stage_output.cached:
                 cached = False
                 break
+
+        # there is a special case here where a stage has _no_ outputs. Since the
+        # above loop is assuming cached by default, and we have no non-cached things
+        # to prove otherwise, we will hit this point in the code with cached=True
+        # we want stages with no outputs to always execute, so we check for that and
+        # force cached False
+        if len(node.record.stage_outputs[stage_index]) == 0:
+            cached = False
 
         # -- overwrite seek mode --
         # (in this mode we add the node if and only if there's a sub node that's being overwritten.)

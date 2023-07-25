@@ -233,6 +233,113 @@ def test_output_used_elsewhere_is_not_leaf(configured_test_manager):
 
 
 @pytest.mark.parametrize(
+    "outputs,kwargs,suppress_missing,expect_error",
+    [
+        (None, {}, False, True),
+        (None, {"nothing": 1}, False, False),
+        (None, {"nothing": 1}, True, False),
+        (None, {}, True, False),
+        # having an output shouldn't actually change the handling
+        (["thing"], {}, False, True),
+        (["thing"], {"nothing": 1}, False, False),
+        (["thing"], {"nothing": 1}, True, False),
+        (["thing"], {}, True, False),
+    ],
+)
+def test_stage_with_missing_inputs_handled_correctly(
+    configured_test_manager, outputs, kwargs, suppress_missing, expect_error
+):
+    """A stage requesting an input that doesn't exist in state should appropriately
+    handle kwargs and suppress_missing passed to a stage in determining whether
+    an error gets thrown or not."""
+    configured_test_manager.map_mode = True
+
+    @cf.stage(
+        inputs=["nothing"], outputs=outputs, suppress_missing_inputs=suppress_missing
+    )
+    def do_nothing(record, nothing):
+        return 6
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    do_nothing(r0, **kwargs)
+    configured_test_manager.map_mode = False
+
+    # TODO: check for error her
+    if expect_error:
+        with pytest.raises(KeyError):
+            configured_test_manager.map_records()
+            dag = configured_test_manager.map
+            dag.determine_execution_list()
+    else:
+        configured_test_manager.map_records()
+        dag = configured_test_manager.map
+        dag.determine_execution_list()
+
+        # expect to always execute a stage that has missing inputs
+        assert dag.execution_list == [(0, "do_nothing")]
+
+
+def test_single_record_execution_list_with_no_outputs(configured_test_manager):
+    """A stage with no outputs should count as a leaf and should be in the execution list."""
+    configured_test_manager.map_mode = True
+
+    @cf.stage()
+    def do_nothing(record):
+        thing = 5 + 1
+        thing += 1
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    do_nothing(r0)
+    configured_test_manager.map_mode = False
+    configured_test_manager.map_records()
+
+    dag = configured_test_manager.map
+    dag.determine_execution_list()
+    assert dag.execution_list == [(0, "do_nothing")]
+
+
+@pytest.mark.parametrize(
+    "cached,overwrite_stages,expected_execution_list",
+    [
+        (False, [], [(0, "do_thing"), (0, "do_nothing")]),
+        (True, [], [(0, "do_nothing")]),
+        (False, ["do_thing"], [(0, "do_thing"), (0, "do_nothing")]),
+        (True, ["do_thing"], [(0, "do_thing"), (0, "do_nothing")]),
+        (False, ["do_thing", "do_nothing"], [(0, "do_thing"), (0, "do_nothing")]),
+        (True, ["do_thing", "do_nothing"], [(0, "do_thing"), (0, "do_nothing")]),
+        (True, ["do_nothing"], [(0, "do_nothing")]),
+    ],
+)
+def test_single_record_execution_list_with_no_outputs_and_inputs(
+    configured_test_manager, cached, overwrite_stages, expected_execution_list
+):
+    """A stage with no outputs (but does have inputs) should count as a leaf and should
+    be in the execution list."""
+    configured_test_manager.map_mode = True
+    configured_test_manager.overwrite_stages = overwrite_stages
+
+    @cf.stage(outputs=["thing"])
+    def do_thing(record):
+        return 5
+
+    @cf.stage(inputs=["thing"])
+    def do_nothing(record, thing):
+        thing = 5 + 1
+        thing += 1
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    do_nothing(do_thing(r0))
+    configured_test_manager.map_mode = False
+    configured_test_manager.map_records()
+
+    dag = configured_test_manager.map
+
+    dag.artifacts[0].cached = cached
+    dag.determine_execution_list()
+    assert dag.execution_list == expected_execution_list
+
+
+@pytest.mark.parametrize(
     "cached,overwrite_stages,expected_execution_list",
     [
         (False, [], [(0, "thing1")]),
