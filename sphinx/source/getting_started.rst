@@ -307,11 +307,11 @@ the previous example:
     manager = cf.ArtifactManager("notebook_example_1")
 
     @dataclass
-    class Args(cf.ExperimentArgs):
+    class Params(cf.ExperimentParameters):
         my_parameter: int = 1
 
-    default_args = Args(name="default")
-    doubled_args = Args(name="doubled", my_parameter=2)
+    default_params = Params(name="default")
+    doubled_params = Params(name="doubled", my_parameter=2)
 
 Caching
 -------
@@ -321,7 +321,8 @@ Caching is done at each stage by listing a
 runs, each cacher will save the returned object in the data cache path.
 The cached filename includes the name of the experiment (the string passed
 to ``ArtifactManager``, “notebook_example_1” in this case), the hash
-string of the arguments, the name of the stage doing the caching, and
+string of the parameters (see the :ref:`Hashing` page for more information on
+how this gets calculated), the name of the stage doing the caching, and
 the name of the output itself.
 
 On any subsequent run of that stage, the cachers all check to see if
@@ -345,7 +346,7 @@ demonstrate cachers short-circuiting computation:
     @cf.stage(inputs=None, outputs=["long-compute-data"], cachers=[JsonCacher])
     def long_compute_step(record):
         some_data = {
-            "my_value": record.args.my_parameter,
+            "my_value": record.params.my_parameter,
             "magic_value": 42
         }
         sleep(5)  # making dictionaries is hard work
@@ -358,7 +359,7 @@ We run a record through our long running stage, and as expected it takes
 .. code-block:: ipython3
 
     %%time
-    r0 = cf.Record(manager, default_args)
+    r0 = cf.Record(manager, default_params)
     r0 = long_compute_step(r0)
 
 
@@ -388,14 +389,14 @@ which we can load up and see is the output from our stage:
     {'my_value': 1, 'magic_value': 42}
 
 
-If we run the stage again with a record using the same arg set as the
-previous one, it finds the correct cached output and returns before
+If we run the stage again with a record using the same parameter set as the
+previous time, it finds the correct cached output and returns before
 running the stage code:
 
 .. code-block:: ipython3
 
     %%time
-    r1 = cf.Record(manager, default_args)
+    r1 = cf.Record(manager, default_params)
     r1 = long_compute_step(r1)
 
 
@@ -405,12 +406,12 @@ running the stage code:
     Wall time: 0 ns
 
 
-Using different arguments results in a different cache path, so
+Using a different parameter set results in a different cache path, so
 computations with different parameters won’t conflict:
 
 .. code-block:: ipython3
 
-    r2 = cf.Record(manager, doubled_args)
+    r2 = cf.Record(manager, doubled_params)
     r2 = long_compute_step(r2)
 
     os.listdir("data/cache")
@@ -449,7 +450,7 @@ earlier stage outputs may never need to load into memory at all.
         print(sys.getsizeof(mega_big))
         return mega_big
 
-    r3 = cf.Record(manager, default_args)
+    r3 = cf.Record(manager, default_params)
     r3 = make_mega_big_object(r3)
 
 
@@ -511,7 +512,7 @@ and ``LinePlotReporter``.
 
     @cf.stage(inputs=None, outputs=["line_history"])
     def make_pretty_graphs(record):
-        multiplier = record.args.my_parameter
+        multiplier = record.params.my_parameter
 
         # here we just make a bunch of example arrays of data to plot
         line_0 = [1 * multiplier, 2 * multiplier, 3 * multiplier]
@@ -530,8 +531,8 @@ and ``LinePlotReporter``.
         ))
         return [line_0, line_1, line_2]
 
-    r4 = cf.Record(manager, default_args)
-    r5 = cf.Record(manager, doubled_args)
+    r4 = cf.Record(manager, default_params)
+    r5 = cf.Record(manager, doubled_params)
 
     r4 = make_pretty_graphs(r4)
     r5 = make_pretty_graphs(r5)
