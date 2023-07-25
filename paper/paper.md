@@ -64,7 +64,7 @@ This leads to the next core concept of Curifactory, which are "parameters." Para
 Finally, an "experiment" is a Python function that takes in a collection of parameter sets and routes them through one or more sequences of stages. Experiments have a manager that is available throughout a run which helps automatically maintain the state of data passing through the various stages. These interactions are shown in \autoref{fig:components}. Experiments represent the different overall analysis tasks that a researcher may want to test. For example, a researcher might have an experiment that evaluates which type of data-driven model converges best for a scenario of interest.
 
 
-![An experiment with multiple sets of parameters proceeding through stages, maintaining the state of data passing through various stages on records managed by the manager.\label{fig:components}](components_stages_in_context.png)
+![An experiment with multiple sets of parameters proceeding through stages, maintaining the state of data passing through various stages on records managed by the manager.\label{fig:components}](flow_expanding_detail_5_300.png)
 
 
 Researchers can interact with Curifactory on the command line through the ``experiment`` command. This interface allows the user to specify an experiment to run and the set(s) of parameters to apply to that experiment. Various flags control Curifactory’s functionality, such as whether an experiment Jupyter Notebook summary is automatically generated at the end, whether to ignore some specific parameters, and whether to parallelize experiment execution.
