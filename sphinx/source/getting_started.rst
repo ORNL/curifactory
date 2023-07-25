@@ -104,7 +104,7 @@ as research code is evaluated.
     r1 = Record(manager, doubled_params)
 
     print(r0.state, r0.params)
-    #> {} my_params(name='default', hash=None, overwrite=False, some_scalar_multiplier=1.0)
+    #> {} MyParams(name='default', hash=None, overwrite=False, some_scalar_multiplier=1.0)
     print(r1.state, r1.params)
     #> {} MyParams(name='doubled', hash=None, overwrite=False, some_scalar_multiplier=2.0)
 
@@ -213,11 +213,10 @@ Records and stages represent linear chains of compute steps, but
 in many cases it’s important to compare results and data across multiple pieces
 of an experiment run (e.g. comparing the scores of an SVM with the
 scores of a logistic regression algorithm.) ``@aggregate`` decorated
-functions are a special kind of stage that have no explicit inputs, but
-instead take a collection of records to compute over. Aggregate stages
-still produce outputs and both take and return a single record associated
-with it, meaning additional regular stages can be chained after an aggregate
-stage.
+functions are a special kind of stage that additionally take a collection of
+records to compute over. Aggregate stages still produce outputs and both take
+and return a single record associated with it, meaning additional regular
+stages can be chained after an aggregate stage.
 
 We specify inputs to an ``@aggregate`` decorator the same way we do with
 ``@stage``, with a list of string names of artifacts from record state, and the
