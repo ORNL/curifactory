@@ -83,12 +83,14 @@ def get_parameter_hash_value(param_set, param_name: str) -> tuple[str, Any]:
     it attempts to use to get a hashable representation of the parameter in order are:
 
     1. Skip any blacklisted internal curifactory parameters that shouldn't affect the hash.
+        This includes `name`, `hash`, `overwrite`, and the `hash_representations` attribute
+        itself.
     2. If the value of the parameter is ``None``, skip it. This allows default-ignoring
         new parameters.
     3. If there's an associated hashing function in ``hash_representations``, call that,
         passing in the entire parameter set and the current value of the parameter to
         be hashed
-    4. If a parameter is another dataclass, recursively ``hash_paramset`` on it.
+    4. If a parameter is another dataclass, recursively ``get_paramset_hash_values`` on it.
         Note that if this is unintended functionality, and you need the default
         dataclass ``repr`` for any reason, you can override it with the following:
 

@@ -1,5 +1,5 @@
-Parameter files and argsets
-===========================
+Parameter files and parameter sets
+==================================
 
 Another goal of Curifactory is to allow effective parameterization of experiments. Where this might normally be
 done with a json or yaml file, Curifactory directly uses python files for experiment parameterization/configuration.

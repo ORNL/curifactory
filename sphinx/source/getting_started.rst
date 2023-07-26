@@ -633,7 +633,7 @@ along with a fully initialized :code:`ArtifactManager`.
     :align: center
 
 These mechanics provide a methodical way of creating curifactory-based runnables
-for a research project, and are what allows curifactory to inject all its features into
+for a research project, and are what allows curifactory to inject its features into
 each experiment run (e.g. automatic logging, reporting, and a single
 CLI interface for interacting with the experiment runs.)
 
@@ -648,14 +648,14 @@ established with the :code:`curifactory init` command, by default this is a fold
 the project root :code:`experiments/`, see :ref:`configuration and directory structure`).
 
 Experiment scripts must implement the aforementioned :code:`run()` function, which takes
-a list of :code:`ExperimentArgs` subclass instances and an :code:`ArtifactManager`:
+a list of :code:`ExperimentParameters` subclass instances and an :code:`ArtifactManager`:
 
 .. code-block:: python
 
     from typing import List
     import curifactory as cf
 
-    def run(argsets: List[cf.ExperimentArgs], manager: cf.ArtifactManager):
+    def run(param_sets: List[cf.ExperimentParameters], manager: cf.ArtifactManager):
         # 1. make records
         # 2. run stages
         # 3. ???
@@ -683,15 +683,15 @@ example experiment setup with some stages might look like:
     def test_models(record, records):
         # ...
 
-    def run(argsets, manager):
-        for argset in argsets:
-            record = cf.Record(manager, argset)
+    def run(param_sets, manager):
+        for param_set in param_sets:
+            record = cf.Record(manager, param_set)
             train_model(load_data(record))
 
         test_models(cf.Record(manager, None))
 
-We can add in the args dataclass that the stages need, and then make a basic
-:code:`get_params()` function to give us some argsets to compare a logistic
+We can add in the parameters class that the stages need, and then make a basic
+:code:`get_params()` function to give us some parameter sets to compare a logistic
 regression model versus a random forest classifier.
 
 .. code-block:: python
@@ -705,7 +705,7 @@ regression model versus a random forest classifier.
     from curifactory.caching import PickleCacher, JsonCacher
 
     @dataclass
-    class Args(cf.ExperimentArgs):
+    class Params(cf.ExperimentParameters):
         balanced: bool = False
         """Whether class weights should be balanced or not."""
         n: int = 100
@@ -717,17 +717,17 @@ regression model versus a random forest classifier.
 
     def get_params():
         return [
-            Args(name="simple_lr", balanced=True, model_type=LogisticRegression, seed=1),
-            Args(name="simple_rf", model_type=RandomForestClassifier, seed=1),
+            Params(name="simple_lr", balanced=True, model_type=LogisticRegression, seed=1),
+            Params(name="simple_rf", model_type=RandomForestClassifier, seed=1),
         ]
 
     # ...
     # stages
     # ...
 
-    def run(argsets, manager):
-        for argset in argsets:
-            record = cf.Record(manager, argset)
+    def run(param_sets, manager):
+        for param_set in param_sets:
+            record = cf.Record(manager, param_set)
             train_model(load_data(record))
 
         test_models(cf.Record(manager, None))
@@ -793,12 +793,12 @@ Parameter files
 
 As shown so far, for simplicity, experiments can have their own
 :code:`get_params()` function. However, frequently you may want to define multiple
-different sets of parameters and selectively include them in an experiment, or
+different collections of parameter sets and selectively include them in an experiment, or
 define sets that could be shared across multiple experiment scripts. One option
 is to simply explicitly refer to a previous experiment file that has the
 :code:`get_params()` you want, e.g. with :code:`experiment iris_updated -p iris`.
 
-The other option is to create separate parameter scripts, or distinct files in the
+The other option is to create separate parameter files, or distinct files in the
 params module path, (by default :code:`params/` in the project root.) These
 files should each contain a :code:`get_params()` function.
 
@@ -809,14 +809,14 @@ Importantly, you can specify multiple :code:`-p` flags to the experiment CLI, li
     experiment iris -p params_file1 -p params_file2 -p iris
 
 This will call the :code:`get_params()` of every requested parameters file (and/or experiment
-file) and combine all returned argument sets into a single list that gets passed
+file) and combine all returned parameter sets into a single list that gets passed
 into the experiment's :code:`run()`.
 
 
 .. figure:: images/curifactory_overview_simpler.png
     :align: center
 
-    Creating distinct parameters files allows for structuring shared argument sets
+    Creating distinct parameters files allows for structuring shared parameter sets
     to apply across experiments
 
 Organization of growing projects
@@ -839,10 +839,10 @@ Lacking any additional constraints, some ideas for use include:
 * Stages can either be directly in the research codebase wrapping research functions, or
   they can remain separated and just make the appropriate calls into your
   codebase, parameterized with relevant args.
-* Keeping all arguments commonly used by all experiments can be kept in
-  :code:`params/__init__.py`. If there are stages/args relevant only to a single
+* Keeping all parameters commonly used by all experiments can be kept in
+  :code:`params/__init__.py`. If there are stages/params relevant only to a single
   experiment, these can be kept in the experiment file, and extracted out later
-  if they become more generally useful. (A :code:`params.__init__.Args` class
+  if they become more generally useful. (A :code:`params.__init__.Params` class
   could be further subclassed in an experiment file to get the benefit of both.)
 * Common stage sequences can be simplified and extracted into a helper file,
   e.g. by defining a function that takes a record, calls the stages, and returns
@@ -862,7 +862,7 @@ Look through:
 
 * :ref:`Components` for a more in-depth understanding of the components and how they
   interact with each other.
-* :ref:`Parameter files and argsets` for fancier things you can do with parameters.
+* :ref:`Parameter files and parameter sets` for fancier things you can do with parameters.
 * :ref:`Cache` for how to make custom cachers.
 * :ref:`Reports` to get an idea for how reports work and how to use them, plus how
   to make custom reportables.
