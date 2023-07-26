@@ -39,7 +39,7 @@ class Procedure:
         previous_proc (Procedure): If specified and this procedure begins with an aggregate stage,
             use the ``previous_proc.records`` list of records.
         records (List[Record]): If specified and this procedure begins with an aggregate stage, use
-            this list of records.
+            this list of records. Note that ``previous_proc`` takes precedence over this argument.
 
     Note:
         If a procedure begins with an aggregate stage and neither ``previous_proc`` nor
