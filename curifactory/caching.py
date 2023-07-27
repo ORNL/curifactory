@@ -545,7 +545,7 @@ class FileReferenceCacher(Cacheable):
 
     This can also be used for storing a reference to a single file outside the normal cache.
 
-    When combined with the :code:`get_dir` call on the record, you can create a cached directory of
+    When combined with the ``get_dir`` call on the record, you can create a cached directory of
     files similarly to a regular cacher and simply keep a reference to them as part of the actual
     cacher process.
 

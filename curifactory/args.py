@@ -1,3 +1,5 @@
+"""This module is deprecated and will be removed soon, see ``curifactory.params``."""
+
 from dataclasses import dataclass
 
 from curifactory.params import ExperimentParameters
@@ -6,7 +8,7 @@ from curifactory.utils import _warn_deprecation
 
 @dataclass
 class ExperimentArgs(ExperimentParameters):
-    """DEPRECATED."""
+    """DEPRECATED. Use ``curifactory.params.ExperimentParameters``"""
 
     def __post_init__(self):
         _warn_deprecation(
