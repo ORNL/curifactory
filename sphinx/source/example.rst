@@ -5,7 +5,7 @@ Below is a fully functioning experiment script example that implements all the
 necessary stages for training an sklearn model on the iris dataset. This script
 implements both the ``run()`` and a ``get_params()``, and is fully self
 contained. This script can be found in the curifactory repo under
-``examples/minimal/experiments/iris.py``.
+``examples/experiments/iris.py``.
 
 
 .. code-block:: python

@@ -4,7 +4,7 @@ Getting Started
 Basic components
 ================
 
-This section follows the `0_BasicComponents <https://github.com/ORNL/curifactory/blob/main/examples/notebook-based/notebooks/0_BasicComponents.ipynb>`_ notebook. We first
+This section follows the `0_BasicComponents <https://github.com/ORNL/curifactory/blob/main/examples/notebooks/0_BasicComponents.ipynb>`_ notebook. We first
 introduce the four basic components of curifactory and
 show how to use them from a within a live context. (A live context is either a
 notebook, REPL, or non-experiment script.)
@@ -289,7 +289,7 @@ Caching and reporting
 ..
     TODO: continue modifying params/args language below
 
-This section follows the `1_CachingAndReporting <https://github.com/ORNL/curifactory/blob/main/examples/notebook-based/notebooks/1_CachingAndReporting.ipynb>`_ notebook. Here we demonstrate some features the previously discussed components
+This section follows the `1_CachingAndReporting <https://github.com/ORNL/curifactory/blob/main/examples/notebooks/1_CachingAndReporting.ipynb>`_ notebook. Here we demonstrate some features the previously discussed components
 enable. Two major abilities are easily caching
 objects (to short circuit computation of already-computed values) and
 quickly adding graphs and other “reportables” to a jupyter

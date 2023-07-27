@@ -1,7 +1,0 @@
-# curifactory paths
-data/*
-data/cache/*
-data/runs/*
-logs/*
-reports/*
-!reports/style.css
