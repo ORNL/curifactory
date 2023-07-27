@@ -467,7 +467,7 @@ def render_report_toc() -> list[str]:
         "<li><a href='#reportables'>Reportables</a></li>"
         "<li><a href='#map'>Map</a></li>",
         "<li><a href='#stage_detail'>Stage Detail</a></li>",
-        "<li><a href='#args'>Args</a></li>",
+        "<li><a href='#params'>Parameter sets</a></li>",
         "</ul>",
     ]
 
@@ -562,8 +562,8 @@ def render_report_detailed_stage_maps(manager, graphs_path) -> list[str]:
             outfile.write(graph.source)
         html_lines.append(render_graph(graph))
 
-    html_lines.append("<a name='args'></a>")
-    html_lines.append("<h2>Args</h2>")
+    html_lines.append("<a name='params'></a>")
+    html_lines.append("<h2>Parameter sets</h2>")
     html_lines.append("<p><a href='#top'>back to top</a></p>")
     return html_lines
 
