@@ -1220,3 +1220,62 @@ def test_raw_jupyter_notebook_cacher_saves_outputs(configured_test_manager):
         "print('this is a test!')",
     ]
     assert contents["cells"][1]["source"] == ["# this is another cell\n", "..."]
+
+
+def test_extra_metadata_loaded_before_load(configured_test_manager):
+    """Any extra metadata added in a cacher's save function should be available in the load function."""
+    run_count = 0
+
+    class UsesExtraMetadataCacher(Cacheable):
+        def save(self, obj):
+            self.extra_metadata["best_number"] = 13
+            self.save_metadata()
+            JsonCacher(self.get_path()).save(obj)
+
+        def load(self):
+            self.load_metadata()
+            assert self.extra_metadata["best_number"] == 13
+            return JsonCacher(self.get_path()).load()
+
+    @cf.stage(outputs=["something"], cachers=[UsesExtraMetadataCacher])
+    def do_thing(record):
+        nonlocal run_count
+        run_count += 1
+        return "hello"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test2"))
+    do_thing(r0)
+    do_thing(r1)
+
+    assert r0.state["something"] == "hello"
+    assert r1.state["something"] == "hello"
+    assert run_count == 1
+
+
+def test_extra_metadata_used_inline(configured_test_manager):
+    """Inline cacher should correctly handle extra_metadata as long as save_metadata() and
+    load_metadata() are called correctly."""
+
+    class UsesExtraMetadataCacher(Cacheable):
+        def save(self, obj):
+            self.extra_metadata["best_number"] = 13
+            JsonCacher(self.get_path()).save(obj)
+            self.save_metadata()
+
+        def load(self):
+            self.load_metadata()
+            assert self.extra_metadata["best_number"] == 13
+            return JsonCacher(self.get_path()).load()
+
+    # r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    # UsesExtraMetadataCacher(f"{configured_test_manager.cache_path}/test_thing", record=r0).save("testing")
+    UsesExtraMetadataCacher(f"{configured_test_manager.cache_path}/test_thing").save(
+        "testing"
+    )
+    assert (
+        UsesExtraMetadataCacher(
+            f"{configured_test_manager.cache_path}/test_thing"
+        ).load()
+        == "testing"
+    )

@@ -240,6 +240,7 @@ class Cacheable:
             # thing as expected from record.get_path for tracking to work.
             if (
                 self.extension != ""
+                and self.extension is not None
                 and path.endswith(self.extension)
                 and suffix is not None
             ):
@@ -339,13 +340,23 @@ class Cacheable:
     def save_metadata(self):
         metadata_path = self.get_path("_metadata.json")
         with open(metadata_path, "w") as outfile:
-            json.dump(self.metadata, outfile, indent=2, default=str)
+            if self.metadata is None:
+                # this either means we haven't collected metadata, or this is save() being called inline
+                logging.warning(
+                    "Cacher metadata hasn't been collected or has no associated record. Only saving extra_metadata fields."
+                )
+                json.dump(
+                    dict(extra=self.extra_metadata), outfile, indent=2, default=str
+                )
+            else:
+                json.dump(self.metadata, outfile, indent=2, default=str)
 
     def load_metadata(self) -> dict:
         metadata_path = self.get_path("_metadata.json")
         if os.path.exists(metadata_path):
             with open(metadata_path) as infile:
                 self.metadata = json.load(infile)
+                self.extra_metadata = self.metadata["extra"]
         return self.metadata
 
     def check(self) -> bool:
