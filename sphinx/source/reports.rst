@@ -2,7 +2,7 @@ Reports
 =======
 
 Every experiment that runs to completion generates an HTML run report stored in a run-specific folder in
-the :code:`reports/` directory, and adds a listing with a link to it in the main reports :code:`index.html`.
+the ``reports/`` directory, and adds a listing with a link to it in the main reports ``index.html``.
 
 Report structure
 ----------------
@@ -10,19 +10,19 @@ Report structure
 Reports have 5 sections:
 
 * **Experiment metadata** - this includes information about the run, such as timestamp, current git commit hash, and
-  the list of hashes of the argsets that were used. Additionally, the CLI command that was used to run the experiment
+  the list of hashes of the parameter sets that were used. Additionally, the CLI command that was used to run the experiment
   is included, as well as the command necessary to directly reproduce it if run with :code:`--full-store`.
 * **Reportables** - any reportables added in any of the stages are rendered here, along with a ToC for them. By default
   they are ordered by the record they came from, but this can be changed with :ref:`Reportable Groups`.
 * **Map** - assuming graphviz is installed, an svg "graph" or rough DAG of the experiment is displayed, with ovals
   representing each stage, and the boxes representing the outputs from that stage. This maps the flow of
-  data from one stage to another. Each colored box corresponds to a record, and the name of the argset used in that
+  data from one stage to another. Each colored box corresponds to a record, and the name of the parameter set used in that
   record is displayed at the top.
 * **Stage Detail** - this renders an svg graph with graphviz similar to the map, but each record is displayed separately,
   and shows additional details for each piece of data represented. It attempts to preview the content of the data, and
   will try to show the length or shape of it, as relevant. If the data is cached, it will show the full path to the
   cached file.
-* **Args** - the final section is a full JSON dump of all arguments in all argsets.
+* **Parameter sets** - the final section is a full JSON dump of all parameter sets used in the run.
 
 Examples of these sections are displayed below:
 

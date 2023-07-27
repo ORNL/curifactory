@@ -683,7 +683,7 @@ def _add_record_subgraph(dot, record_index, record, manager, detailed=True):
             c.attr(
                 label="record "
                 + str(record_index)
-                + "\\nargs: "
+                + "\\nparams: "
                 + str(record.params.name)
             )
         else:
