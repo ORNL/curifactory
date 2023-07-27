@@ -191,7 +191,7 @@ Parameter set hashes and operational parameters
 -----------------------------------------------
 
 Curifactory automatically versions cached artifacts based on the parameter set used. It does this
-by computing a hash (the full details of which can be found on the :ref:`Hashing` page,) which
+by computing a hash (the full details of which can be found on the :ref:`Hashing Mechanics` page,) which
 involves taking a form of string representation of the value for every attribute in a parameter
 set and computing the combined md5 hash.
 

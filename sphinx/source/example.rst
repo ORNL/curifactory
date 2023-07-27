@@ -3,27 +3,28 @@ Example Experiment
 
 Below is a fully functioning experiment script example that implements all the
 necessary stages for training an sklearn model on the iris dataset. This script
-implements both the :code:`run()` and a :code:`get_params()`, and is fully self
+implements both the ``run()`` and a ``get_params()``, and is fully self
 contained. This script can be found in the curifactory repo under
-:code:`examples/minimal/experiments/iris.py`.
+``examples/minimal/experiments/iris.py``.
 
 
 .. code-block:: python
 
     from dataclasses import dataclass
 
+    from sklearn.base import ClassifierMixin
+    from sklearn.datasets import load_iris
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.model_selection import train_test_split
+
     import curifactory as cf
     from curifactory.caching import PickleCacher
     from curifactory.reporting import JsonReporter
-    from sklearn.base import ClassifierMixin
-    from sklearn.datasets import load_iris
-    from sklearn.model_selection import train_test_split
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.linear_model import LogisticRegression
 
 
     @dataclass
-    class Args(cf.ExperimentArgs):
+    class Params(cf.ExperimentParameters):
         balanced: bool = False
         """Whether class weights should be balanced or not."""
         n: int = 100
@@ -40,11 +41,11 @@ contained. This script can be found in the curifactory repo under
         inputs=None, outputs=["training_data", "testing_data"], cachers=[PickleCacher] * 2
     )
     def load_data(record):
-        args: Args = record.args
+        params: Params = record.params
 
         data = load_iris()
         x_train, x_test, y_train, y_test = train_test_split(
-            data.data, data.target, test_size=args.test_percent, random_state=args.seed
+            data.data, data.target, test_size=params.test_percent, random_state=params.seed
         )
 
         return (x_train, y_train), (x_test, y_test)
@@ -52,35 +53,36 @@ contained. This script can be found in the curifactory repo under
 
     @cf.stage(inputs=["training_data"], outputs=["model"], cachers=[PickleCacher])
     def train_model(record, training_data):
-        args: Args = record.args
+        params: Params = record.params
 
         # set up common arguments from passed parameters
-        weight = "balanced" if args.balanced else None
-        model_args = dict(class_weight=weight, random_state=args.seed)
+        weight = "balanced" if params.balanced else None
+        model_args = dict(class_weight=weight, random_state=params.seed)
 
         # set up model-specific from parameters
-        if type(args.model_type) == RandomForestClassifier:
-            model_args.update(dict(n_estimators=args.n))
+        if type(params.model_type) == RandomForestClassifier:
+            model_args.update(dict(n_estimators=params.n))
 
         # fit the parameterized model
-        clf = args.model_type(**model_args).fit(training_data[0], training_data[1])
+        clf = params.model_type(**model_args).fit(training_data[0], training_data[1])
         return clf
 
 
-    @cf.aggregate(outputs=["scores"], cachers=None)
-    def test_models(record, records):
+    @cf.aggregate(inputs=["model", "testing_data"], outputs=["scores"], cachers=None)
+    def test_models(
+        record: cf.Record,
+        records: list[cf.Record],
+        model: dict[cf.Record, any],
+        testing_data: dict[cf.Record, any],
+    ):
         scores = {}
 
         # iterate through every record and score its associated model
-        for prev_record in records:
-            if "model" in prev_record.state:
-                score = prev_record.state["model"].score(
-                    prev_record.state["testing_data"][0],
-                    prev_record.state["testing_data"][1],
-                )
+        for r, r_model in model.items():
+            score = r_model.score(testing_data[r][0], testing_data[r][1])
 
-                # store the result keyed to the argument set name
-                scores[prev_record.args.name] = score
+            # store the result keyed to the argument set name
+            scores[r.params.name] = score
 
         print(scores)
         record.report(JsonReporter(scores))
@@ -89,14 +91,14 @@ contained. This script can be found in the curifactory repo under
 
     def get_params():
         return [
-            Args(name="simple_lr", balanced=True, model_type=LogisticRegression, seed=1),
-            Args(name="simple_rf", model_type=RandomForestClassifier, seed=1),
+            Params(name="simple_lr", balanced=True, model_type=LogisticRegression, seed=1),
+            Params(name="simple_rf", model_type=RandomForestClassifier, seed=1),
         ]
 
 
-    def run(argsets, manager):
-        for argset in argsets:
-            record = cf.Record(manager, argset)
+    def run(param_sets, manager):
+        for param_set in param_sets:
+            record = cf.Record(manager, param_set)
             train_model(load_data(record))
 
         test_models(cf.Record(manager, None))

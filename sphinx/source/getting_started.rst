@@ -321,7 +321,7 @@ Caching is done at each stage by listing a
 runs, each cacher will save the returned object in the data cache path.
 The cached filename includes the name of the experiment (the string passed
 to ``ArtifactManager``, “notebook_example_1” in this case), the hash
-string of the parameters (see the :ref:`Hashing` page for more information on
+string of the parameters (see the :ref:`Hashing Mechanics` page for more information on
 how this gets calculated), the name of the stage doing the caching, and
 the name of the output itself.
 

@@ -52,7 +52,7 @@ def use_big_data_no_resolve(record, big_data):
 
 
 @dataclass
-class Params(cf.ExperimentArgs):
+class Params(cf.ExperimentParameters):
     in_memory: bool = False
 
 
@@ -63,10 +63,10 @@ def get_params():
     ]
 
 
-def run(argsets, manager):
-    for argset in argsets:
-        record = cf.Record(manager, argset)
-        if argset.in_memory:
+def run(param_sets, manager):
+    for param_set in param_sets:
+        record = cf.Record(manager, param_set)
+        if param_set.in_memory:
             record = use_big_data_directly(make_big_data(record))
         else:
             record = use_big_data_no_resolve(make_big_data_no_resolve(record))

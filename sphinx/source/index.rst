@@ -46,11 +46,12 @@ Features
     components.rst
     parameters.rst
     cache.rst
+    hashing_mechanics.rst
     reports.rst
     config.rst
     cli_guide.rst
-    tips.rst
     example.rst
+    tips.rst
     cookbook.rst
     migration.rst
 
@@ -63,9 +64,12 @@ Features
 
     args.rst
     caching.rst
+    dag.rst
     docker.rst
     experiment.rst
+    hashing.rst
     manager.rst
+    params.rst
     procedure.rst
     project.rst
     record.rst

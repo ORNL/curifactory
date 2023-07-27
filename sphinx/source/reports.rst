@@ -30,7 +30,7 @@ Examples of these sections are displayed below:
     :scale: 60%
 
     An experiment metadata section. The hashes are the hash strings that are used to prefix
-    cached data from records using that argset.
+    cached data from records using that parameter set.
 
 .. figure:: images/report_reportables.png
 

@@ -1,11 +1,11 @@
-from experiments.newsgroups import Args
+from experiments.newsgroups import Params
 
 
 def get_params():
-    args = []
+    params = []
 
     activations = ["logistic", "tanh", "relu"]
     for activation in activations:
-        args.append(Args(name=f"act-{activation}", activation=activation))
+        params.append(Params(name=f"act-{activation}", activation=activation))
 
-    return args
+    return params
