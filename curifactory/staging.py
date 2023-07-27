@@ -1002,6 +1002,7 @@ def _check_cached_outputs(
         function_outputs = []
         for i in range(len(cachers)):
             if cachers[i].check():
+                cachers[i].load_metadata()
                 # handle lazy objects by setting the cacher but not actually loading yet.
                 if type(outputs[i]) == Lazy:
                     outputs[i].cacher = cachers[i]
@@ -1009,7 +1010,6 @@ def _check_cached_outputs(
                     output = outputs[i]
                 else:
                     output = cachers[i].load()
-                cachers[i].load_metadata()
 
                 function_outputs.append(output)
                 record.state[str(outputs[i])] = output
