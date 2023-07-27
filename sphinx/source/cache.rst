@@ -133,20 +133,6 @@ over the path that's used by the cacher.
   to keep a copy of every single artifact. Setting this to ``False`` does **not** disable caching it normally into
   the cache directory, but it will not transfer that file to the full store run artifacts directory.
 
-Metadata
---------
-
-Every cached artifact saves an associated metadata json file that tracks information about the cacher,
-the current record, and the experiment run. This metadata file is copied along with the artifact in
-full store runs, and is kept when an artifact is re-used in a later run.
-
-This metadata dictionary is available on every cacher object through ``.metadata``. In addition, every
-``Cacheable`` object has an ``.extra_metadata`` dictionary that custom cachers can use to store additional
-information either for provenance/informational use, or to help direct loading code. This extra metadata
-gets added to the cacher's ``metadata`` when saving, and is populated from a ``.load_metadata()`` call before
-curifactory calls the cacher's ``load()`` function.
-
-
 Inline cachers
 ..............
 
@@ -167,6 +153,51 @@ You can also get the metadata associated with the artifact:
     cacher = JsonCacher(some_metrics_path)
     metrics = cacher.load()
     metadata = cahcer.load_metadata()
+
+
+Metadata
+--------
+
+Every cached artifact saves an associated metadata json file that tracks information about the cacher,
+the current record, and the experiment run. This metadata file is copied along with the artifact in
+full store runs, and is kept when an artifact is re-used in a later run.
+
+This metadata dictionary is available on every cacher object through ``.metadata``. In addition, every
+``Cacheable`` object has an ``.extra_metadata`` dictionary that custom cachers can use to store additional
+information either for provenance/informational use, or to help direct loading code. This extra metadata
+gets added to the cacher's ``metadata`` when saving, and is populated from a ``.load_metadata()`` call.
+
+An example might look like:
+
+.. code-block:: python
+
+    class UsesExtraMetadataCacher(Cacheable):
+        def save(self, obj):
+            self.extra_metadata["the_best_number"] = 13
+            JsonCacher(self.geet_path()).save(obj)
+
+        def load(self):
+            assert self.extra_metadata["best_number"] == 13
+            return JsonCacher(self.get_path()).load()
+
+The curifactory stage decorator automatically handles calling ``save_metadata()`` and ``load_metadata()`` at
+the appropriate times for the above cacher to work. However, if you're using this custom cacher inline, these
+functions are never explicitly called. If you want to enable this cacher to work inline, you need to add in
+explicit save/load metadata calls in the save/load functions:
+
+
+.. code-block:: python
+
+    class UsesExtraMetadataCacher(Cacheable):
+        def save(self, obj):
+            self.extra_metadata["the_best_number"] = 13
+            self.save_metadata()
+            JsonCacher(self.geet_path()).save(obj)
+
+        def load(self):
+            self.load_metadata()
+            assert self.extra_metadata["best_number"] == 13
+            return JsonCacher(self.get_path()).load()
 
 
 
@@ -201,5 +232,14 @@ for their appropriate files as normal, and if they are found the lazy output
 again keeps only a :code:`Lazy` instance in the record state rather than
 reloading the actual file.
 
-..
-    TODO: resolve
+
+Lazy resolve
+............
+
+By default, every time a ``Lazy`` instance is passed into a stage wrapped function, it resolves to
+the object itself, meaning it calls the load function on the associated cacher. If a ``Lazy`` instance
+is specified with ``resolve=False``, then every time that artifact is used as input, the input that gets
+passed is the actual ``Lazy`` instance itself.
+
+The primary value in this is to be able to access the associated cacher from within a stage in order to
+get its path (this is useful when doing external calls.)
