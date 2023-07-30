@@ -1,7 +1,7 @@
 CLI Guide
-=============
+#########
 
-The primary means of running Curifactory is through the provided :code:`experiment` CLI.
+The primary means of running Curifactory is through the provided ``experiment`` CLI.
 The three main tasks that can be run through this command line tool are:
 
 * Run an experiment.
@@ -9,22 +9,22 @@ The three main tasks that can be run through this command line tool are:
 * Serve the local report HTML files via python simple web server.
 
 Running an experiment
----------------------
+=====================
 
-Running the :code:`experiment` tool always checks for a local :code:`curifactory_config.json` for
+Running the ``experiment`` tool always checks for a local ``curifactory_config.json`` for
 relevant paths, see :ref:`Configuration`.
 
 Running an experiment requires the name of an experiment file (minus the .py)
-and at least one parameters file (minus the .py) via the :code:`-p` argument. Note that the filenames
+and at least one parameters file (minus the .py) via the ``-p`` argument. Note that the filenames
 you pass are not full paths, they are only filenames within the paths specified in the
-configuration (by default an :code:`/experiments/` and :code:`/params/` folder.)
+configuration (by default an ``/experiments/`` and ``/params/`` folder.)
 
 .. code-block:: bash
 
     experiment [EXPERIMENT_FILE] -p [PARAMS_FILE]
 
-The above command calls the :code:`get_params()` from the :code:`PARAMS_FILE` and passes the returned list
-of :code:`Args` instances into the :code:`run()` function inside :code:`EXPERIMENT_FILE`.
+The above command calls the ``get_params()`` from the ``PARAMS_FILE`` and passes the returned list
+of ``ExperimentParameters`` instances into the ``run()`` function inside ``EXPERIMENT_FILE``.
 
 For example, with the following project setup:
 
@@ -43,7 +43,7 @@ We would run the experiment from the project root directory with:
     experiment compare_models -p sklearn_algs
 
 
-You can optionally specify multiple parameter files, where the combined returned :code:`Args`
+You can optionally specify multiple parameter files, where the combined returned ``ExperimentParameters``
 lists from each file are placed into a single list and passed into the experiment.
 
 .. code-block:: bash
@@ -52,10 +52,10 @@ lists from each file are placed into a single list and passed into the experimen
 
 
 Curifactory checks both the params module path as well as the experiments module
-path for files with valid :code:`get_params()` files, so an experiment file that
-has this function may also be used in a :code:`-p` flag.
+path for files with valid ``get_params()`` files, so an experiment file that
+has this function may also be used in a ``-p`` flag.
 
-If you wish to run an experiment that has a :code:`get_params()` defined and you
+If you wish to run an experiment that has a ``get_params()`` defined and you
 want to use it as your parameter set, you can simply use
 
 .. code-block:: bash
@@ -69,106 +69,106 @@ Which curifactory will automatically expand to
     experiment [EXPERIMENT_FILE] -p [EXPERIMENT_FILE]
 
 
-Filtering to specific args
---------------------------
+Filtering to specific parameter sets
+====================================
 
-When there are parameter files that return large lists of :code:`Args` instances, it can be useful
+When there are parameter files that return large lists of ``Params`` instances, it can be useful
 to run only a small subset of them to update specific results or for testing purposes.
 
-This can be done with any of the :code:`--names`, :code:`--indices`, or :code:`--global-indices` arguments.
+This can be done with any of the ``--names|-n``, ``--indices``, or ``--global-indices`` arguments.
 
 For the following examples, assume we have a single parameters file returning three argsts:
 
 .. code-block:: python
     :caption: Example parameters file
 
-    def get_params() -> List[Args]:
+    def get_params() -> List[Params]:
         return [
-            Args(name="baseline_knn", ...)
-            Args(name="baseline_svm", ...)
-            Args(name="baseline_mlp", ...)
+            Params(name="baseline_knn", ...)
+            Params(name="baseline_svm", ...)
+            Params(name="baseline_mlp", ...)
         ]
 
 
-Using the :code:`--names` argument will only run the experiment with argsets that have one of the
+Using the ``--names`` (or ``-n``) argument will only run the experiment with parameter sets that have one of the
 specified names. For example:
 
 .. code-block:: bash
 
-    experiment [EXPERIMENT_FILE] -p [PARAMS_FILE] --names baseline_knn --names baseline_svm
+    experiment [EXPERIMENT_FILE] -p [PARAMS_FILE] -n baseline_knn -n baseline_svm
 
-will pass only the knn and svm argsets into the experiment file. The same thing can be achieved
-with the :code:`--indices` argument, specifying what indices of the argsets to run **from each**
-given parameters file. (Specifying multiple parameters files and multiple indices will
-run those indices from every parameters file.)
+will pass only the knn and svm parameter sets into the experiment file. The same thing can be achieved
+with the ``--indices`` argument, specifying what indices of the parameter sets to run **from each**
+given parameter file. (Specifying multiple parameter files and multiple indices will
+run those indices from every parameter file.)
 
 .. code-block:: bash
 
     experiment [EXPERIMENT_FILE] -p [PARAMS_FILE] --indices 0 --indices 1
 
-You can also specify ranges within a single :code:`--indices` argument (note that the lower
+You can also specify ranges within a single ``--indices`` argument (note that the lower
 bound is inclusive and the upper bound is exclusive):
 
 .. code-block:: bash
 
     experiment [EXPERIMENT_FILE] -p [PARAMS_FILE] --indices 0-2
 
-Finally, the :code:`--global-indices` specifies which indices out of the entire combined list of
-argsets to run. This is applicable when multiple parameter files are specified, and means that
+Finally, the ``--global-indices`` specifies which indices out of the entire combined list of
+parameter sets to run. This is applicable when multiple parameter files are specified, and means that
 the order in which you specify them will matter. (This argument can handle ranges the same way as
-:code:`indices`.)
+``indices``.)
 
 
 Caching controls
-----------------
+================
 
 Caching is an important aspect in Curifactory, allowing stages to save and automatically reload
 data without needing to rerun portions of the code. This is also useful for sharing entire
 experiment runs. There are several different command line arguments for influencing how caching works.
 
-Specifying cache directory (:code:`-c`, :code:`--cache`)
+Specifying cache directory (``-c``, ``--cache``)
 ........................................................
 
-By default, the directory used for raw caching is set in the :code:`curifactory_config.json`. For
-individual experiment runs, this can be changed by providing the :code:`-c, --cache` argument,
+By default, the directory used for raw caching is set in the ``curifactory_config.json``. For
+individual experiment runs, this can be changed by providing the ``-c, --cache`` argument,
 for which all cache data will be saved and loaded from the specified directory. **This is particularly
-relevant if attempting to reproduce somebody else's experiment and they have a** :code:`--store-full`
+relevant if attempting to reproduce somebody else's experiment and they have a** ``--store-full``
 **run folder.** (See the :ref:`Full stores` section below .)
 
 .. _Overwriting cached data:
 
-Overwriting cached data (:code:`--overwrite`, :code:`--overwrite-stage`)
+Overwriting cached data (``--overwrite``, ``--overwrite-stage``)
 ........................................................................
 
-Any changes made to the arguments running through an experiment will result in a different arg hash
+Any changes made to the arguments running through an experiment will result in a different parameter hash
 and thus new cached files than previous runs. However, code changes will not force a cache overwrite,
 so in order to prevent inconsistent or incorrect data, you can force the experiment to ignore any
-previously cached data by specifying the :code:`--overwrite` argument.
+previously cached data by specifying the ``--overwrite`` argument.
 
 If only specific stages have changed, rather than overwriting all cached data you can force a stage
-run of only desired stages with the :code:`--overwrite-stage` argument:
+run of only desired stages with the ``--overwrite-stage`` argument:
 
 .. code-block:: bash
 
     experiment [EXPERIMENT_FILE] -p [PARAMS_FILE] --overwrite-stage model_train --overwrite-stage model_test
 
-The above example will ignore cached values only for the :code:`model_train` and :code:`model_test` stages.
+The above example will ignore cached values only for the ``model_train`` and ``model_test`` stages.
 **Note that overwriting a stage in the middle of an experiment will not cause later stages to also overwrite,
 meaning that outdated data may still be in use.**
 
 .. _Full stores:
 
-Full stores (:code:`--store-full`, :code:`--dry-cache`)
+Full stores (``--store-full``, ``--dry-cache``)
 .......................................................
 
 Curifactory can collect all relevant data for a single experiment run and keep it in a
-run-specific folder, known as a :code:`--store-full` run. This folder has all cached data
+run-specific folder, known as a ``--store-full`` run. This folder has all cached data
 from the run, a copy of the log and output report, and system environment information. This
 is useful for keeping finalized versions of experiments, for distributing runs to others for
 analysis, or for simply allowing easier reproduction of a specific set of results.
 
 For experiment reproduction, or running an experiment using an existing run-specific cache,
-it is also useful to use the :code:`--dry-cache` argument, which allows stages to read files
+it is also useful to use the ``--dry-cache`` argument, which allows stages to read files
 from the cache but prevents them from writing to it. This also allows you to specify stage overwrites
 to force specific stages to run without overwriting any of the previously cached files.
 
@@ -184,13 +184,13 @@ In practice, this looks something like the following:
     experiment [EXPERIMENT_FILE] -p [PARAMS_FILE] --cache data/runs/[RUN_REFERENCE_NAME] --dry-cache
 
 
-Lazy cache objects (:code:`--lazy`, :code:`--ignore-lazy`)
+Lazy cache objects (``--lazy``, ``--ignore-lazy``)
 ..........................................................
 
 As discussed in the getting started documentation, lazy cachers keep objects out
 of memory as much as possible, loading them only if directly accessed. Normally,
 lazy cache objects are specified by initializing a stage output name with the
-:code:`Lazy` class, but you can tell curifactory to assume all outputs are lazy
+``Lazy`` class, but you can tell curifactory to assume all outputs are lazy
 by running:
 
 .. code-block:: bash
@@ -205,7 +205,7 @@ output something that can't be correctly pickled.**
 
 Similarly, if running stages that have lazy objects but in an environment where
 keeping them in memory isn't a big deal, you can turn off all lazy caching with
-the :code:`--ignore-lazy` flag. In cases when dealing with large objects that
+the ``--ignore-lazy`` flag. In cases when dealing with large objects that
 are expensive to repeatedly save and reload, this can potentially speed up an experiment
 run:
 
@@ -215,16 +215,16 @@ run:
 
 
 Parallel runs
--------------
+=============
 
 In situations where you may have a large number of argsets to run through a lengthy
 experiment, Curifactory can run many instances of the experiment in
 parallel, using the multiprocessing library.
 
-Running an experiment with the :code:`--parallel 4`
-argument will divide up the entire list of argsets into four ranges of global argument indices,
+Running an experiment with the ``--parallel 4``
+argument will divide up the entire list of parameter sets into four ranges of global argument indices,
 spawn four processes, and run the experiment in each, passing in the range for that process. After
-all processes complete, the experiment is run again with all argsets. The idea is that, assuming
+all processes complete, the experiment is run again with all parameter sets. The idea is that, assuming
 caching is done in every important stage, all relevant data for each stage in the full run has
 already been cached from the individual runs done via multiprocessing, and so only final aggregate
 stages need to be re-run against the full set of records.
@@ -248,9 +248,9 @@ This approach is **very loosely** equivalent to the below commands, assuming the
     experiment [EXPERIMENT_FILE] -p [PARAMS_FILE]
 
 **Note that running the above commands is not actually equivalent to running the experiment
-with** :code:`--parallel`. Using multiprocessing creates lock and queue variables that are used
+with** ``--parallel``. Using multiprocessing creates lock and queue variables that are used
 to ensure the processes aren't stepping on each other, which can occur if you attempt to manually
-run these in parallel using the :code:`--parallel-mode` flag.
+run these in parallel using the ``--parallel-mode`` flag.
 
 In order for parallel runs to be effective, there are a few assumptions about the experiments:
 
@@ -260,7 +260,7 @@ In order for parallel runs to be effective, there are a few assumptions about th
 
 
 Listing experiments and parameters
-----------------------------------
+==================================
 
 You can get a list of valid experiment files and parameter files in the commandline by running:
 
@@ -268,8 +268,8 @@ You can get a list of valid experiment files and parameter files in the commandl
 
     experiment ls
 
-This will check every file in the experiments folder for files containing a :code:`run()` function
-and every file in the parameters folder for files containing a :code:`get_params()` function. Note
+This will check every file in the experiments folder for files containing a ``run()`` function
+and every file in the parameters folder for files containing a ``get_params()`` function. Note
 that Curifactory attempts to import all files in order to check for potential errors on import, so
 standard warnings for if you're importing somebody else's code applies. This command can also take
 a while to run if any of the files have a large number of slow imports.
@@ -291,9 +291,9 @@ at the top of the relevant files, this is particularly useful when there are a l
 experiment and/or parameter files.
 
 Experiment run notes
---------------------
+====================
 
-You can provide notes for an experiment run with the :code:`--notes` flag. The
+You can provide notes for an experiment run with the ``--notes`` flag. The
 idea for these is to be vaguely like git commit messages, in that if the notes
 span multiple lines, the first line will be the shortform version (displayed on
 the report index page) and the remainder of the lines will render in full on the
@@ -313,7 +313,7 @@ enter the notes.
     experiment [EXPERIMENT_FILE] -p [PARAMS_FILE] --notes
 
 Once the text editor is saved and exited, the note content will
-be used for the run notes. If a :code:`EDITOR` environment variable is set,
+be used for the run notes. If a ``EDITOR`` environment variable is set,
 curifactory will attempt to open that editor, otherwise it will run through a
 list of editors and open the first one it finds.
 
@@ -331,23 +331,23 @@ list of editors and open the first one it finds.
 
 
 Hosting HTML reports
---------------------
+====================
 
-Every experiment that runs to completion generates an HTML run report in the :code:`reports/`
+Every experiment that runs to completion generates an HTML run report in the ``reports/``
 folder, and updates the top level reports index.html. These files can be served with:
 
 .. code-block:: bash
 
     experiment reports
 
-By default, this serves them on port 8080, but this can be configured with the :code:`--port` flag:
+By default, this serves them on port 8080, but this can be configured with the ``--port`` flag:
 
 .. code-block:: bash
 
     experiment reports --port 6789
 
 The IP the server will accept connections from can also be configured with the
-:code:`--host` flag. By default this is 127.0.0.1, only allowing localhost
+``--host`` flag. By default this is 127.0.0.1, only allowing localhost
 connections.
 
 .. code-block:: bash
@@ -356,24 +356,24 @@ connections.
 
 Note that if you run experiments on multiple machines and transfer all of the
 reports to the same folder, the report index will not accurately reflect them.
-You can use :code:`experiment reports --update` to regenerate this index based
+You can use ``experiment reports --update`` to regenerate this index based
 on all discovered folders in your reports directory.
 
 
 Full reference
---------------
+==============
 
-Below is the full set of flags that can be used with the :code:`experiment` command.
+Below is the full set of flags that can be used with the ``experiment`` command.
 
-Parameter names (:code:`-p`)
-............................
+Parameter names (``-p``, ``--params```)
+..........................................
 
-The name of a python parameters file with a :code:`get_params()` function. You can specify multiple
-parameter files with multiple :code:`-p` flags, which will combine all returned args from all params
-files into a single args list.
+The name of a python parameters file with a ``get_params()`` function. You can specify multiple
+parameter files with multiple ``-p`` flags, which will combine all returned parameter sets from
+all parameter files into a single parameter set list.
 
 Note that you do not include the actual path or .py, the string is directly used in the import as a
-submodule of the :code:`params` module/folder.
+submodule of the ``params`` module/folder.
 
 Example:
 
@@ -381,27 +381,26 @@ Example:
 
     experiment some_experiment_name -p my_params -p my_other_params
 
-Argument set names (:code:`--names`)
-....................................
+Parameter set names (``-n``, ``--names``)
+...........................................
 
-Run the experiment with only argsets with the specified names (the :code:`name` defined in the :code:`ExperimentArgs`
+Run the experiment with only argsets with the specified names (the ``name`` defined in the ``ExperimentArgs``
 instance) given with this flag. Use only one name per flag, but as with the parameter names, this
-flag can be specified multiple times. See :ref:`Filtering to Specific Args` above.
+flag can be specified multiple times. See :ref:`Filtering to Specific Parameter Sets` above.
 
 Example:
 
 .. code-block:: bash
 
-    experiment some_experiment_name -p my_params --names base_knn --names base_randomforest
+    experiment some_experiment_name -p my_params -n base_knn -n base_randomforest
 
-Argument set indices (:code:`--indices`)
+Argument set indices (``--indices``)
 ........................................
 
 Run the experiment with only argsets with the specified indices given with this flag **within
 each specified parameters file**. Indices can either be specified as individual numbers or as
-ranges in the format :code:`[inclusive lower index]-[exclusive upper index]`. As with
-:code:`--names`, this flag can be specified multiple times. See :ref:`Filtering to Specific
-Args` above.
+ranges in the format ``[inclusive lower index]-[exclusive upper index]``. As with
+``--names``, this flag can be specified multiple times. See :ref:`Filtering to Specific Parameter Sets` above.
 
 Example:
 
@@ -409,14 +408,14 @@ Example:
 
     experiment some_experiment_name -p my_params --indices 0-2 --indices 2
 
-Global arument set indices (:code:`--global-indices`)
+Global arument set indices (``--global-indices``)
 .....................................................
 
 Run the experiment with only argsets with the specified indices given with this flag **out of
 the total list of args from all specified parameters files**. Indices can either be specified
 as individual numbers or as ranges in the format :code:`[inclusive lower index]-[exclusive
-upper index]`. As with :code:`--names`, this flag can be specified multiple times. See
-:ref:`Filtering to Specific Args` above.
+upper index]`. As with ``--names``, this flag can be specified multiple times. See
+:ref:`Filtering to Specific Parameter Sets` above.
 
 Example:
 
@@ -424,7 +423,7 @@ Example:
 
     experiment some_experiment_name -p my_params --global-indices 0-2 --global-indices 2
 
-Parallel (:code:`--parallel`)
+Parallel (``--parallel``)
 .............................
 
 Runs the experiment in parallel across the specified number of processes. This automatically divides
@@ -438,7 +437,7 @@ Example:
 
     experiment some_experiment_name -p my_params --parallel 2
 
-Parallel mode (:code:`--parallel-mode`)
+Parallel mode (``--parallel-safe``)
 .......................................
 
 Suppresses writing to the experiment store and output report while still running and caching
@@ -446,18 +445,18 @@ results. This could in theory be used for writing your own paralleliztion, but b
 the actual internal parallelization handles file locks appropriately, while this flag does not.
 See :ref:`Parallel Runs`.
 
-Suppress logging (:code:`--no-log`)
+Suppress logging (``--no-log``)
 ...................................
 
-Specifying this flag will disable writing a console log file to the :code:`logs/` directory.
+Specifying this flag will disable writing a console log file to the ``logs/`` directory.
 
-Overwrite cache (:code:`--overwrite`)
+Overwrite cache (``--overwrite``)
 .....................................
 
 Specifying this flag ignores any existing cached data and will force all computation to run,
 overwriting all data. See :ref:`Overwriting cached data`.
 
-Overwrite cache for stage (:code:`--overwrite-stage`)
+Overwrite cache for stage (``--overwrite-stage``)
 .....................................................
 
 Ignore only the cached outputs for the specified stages. You can specify this flag multiple
@@ -471,14 +470,14 @@ Example:
 
     experiment some_experiment_name -p my_params --overwrite-stage train_model --overwrite-stage test_model
 
-Full store (:code:`-s`, :code:`--store-full`)
+Full store (``-s``, ``--store-full``)
 .............................................
 
 Keep a full copy of all cached data, environment information, log, and output report from an
-experiment run in a run-specific folder, determined by the :code:`run_path` in the configuration.
+experiment run in a run-specific folder, determined by the ``run_path`` in the configuration.
 See :ref:`Full stores`.
 
-Cache directory (:code:`-c`, :code:`--cache`)
+Cache directory (``-c``, ``--cache``)
 .............................................
 
 Specify what directory to use for reading and writing cached data, if it differs from the
@@ -490,70 +489,101 @@ Example:
 
     experiment some_experiment_name -p my_params --cache data/runs/some_specific_run_foldre --dry-cache
 
-Force lazy caching (:code:`--lazy`)
+Force lazy caching (``--lazy``)
 ...................................
 
-Treat all stage outputs as :code:`Lazy` objects. Pickle cachers will be
+Treat all stage outputs as ``Lazy`` objects. Pickle cachers will be
 injected for any outputs that have no cacher specified. See :ref:`Caching
 Controls`.
 
-Force no lazy caching (:code:`--ignore-lazy`)
+Force no lazy caching (``--ignore-lazy``)
 .............................................
 
 Treat lazy outputs like regular outputs, keeping them in memory instead.
 See :ref:`Caching Controls`.
 
-Include debug logs (:code:`-v`, :code:`--verbose`)
+Include debug logs (``-v``, ``--verbose``)
 ..................................................
 
 Include debug messages in the output logs if specified.
 
 
-Suppress experiment mapping (:code:`--no-map`)
-..................................................
+Progress bars (``--progress``)
+................................
 
-Experiment mapping is a pre-experiment-execution step that technically runs all
-of your experiment code, but every stage automatically shortcuts. This gives the
-manager a list of records and stages, which is used for calculating progress in
-the experiment. This will not be correct in experiments with fancy record
-mechanics, such as dynamically created records conditionally based on the
-results from previous stages. To disable the map (and consequently the progress
-bars), use :code:`--no-map`.
+Output fancy rich progress bars for every record and overall experiment execution. Note that if you have
+code using TQDM progress bars, this can sometimes conflict and cause weird formatting issues, which is why
+it's not enabled by default.
 
-Suppress console log output (:code:`--quiet`)
+
+Only print experiment map (``--map``)
+.....................................
+
+Specifying this flag **only runs the pre-mapping phase** of an experiment and then
+exits, printing out a summary of all records, stages, and artifacts with their respective
+cache statuses. This is useful for determining (before actually running) whether an
+experiment has everything cached or not.
+
+Note that if you run this with ``--verbose``, it will also print out the exact set of
+stages it plans to execute in DAG model.
+
+
+Run experiment purely linearly instead with DAG (``--no-dag``)
+..............................................................
+
+To disable the DAG-based execution of an experiment, specify ``-no-dag``. When
+running an experiment normally (in DAG mode), there is an experiment pre-mapping
+step that steps through your entire experiment and executes only the decorator portion
+of each stage, in order to map out what artifacts are inputs/outputs, which ones
+are already cached, and what stages actually need to execute in order to produce
+any final leaf artifacts. In some cases either with weird stage setups, or non-stage
+functions that take a long time to run or have side-effects, use ``--no-dag`` to
+eliminate this pre-mapping step and simply execute all the stages linearly (short-circuiting
+only based on cache status rather than map status.)
+
+Note that progress bars from ``--progress`` won't work in ``--no-dag`` mode.
+
+Suppress console log output (``--quiet``)
 .............................................
 
 Make the output a little less busy and don't include logging messages. Note that
 this will still render the progress bars, unless you also specify
-:code:`--no-map`.
+``--no-dag``.
 
-Suppress terminal colors in case of unrecognized non-support (:code:`--no-color`)
+Suppress terminal colors in case of unrecognized non-support (``--no-color``)
 .................................................................................
 
 Not all terminals support color well, and the output is full of fun colors from
 Rich. Suppress them with this flag.
 
 
-Suppress all file output (:code:`--dry`)
+Suppress rich formatting of logging (``--plain``)
+.................................................
+
+Turn off using Rich logging formatter. The logs output to the terminal will look exactly
+as they're written into the log files.
+
+
+Suppress all file output (``--dry``)
 ........................................
 
 Runs the experiment without outputting or altering any files, including logs, experiment store,
 parameter registry, and cached data.
 
-Suppress writing to cache (:code:`--dry-cache`)
+Suppress writing to cache (``--dry-cache``)
 ...............................................
 
 Allows reading from the cache but will not write any cache files. This is useful in combination with
 a non-default cache directory if reading somebody else's cached run. See :ref:`Caching Controls`.
 
-Include errors in log files (:code:`--log-errors`)
+Include errors in log files (``--log-errors``)
 ..................................................
 
 Specifying this will record any errors and stack traces in the output log files by redirectring
 STDERR. Note that some libraries use STDERR for non-error messages, such as TQDM's progress bars.
 (In some cases this may output a lot of extra lines into the log.)
 
-Custom cache name prefix (:code:`-n`, :code:`--name`)
+Custom cache name prefix (``-n``, ``--name``)
 .....................................................
 
 Give the cached values an explicit prefix as opposed to the experiment name.
@@ -564,11 +594,11 @@ Example:
 
     experiment some_experiment_name -p my_params --name final_run
 
-The above will output cache filenames starting in :code:`final_run_[ARGHASH]...` rather than
-:code:`some_experiment_name_[ARGHASH]`. This can be useful for tracking specific runs without
-using :code:`--full-store`.
+The above will output cache filenames starting in ``final_run_[ARGHASH]...`` rather than
+``some_experiment_name_[ARGHASH]``. This can be useful for tracking specific runs without
+using ``--full-store``.
 
-Experiment run notes (:code:`--notes`)
+Experiment run notes (``--notes``)
 ......................................
 
 Include notes in the run report for an experiment run.
@@ -588,7 +618,7 @@ Alternatively use a system text editor to enter notes:
 See :ref:`Experiment run notes`.
 
 
-Export experiment in docker container (:code:`--docker`)
+Export experiment in docker container (``--docker``)
 ........................................................
 
 After the experiment completes, build a docker image with a complete copy of the current
@@ -599,7 +629,7 @@ run, hosts a file server with the data cache as well as the run notebook.
 Note that a wheel of Curifactory will need to be built, placed in the docker folder and referenced in the
 dockerfile in order for the notebook to run correctly. (This will be addressed in a later version.)
 
-Export experiment explorer as a jupyter notebook (:code:`--notebook`)
+Export experiment explorer as a jupyter notebook (``--notebook``)
 .....................................................................
 
 After the experiment completes, write a jupyter notebook with information about the run and
@@ -615,12 +645,12 @@ parameters and experiment name, meaning all relevant data should already be cach
 This results in a set of records in memory that should mirror the previous run, allowing
 live exploration of the states.
 
-Note that this requires an environment with :code:`ipynb-py-convert` accessible from the command line,
+Note that this requires an environment with ``ipynb-py-convert`` accessible from the command line,
 which should come with any jupyter installation.
 
-Serve HTML reports on a specified port and host (:code:`--port`, :code:`--host`)
+Serve HTML reports on a specified port and host (``--port``, ``--host``)
 ................................................................................
 
-These flags only applies to the :code:`experiment reports` command, specifying which port to
+These flags only applies to the ``experiment reports`` command, specifying which port to
 serve the HTML reports on and what addresses to accept connectiosn from. See
 :ref:`Hosting HTML Reports`.
