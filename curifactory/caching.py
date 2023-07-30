@@ -14,7 +14,8 @@ import os
 import pickle
 from datetime import datetime
 from pathlib import Path
-from typing import Union
+from typing import Union, Optional
+from enum import Enum
 
 import pandas as pd
 
@@ -473,7 +474,103 @@ class PickleCacher(Cacheable):
         return path
 
 
-class PandasJsonCacher(Cacheable):
+class PandasIOType(Enum):
+    csv = "csv"
+    json = "json"
+    parquet = "parquet"
+    pickle = "pkl"
+    orc = "orc"
+    hdf5 = "h5"
+    excel = "xlsx"
+    xml = "xml"
+
+
+class PandasCacher(Cacheable):
+    """Saves a pandas dataframe to selectable IO format.
+
+    Args:
+        io_format (PandasIOType): Selected pandas IO format from enum
+            of possible choices.
+        to_args (Dict): Dictionary of arguments to use in the pandas
+            :code:`to_*()` call.
+        read_args (Dict): Dictionary of arguments to use in the pandas
+            :code:`read_*()` call.
+    """
+
+    def __init__(
+        self,
+        io_format: PandasIOType,
+        path_override: Optional[str] = None,
+        to_args: Optional[dict] = None,
+        read_args: Optional[dict] = None,
+        **kwargs
+    ):
+        self.io_format = io_format
+        self.read_args = read_args
+        self.to_args = to_args
+
+        if self.read_args is None:
+            self.read_args = {}
+        if self.to_args is None:
+            self.to_args = {}
+
+        if self.io_format == PandasIOType.json:
+            logging.warning("Using this cacher is inadvisable for floating point data, as precision"
+                            "will be lost, creating the potential for different results when using"
+                            "cached values with this cacher as opposed to the first non-cached run.")
+
+        super().__init__(path_override=path_override, extension=f".{self.io_format.value}", **kwargs)
+
+    def load(self):
+        if self.io_format == PandasIOType.csv:
+            pandas_read = pd.read_csv
+        elif self.io_format == PandasIOType.json:
+            pandas_read = pd.read_json
+        elif self.io_format == PandasIOType.parquet:
+            pandas_read = pd.read_parquet
+        elif self.io_format == PandasIOType.pickle:
+            pandas_read = pd.read_pickle
+        elif self.io_format == PandasIOType.orc:
+            pandas_read = pd.read_orc
+        elif self.io_format == PandasIOType.hdf5:
+            pandas_read = pd.read_hdf
+        elif self.io_format == PandasIOType.excel:
+            pandas_read = pd.read_excel
+        elif self.io_format == PandasIOType.xml:
+            pandas_read = pd.read_xml
+        else:
+            raise RuntimeError(
+                    f"Invalid Pandas IO Type ({self.io_format}) selected"
+                )
+        return pandas_read(self.get_path(), **self.read_args)
+
+    def save(self, obj: pd.DataFrame) -> str:
+        if self.io_format == PandasIOType.csv:
+            pandas_to = obj.to_csv
+        elif self.io_format == PandasIOType.json:
+            pandas_to = obj.to_json
+        elif self.io_format == PandasIOType.parquet:
+            pandas_to = obj.to_parquet
+        elif self.io_format == PandasIOType.pickle:
+            pandas_to = obj.to_pickle
+        elif self.io_format == PandasIOType.orc:
+            pandas_to = obj.to_orc
+        elif self.io_format == PandasIOType.hdf5:
+            pandas_to = obj.to_hdf
+        elif self.io_format == PandasIOType.excel:
+            pandas_to = obj.to_excel
+        elif self.io_format == PandasIOType.xml:
+            pandas_to = obj.to_xml
+        else:
+            raise RuntimeError(
+                    f"Invalid Pandas IO Type ({self.io_format}) selected"
+                )
+        path = self.get_path()
+        pandas_to(path, **self.to_args)
+        return path
+
+
+class PandasJsonCacher(PandasCacher):
     """Saves a pandas dataframe to JSON.
 
     Warning:
@@ -496,20 +593,16 @@ class PandasJsonCacher(Cacheable):
         read_json_args: dict = dict(),
         **kwargs
     ):
-        self.read_json_args = read_json_args
-        self.to_json_args = to_json_args
-        super().__init__(path_override=path_override, extension=".json", **kwargs)
-
-    def load(self):
-        return pd.read_json(self.get_path(), **self.read_csv_args)
-
-    def save(self, obj) -> str:
-        path = self.get_path()
-        obj.to_json(path, **self.to_json_args)
-        return path
+        super().__init__(
+            io_format=PandasIOType.json,
+            path_override=path_override,
+            to_args=to_json_args,
+            read_args=read_json_args,
+            **kwargs
+        )
 
 
-class PandasCsvCacher(Cacheable):
+class PandasCsvCacher(PandasCacher):
     """Saves a pandas dataframe to CSV.
 
     Args:
@@ -526,17 +619,13 @@ class PandasCsvCacher(Cacheable):
         read_csv_args: dict = dict(index_col=0),
         **kwargs
     ):
-        self.read_csv_args = read_csv_args
-        self.to_csv_args = to_csv_args
-        super().__init__(path_override=path_override, extension=".csv", **kwargs)
-
-    def load(self):
-        return pd.read_csv(self.get_path(), **self.read_csv_args)
-
-    def save(self, obj) -> str:
-        path = self.get_path()
-        obj.to_csv(path, **self.to_csv_args)
-        return path
+        super().__init__(
+            io_format=PandasIOType.csv,
+            path_override=path_override,
+            to_args=to_csv_args,
+            read_args=read_csv_args,
+            **kwargs
+        )
 
 
 class FileReferenceCacher(Cacheable):
