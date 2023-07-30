@@ -192,7 +192,7 @@ explicit save/load metadata calls in the save/load functions:
         def save(self, obj):
             self.extra_metadata["the_best_number"] = 13
             self.save_metadata()
-            JsonCacher(self.geet_path()).save(obj)
+            JsonCacher(self.get_path()).save(obj)
 
         def load(self):
             self.load_metadata()
