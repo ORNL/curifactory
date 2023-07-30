@@ -73,6 +73,7 @@ Once enabled, the `experiment` command will provide tab complete for experiment 
 The documentation for the latest version of Curifactory can be found at:
 [https://ornl.github.io/curifactory/latest/index.html](https://ornl.github.io/curifactory/latest/index.html).
 
+
 ## Examples
 
 Several small example projects can be found in the `examples` folder.
@@ -85,3 +86,13 @@ script.
 
 Please see the following DOI if citing this project:
 [10.11578/dc.20220208.1](https://doi.org/10.11578/dc.20220208.1)
+
+
+## Similar Projects
+
+Curifactory is one tool and one opinion among many, other projects that have similar goals and/or approaches:
+
+* [Kedro](https://github.com/kedro-org/kedro)
+* [Tango](https://github.com/allenai/tango)
+* [Sacred](https://github.com/IDSIA/sacred)
+* [MLFlow](https://github.com/mlflow/mlflow)
