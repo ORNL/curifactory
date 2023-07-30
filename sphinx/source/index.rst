@@ -47,6 +47,7 @@ Features
     parameters.rst
     cache.rst
     hashing_mechanics.rst
+    experiment_graph.rst
     reports.rst
     config.rst
     cli_guide.rst
