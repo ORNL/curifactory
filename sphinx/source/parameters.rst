@@ -292,3 +292,49 @@ representation on num_gpus:
     #> 'a04bd13c314c694d8f1cff76cc34d2b'
     p3.params_hash()
     #> 'ff1275fb121412c666259c7baefbf4e9'
+
+Subparameter classes
+--------------------
+
+It is possible to have parameter dataclasses composed of other dataclasses, which can
+help keep parameters organized and syntactically convenient:
+
+.. code-block:: python
+
+    @dataclass
+    class DataParams:
+        path: str = ""
+
+    @dataclass
+    class Params(cf.ExperimentParameters):
+        a: int = 6
+        data: DataParams = DataParams()
+
+    my_params = Params()
+    my_params.data.path
+
+Note that in python 3.11, the mutability requirements for dataclass fields were tightened,
+and the above code may not work (since a dataclass is mutable by default.) There are two
+ways around this, the first is easier but not recommended, placing a ``unsafe_hash=True``
+in the sub dataclass:
+
+.. code-block:: python
+
+    @dataclass(unsafe_hash=True)
+    class DataParams:
+        path: str = ""
+
+The more correct way is to use dataclasses' ``default_factory``:
+
+.. code-block:: python
+
+    from dataclasses import dataclass, field
+
+    @dataclass
+    class DataParams:
+        path: str = ""
+
+    @dataclass
+    class Params(cf.ExperimentParameters):
+        a: int = 6
+        data: DataParams = field(default_factory=lambda: DataParams())
