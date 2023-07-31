@@ -306,12 +306,31 @@ def set_logging_prefix(prefix: str):
     # https://stackoverflow.com/questions/17558552/how-do-i-add-custom-field-to-python-log-format-string
     old_factory = logging.getLogRecordFactory()
 
-    def new_factory(*args, **kwargs):
-        record = old_factory(*args, **kwargs)
-        record.prefix = prefix
-        return record
+    if isinstance(old_factory, PrefixedLogFactory):
+        old_factory.prefix = prefix
+    else:
+        logging.setLogRecordFactory(PrefixedLogFactory(old_factory, prefix))
 
-    logging.setLogRecordFactory(new_factory)
+
+class PrefixedLogFactory:
+    """Note that we have to use this to prevent weird recursion issues.
+
+    My understanding is that since logging is in the global context, after many many tests,
+    the old_factory keeps getting set to the previous new_factory, and you end up with a massive
+    function chain. Using this class approach above, we can check if we've already set the
+    factory to an instance of this class, and just update the prefix on it.
+
+    https://stackoverflow.com/questions/59585861/using-logrecordfactory-in-python-to-add-custom-fields-for-logging
+    """
+
+    def __init__(self, original_factory, prefix):
+        self.original_factory = original_factory
+        self.prefix = prefix
+
+    def __call__(self, *args, **kwargs):
+        record = self.original_factory(*args, **kwargs)
+        record.prefix = self.prefix
+        return record
 
 
 def preview_object(object: any) -> str:
