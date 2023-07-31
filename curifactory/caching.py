@@ -13,9 +13,9 @@ import logging
 import os
 import pickle
 from datetime import datetime
-from pathlib import Path
-from typing import Union, Optional, Literal
 from enum import Enum
+from pathlib import Path
+from typing import Literal, Optional, Union
 
 import pandas as pd
 
@@ -491,98 +491,123 @@ class PandasCacher(Cacheable):
     """Saves a pandas dataframe to selectable IO format.
 
     Args:
-        io_format (str): Selected pandas IO format. Choices are: 
+        format (str): Selected pandas IO format. Choices are:
             ("csv", "json", "parquet", "pickle",
             "orc", "hdf5", "excel", "xml")
         to_args (Dict): Dictionary of arguments to use in the pandas
-            :code:`to_*()` call.
+            ``to_*()`` call.
         read_args (Dict): Dictionary of arguments to use in the pandas
-            :code:`read_*()` call.
+            ``read_*()`` call.
     """
 
     def __init__(
         self,
-        io_format: Literal[
-            "csv", "json", "parquet", "pickle",
-            "orc", "hdf5", "excel", "xml"
-        ] = "pickle",
         path_override: Optional[str] = None,
+        format: Literal[
+            "csv", "json", "parquet", "pickle", "orc", "hdf5", "excel", "xml"
+        ] = "pickle",
         to_args: Optional[dict] = None,
         read_args: Optional[dict] = None,
-        **kwargs
+        **kwargs,
     ):
-        self.io_format = _PandasIOType[io_format]
+        self.format = _PandasIOType[format]
         self.read_args = read_args
         self.to_args = to_args
 
+        # set up default args for specific types, if none are provided
         if self.to_args is None:
-            if self.io_format == _PandasIOType.json:
+            if self.format == _PandasIOType.json:
                 self.to_args = {"double_precision": 15}
-            elif self.io_format == _PandasIOType.hdf5:
+            elif self.format == _PandasIOType.hdf5:
                 self.to_args = {"key": "df"}
-            elif self.io_format == _PandasIOType.xml:
+            elif self.format == _PandasIOType.xml:
                 self.to_args = {"index": False}
             else:
                 self.to_args = {}
-        
+
         if self.read_args is None:
-            if self.io_format in (_PandasIOType.csv, _PandasIOType.excel):
+            if self.format in (_PandasIOType.csv, _PandasIOType.excel):
                 self.read_args = {"index_col": 0}
             else:
                 self.read_args = {}
-        
 
-        if self.io_format == _PandasIOType.json:
-            logging.warning("Using this cacher is inadvisable for floating point data, as precision"
-                            "will be lost, creating the potential for different results when using"
-                            "cached values with this cacher as opposed to the first non-cached run.")
+        if self.format == _PandasIOType.json:
+            logging.warning(
+                "Using this cacher is inadvisable for floating point data, as precision"
+                "will be lost, creating the potential for different results when using"
+                "cached values with this cacher as opposed to the first non-cached run."
+            )
 
-        super().__init__(path_override=path_override, extension=f".{self.io_format.value}", **kwargs)
+        super().__init__(
+            path_override=path_override, extension=f".{self.format.value}", **kwargs
+        )
+
+    # TODO: 7/31/2023 - might be worth considering adding a function to "populate from metadata",
+    # which would load the metadata for the specified path, and then populate both format and
+    # read_args. This could make it a little simpler to use a pandas cacher inline in a notebook
+    # for reading.
 
     def load(self):
-        if self.io_format == _PandasIOType.csv:
+        # select the appropriate pandas read function based on format
+        if self.format == _PandasIOType.csv:
             pandas_read = pd.read_csv
-        elif self.io_format == _PandasIOType.json:
+        elif self.format == _PandasIOType.json:
             pandas_read = pd.read_json
-        elif self.io_format == _PandasIOType.parquet:
+        elif self.format == _PandasIOType.parquet:
             pandas_read = pd.read_parquet
-        elif self.io_format == _PandasIOType.pickle:
+        elif self.format == _PandasIOType.pickle:
             pandas_read = pd.read_pickle
-        elif self.io_format == _PandasIOType.orc:
+        elif self.format == _PandasIOType.orc:
             pandas_read = pd.read_orc
-        elif self.io_format == _PandasIOType.hdf5:
+        elif self.format == _PandasIOType.hdf5:
             pandas_read = pd.read_hdf
-        elif self.io_format == _PandasIOType.excel:
+        elif self.format == _PandasIOType.excel:
             pandas_read = pd.read_excel
-        elif self.io_format == _PandasIOType.xml:
+        elif self.format == _PandasIOType.xml:
             pandas_read = pd.read_xml
         else:
-            raise RuntimeError(
-                    f"Invalid Pandas IO Type ({self.io_format.name}) selected"
+            raise RuntimeError(f"Invalid Pandas IO Type ({self.format.name}) selected")
+
+        # double check that there's no pandas version mismatch
+        # at some point it may be worth warning only on major/minor version difference
+        self.load_metadata()
+        if "pandas_version" in self.extra_metadata:
+            if self.extra_metadata["pandas_version"] != pd.__version__:
+                logging.warning(
+                    "Attempting to use pandas v%s to load a dataframe that was initially saved with pandas v%s"
+                    % (pd.__version__, self.extra_metadata["pandas_version"])
                 )
+
         return pandas_read(self.get_path(), **self.read_args)
 
     def save(self, obj: pd.DataFrame) -> str:
-        if self.io_format == _PandasIOType.csv:
+        # select appropriate pandas write function based on format
+        if self.format == _PandasIOType.csv:
             pandas_to = obj.to_csv
-        elif self.io_format == _PandasIOType.json:
+        elif self.format == _PandasIOType.json:
             pandas_to = obj.to_json
-        elif self.io_format == _PandasIOType.parquet:
+        elif self.format == _PandasIOType.parquet:
             pandas_to = obj.to_parquet
-        elif self.io_format == _PandasIOType.pickle:
+        elif self.format == _PandasIOType.pickle:
             pandas_to = obj.to_pickle
-        elif self.io_format == _PandasIOType.orc:
+        elif self.format == _PandasIOType.orc:
             pandas_to = obj.to_orc
-        elif self.io_format == _PandasIOType.hdf5:
+        elif self.format == _PandasIOType.hdf5:
             pandas_to = obj.to_hdf
-        elif self.io_format == _PandasIOType.excel:
+        elif self.format == _PandasIOType.excel:
             pandas_to = obj.to_excel
-        elif self.io_format == _PandasIOType.xml:
+        elif self.format == _PandasIOType.xml:
             pandas_to = obj.to_xml
         else:
-            raise RuntimeError(
-                    f"Invalid Pandas IO Type ({self.io_format.name}) selected"
-                )
+            raise RuntimeError(f"Invalid Pandas IO Type ({self.format.name}) selected")
+        # record relevant cacher information to help track down any issues if they arise
+        self.extra_metadata["pandas_version"] = pd.__version__
+        self.extra_metadata["to_args"] = self.to_args
+        self.extra_metadata["read_args"] = self.read_args
+        self.extra_metadata["format"] = self.format.name
+        self.save_metadata()
+
+        # write the thing!
         path = self.get_path()
         pandas_to(path, **self.to_args)
         return path
@@ -599,9 +624,9 @@ class PandasJsonCacher(PandasCacher):
 
     Args:
         to_json_args (Dict): Dictionary of arguments to use in the pandas
-            :code:`to_json()` call.
+            ``to_json()`` call.
         read_json_args (Dict): Dictionary of arguments to use in the pandas
-            :code:`read_json()` call.
+            ``read_json()`` call.
     """
 
     def __init__(
@@ -609,14 +634,14 @@ class PandasJsonCacher(PandasCacher):
         path_override: str = None,
         to_json_args: dict = dict(double_precision=15),
         read_json_args: dict = dict(),
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
-            io_format="json",
             path_override=path_override,
+            format="json",
             to_args=to_json_args,
             read_args=read_json_args,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -625,9 +650,9 @@ class PandasCsvCacher(PandasCacher):
 
     Args:
         to_csv_args (Dict): Dictionary of arguments to use in the pandas
-            :code:`to_csv()` call.
+            ``to_csv()`` call.
         read_csv_args (Dict): Dictionary of arguments to use in the pandas
-            :code:`read_csv()` call.
+            ``read_csv()`` call.
     """
 
     def __init__(
@@ -635,20 +660,20 @@ class PandasCsvCacher(PandasCacher):
         path_override: str = None,
         to_csv_args: dict = dict(),
         read_csv_args: dict = dict(index_col=0),
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
-            io_format="csv",
             path_override=path_override,
+            format="csv",
             to_args=to_csv_args,
             read_args=read_csv_args,
-            **kwargs
+            **kwargs,
         )
 
 
 class FileReferenceCacher(Cacheable):
     """Saves a file path or list of file paths generated from a stage as a json file.
-    The :code:`check` function will check existence of all file paths.
+    The ``check`` function will check existence of all file paths.
 
     This is useful for instances where there may be a large number of files stored or
     generated to disk, as it would be unwieldy to return them all (or infeasible to keep them

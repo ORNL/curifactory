@@ -15,11 +15,11 @@ from curifactory.caching import (
     Cacheable,
     JsonCacher,
     PandasCacher,
-    _PandasIOType,
     PandasCsvCacher,
     PandasJsonCacher,
     PickleCacher,
     RawJupyterNotebookCacher,
+    _PandasIOType,
 )
 from curifactory.reporting import JsonReporter
 
@@ -664,8 +664,7 @@ def test_pandas_json_cacher_with_df_no_recursion_error(configured_test_manager):
 
 
 @pytest.mark.parametrize(
-    "io_format",
-    ["csv", "json", "parquet", "pickle", "orc", "hdf5", "excel", "xml"]
+    "io_format", ["csv", "json", "parquet", "pickle", "orc", "hdf5", "excel", "xml"]
 )
 def test_pandas_cacher_for_all_io_formats(configured_test_manager, io_format):
     """The PandasCacher should work for save and load for all IO formats."""
@@ -678,7 +677,7 @@ def test_pandas_cacher_for_all_io_formats(configured_test_manager, io_format):
     }
     saved_df = pd.DataFrame(data)
 
-    @cf.stage(outputs=["df"], cachers=[PandasCacher(io_format=io_format)])
+    @cf.stage(outputs=["df"], cachers=[PandasCacher(format=io_format)])
     def write_pandas(record):
         return saved_df
 
@@ -691,10 +690,7 @@ def test_pandas_cacher_for_all_io_formats(configured_test_manager, io_format):
     )
     assert os.path.exists(f"{path}.{io_format_enum.value}")
 
-    loaded_df = PandasCacher(
-        io_format=io_format,
-        path_override=f"{path}.{io_format_enum.value}"
-    ).load()
+    loaded_df = PandasCacher(f"{path}.{io_format_enum.value}", format=io_format).load()
 
     assert saved_df.equals(loaded_df)
 
@@ -714,10 +710,7 @@ def test_pandas_cacher_for_all_io_formats(configured_test_manager, io_format):
     # fmt: on
 )
 def test_pandas_cacher_for_all_io_formats_with_args(
-    configured_test_manager,
-    io_format,
-    to_args,
-    read_args
+    configured_test_manager, io_format, to_args, read_args
 ):
     """The PandasCacher should work for save and load for all IO formats
     with input to_args and read_args."""
@@ -731,11 +724,12 @@ def test_pandas_cacher_for_all_io_formats_with_args(
     saved_df = pd.DataFrame(data)
     saved_df = saved_df.convert_dtypes(dtype_backend="pyarrow")
     if io_format_enum in (_PandasIOType.csv, _PandasIOType.excel):
-        saved_df.index = saved_df.index.astype('int64[pyarrow]', copy=False)
+        saved_df.index = saved_df.index.astype("int64[pyarrow]", copy=False)
 
-    @cf.stage(outputs=["df"], cachers=[
-        PandasCacher(io_format=io_format, to_args=to_args, read_args=read_args)
-    ])
+    @cf.stage(
+        outputs=["df"],
+        cachers=[PandasCacher(format=io_format, to_args=to_args, read_args=read_args)],
+    )
     def write_pandas(record):
         return saved_df
 
@@ -749,10 +743,10 @@ def test_pandas_cacher_for_all_io_formats_with_args(
     assert os.path.exists(f"{path}.{io_format_enum.value}")
 
     loaded_df = PandasCacher(
-        io_format=io_format,
-        path_override=f"{path}.{io_format_enum.value}",
+        f"{path}.{io_format_enum.value}",
+        format=io_format,
         to_args=to_args,
-        read_args=read_args
+        read_args=read_args,
     ).load()
 
     assert saved_df.equals(loaded_df)
