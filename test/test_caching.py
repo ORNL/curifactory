@@ -682,12 +682,12 @@ def test_pandas_cacher_for_all_io_formats(configured_test_manager, io_format):
     def write_pandas(record):
         return saved_df
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     write_pandas(r0)
 
     path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_write_pandas_df",
+        f"test_{r0.params.hash}_write_pandas_df",
     )
     assert os.path.exists(f"{path}.{io_format_enum.value}")
 
@@ -739,12 +739,12 @@ def test_pandas_cacher_for_all_io_formats_with_args(
     def write_pandas(record):
         return saved_df
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     write_pandas(r0)
 
     path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_write_pandas_df",
+        f"test_{r0.params.hash}_write_pandas_df",
     )
     assert os.path.exists(f"{path}.{io_format_enum.value}")
 
