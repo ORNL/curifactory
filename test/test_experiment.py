@@ -284,6 +284,12 @@ def test_basic_params_get_loaded():
     assert len(mngr.records) == 3
 
 
+def test_submodules_loaded():
+    """Referencing submodule experiments and parameter files should run correctly."""
+    results, mngr = run_experiment("subexp.example", ["subparams.thing"])
+    assert results.output == [-1, 2, 5]
+
+
 def test_appropriate_store_registry_use_dry(configuration, clear_filesystem):
     """Running an experiment in dry mode should not create a store or parameters registry."""
     results, mngr = run_experiment("basic", ["params1", "params2"], dry=True)
@@ -429,9 +435,9 @@ def test_valid_args_names_works(clear_filesystem):
 
 def test_experiments_completer():
     output = experiments_completer()
-    assert output == ["basic"]
+    assert output == ["basic", "subexp.example"]
 
 
 def test_params_completer():
     output = params_completer()
-    assert output == ["empty", "nonarrayargs", "params1", "params2"]
+    assert output == ["empty", "nonarrayargs", "params1", "params2", "subparams.thing"]

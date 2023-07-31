@@ -1,3 +1,6 @@
+"""Make sure a sub module parameter file shows up and is usable."""
+
+
 from test.examples.params.basic import Args
 
 
