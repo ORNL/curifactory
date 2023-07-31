@@ -1,42 +1,10 @@
 Getting Started
 ###############
 
-
-Installation
-============
-
-Curifactory can be installed from pip via:
-
-.. code-block:: bash
-
-    pip install curifactory
-
-Note that graphviz must be installed for certain reporting features to work.
-In conda, you can do this with:
-
-.. code-block:: bash
-
-    conda install python-graphviz
-
-
-Curifactory comes with a CLI :code:`curifactory` runnable, which can bootstrap a
-curifactory-enabled project directory for you.
-
-.. code-block:: bash
-
-    curifactory init
-
-This command will step you through the process. You can run it either in a new
-folder or in an existing project, and it will create any necessary paths for
-curifactory to work. Descriptions of the various folders created in the
-initialization process are in the
-:ref:`configuration and directory structure` section.
-
-
 Basic components
 ================
 
-This section follows the `0_BasicComponents <https://github.com/ORNL/curifactory/blob/main/examples/notebook-based/notebooks/0_BasicComponents.ipynb>`_ notebook. We first
+This section follows the `0_BasicComponents <https://github.com/ORNL/curifactory/blob/main/examples/notebooks/0_BasicComponents.ipynb>`_ notebook. We first
 introduce the four basic components of curifactory and
 show how to use them from a within a live context. (A live context is either a
 notebook, REPL, or non-experiment script.)
@@ -44,7 +12,7 @@ notebook, REPL, or non-experiment script.)
 These components are:
 
 * the artifact manager
-* arguments
+* parameters
 * records
 * stages
 
@@ -74,56 +42,56 @@ report.
 
     The artifact manager contains and keeps track of the overall session for the experiment stuff.
 
-Arguments
----------
+Parameters
+----------
 
-The next component is **arguments**. Argument classes are a way to
-define how research code can be parameterized, e.g. how many layers to
+The next component is **parameters**. Parameter classes are a way to
+define how research code can be configured, e.g. how many layers to
 include in a neural network. By defining and initializing these directly
 in python, we have the ability to dynamically create experiment
 parameter configurations, compose them, etc.
 
-Curifactory comes with an ``ExperimentArgs`` superclass that all argument
-classes should inherit from. ``ExperimentArgs`` includes a ``name``
-parameter, allowing you to provide a label for an args set.
+Curifactory comes with an ``ExperimentParameters`` base class that all
+custom parameter classes should inherit from. ``ExperimentParameters``
+includes a ``name`` parameter, allowing you to provide a label for the
+parameter sets.
 
 .. note::
 
-    For best ergonomics, we recommend defining an args class with the python
+    For best ergonomics, we recommend defining an parameter class with the python
     ``@dataclass`` decorator. This makes it easy to define defaults and
-    quickly view your argument definitions simply as a collection of
-    parameters.
+    quickly view your parameter definitions simply as a collection of
+    attributes.
 
-Arg sets can then be initialized, passed around, and used within your
-research code, making it easy to organize and keep track of
-hyperparameters.
+Parameter sets can then be initialized, passed around, and used within your
+research code, making it easy to organize and keep track of hyperparameters.
 
 .. code-block:: ipython3
 
     from dataclasses import dataclass
-    from curifactory import ExperimentArgs
+    from curifactory import ExperimentParameters
 
     @dataclass
-    class MyArgs(ExperimentArgs):
+    class MyParams(ExperimentParameters):
         some_scalar_multiplier: float = 1.0
 
     # define a couple argument sets
-    default_args = MyArgs(name="default")
-    doubled_args = MyArgs(name="doubled", some_scalar_multiplier=2.0)
+    default_params = MyParams(name="default")
+    doubled_params = MyParams(name="doubled", some_scalar_multiplier=2.0)
 
 .. figure:: images/components_args.png
     :align: center
 
-    Creating and passing different argument sets through the experiment stuff
+    Creating and passing different parameter sets through the experiment stuff
     will give us different sets of results in the manager we can compare.
 
 Records
 -------
 
 A **record** is how curifactory keeps track of state in an experiment
-run. "State" includes the data, objects, and results associated with a set of
-arguments, e.g. a trained model that came from using a particular
-``MyArgs`` instance. The ``Record`` class is initialized with the
+run. "State" includes the data, objects, and results associated with a specific
+parameter set, e.g. a trained model that came from using a particular
+``MyParams`` instance. The ``Record`` class is initialized with the
 current manager as well as the argument set to use. Records
 have a ``state`` dictionary, which holds intermediate data and objects
 as research code is evaluated.
@@ -132,13 +100,13 @@ as research code is evaluated.
 
     from curifactory import Record
 
-    r0 = Record(manager, default_args)
-    r1 = Record(manager, doubled_args)
+    r0 = Record(manager, default_params)
+    r1 = Record(manager, doubled_params)
 
-    print(r0.state, r0.args)
-    #> {} MyArgs(name='default', hash=None, overwrite=False, some_scalar_multiplier=1.0)
-    print(r1.state, r1.args)
-    #> {} MyArgs(name='doubled', hash=None, overwrite=False, some_scalar_multiplier=2.0)
+    print(r0.state, r0.params)
+    #> {} MyParams(name='default', hash=None, overwrite=False, some_scalar_multiplier=1.0)
+    print(r1.state, r1.params)
+    #> {} MyParams(name='doubled', hash=None, overwrite=False, some_scalar_multiplier=2.0)
 
 
 
@@ -146,7 +114,7 @@ as research code is evaluated.
     :align: center
 
     The state for each record is what's actually storing the results from the
-    experiment stuff for each given arg set.
+    experiment stuff for each given parameter set.
 
 Stages
 ------
@@ -160,9 +128,9 @@ that are then stored in the record’s state. This is implemented with a
 array of string output names. Functions with the ``@stage`` decorator
 must accept a record as the first argument.
 
-Inside the stage, the record parameter can be used to obtain the arguments
-necessary to parameterize the computation, via the ``record.args``
-attribute.
+Inside the stage, the record object that is passed in can be used to get
+the current parameter set and parameterize the computation,
+via the ``record.params`` attribute.
 
 In the example below, we’ve defined a very simple stage that will store
 a number in the record’s state under the “initial_value” key.
@@ -179,7 +147,7 @@ stages, which we demonstate later on.
     @stage(inputs=None, outputs=["initial_value"])
     def get_initial_value(record):
         my_value = 5
-        return my_value * record.args.some_scalar_multiplier
+        return my_value * record.params.some_scalar_multiplier
 
     r0 = get_initial_value(r0)
     r1 = get_initial_value(r1)
@@ -203,7 +171,7 @@ the returned ``initial_value`` data.
 
 Specifying inputs on the stage decorator tells curifactory to search for
 those keys in the state of the passed record. Those values are then
-injected into the record call as kwargs. Note that the parameter names
+injected into the record call as kwargs. Note that the argument names
 in the function definition must match the string values of the inputs
 array.
 
@@ -215,7 +183,7 @@ that piece of data and computes a new value based on it.
 
     @stage(inputs=["initial_value"], outputs=["final_value"])
     def multiply_again(record, initial_value):
-        return initial_value * record.args.some_scalar_multiplier
+        return initial_value * record.params.some_scalar_multiplier
 
     r1 = multiply_again(r1)
     print(r1.state)
@@ -227,11 +195,11 @@ can be functionally chained together:
 
 .. code-block:: ipython3
 
-    r2 = Record(manager, MyArgs(name="uber-double", some_scalar_multiplier=4.0))
+    r2 = Record(manager, MyParams(name="uber-double", some_scalar_multiplier=4.0))
 
     r2 = multiply_again(get_initial_value(r2))
-    print(r2.state, r2.args)
-    #> {'initial_value': 20.0, 'final_value': 80.0} MyArgs(name='uber-double', hash=None, overwrite=False, some_scalar_multiplier=4.0)
+    print(r2.state, r2.params)
+    #> {'initial_value': 20.0, 'final_value': 80.0} MyParams(name='uber-double', hash=None, overwrite=False, some_scalar_multiplier=4.0)
 
 
 
@@ -245,14 +213,23 @@ Records and stages represent linear chains of compute steps, but
 in many cases it’s important to compare results and data across multiple pieces
 of an experiment run (e.g. comparing the scores of an SVM with the
 scores of a logistic regression algorithm.) ``@aggregate`` decorated
-functions are a special kind of stage that have no explicit inputs, but
-instead take a collection of records to compute over. Aggregate stages
-still produce outputs and both take and return a single record associated
-with it, meaning additional regular stages can be chained after an aggregate
-stage.
+functions are a special kind of stage that additionally take a collection of
+records to compute over. Aggregate stages still produce outputs and both take
+and return a single record associated with it, meaning additional regular
+stages can be chained after an aggregate stage.
 
-``@aggregate`` decorated stages must take a single record
-as the first parameter (like a normal stage,) and the collection of records to compute over as the second.
+We specify inputs to an ``@aggregate`` decorator the same way we do with
+``@stage``, with a list of string names of artifacts from record state, and the
+function definition still needs to have correspondingly named arguments for
+those inputs. However, since an aggregate takes multiple records, these input
+arguments are populated with dictionaries where each key is a record that has
+the requested input in its state, and the value is that object in the state. Any
+records that don't have the requested input will throw a warning, and will be
+absent from that dictionary.
+
+``@aggregate`` decorated stages must take the single record as the first parameter
+(like a normal stage,) and the collection of records to compute over as the
+second, followed by the arguments for any specified inputs.
 
 In the example below, we iterate through the records to create a
 dictionary of all associated ``final_value`` entries from each record’s
@@ -262,19 +239,18 @@ state, and then determine the maximum.
 
     from curifactory import aggregate
 
-    @aggregate(outputs=["all_final_values", "maximum_value"])
-    def find_maximum_final_value(record, records):
+    @aggregate(inputs=["final_value"], outputs=["all_final_values", "maximum_value"])
+    def find_maximum_final_value(record, records, final_value: dict[Record, float]):
         all_vals = {}
-        for r in records:
-            if "final_value" in r.state:
-                all_vals[r.args.name] = r.state["final_value"]
+        for r, value in final_value.items():
+            all_vals[r.params.name] = value
 
         maximum = max(all_vals.values())
         return all_vals, maximum
 
-Sometimes an aggregate doesn't really need its own set of arguments, e.g. if it's
+Sometimes an aggregate doesn't really need its own parameter set, e.g. if it's
 simply comparing results from other records. In these cases, records can be initialized with ``None`` passed as the
-argset. In the cell below, we manually pass our previous records into
+parameter set. In the cell below, we manually pass our previous records into
 the stage, but note that if we pass ``None`` for records (the default) it will take all existing records in the manager.
 
 .. code-block:: ipython3
@@ -284,18 +260,22 @@ the stage, but note that if we pass ``None`` for records (the default) it will t
     print(final_record.state)
     #> {'all_final_values': {'doubled': 20.0, 'uber-double': 80.0}, 'maximum_value': 80.0}
 
-
+Note that we ran our aggregate stage on three records, the first one of which
+(``r0``) did not have a ``final_value`` artifact in state. While ``r0`` will still be
+passed in the ``records`` list that the aggregate stage has access to, the
+``final_value`` dictionary only had entries for ``r1`` and ``r2``, so the output
+artifact ``all_final_values`` only lists those two parameter sets.
 
 .. figure:: images/aggregates.png
     :align: center
 
 To recap, the artifact manager keeps track of the overall session for a
-run, the “experiment run container”. Sets of arguments are created with
+run, the “experiment run container”. Parameter sets are created with
 different hyperparameters to test a hypothesis or vary the experiment.
-Records track state changes and intermediate data associated with some
-set of arguments throughout the experiment. Stages are what modify record state,
+Records track state changes and intermediate data associated with a
+parameter set throughout the experiment. Stages are what modify record state,
 they apply research code
-to the passed records based on their associated arguments, and the
+to the passed records based on their associated parameters, and the
 results for each stage are stored back into the record’s now modified
 state.
 
@@ -306,7 +286,10 @@ state.
 Caching and reporting
 =====================
 
-This section follows the `1_CachingAndReporting <https://github.com/ORNL/curifactory/blob/main/examples/notebook-based/notebooks/1_CachingAndReporting.ipynb>`_ notebook. Here we demonstrate some features the previously discussed components
+..
+    TODO: continue modifying params/args language below
+
+This section follows the `1_CachingAndReporting <https://github.com/ORNL/curifactory/blob/main/examples/notebooks/1_CachingAndReporting.ipynb>`_ notebook. Here we demonstrate some features the previously discussed components
 enable. Two major abilities are easily caching
 objects (to short circuit computation of already-computed values) and
 quickly adding graphs and other “reportables” to a jupyter
@@ -324,11 +307,11 @@ the previous example:
     manager = cf.ArtifactManager("notebook_example_1")
 
     @dataclass
-    class Args(cf.ExperimentArgs):
+    class Params(cf.ExperimentParameters):
         my_parameter: int = 1
 
-    default_args = Args(name="default")
-    doubled_args = Args(name="doubled", my_parameter=2)
+    default_params = Params(name="default")
+    doubled_params = Params(name="doubled", my_parameter=2)
 
 Caching
 -------
@@ -338,7 +321,8 @@ Caching is done at each stage by listing a
 runs, each cacher will save the returned object in the data cache path.
 The cached filename includes the name of the experiment (the string passed
 to ``ArtifactManager``, “notebook_example_1” in this case), the hash
-string of the arguments, the name of the stage doing the caching, and
+string of the parameters (see the :ref:`Hashing Mechanics` page for more information on
+how this gets calculated), the name of the stage doing the caching, and
 the name of the output itself.
 
 On any subsequent run of that stage, the cachers all check to see if
@@ -362,7 +346,7 @@ demonstrate cachers short-circuiting computation:
     @cf.stage(inputs=None, outputs=["long-compute-data"], cachers=[JsonCacher])
     def long_compute_step(record):
         some_data = {
-            "my_value": record.args.my_parameter,
+            "my_value": record.params.my_parameter,
             "magic_value": 42
         }
         sleep(5)  # making dictionaries is hard work
@@ -375,7 +359,7 @@ We run a record through our long running stage, and as expected it takes
 .. code-block:: ipython3
 
     %%time
-    r0 = cf.Record(manager, default_args)
+    r0 = cf.Record(manager, default_params)
     r0 = long_compute_step(r0)
 
 
@@ -405,14 +389,14 @@ which we can load up and see is the output from our stage:
     {'my_value': 1, 'magic_value': 42}
 
 
-If we run the stage again with a record using the same arg set as the
-previous one, it finds the correct cached output and returns before
+If we run the stage again with a record using the same parameter set as the
+previous time, it finds the correct cached output and returns before
 running the stage code:
 
 .. code-block:: ipython3
 
     %%time
-    r1 = cf.Record(manager, default_args)
+    r1 = cf.Record(manager, default_params)
     r1 = long_compute_step(r1)
 
 
@@ -422,12 +406,12 @@ running the stage code:
     Wall time: 0 ns
 
 
-Using different arguments results in a different cache path, so
+Using a different parameter set results in a different cache path, so
 computations with different parameters won’t conflict:
 
 .. code-block:: ipython3
 
-    r2 = cf.Record(manager, doubled_args)
+    r2 = cf.Record(manager, doubled_params)
     r2 = long_compute_step(r2)
 
     os.listdir("data/cache")
@@ -466,7 +450,7 @@ earlier stage outputs may never need to load into memory at all.
         print(sys.getsizeof(mega_big))
         return mega_big
 
-    r3 = cf.Record(manager, default_args)
+    r3 = cf.Record(manager, default_params)
     r3 = make_mega_big_object(r3)
 
 
@@ -528,7 +512,7 @@ and ``LinePlotReporter``.
 
     @cf.stage(inputs=None, outputs=["line_history"])
     def make_pretty_graphs(record):
-        multiplier = record.args.my_parameter
+        multiplier = record.params.my_parameter
 
         # here we just make a bunch of example arrays of data to plot
         line_0 = [1 * multiplier, 2 * multiplier, 3 * multiplier]
@@ -547,8 +531,8 @@ and ``LinePlotReporter``.
         ))
         return [line_0, line_1, line_2]
 
-    r4 = cf.Record(manager, default_args)
-    r5 = cf.Record(manager, doubled_args)
+    r4 = cf.Record(manager, default_params)
+    r5 = cf.Record(manager, doubled_params)
 
     r4 = make_pretty_graphs(r4)
     r5 = make_pretty_graphs(r5)
@@ -649,7 +633,7 @@ along with a fully initialized :code:`ArtifactManager`.
     :align: center
 
 These mechanics provide a methodical way of creating curifactory-based runnables
-for a research project, and are what allows curifactory to inject all its features into
+for a research project, and are what allows curifactory to inject its features into
 each experiment run (e.g. automatic logging, reporting, and a single
 CLI interface for interacting with the experiment runs.)
 
@@ -664,14 +648,14 @@ established with the :code:`curifactory init` command, by default this is a fold
 the project root :code:`experiments/`, see :ref:`configuration and directory structure`).
 
 Experiment scripts must implement the aforementioned :code:`run()` function, which takes
-a list of :code:`ExperimentArgs` subclass instances and an :code:`ArtifactManager`:
+a list of :code:`ExperimentParameters` subclass instances and an :code:`ArtifactManager`:
 
 .. code-block:: python
 
     from typing import List
     import curifactory as cf
 
-    def run(argsets: List[cf.ExperimentArgs], manager: cf.ArtifactManager):
+    def run(param_sets: List[cf.ExperimentParameters], manager: cf.ArtifactManager):
         # 1. make records
         # 2. run stages
         # 3. ???
@@ -699,15 +683,15 @@ example experiment setup with some stages might look like:
     def test_models(record, records):
         # ...
 
-    def run(argsets, manager):
-        for argset in argsets:
-            record = cf.Record(manager, argset)
+    def run(param_sets, manager):
+        for param_set in param_sets:
+            record = cf.Record(manager, param_set)
             train_model(load_data(record))
 
         test_models(cf.Record(manager, None))
 
-We can add in the args dataclass that the stages need, and then make a basic
-:code:`get_params()` function to give us some argsets to compare a logistic
+We can add in the parameters class that the stages need, and then make a basic
+:code:`get_params()` function to give us some parameter sets to compare a logistic
 regression model versus a random forest classifier.
 
 .. code-block:: python
@@ -721,7 +705,7 @@ regression model versus a random forest classifier.
     from curifactory.caching import PickleCacher, JsonCacher
 
     @dataclass
-    class Args(cf.ExperimentArgs):
+    class Params(cf.ExperimentParameters):
         balanced: bool = False
         """Whether class weights should be balanced or not."""
         n: int = 100
@@ -733,17 +717,17 @@ regression model versus a random forest classifier.
 
     def get_params():
         return [
-            Args(name="simple_lr", balanced=True, model_type=LogisticRegression, seed=1),
-            Args(name="simple_rf", model_type=RandomForestClassifier, seed=1),
+            Params(name="simple_lr", balanced=True, model_type=LogisticRegression, seed=1),
+            Params(name="simple_rf", model_type=RandomForestClassifier, seed=1),
         ]
 
     # ...
     # stages
     # ...
 
-    def run(argsets, manager):
-        for argset in argsets:
-            record = cf.Record(manager, argset)
+    def run(param_sets, manager):
+        for param_set in param_sets:
+            record = cf.Record(manager, param_set)
             train_model(load_data(record))
 
         test_models(cf.Record(manager, None))
@@ -809,12 +793,12 @@ Parameter files
 
 As shown so far, for simplicity, experiments can have their own
 :code:`get_params()` function. However, frequently you may want to define multiple
-different sets of parameters and selectively include them in an experiment, or
+different collections of parameter sets and selectively include them in an experiment, or
 define sets that could be shared across multiple experiment scripts. One option
 is to simply explicitly refer to a previous experiment file that has the
 :code:`get_params()` you want, e.g. with :code:`experiment iris_updated -p iris`.
 
-The other option is to create separate parameter scripts, or distinct files in the
+The other option is to create separate parameter files, or distinct files in the
 params module path, (by default :code:`params/` in the project root.) These
 files should each contain a :code:`get_params()` function.
 
@@ -825,14 +809,14 @@ Importantly, you can specify multiple :code:`-p` flags to the experiment CLI, li
     experiment iris -p params_file1 -p params_file2 -p iris
 
 This will call the :code:`get_params()` of every requested parameters file (and/or experiment
-file) and combine all returned argument sets into a single list that gets passed
+file) and combine all returned parameter sets into a single list that gets passed
 into the experiment's :code:`run()`.
 
 
 .. figure:: images/curifactory_overview_simpler.png
     :align: center
 
-    Creating distinct parameters files allows for structuring shared argument sets
+    Creating distinct parameters files allows for structuring shared parameter sets
     to apply across experiments
 
 Organization of growing projects
@@ -855,10 +839,10 @@ Lacking any additional constraints, some ideas for use include:
 * Stages can either be directly in the research codebase wrapping research functions, or
   they can remain separated and just make the appropriate calls into your
   codebase, parameterized with relevant args.
-* Keeping all arguments commonly used by all experiments can be kept in
-  :code:`params/__init__.py`. If there are stages/args relevant only to a single
+* Keeping all parameters commonly used by all experiments can be kept in
+  :code:`params/__init__.py`. If there are stages/params relevant only to a single
   experiment, these can be kept in the experiment file, and extracted out later
-  if they become more generally useful. (A :code:`params.__init__.Args` class
+  if they become more generally useful. (A :code:`params.__init__.Params` class
   could be further subclassed in an experiment file to get the benefit of both.)
 * Common stage sequences can be simplified and extracted into a helper file,
   e.g. by defining a function that takes a record, calls the stages, and returns
@@ -878,7 +862,7 @@ Look through:
 
 * :ref:`Components` for a more in-depth understanding of the components and how they
   interact with each other.
-* :ref:`Parameter files and argsets` for fancier things you can do with parameters.
+* :ref:`Parameter files and parameter sets` for fancier things you can do with parameters.
 * :ref:`Cache` for how to make custom cachers.
 * :ref:`Reports` to get an idea for how reports work and how to use them, plus how
   to make custom reportables.

@@ -6,8 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changed
+* `args.ExperimentArgs` to `params.ExperimentParameters` (former still exists with deprecation warning.)
+* `Record.args` to `Record.params` (former still exists with deprecation warning.)
+* Organization in examples directory.
+
 ### Fixed
 * None extension for cacher not correctly handled in get_path.
+* Generated experiment notebook not reference correct cache path for artifacts on store full runs.
 
 
 

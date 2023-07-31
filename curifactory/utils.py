@@ -7,7 +7,7 @@ import platform
 import shutil
 import subprocess
 import sys
-from typing import Any
+import warnings
 
 from rich import get_console, reconfigure
 from rich.logging import RichHandler
@@ -93,7 +93,10 @@ def get_configuration() -> dict[str, str]:
 
 
 def get_editor() -> str:
-    """Returns a text editor to use for richer text entry, such as in providing experiment notes."""
+    """Returns a text editor to use for richer text entry, such as in providing experiment notes.
+
+    e.g. ``"vim"``
+    """
 
     def first_available_editor():
         for editor_name in EDITORS:
@@ -175,13 +178,13 @@ def human_readable_time(seconds: float) -> str:
     return f"{converted:.2f}{suffix}"
 
 
-def get_command_output(cmd, silent=False) -> str:
+def get_command_output(cmd: list[str], silent: bool = False) -> str:
     """Runs the command passed and returns the full string output of the command
     (minus the final newline).
 
     Args:
         cmd: Either a string command or array of strings, as one would pass to
-            :code:`subprocess.run()`
+            ``subprocess.run()``
     """
     try:
         cmd_return = subprocess.run(cmd, stdout=subprocess.PIPE)
@@ -198,12 +201,12 @@ def get_command_output(cmd, silent=False) -> str:
     return ""
 
 
-def run_command(cmd):
+def run_command(cmd: list[str]):
     """Prints output from running a command as it occurs.
 
     Args:
         cmd: Either a string command or array of strings, as one would pass to
-            :code:`subprocess.run()`
+            ``subprocess.run()``
     """
     logging.debug("Running command '%s'" % str(cmd))
 
@@ -215,7 +218,7 @@ def run_command(cmd):
 
 
 def get_current_commit() -> str:
-    """Returns printed output from running :code:`git rev-parse HEAD` command."""
+    """Returns printed output from running ``git rev-parse HEAD`` command."""
     return get_command_output(["git", "rev-parse", "HEAD"])
 
 
@@ -228,12 +231,12 @@ def check_git_dirty_workingdir() -> str:
 
 
 def get_pip_freeze() -> str:
-    """Returns printed output from running :code:`pip freeze` command."""
+    """Returns printed output from running ``pip freeze`` command."""
     return get_command_output(["pip", "freeze"])
 
 
 def get_conda_env() -> str:
-    """Returns printed output from running :code:`conda env export --from-history` command."""
+    """Returns printed output from running ``conda env export --from-history`` command."""
     output = ""
     execs = ["conda", "mamba", "micromamba"]
     while output == "" and len(execs) > 0:
@@ -250,7 +253,7 @@ def get_conda_env() -> str:
 
 
 def get_conda_list() -> str:
-    """Returns printed output from running :code:`conda env export --from-history` command."""
+    """Returns printed output from running ``conda env export --from-history`` command."""
     return get_command_output(["conda", "list"])
 
 
@@ -259,7 +262,7 @@ def get_os() -> str:
     return str(platform.platform())
 
 
-def get_py_opening_comment(lines):
+def get_py_opening_comment(lines: list[str]) -> str:
     """Parse the passed lines of a python script file for a top of file docstring.
     This is used to get parameter and experiment file descriptions, so be sure to
     always comment your code!"""
@@ -297,7 +300,7 @@ def get_py_opening_comment(lines):
     return content
 
 
-def set_logging_prefix(prefix):
+def set_logging_prefix(prefix: str):
     """Set the prefix content of the logger, which is incorporated in the log formatter. Currently
     this is just used to include pid number when running in parallel."""
     # https://stackoverflow.com/questions/17558552/how-do-i-add-custom-field-to-python-log-format-string
@@ -311,7 +314,7 @@ def set_logging_prefix(prefix):
     logging.setLogRecordFactory(new_factory)
 
 
-def preview_object(object: Any) -> str:
+def preview_object(object: any) -> str:
     """Get a small string representation of an object that fits nicely
     in a single line and includes shape information if relevant."""
     preview = f"({type(object).__name__}) {str(object)[:OBJECT_PREVIEW_STRING_LENGTH]}"
@@ -341,12 +344,12 @@ def init_logging(
     """Sets up logging configuration, including the associated file output.
 
     Args:
-        log_path (str): Folder to store output logs in. If :code:`None`, only log
+        log_path (str): Folder to store output logs in. If ``None``, only log
             to console.
         level: The logging level to output.
         log_errors (bool): Whether to include error messages in the log output or not.
         include_process (bool): Whether to include the PID prefix value in the logger.
-            This is mostly only used for when the :code:`--parallel` flag is used, to
+            This is mostly only used for when the ``--parallel`` flag is used, to
             help track which log message is from which process.
         no_color (bool): Suppress colors in console output.
         quiet (bool): Suppress all console log output.
@@ -416,14 +419,6 @@ def init_logging(
     if quiet:
         root_logger.setLevel(logging.ERROR)
 
-    # logging.getLogger("torch").setLevel(logging.WARNING)
-    # logging.getLogger("transformers").setLevel(logging.WARNING)
-    # logging.getLogger("requests").setLevel(logging.WARNING)
-    # logging.getLogger("urllib3").setLevel(logging.WARNING)
-    # logging.getLogger("snorkel").setLevel(logging.WARNING)
-    # logging.getLogger("snorkel.labeling.model").setLevel(logging.WARNING)
-    # logging.getLogger("snorkel.labeling.model.logger").setLevel(logging.WARNING)
-
 
 # https://stackoverflow.com/questions/19425736/how-to-redirect-stdout-and-stderr-to-logger-in-python
 class StreamToLogger:
@@ -434,3 +429,36 @@ class StreamToLogger:
     def write(self, buf):
         for line in buf.rstrip().splitlines():
             logging.log(self.level, line.rstrip())
+
+
+def _warn_deprecation(msg):
+    warnings.simplefilter("always", DeprecationWarning)  # turn off filter
+    warnings.warn(msg, DeprecationWarning, stacklevel=3)
+    warnings.simplefilter("default", DeprecationWarning)  # reset filter
+
+
+class _DeprecationHelper:
+    """Use this to warn about deprecated/changed class names.
+
+    NOTE: this doesn't work for dataclasses, just make the old dataclass inherit from the new dataclass and throw the warning in __post_init__ and __init_subclass__
+
+    See https://stackoverflow.com/questions/9008444/how-to-warn-about-class-name-deprecation
+    """
+
+    def __init__(self, original_name, new_target, extra_msg=""):
+        self.original_name = original_name
+        self.new_target = new_target
+        self.extra_msg = extra_msg
+
+    def _warn(self):
+        _warn_deprecation(
+            f"{self.original_name} has been deprecated. Please use {self.new_target.__class__} instead. {self.extra_msg}"
+        )
+
+    def __call__(self, *args, **kwargs):
+        self._warn()
+        return self.new_target(*args, **kwargs)
+
+    def __getattr__(self, attr):
+        self._warn()
+        return getattr(self.new_target, attr)

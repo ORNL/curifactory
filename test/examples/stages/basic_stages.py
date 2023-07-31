@@ -3,7 +3,7 @@ from curifactory import Record, stage
 
 @stage([], ["data"])
 def get_data(record: Record):
-    return record.args.starting_data
+    return record.params.starting_data
 
 
 @stage(["data"], ["sum"])

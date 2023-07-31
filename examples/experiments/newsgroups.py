@@ -11,7 +11,7 @@ from curifactory.reporting import JsonReporter, LinePlotReporter
 
 
 @dataclass
-class Args(cf.ExperimentArgs):
+class Params(cf.ExperimentParameters):
     layers: tuple = (100,)
     seed: int = 42
     activation: str = "relu"
@@ -23,14 +23,14 @@ class Args(cf.ExperimentArgs):
     inputs=None, outputs=["training_data", "testing_data"], cachers=[PickleCacher] * 2
 )
 def load_data(record):
-    args: Args = record.args
+    params: Params = record.params
 
     data = fetch_20newsgroups_vectorized()
     x_train, x_test, y_train, y_test = train_test_split(
-        data.data[: args.sample_count, : args.dimesionality],
-        data.target[: args.sample_count],
+        data.data[: params.sample_count, : params.dimesionality],
+        data.target[: params.sample_count],
         test_size=0.75,
-        random_state=args.seed,
+        random_state=params.seed,
     )
     logging.info(x_train.shape)
 
@@ -39,9 +39,9 @@ def load_data(record):
 
 @cf.stage(inputs=["training_data"], outputs=["model"], cachers=[PickleCacher])
 def train_model(record, training_data):
-    args: Args = record.args
+    params: Params = record.params
 
-    clf = MLPClassifier(args.layers, activation=args.activation).fit(
+    clf = MLPClassifier(params.layers, activation=params.activation).fit(
         training_data[0], training_data[1]
     )
 
@@ -66,8 +66,8 @@ def test_models(
         score = r_model.score(testing_data[r][0], testing_data[r][1])
 
         # store the result keyed to the argument set name
-        scores[r.args.name] = score
-        lines[r.args.name] = r_model.loss_curve_
+        scores[r.params.name] = score
+        lines[r.params.name] = r_model.loss_curve_
 
     record.report(LinePlotReporter(lines))
     record.report(JsonReporter(scores))
@@ -75,16 +75,16 @@ def test_models(
 
 
 def get_params():
-    args = []
+    params = []
     layer_sizes = [1, 10, 20, 50, 100]
     for size in layer_sizes:
-        args.append(Args(name=f"{size}", layers=(size,)))
-    return args
+        params.append(Params(name=f"{size}", layers=(size,)))
+    return params
 
 
-def run(argsets, manager):
-    for argset in argsets:
-        record = cf.Record(manager, argset)
+def run(param_sets, manager):
+    for param_set in param_sets:
+        record = cf.Record(manager, param_set)
         train_model(load_data(record))
 
     test_models(cf.Record(manager, None))

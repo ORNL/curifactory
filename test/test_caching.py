@@ -41,10 +41,10 @@ def clear_stage_run(configured_test_manager):
 
 def test_filerefcacher_stores_multiple_paths(configured_test_manager, clear_stage_run):
     """FileReferenceCacher should correctly store a list of files in the saved json."""
-    r = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     filerefcacher_stage_multifile(r)
 
-    argshash = r.args.hash
+    argshash = r.params.hash
     expected_list = [
         os.path.join(
             configured_test_manager.cache_path,
@@ -67,10 +67,10 @@ def test_filerefcacher_stores_multiple_paths(configured_test_manager, clear_stag
 
 
 def test_filerefcacher_stores_single_path(configured_test_manager, clear_stage_run):
-    r = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     filerefcacher_stage(r)
 
-    argshash = r.args.hash
+    argshash = r.params.hash
     expected_path = os.path.join(
         configured_test_manager.cache_path,
         f"test_{argshash}_filerefcacher_stage_my_file",
@@ -88,21 +88,21 @@ def test_filerefcacher_stores_single_path(configured_test_manager, clear_stage_r
 
 def test_filerefcacher_shortcircuits(configured_test_manager, clear_stage_run):
     """FileReferenceCacher should short-circuit if all files in the filelist already exist."""
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     filerefcacher_stage_multifile(r0)
 
     ran_path = os.path.join(configured_test_manager.cache_path, "stage_ran")
     assert os.path.exists(ran_path)
     os.remove(ran_path)
 
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     filerefcacher_stage_multifile(r1)
     assert not os.path.exists(ran_path)
 
 
 def test_filerefcacher_runs_when_file_missing(configured_test_manager, clear_stage_run):
     """FileReferenceCacher should _not_ short-circuit if any of the files in the filelist are missing."""
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     filerefcacher_stage_multifile(r0)
 
     ran_path = os.path.join(configured_test_manager.cache_path, "stage_ran")
@@ -111,11 +111,11 @@ def test_filerefcacher_runs_when_file_missing(configured_test_manager, clear_sta
     os.remove(
         os.path.join(
             configured_test_manager.cache_path,
-            f"test_{r0.args.hash}_filerefcacher_stage_multifile_my_files/thing1",
+            f"test_{r0.params.hash}_filerefcacher_stage_multifile_my_files/thing1",
         )
     )
 
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     filerefcacher_stage_multifile(r1)
     assert os.path.exists(ran_path)
 
@@ -128,17 +128,17 @@ def test_reportables_are_cached(configured_test_manager):
         record.report(JsonReporter({"test": "hello world"}))
         return "test"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     basic_reportable(r0)
 
     list_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_basic_reportable_reportables_file_list.json",
+        f"test_{r0.params.hash}_basic_reportable_reportables_file_list.json",
     )
 
     reportable_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_basic_reportable_reportables/test_basic_reportable_0.pkl",
+        f"test_{r0.params.hash}_basic_reportable_reportables/test_basic_reportable_0.pkl",
     )
 
     assert os.path.exists(list_path)
@@ -159,17 +159,17 @@ def test_named_reportables_are_cached(configured_test_manager):
         record.report(JsonReporter({"test": "hello world"}, name="thing"))
         return "test"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     basic_reportable(r0)
 
     list_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_basic_reportable_reportables_file_list.json",
+        f"test_{r0.params.hash}_basic_reportable_reportables_file_list.json",
     )
 
     reportable_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_basic_reportable_reportables/test_basic_reportable_thing.pkl",
+        f"test_{r0.params.hash}_basic_reportable_reportables/test_basic_reportable_thing.pkl",
     )
 
     assert os.path.exists(list_path)
@@ -197,14 +197,14 @@ def test_cached_reportables_loaded_without_doubling_name(configured_test_manager
         record.report(JsonReporter({"test": "hello world"}))
         return "test"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     basic_reportable(r0)
 
     assert len(configured_test_manager.reportables) == 1
 
     # run again in a new record with exact same config, so it will find cached
     # things.
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     basic_reportable(r1)
 
     # make sure we didn't run the stage, so we actually had to load reportables
@@ -238,14 +238,14 @@ def test_cached_named_reportables_loaded_without_doubling_name(configured_test_m
         record.report(JsonReporter({"test": "hello world"}, name="thing"))
         return "test"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     basic_reportable(r0)
 
     assert len(configured_test_manager.reportables) == 1
 
     # run again in a new record with exact same config, so it will find cached
     # things.
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     basic_reportable(r1)
 
     # make sure we didn't run the stage, so we actually had to load reportables
@@ -271,11 +271,11 @@ def test_aggregate_reportables_are_cached(configured_test_manager):
         record.report(JsonReporter({"test": "hello world"}))
         return "test"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
-    print("hash", r0.args.hash)
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
+    print("hash", r0.params.hash)
     basic_agg_reportable(r0)
-    print("hash", r0.args.hash)
-    assert r0.args.hash is not None
+    print("hash", r0.params.hash)
+    assert r0.params.hash is not None
 
     list_path = os.path.join(
         configured_test_manager.cache_path,
@@ -320,9 +320,9 @@ def test_aggregate_args_no_records_loads_cache(configured_test_manager):
         call_count += 1
         return "hello world!"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     r0 = test_agg(r0, [])
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     r1 = test_agg(r1, [])
 
     assert call_count == 1
@@ -340,12 +340,12 @@ def test_aggregate_args_records_loads_cache(configured_test_manager):
         call_count += 1
         return "hello world!"
 
-    rA = cf.Record(configured_test_manager, cf.ExperimentArgs(name="testA"))
-    rB = cf.Record(configured_test_manager, cf.ExperimentArgs(name="testB"))
+    rA = cf.Record(configured_test_manager, cf.ExperimentParameters(name="testA"))
+    rB = cf.Record(configured_test_manager, cf.ExperimentParameters(name="testB"))
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     r0 = test_agg(r0, [rA, rB])
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     r1 = test_agg(r1, [rA, rB])
 
     assert call_count == 1
@@ -366,11 +366,11 @@ def test_aggregate_args_overwrite_no_records_doesnot_load_cache(
         return "hello world!"
 
     r0 = cf.Record(
-        configured_test_manager, cf.ExperimentArgs(name="test", overwrite=True)
+        configured_test_manager, cf.ExperimentParameters(name="test", overwrite=True)
     )
     r0 = test_agg(r0, [])
     r1 = cf.Record(
-        configured_test_manager, cf.ExperimentArgs(name="test", overwrite=True)
+        configured_test_manager, cf.ExperimentParameters(name="test", overwrite=True)
     )
     r1 = test_agg(r1, [])
 
@@ -400,13 +400,13 @@ def test_aggregate_args_records_overwrite_loads_cache(configured_test_manager):
         return "hello world!"
 
     rA = cf.Record(
-        configured_test_manager, cf.ExperimentArgs(name="testA", overwrite=True)
+        configured_test_manager, cf.ExperimentParameters(name="testA", overwrite=True)
     )
-    rB = cf.Record(configured_test_manager, cf.ExperimentArgs(name="testB"))
+    rB = cf.Record(configured_test_manager, cf.ExperimentParameters(name="testB"))
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     r0 = test_agg(r0, [rA, rB])
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     r1 = test_agg(r1, [rA, rB])
 
     assert call_count == 1
@@ -449,8 +449,8 @@ def test_aggregate_no_args_records_loads_cache(configured_test_manager):
         call_count += 1
         return "hello world!"
 
-    rA = cf.Record(configured_test_manager, cf.ExperimentArgs(name="testA"))
-    rB = cf.Record(configured_test_manager, cf.ExperimentArgs(name="testB"))
+    rA = cf.Record(configured_test_manager, cf.ExperimentParameters(name="testA"))
+    rB = cf.Record(configured_test_manager, cf.ExperimentParameters(name="testB"))
 
     r0 = cf.Record(configured_test_manager, None)
     r0 = test_agg(r0, [rA, rB])
@@ -481,9 +481,9 @@ def test_aggregate_no_args_records_overwrite_doesnot_load_cache(
         return "hello world!"
 
     rA = cf.Record(
-        configured_test_manager, cf.ExperimentArgs(name="testA", overwrite=True)
+        configured_test_manager, cf.ExperimentParameters(name="testA", overwrite=True)
     )
-    rB = cf.Record(configured_test_manager, cf.ExperimentArgs(name="testB"))
+    rB = cf.Record(configured_test_manager, cf.ExperimentParameters(name="testB"))
 
     r0 = cf.Record(configured_test_manager, None)
     r0 = test_agg(r0, [rA, rB])
@@ -506,17 +506,17 @@ def test_get_path_file_included_in_full_store(configured_test_manager):
 
         return 13
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     custom_output(r0)
 
     full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
 
     regular_custom_output_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_file.txt",
+        f"test_{r0.params.hash}_custom_output_my_extra_file.txt",
     )
     full_store_custom_output_path = os.path.join(
-        full_store_path, f"test_{r0.args.hash}_custom_output_my_extra_file.txt"
+        full_store_path, f"test_{r0.params.hash}_custom_output_my_extra_file.txt"
     )
     assert os.path.exists(regular_custom_output_path)
     assert os.path.exists(full_store_custom_output_path)
@@ -535,18 +535,18 @@ def test_get_dir_folder_included_in_full_store(configured_test_manager):
 
         return 13
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     custom_output(r0)
 
     full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
 
     regular_custom_output_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_dir/" "testfile.txt",
+        f"test_{r0.params.hash}_custom_output_my_extra_dir/" "testfile.txt",
     )
     full_store_custom_output_path = os.path.join(
         full_store_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_dir/" "testfile.txt",
+        f"test_{r0.params.hash}_custom_output_my_extra_dir/" "testfile.txt",
     )
     assert os.path.exists(regular_custom_output_path)
     assert os.path.exists(full_store_custom_output_path)
@@ -565,17 +565,17 @@ def test_get_path_file_excluded_in_full_store_when_not_tracked(configured_test_m
 
         return 13
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     custom_output(r0)
 
     full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
 
     regular_custom_output_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_file.txt",
+        f"test_{r0.params.hash}_custom_output_my_extra_file.txt",
     )
     full_store_custom_output_path = os.path.join(
-        full_store_path, f"test_{r0.args.hash}_custom_output_my_extra_file.txt"
+        full_store_path, f"test_{r0.params.hash}_custom_output_my_extra_file.txt"
     )
     assert os.path.exists(regular_custom_output_path)
     assert not os.path.exists(full_store_custom_output_path)
@@ -596,18 +596,18 @@ def test_get_dir_folder_excluded_in_full_store_when_not_tracked(
 
         return 13
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     custom_output(r0)
 
     full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
 
     regular_custom_output_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_dir/" "testfile.txt",
+        f"test_{r0.params.hash}_custom_output_my_extra_dir/" "testfile.txt",
     )
     full_store_custom_output_path = os.path.join(
         full_store_path,
-        f"test_{r0.args.hash}_custom_output_my_extra_dir/" "testfile.txt",
+        f"test_{r0.params.hash}_custom_output_my_extra_dir/" "testfile.txt",
     )
     assert os.path.exists(regular_custom_output_path)
     assert not os.path.exists(full_store_custom_output_path)
@@ -625,10 +625,10 @@ def test_pandas_csv_cacher_with_df_with_comma(configured_test_manager):
         df = pd.DataFrame(data=data)
         return df
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     save_comma_df(r0)
 
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     save_comma_df(r1)
 
     df1 = r0.state["output"]
@@ -650,12 +650,12 @@ def test_pandas_json_cacher_with_df_no_recursion_error(configured_test_manager):
         df = pd.DataFrame(data)
         return df
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     save_large_df(r0)
 
     path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_save_large_df_output.json",
+        f"test_{r0.params.hash}_save_large_df_output.json",
     )
 
     assert os.path.exists(path)
@@ -785,8 +785,8 @@ def test_cacheable_get_path(
     """A cacher's get_path should correctly handle different combinations of path inputs and
     requested suffixes."""
     configured_test_manager.current_stage_name = "test_stage"
-    r = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
-    r.args.hash = "hash"
+    r = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
+    r.params.hash = "hash"
 
     cacher = PickleCacher(**cacher_args, record=r)
 
@@ -802,16 +802,16 @@ def test_cacher_outputs_metadata(configured_test_manager):
     def output_thing(record):
         return "Hello world"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     output_thing(r0)
 
     path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_output_thing_output.pkl",
+        f"test_{r0.params.hash}_output_thing_output.pkl",
     )
     metadata_path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_output_thing_output_metadata.json",
+        f"test_{r0.params.hash}_output_thing_output_metadata.json",
     )
 
     assert os.path.exists(path)
@@ -826,14 +826,14 @@ def test_cacher_outputs_metadata_storefull(configured_test_manager):
     def output_thing(record):
         return "Hello world"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     output_thing(r0)
 
     full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
 
     metadata_path = os.path.join(
         full_store_path,
-        f"test_{r0.args.hash}_output_thing_output_metadata.json",
+        f"test_{r0.params.hash}_output_thing_output_metadata.json",
     )
     assert os.path.exists(metadata_path)
 
@@ -849,7 +849,7 @@ def test_manual_static_path_cacher_outputs_metadata(configured_test_manager):
         cacher.save("hello world")
         cacher.save_metadata()
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     output_thing(r0)
 
     path = "test/examples/data/cache/raw_path_file.pkl"
@@ -871,12 +871,12 @@ def test_load_metadata_with_manual_cacher_from_stage_cacher_path(
     def output_thing(record):
         return "Hello world"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     output_thing(r0)
 
     path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_output_thing_output.pkl",
+        f"test_{r0.params.hash}_output_thing_output.pkl",
     )
 
     manual_cacher = PickleCacher(path)
@@ -911,8 +911,8 @@ def test_overwrites_stage_doesnot_break_storefull_of_other_stages(
         overwritten_call_count += 1
         return "world!"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
-    r1 = cf.Record(alternate_test_manager2, cf.ExperimentArgs(name="test2"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
+    r1 = cf.Record(alternate_test_manager2, cf.ExperimentParameters(name="test2"))
 
     overwritten_output(non_overwritten_output(r0))
     overwritten_output(non_overwritten_output(r1))
@@ -923,11 +923,11 @@ def test_overwrites_stage_doesnot_break_storefull_of_other_stages(
     second_full_store_path = f"{alternate_test_manager2.runs_path}/test2_1_{alternate_test_manager2.get_str_timestamp()}/artifacts"
     nonoverwritten_output_path = os.path.join(
         second_full_store_path,
-        f"common_{r1.args.hash}_non_overwritten_output_firstoutput_metadata.json",
+        f"common_{r1.params.hash}_non_overwritten_output_firstoutput_metadata.json",
     )
     overwritten_output_path = os.path.join(
         second_full_store_path,
-        f"common_{r1.args.hash}_overwritten_output_secondoutput_metadata.json",
+        f"common_{r1.params.hash}_overwritten_output_secondoutput_metadata.json",
     )
 
     assert os.path.exists(nonoverwritten_output_path)
@@ -944,14 +944,14 @@ def test_non_tracked_cacher_does_not_copy_metadata_to_full_store(
     def output_thing(record):
         return "Hello world"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     output_thing(r0)
 
     full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
 
     metadata_path = os.path.join(
         full_store_path,
-        f"test_{r0.args.hash}_output_thing_output_metadata.json",
+        f"test_{r0.params.hash}_output_thing_output_metadata.json",
     )
     assert not os.path.exists(metadata_path)
 
@@ -966,14 +966,14 @@ def test_no_metadata_written_to_dry_cache_folder(
     def output_thing(record):
         return "Hello world"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     output_thing(r0)
 
     full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
 
     metadata_path = os.path.join(
         full_store_path,
-        f"test_{r0.args.hash}_output_thing_output_metadata.json",
+        f"test_{r0.params.hash}_output_thing_output_metadata.json",
     )
     assert not os.path.exists(metadata_path)
 
@@ -988,15 +988,15 @@ def test_existing_metadata_not_overwritten_when_cache_used(
     def output_thing(record):
         return "Hello world"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     output_thing(r0)
 
-    r1 = cf.Record(alternate_test_manager2, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(alternate_test_manager2, cf.ExperimentParameters(name="test"))
     output_thing(r1)
 
     path = os.path.join(
         configured_test_manager.cache_path,
-        f"commondata_{r1.args.hash}_output_thing_output_metadata.json",
+        f"commondata_{r1.params.hash}_output_thing_output_metadata.json",
     )
     metadata = JsonCacher(path).load()
     assert (
@@ -1016,16 +1016,16 @@ def test_uses_existing_metadata_in_full_store_when_cache_used(
     def output_thing(record):
         return "Hello world"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     output_thing(r0)
 
-    r1 = cf.Record(alternate_test_manager2, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(alternate_test_manager2, cf.ExperimentParameters(name="test"))
     output_thing(r1)
 
     full_store_path = f"{alternate_test_manager2.runs_path}/test2_1_{alternate_test_manager2.get_str_timestamp()}/artifacts"
     path = os.path.join(
         full_store_path,
-        f"commondata_{r1.args.hash}_output_thing_output_metadata.json",
+        f"commondata_{r1.params.hash}_output_thing_output_metadata.json",
     )
     metadata = JsonCacher(path).load()
     assert (
@@ -1046,7 +1046,7 @@ def test_cacher_getpath_keeps_stagename_after_later_stages(configured_test_manag
     def do_something_else(record, output):
         return output + ", kthxbye"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     r0 = output_thing(r0)
     assert cacher.stage == "output_thing"
     first_path = cacher.get_path()
@@ -1067,7 +1067,7 @@ def test_path_override_cacher_saves_to_that_path(configured_test_manager):
     def output_thing(record):
         return "Hello world"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     output_thing(r0)
 
     path = "test/examples/data/cache/raw_path_file.pkl"
@@ -1093,8 +1093,8 @@ def test_separate_managers_no_crosscache_by_default(
         run_count += 1
         return "Hello world"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
-    r1 = cf.Record(alternate_test_manager2, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
+    r1 = cf.Record(alternate_test_manager2, cf.ExperimentParameters(name="test"))
     output_thing(r0)
     output_thing(r1)
     assert run_count == 2
@@ -1108,7 +1108,7 @@ def test_separate_managers_common_prefix_cacher_crosscaches(
     run_count = 0
 
     @dataclass
-    class MyArgs(cf.ExperimentArgs):
+    class MyArgs(cf.ExperimentParameters):
         a: int = 5
 
     @cf.stage(None, ["output"], [PickleCacher(prefix="commondata")])
@@ -1132,7 +1132,7 @@ def test_separate_managers_common_prefix_cacher_no_crosscache_if_args_diff(
     run_count = 0
 
     @dataclass
-    class MyArgs(cf.ExperimentArgs):
+    class MyArgs(cf.ExperimentParameters):
         a: int = 5
 
     @cf.stage(None, ["output"], [PickleCacher(prefix="commondata")])
@@ -1158,12 +1158,12 @@ def test_cacher_with_record_get_path(configured_test_manager):
         cacher = JsonCacher(record.get_path("manualtest.json"))
         cacher.save(dict(message="hello world"))
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     manual_output_thing(r0)
 
     path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_manual_output_thing_manualtest.json",
+        f"test_{r0.params.hash}_manual_output_thing_manualtest.json",
     )
     assert os.path.exists(path)
     assert cacher.load()["message"] == "hello world"
@@ -1181,12 +1181,12 @@ def test_cacher_with_record_get_path_no_extension(configured_test_manager):
         cacher = JsonCacher(record.get_path("manualtest"))
         cacher.save(dict(message="hello world"))
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     manual_output_thing(r0)
 
     path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_manual_output_thing_manualtest",
+        f"test_{r0.params.hash}_manual_output_thing_manualtest",
     )
     assert os.path.exists(path)
     assert cacher.load()["message"] == "hello world"
@@ -1202,13 +1202,13 @@ def test_cacher_with_record_get_path_full_store(configured_test_manager):
         cacher = JsonCacher(record.get_path("manualtest.json"))
         cacher.save(dict(message="hello world"))
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     manual_output_thing(r0)
 
     full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
     path = os.path.join(
         full_store_path,
-        f"test_{r0.args.hash}_manual_output_thing_manualtest.json",
+        f"test_{r0.params.hash}_manual_output_thing_manualtest.json",
     )
     assert os.path.exists(path)
 
@@ -1226,13 +1226,13 @@ def test_cacher_with_record_get_path_no_extension_full_store(configured_test_man
         cacher = JsonCacher(record.get_path("manualtest"))
         cacher.save(dict(message="hello world"))
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     manual_output_thing(r0)
 
     full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
     path = os.path.join(
         full_store_path,
-        f"test_{r0.args.hash}_manual_output_thing_manualtest",
+        f"test_{r0.params.hash}_manual_output_thing_manualtest",
     )
     assert os.path.exists(path)
 
@@ -1264,12 +1264,12 @@ def test_custom_cacher_using_get_dir_store_full(configured_test_manager):
     def output_thing(record):
         return dict(message="hello world!")
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     output_thing(r0)
 
     path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_output_thing_output",
+        f"test_{r0.params.hash}_output_thing_output",
     )
     assert os.path.exists(path)
     assert os.path.exists(f"{path}/thing.json")
@@ -1278,7 +1278,7 @@ def test_custom_cacher_using_get_dir_store_full(configured_test_manager):
     full_store_path = f"{configured_test_manager.runs_path}/test_1_{configured_test_manager.get_str_timestamp()}/artifacts"
     full_path = os.path.join(
         full_store_path,
-        f"test_{r0.args.hash}_output_thing_output",
+        f"test_{r0.params.hash}_output_thing_output",
     )
     assert os.path.exists(full_path)
     assert os.path.exists(f"{full_path}/thing.json")
@@ -1299,12 +1299,12 @@ def test_raw_jupyter_notebook_cacher_saves_outputs(configured_test_manager):
         ]
         return cells
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     write_notebook(r0)
 
     path = os.path.join(
         configured_test_manager.cache_path,
-        f"test_{r0.args.hash}_write_notebook_notebook",
+        f"test_{r0.params.hash}_write_notebook_notebook",
     )
     assert os.path.exists(f"{path}.ipynb")
     assert os.path.exists(f"{path}_cells.json")
@@ -1340,8 +1340,8 @@ def test_extra_metadata_loaded_before_load(configured_test_manager):
         run_count += 1
         return "hello"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test2"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test2"))
     do_thing(r0)
     do_thing(r1)
 

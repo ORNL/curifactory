@@ -29,7 +29,7 @@ class Procedure:
                 mngr)
 
     Args:
-        stages: A list of function names that are wrapped in :code:`stage` or :code:`aggregate`
+        stages: A list of function names that are wrapped in ``@stage`` or ``@aggregate``
             decorators. Note that if using an aggregate state, it _must_ be the first one in the
             list.
         manager (ArtifactManager): The manager to associate this procedure and corresponding record
@@ -37,21 +37,19 @@ class Procedure:
         name (str): An optional name for the procedure. Currently unused, may eventually be put into
             logging or reporting.
         previous_proc (Procedure): If specified and this procedure begins with an aggregate stage,
-            use the :code:`previous_proc.records` list of records.
+            use the ``previous_proc.records`` list of records.
         records (List[Record]): If specified and this procedure begins with an aggregate stage, use
-            this list of records.
+            this list of records. Note that ``previous_proc`` takes precedence over this argument.
 
     Note:
-        If a procedure begins with an aggregate stage and neither :code:`previous_proc` nor
-        :code:`records` are specified, it will automatically grab all existing records from the
+        If a procedure begins with an aggregate stage and neither ``previous_proc`` nor
+        ``records`` are specified, it will automatically grab all existing records from the
         artifact manager.
     """
 
     def __init__(
         self, stages, manager=None, name=None, previous_proc=None, records=None
     ):
-        # TODO: allow manager to be none as well to just create a local manager (e.g. if you wanted to run
-        # a procedure within a notebook)
         # NOTE: pass in previous procedure to auto aggregate across just the records
         # from that previous procedure
         self.name = name
@@ -68,25 +66,26 @@ class Procedure:
         self.previous_proc = previous_proc
         self.use_records = records
 
-    def run(self, args, record=None, hide=False):
-        """Run this procedure with the passed set of args. This allows easily running
-        multiple argsets through the same set of stages and automatically getting a separate
+    def run(self, param_set, record=None, hide=False):
+        """Run this procedure with the passed parameter set. This allows easily running
+        multiple parameter sets through the same set of stages and automatically getting a separate
         record for each.
 
         Args:
-            args (ExperimentArgs): The args to put into the record created for this procedure.
+            param_set (ExperimentParameters): The parameteter set to put into the record created for
+                this procedure.
             record (Record): If you have a specific record you want the procedure to use (e.g.
                 if you're chaining multiple procedures and already have an applicable record to
                 use from the previous one), pass it here. If unspecified, a new record will
                 automatically be created for the passed args and relevant artifact manager.
-            hide (bool): If :code:`True`, don't add the created record to the artifact manager.
+            hide (bool): If ``True``, don't add the created record to the artifact manager.
 
         Returns:
-            The returned output from the last stage in :code:`self.stages`.
+            The returned output from the last stage in ``self.stages``.
         """
         # create a new record as needed
         if record is None:
-            self.record = Record(self.manager, args, hide=hide)
+            self.record = Record(self.manager, param_set, hide=hide)
             self.records.append(self.record)
         else:
             self.record = record
@@ -101,6 +100,10 @@ class Procedure:
             elif index == 0 and self.use_records is not None:
                 output = stage(self.record, self.use_records)
             else:
+                # Note that if the previous two conditions _weren't_ applicable but
+                # the first stage is still an aggregate, the aggregate decorator correctly
+                # handles converting the ``None`` that will be passed in for the records,
+                # to the full list of records on the manager.
                 output = stage(self.record)  # have to pass record into each stage
 
         return output

@@ -2,12 +2,12 @@
 
 # make all submodules directly accessible from a single curifactory import
 from curifactory import (
-    args,
     caching,
     docker,
     experiment,
     hashing,
     manager,
+    params,
     procedure,
     record,
     reporting,
@@ -17,10 +17,11 @@ from curifactory import (
 )
 
 # make super important things accessible directly off of the top level module
-from curifactory.args import ExperimentArgs
+from curifactory.args import ExperimentArgs  # TODO: remove once fully deprecated
 from curifactory.caching import Lazy
 from curifactory.hashing import set_hash_functions
 from curifactory.manager import ArtifactManager
+from curifactory.params import ExperimentParameters
 from curifactory.procedure import Procedure
 from curifactory.record import Record
 from curifactory.staging import (

@@ -25,14 +25,14 @@ def test_reportables_cached(configured_test_manager):
 
     ran_path = os.path.join(configured_test_manager.cache_path, "stage_ran")
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     stage_with_reportables(r0)
 
     assert len(configured_test_manager.reportables) == 1
     assert os.path.exists(ran_path)
     os.remove(ran_path)
 
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     stage_with_reportables(r1)
 
     assert len(configured_test_manager.reportables) == 2
@@ -47,7 +47,7 @@ def test_no_angle_brackets_in_report_argset_dump(configured_test_manager):
         thing2 = 2
 
     @dataclass
-    class MyArgs(cf.ExperimentArgs):
+    class MyArgs(cf.ExperimentParameters):
         thing: MyEnum = MyEnum.thing1
 
     cf.Record(configured_test_manager, MyArgs())
@@ -65,7 +65,7 @@ def test_reportable_render_uses_qualified_name_in_title(configured_test_manager)
         record.report(JsonReporter({"test": "hello world"}))
         return "test"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     basic_reportable(r0)
 
     reportable = configured_test_manager.reportables[0]
@@ -90,9 +90,9 @@ def test_detailed_record_subgraph_aggregate_doesnot_include_previous_artifacts(
     def agg(record, records, test_output):
         return "things"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test1"))
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test2"))
-    r2 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test3"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test1"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test2"))
+    r2 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test3"))
 
     test(r0)
     test(r1)

@@ -33,7 +33,6 @@ Features
 * HTML report output from each run with graphviz-rendered diagram of experiment
 * Easily report plots and values to HTML report
 * Configuration files are python scripts, allowing programmatic definition, parameter composition, and parameter inheritance
-* Companion `cookiecutter project <https://github.com/ORNL/cookiecutter-curifactory>`_
 * Output logs from every run
 * Run experiments directly from CLI or other python code, notebooks, etc.
 
@@ -42,15 +41,19 @@ Features
     :maxdepth: 2
     :caption: Usage
 
+    installation.rst
     getting_started.rst
     components.rst
     parameters.rst
     cache.rst
+    hashing_mechanics.rst
+    experiment_graph.rst
     reports.rst
     config.rst
     cli_guide.rst
-    tips.rst
     example.rst
+    tips.rst
+    cookbook.rst
     migration.rst
 
 
@@ -62,9 +65,12 @@ Features
 
     args.rst
     caching.rst
+    dag.rst
     docker.rst
     experiment.rst
+    hashing.rst
     manager.rst
+    params.rst
     procedure.rst
     project.rst
     record.rst

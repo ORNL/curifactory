@@ -43,12 +43,15 @@ The default values for the configuration are shown in this example:
         "report_css_path": "reports/style.css",
     }
 
-:code:`experiments_module_name` - the name of the folder where experiment
+:code:`experiments_module_name` - The name of the folder/module where experiment
 scripts are stored. This is treated as a python module, running an experiment
-essentially runs :code:`import experiments.[experiment_script_name]`
+essentially runs :code:`import experiments.[experiment_script_name]`. This means
+you can submodule your experiments folder. Note that since this is a module name,
+if you have it in a subfolder be sure to use '.' in your config instead of '/'
 
-:code:`params_module_name` - the name of the folder where parameter scripts
-are kept.
+:code:`params_module_name` - The name of the folder/module where parameter scripts
+are kept. Similar to experiments, this is a module name, and you can submodule
+your parameters.
 
 :code:`manager_cache_path` - The folder where artifact manager data is kept,
 namely the experiment store.
@@ -67,5 +70,4 @@ experiments run with :code:`--notebook` are stored.
 generated.
 
 :code:`report_css_path` - The CSS file to copy into each report directory. A default
-stylesheet comes with the cookiecutter project
-`cookiecutter project <https://github.com/ORNL/cookiecutter-curifactory>`_
+stylesheet comes when a project is set up with ``curifactory init``.

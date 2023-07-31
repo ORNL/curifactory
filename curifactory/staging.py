@@ -12,7 +12,7 @@ from typing import Any, Union
 import psutil
 
 from curifactory import utils
-from curifactory.caching import FileReferenceCacher, Lazy, PickleCacher
+from curifactory.caching import Cacheable, FileReferenceCacher, Lazy, PickleCacher
 from curifactory.record import ArtifactRepresentation, MapArtifactRepresentation, Record
 
 # NOTE: resource only exists on unix systems
@@ -109,23 +109,23 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
         parameter, followed by the input parameters corresponding to the :code:`inputs` list.
 
     Args:
-        inputs (List[str]): A list of variable names that this stage will need from the
+        inputs (list[str]): A list of variable names that this stage will need from the
             record state. **Note that all inputs listed here must have a corresponding
-            input parameter in the function definition line, each with the exact same name
+            input argument in the function definition line, each with the exact same name
             as in this list.**
-        outputs (List[Union[str, Lazy]]): A list of variable names that this stage will return and store
+        outputs (list[Union[str, Lazy]]): A list of variable names that this stage will return and store
             in the record state. These represent, in order, the tuple of returned values from
             the function being wrapped.
-        cachers (List[Cacheable]): An optional list of Cacheable instances ("strategies") to
+        cachers (list[Cacheable]): An optional list of ``Cacheable`` instances ("strategies") to
             apply to each of the return outputs. If specified, for each output, an instance
-            of the corresponding cacher is initialized, and the :code:`save()` function is called.
+            of the corresponding cacher is initialized, and the ``save()`` function is called.
             Before the wrapped function is called, the output path is first checked, and if it
-            exists and the current record args are not set to overwrite, the :code:`load()` function
+            exists and the current record parameter set is not configured to overwrite, the ``load()`` function
             is called and the wrapped function **does not execute.** Note that caching is all
             or nothing for a single function, you cannot cache only one returned value out of
             several.
         suppress_missing_inputs (bool): If true, any stage inputs that are not found in the record's
-            state will be passed in as :code:`None` rather than raising an exception. This can
+            state will be passed in as ``None`` rather than raising an exception. This can
             be used to make all inputs optional, such as if a stage will be used after different
             sets of previous stages and not all values are necessarily required.
 
@@ -138,15 +138,15 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                 return results_dictionary
 
         Note that from this example, this stage assumes some other stages have output
-        :code:`"data"` and :code:`"model"` at some point.
+        ``"data"`` and ``"model"`` at some point.
     """
 
     def decorator(function):
         @wraps(function)
         def wrapper(record: Record, *args, **kwargs):
-            # set the logging prefix to the args name
-            if record.args is not None:
-                utils.set_logging_prefix(f"[{record.args.name}] ")
+            # set the logging prefix to the parameter set name
+            if record.params is not None:
+                utils.set_logging_prefix(f"[{record.params.name}] ")
             else:
                 utils.set_logging_prefix("")
 
@@ -262,13 +262,6 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                             % (name, function_input)
                         )
                 else:
-                    # # check for a lazy object and resolve it if so
-                    # if type(record.state[function_input]) == Lazy:
-                    #     # TODO: no no no don't do this here, we haven't checked for cached outputs yet.
-                    #     logging.debug("Resolving lazy load object '%s'" % function_input)
-                    #     function_inputs[function_input] = record.state[function_input].load()
-                    # else:
-                    #     # otherwise we just directly pull it from the record state.
                     function_inputs[function_input] = record.state[function_input]
             function_inputs.update(kwargs)
             record.state.resolve = True
@@ -504,12 +497,12 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
     inputs: list[str] = None, outputs: list[str] = None, cachers: list = None
 ):
     """Decorator to wrap around a function that represents some step that must operate across
-    multiple different argsets or "experiment lines" within an experiment. This is normally
-    used to run final analyses and comparisons of results across all passed argument sets.
+    multiple different parameter sets or "execution chains" within an experiment. This is normally
+    used to run final analyses and comparisons of results across all passed parameter sets.
 
     Important:
         Any function wrapped with the aggregate decorator must take a Record instance as the first
-        parameter and a list of Record instances as the second. The former is the record that applies
+        argument and a list of Record instances as the second. The former is the record that applies
         to this function, and the latter is the set of other records from elsewhere in the experiment
         that this function needs to aggregate across.
 
@@ -525,15 +518,14 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
         outputs (list[str]): A list of variable names that this stage will return and store
             in the record state. These represent, in order, the tuple of returned values from
             the function being wrapped.
-        cachers (list[Cacheable]): An optional list of Cacheable instances ("strategies") to
+        cachers (list[Cacheable]): An optional list of ``Cacheable`` instances ("strategies") to
             apply to each of the return outputs. If specified, for each output, an instance
-            of the corresponding cacher is initialized, and the :code:`save()` function is called.
+            of the corresponding cacher is initialized, and the ``save()`` function is called.
             Before the wrapped function is called, the output path is first checked, and if it
-            exists and the current record args are not set to overwrite, the :code:`load()` function
-            is called and the wrapped function **does not execute.** Note that caching is all
-            or nothing for a single function, you cannot cache only one returned value out of
-            several.
-
+            exists and the current record parameters are not set to overwrite, the ``load()``
+            function is called and the wrapped function **does not execute.** Note that caching
+            is all or nothing for a single function, you cannot cache only one returned value
+            out of several.
 
     Example:
         .. code-block:: python
@@ -542,16 +534,16 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             def compile_results(record: Record, records: List[Record], results: dict[Record, float]):
                 final_results = {}
                 for in_record, result in results.items():
-                    results[in_record.args.name] = result
+                    results[in_record.params.name] = result
                 return final_results
     """
 
     def decorator(function):
         @wraps(function)
         def wrapper(record: Record, records: list[Record] = None, **kwargs):
-            # set the logging prefix to the args name
-            if record.args is not None:
-                utils.set_logging_prefix(f"[{record.args.name}] ")
+            # set the logging prefix to the parameter set name
+            if record.params is not None:
+                utils.set_logging_prefix(f"[{record.params.name}] ")
             else:
                 utils.set_logging_prefix("")
 
@@ -907,7 +899,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
 
 
 def _get_output_representations_for_map(
-    record, outputs: list[str], cachers, records=None
+    record, outputs: list[str], cachers: list[Cacheable], records: list[Record] = None
 ) -> list[MapArtifactRepresentation]:
     """Check if the requested outputs are cached but do not load them, simply return
     a list of statuses for found."""
@@ -935,7 +927,11 @@ def _get_output_representations_for_map(
 
 
 def _dag_skip_check_cached_outputs(
-    stage_name: str, record, outputs: list[str], cachers, records=None
+    stage_name: str,
+    record,
+    outputs: list[str],
+    cachers: list[Cacheable],
+    records: list[Record] = None,
 ):
     """Checks for cached values and loads any relevant metadata into artifact representations.
     This function does not actually load values themselves, meant to be called for a skipped stage
@@ -979,9 +975,17 @@ def _dag_skip_check_cached_outputs(
 
 
 def _check_cached_outputs(
-    stage_name: str, record, outputs: list[str], cachers, records=None
+    stage_name: str,
+    record: Record,
+    outputs: list[Union[str, Lazy]],
+    cachers: list[Cacheable],
+    records: list[Record] = None,
 ) -> bool:
-    """Check if the requested outputs are cached and load them if so."""
+    """Run the ``.check()`` on each cacher to see if the artifacts are in the cache or not/
+    if overwrite was specified and we need to re-run the stage.
+
+    NOTE: this function _does_ load metadata into the cachers if found.
+    """
     if cachers is not None and len(cachers) == 0:
         raise EmptyCachersError(
             "Do not use '[]' for cachers. This will always short-circuit because there is nothing that isn't cached."
@@ -1039,13 +1043,14 @@ def _check_cached_outputs(
 def _add_output_artifact(
     record,
     object: Any,
-    outputs: list[str],
+    outputs: list[Union[str, Lazy]],
     index: int,
     metadata=None,
     cacher=None,
     is_cached=False,
 ):
-    """Manage representation recording - this creates an artifact representation and adds to the manager's artifacts."""
+    """Manage representation recording - this creates an artifact representation and adds
+    to the manager's artifacts."""
     if not record.manager.map_mode:
         artifact = ArtifactRepresentation(
             record, outputs[index], object, metadata=metadata, cacher=cacher
@@ -1070,7 +1075,8 @@ def _add_output_artifact(
     return artifact
 
 
-def _check_cached_reportables(stage_name, record, aggregate_records=None):
+def _check_cached_reportables(stage_name, record, aggregate_records=None) -> bool:
+    """Look for any previously cached reportables"""
     reportables_list_cacher = FileReferenceCacher(
         name="reportables_file_list", record=record
     )
@@ -1088,6 +1094,9 @@ def _check_cached_reportables(stage_name, record, aggregate_records=None):
 
 
 def _store_reportables(stage_name, record, aggregate_records=None):
+    """Save a copy of each reportable that comes from a stage, so that if the stage is re-run and
+    doesn't actually execute (because outputs were cached), the reportables are still loaded and
+    added to the report."""
     # get all reportables from the manager for this record and stage name
     reportables = []
     for reportable in record.manager.reportables:
@@ -1130,8 +1139,14 @@ def _store_reportables(stage_name, record, aggregate_records=None):
 
 
 def _store_outputs(
-    function_name, record, outputs, cachers, function_outputs, records=None
+    function_name,
+    record: Record,
+    outputs: list[Union[str, Cacheable]],
+    cachers: list[Cacheable],
+    function_outputs: list[any],
+    records: list[Record] = None,
 ):
+    """Store the stage outputs in the cache as appropriate."""
     if len(outputs) == 0:
         return
 
