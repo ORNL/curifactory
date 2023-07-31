@@ -1049,7 +1049,7 @@ def experiments_completer(**kwargs) -> list[str]:
     )
     files = [file[:-3] for file in files if file != ""]
     files.sort()
-    return files
+    return [filename.replace("/", ".") for filename in files]
 
 
 def params_completer(**kwargs) -> list[str]:
@@ -1081,7 +1081,7 @@ def params_completer(**kwargs) -> list[str]:
     param_files = [file[:-3] for file in param_files if file != ""]
     files = param_files + experiment_files
     files.sort()
-    return files
+    return [filename.replace("/", ".") for filename in files]
 
 
 def main():
