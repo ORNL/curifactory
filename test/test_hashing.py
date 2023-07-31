@@ -143,11 +143,11 @@ def test_invalid_dataclassparam_should_not_change_hash():
 def test_new_ignored_param_sub_dataclass():
     """Adding a new (none-ignored) parameter to a subdatclass should not change the overall hash."""
 
-    @dataclass
+    @dataclass(unsafe_hash=True)
     class SubArgs1:
         a: int = 0
 
-    @dataclass
+    @dataclass(unsafe_hash=True)
     class SubArgs2:
         a: int = 0
         b: int = 5
@@ -186,7 +186,7 @@ def test_custom_hashing_composed_dataclasses():
     """Composing multiple dataclasses into an experimentargs class should allow setting
     hashing functions on the other dataclasses."""
 
-    @dataclass
+    @dataclass(unsafe_hash=True)
     class NormalDC:
         c: int = 5
         d: int = 6
@@ -213,7 +213,7 @@ def test_composed_dataclasses_diff():
     """Composing multiple dataclasses into an experimentargs class should correctly
     change the hash if those sub arguments are different."""
 
-    @dataclass
+    @dataclass(unsafe_hash=True)
     class NormalDC:
         c: int = 5
         d: int = 6
@@ -371,7 +371,7 @@ def test_subdataclass_val_in_str_rep_correct():
     """The string hash rep of a dataclass with sub-dataclasses should correctly
     represent the sub dataclasses the same way."""
 
-    @dataclass
+    @dataclass(unsafe_hash=True)
     class NormalDC:
         c: int = 5
         d: int = 6
@@ -396,7 +396,7 @@ def test_none_hash_subdataclass_val_in_str_rep_correct():
     represent the sub dataclasses the same way even if the sub dataclass is in the
     ignored parameters."""
 
-    @dataclass
+    @dataclass(unsafe_hash=True)
     class NormalDC:
         c: int = 5
         d: int = 6
