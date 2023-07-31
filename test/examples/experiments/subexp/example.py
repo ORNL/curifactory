@@ -1,5 +1,3 @@
-"""Ensure a sub module experiment shows up and is runnable."""
-
 from test.examples.stages.basic_stages import get_data
 
 import curifactory as cf

@@ -961,47 +961,50 @@ def regex_lister(module_name, regex, try_import=True):
         )
         return []
 
-    for filename in os.scandir(path):
-        # iterate every python file
-        if filename.path.endswith(".py"):
-            with open(filename.path) as infile:
-                lines = infile.readlines()
-                # check for a run() method
-                results = [re.findall(regex, line) for line in lines]
+    files = []
+    # find all the python filenames in all subdirectories of the module
+    for dirpath, dirnames, filenames in os.walk(path):
+        for filename in filenames:
+            if filename.endswith(".py"):
+                files.append(os.path.join(dirpath, filename))
 
-                # remove empty arrays from findall search
-                clean_results = []
-                for result in results:
-                    if result != []:
-                        clean_results.extend(result)
+    for filename in files:
+        with open(filename) as infile:
+            lines = infile.readlines()
+            # check for a run() method
+            results = [re.findall(regex, line) for line in lines]
 
-                # did we find a run()/get_params()?
-                if len(clean_results) > 0:
-                    non_pyextension_name = filename.name[:-3]
+            # remove empty arrays from findall search
+            clean_results = []
+            for result in results:
+                if result != []:
+                    clean_results.extend(result)
 
-                    if try_import:
-                        # see if it's valid
-                        try:
-                            importlib.import_module(
-                                f"{module_name}.{non_pyextension_name}"
-                            )
-                            comment = utils.get_py_opening_comment(lines)
-                            if comment != "":
-                                names.append(
-                                    non_pyextension_name
-                                    + " - "
-                                    + utils.get_py_opening_comment(lines)
-                                )
-                            else:
-                                names.append(non_pyextension_name)
-                        except Exception as e:
+            # did we find a run()/get_params()?
+            if len(clean_results) > 0:
+                non_pyextension_name = filename[:-3].replace("/", ".")
+                # remove the module_name from the full filename
+                non_pyextension_name = non_pyextension_name[len(module_name) + 1 :]
+
+                if try_import:
+                    # see if it's valid
+                    try:
+                        importlib.import_module(f"{module_name}.{non_pyextension_name}")
+                        comment = utils.get_py_opening_comment(lines)
+                        if comment != "":
                             names.append(
-                                non_pyextension_name + " [ERROR - " + str(e) + "]"
+                                non_pyextension_name
+                                + " - "
+                                + utils.get_py_opening_comment(lines)
                             )
-                    else:
-                        # we have a non-validity check option for speed, this is used
-                        # for the argcomplete stuff
-                        names.append(non_pyextension_name)
+                        else:
+                            names.append(non_pyextension_name)
+                    except Exception as e:
+                        names.append(non_pyextension_name + " [ERROR - " + str(e) + "]")
+                else:
+                    # we have a non-validity check option for speed, this is used
+                    # for the argcomplete stuff
+                    names.append(non_pyextension_name)
 
     return names
 
