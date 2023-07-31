@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * None extension for cacher not correctly handled in get_path.
+* Generated experiment notebook not reference correct cache path for artifacts on store full runs.
 
 
 
