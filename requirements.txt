@@ -16,3 +16,7 @@ build
 rich
 pre-commit
 argcomplete
+pyarrow>=7
+lxml
+openpyxl
+pytables
