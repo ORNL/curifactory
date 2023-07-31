@@ -7,8 +7,8 @@ from curifactory.caching import PickleCacher
 def test_child_records_empty_for_blank_records(configured_test_manager):
     """Records with no relation to eachother should have empty child_records"""
     configured_test_manager.map_mode = True
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs("test1"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test0"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters("test1"))
 
     configured_test_manager.map_mode = False
     configured_test_manager.map_records()
@@ -29,9 +29,9 @@ def test_child_records_after_make_copy(configured_test_manager):
         t = 5 + 2
         print(t)
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test0"))
     r0 = do_thing(r0)
-    r1 = r0.make_copy(cf.ExperimentArgs("test1"))
+    r1 = r0.make_copy(cf.ExperimentParameters("test1"))
 
     configured_test_manager.map_mode = False
     configured_test_manager.map_records()
@@ -54,7 +54,7 @@ def test_output_used_check_when_no_following_stages(configured_test_manager):
     def thing1(record):
         return "green eggs and ham"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test0"))
     r0 = thing1(r0)
 
     configured_test_manager.map_mode = False
@@ -74,10 +74,10 @@ def test_output_used_check_when_record_copied_butunused(configured_test_manager)
     def thing1(record):
         return "green eggs and ham"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test0"))
     r0 = thing1(r0)
 
-    r0.make_copy(cf.ExperimentArgs("test1"))
+    r0.make_copy(cf.ExperimentParameters("test1"))
 
     configured_test_manager.map_mode = False
     configured_test_manager.map_records()
@@ -100,7 +100,7 @@ def test_output_used_check_in_aggregate_when_not_expected(configured_test_manage
     def all_the_things(record, records):
         return "no"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test0"))
     r0 = thing1(r0)
 
     r1 = cf.Record(configured_test_manager, None)
@@ -126,7 +126,7 @@ def test_output_used_check_in_aggregate(configured_test_manager):
     def all_the_things(record, records, thing):
         return "no"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test0"))
     r0 = thing1(r0)
 
     r1 = cf.Record(configured_test_manager, None)
@@ -152,7 +152,7 @@ def test_output_used_check_finds_output_in_later_input(configured_test_manager):
     def thing2(record, thing):
         return "Sam I am"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test0"))
     thing1(r0)
     thing2(r0)
     # thing2(thing1(r0))
@@ -177,9 +177,9 @@ def test_output_used_check_finds_output_in_later_input_of_copy(configured_test_m
     def thing2(record, thing):
         return "Sam I am"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test0"))
     thing1(r0)
-    r1 = r0.make_copy(cf.ExperimentArgs("test1"))
+    r1 = r0.make_copy(cf.ExperimentParameters("test1"))
     thing2(r1)
 
     configured_test_manager.map_mode = False
@@ -198,7 +198,7 @@ def test_single_stage_is_leaf(configured_test_manager):
     def void_stares_back(record):
         print("If you stare into the abyss")
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     void_stares_back(r0)
 
     configured_test_manager.map_mode = False
@@ -220,7 +220,7 @@ def test_output_used_elsewhere_is_not_leaf(configured_test_manager):
     def thing2(record, thing):
         return "Sam I am"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test0"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test0"))
     thing2(thing1(r0))
 
     configured_test_manager.map_mode = False
@@ -260,7 +260,7 @@ def test_stage_with_missing_inputs_handled_correctly(
     def do_nothing(record, nothing):
         return 6
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     do_nothing(r0, **kwargs)
     configured_test_manager.map_mode = False
 
@@ -288,7 +288,7 @@ def test_single_record_execution_list_with_no_outputs(configured_test_manager):
         thing = 5 + 1
         thing += 1
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     do_nothing(r0)
     configured_test_manager.map_mode = False
     configured_test_manager.map_records()
@@ -327,7 +327,7 @@ def test_single_record_execution_list_with_no_outputs_and_inputs(
         thing = 5 + 1
         thing += 1
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     do_nothing(do_thing(r0))
     configured_test_manager.map_mode = False
     configured_test_manager.map_records()
@@ -363,7 +363,7 @@ def test_single_record_execution_lists(
     def thing1(record):
         return 1
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     thing1(r0)
 
     configured_test_manager.map_mode = False
@@ -412,7 +412,7 @@ def test_single_record_double_stage_execution_lists(
     def thing2(record, thing1):
         return thing1 + 1
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     thing2(thing1(r0))
 
     configured_test_manager.map_mode = False
@@ -465,7 +465,7 @@ def test_single_record_triple_stage_execution_lists(
     def thing3(record, thing2):
         return thing2 + 1
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     thing3(thing2(thing1(r0)))
 
     configured_test_manager.map_mode = False
@@ -531,7 +531,7 @@ def test_single_record_triple_stage_nonsinglechain_execution_lists(
     def thing3(record, thing1):
         return thing1 + 2
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     thing1(r0)
     thing2(r0)
     thing3(r0)
@@ -599,9 +599,9 @@ def test_double_record_triple_stage_execution_lists(
     def thing3(record, thing1):
         return thing1 + 2
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     thing1(r0)
-    r1 = r0.make_copy(cf.ExperimentArgs("test2"))
+    r1 = r0.make_copy(cf.ExperimentParameters("test2"))
     thing2(r0)
     thing3(r1)
 
@@ -677,9 +677,9 @@ def test_triple_record_quadruple_stage_execution_lists(
             total += value
         return total
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     thing1(r0)
-    r1 = r0.make_copy(cf.ExperimentArgs("test2"))
+    r1 = r0.make_copy(cf.ExperimentParameters("test2"))
     thing2(r0)
     thing3(r1)
     r2 = cf.Record(configured_test_manager, None)
@@ -719,9 +719,9 @@ def test_dag_will_not_force_recompute_of_similar_stages(configured_test_manager)
         return "hi"
 
     configured_test_manager.map_mode = True
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     do_thing(r0)
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     do_thing(r1)
 
     configured_test_manager.map_mode = False
@@ -731,9 +731,9 @@ def test_dag_will_not_force_recompute_of_similar_stages(configured_test_manager)
     assert len(dag.execution_list) == 2
     assert run_count == 0
 
-    actual_r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    actual_r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     do_thing(actual_r0)
-    actual_r1 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    actual_r1 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     do_thing(actual_r1)
 
     assert run_count == 1
@@ -756,9 +756,9 @@ def test_dag_will_not_force_recompute_of_similar_aggregate_stages(
         return "hi"
 
     configured_test_manager.map_mode = True
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     do_thing(r0, [])
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     do_thing(r1, [])
 
     configured_test_manager.map_mode = False
@@ -768,9 +768,9 @@ def test_dag_will_not_force_recompute_of_similar_aggregate_stages(
     assert len(dag.execution_list) == 2
     assert run_count == 0
 
-    actual_r0 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    actual_r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     do_thing(actual_r0, [])
-    actual_r1 = cf.Record(configured_test_manager, cf.ExperimentArgs("test"))
+    actual_r1 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))
     do_thing(actual_r1, [])
 
     assert run_count == 1

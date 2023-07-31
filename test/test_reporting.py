@@ -90,9 +90,9 @@ def test_detailed_record_subgraph_aggregate_doesnot_include_previous_artifacts(
     def agg(record, records, test_output):
         return "things"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test1"))
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test2"))
-    r2 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test3"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test1"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test2"))
+    r2 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test3"))
 
     test(r0)
     test(r1)

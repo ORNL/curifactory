@@ -1243,8 +1243,8 @@ def test_extra_metadata_loaded_before_load(configured_test_manager):
         run_count += 1
         return "hello"
 
-    r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
-    r1 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test2"))
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test2"))
     do_thing(r0)
     do_thing(r1)
 
