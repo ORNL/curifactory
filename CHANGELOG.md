@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+* `PandasCacher` as a more generalized variant of `PandasCsvCacher` and
+  `PandasJsonCacher`, supporting much more of the IO types pandas supports.
+
 ### Changed
 * `args.ExperimentArgs` to `params.ExperimentParameters` (former still exists with deprecation warning.)
 * `Record.args` to `Record.params` (former still exists with deprecation warning.)
@@ -14,7 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * None extension for cacher not correctly handled in get_path.
 * Generated experiment notebook not reference correct cache path for artifacts on store full runs.
-
+* `set_logging_prefix` incorrectly handling global logging scope (which can lead
+  to recursion errors.)
 
 
 
