@@ -76,10 +76,9 @@ The documentation for the latest version of Curifactory can be found at:
 
 ## Examples
 
-Several small example projects can be found in the `examples` folder.
-`examples/notebook-based` includes notebooks demonstrating usage of curifactory
-solely in Jupyter. `examples/minimal` shows a basic single-file experiment
-script.
+Several small example can be found in the `examples` folder.
+`examples/notebooks` includes walkthroughs demonstrating usage of curifactory
+solely in Jupyter.
 
 
 ## Citation

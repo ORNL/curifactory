@@ -846,10 +846,11 @@ def write_experiment_notebook(
 
     # pathing for whether full run or not
     directory_change_back = "/".join([".."] * directory_change_back_depth)
-    cache_dir_arg = f"manager_cache_path='{manager.get_run_output_path()}', cache_path='{manager.get_run_output_path()}', "
+    cache_dir_arg = f"manager_cache_path='{manager.get_run_output_path()}', cache_path='{manager.get_run_output_path()}/artifacts', "
     # warn if data is potentially wrong
     if use_global_cache:
         cache_dir_arg = ""
+        dry_warning = ""
         if not suppress_global_warning:
             output_lines.extend(
                 [
@@ -860,6 +861,8 @@ def write_experiment_notebook(
                     "",
                 ]
             )
+    else:
+        dry_warning = "# Note that if this experiment uses lazy artifacts, you will want to remove the `dry=True` args below"
 
     if errored:
         output_lines.extend(
@@ -887,6 +890,7 @@ def write_experiment_notebook(
             "logger.setLevel(logging.INFO)",
             "",
             "# %%",
+            dry_warning,
             f'manager = ArtifactManager("{experiment_name}", {cache_dir_arg} dry=True)',
             f'experiment.run_experiment("{experiment_name}", {str(param_files)}, dry=True, mngr=manager)',
             "",
