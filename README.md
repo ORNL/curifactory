@@ -5,6 +5,8 @@
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/curifactory.svg)](https://anaconda.org/conda-forge/curifactory)
 [![status](https://joss.theoj.org/papers/e6ace365c4f632391a289ddea5bbfd1c/status.svg)](https://joss.theoj.org/papers/e6ace365c4f632391a289ddea5bbfd1c)
 [![tests](https://github.com/ORNL/curifactory/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/ORNL/curifactory/actions/workflows/tests.yml)
+<!--https://img.shields.io/pypi/pyversions/curifactory.svg-->
+<!--https://img.shields.io/pypi/l/curifactory-->
 
 Curifactory is a library and CLI tool designed to help organize and manage
 research experiments in python.
