@@ -19,4 +19,4 @@ argcomplete
 pyarrow>=7
 lxml
 openpyxl
-pytables
+tables
