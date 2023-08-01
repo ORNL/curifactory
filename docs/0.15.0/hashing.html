@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hashing &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Manager" href="manager.html" />
+    <link rel="prev" title="Experiment" href="experiment.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and parameter sets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing_mechanics.html">Hashing Mechanics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment_graph.html">Experiment Graph (DAG)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Curifactory Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="args.html">Args</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dag.html">DAG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Hashing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="params.html">Params</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Hashing</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/hashing.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="module-curifactory.hashing">
+<span id="hashing"></span><h1>Hashing<a class="headerlink" href="#module-curifactory.hashing" title="Permalink to this headline"></a></h1>
+<p>Utility functions for generating hashes and for parameter sets.</p>
+<p>The hash of a parameter set is crucial to curifactory, as this hash gets
+prefixed to filenames stored in the cache and so is used to determine whether a
+particular artifact has already been computed for the given parameter set.</p>
+<p>The basic idea of this hash computation is that some representation for every
+parameter in a parameter set is retrieved, which is then turned into a string,
+and the md5 hash of that string is then computed. The integer value of the
+resulting md5 hashes of each parameter is added up, and the final integer is
+turned back into a string hex “hash”.</p>
+<p>An important concept is the ability to modify any given parameter’s
+representation that is used for the md5 hash, and whether it’s included as part
+of the overall hash at all. Some types of objects in python by default will only
+return a memory pointer when <code class="docutils literal notranslate"><span class="pre">repr</span></code> is called (which is the default mechanism
+we use for getting a string representation,) which means that every time an
+experiment is run, even if the parameters _should_ be the exact same, the hash
+will be different. By setting a dictionary of <code class="docutils literal notranslate"><span class="pre">hash_representations</span></code> on the
+parameter class, we can indivdiually control the representation computation for
+each parameter. We can also set the parameter representation to <code class="docutils literal notranslate"><span class="pre">None</span></code>, which
+means it will be ignored for the purposes of the hash. This is useful for
+“operational parameters”, or configuration of an experimeriment that wouldn’t
+actually modify the artifacts.  (e.g. the number of gpu’s to train an ML model
+on and so forth.)</p>
+<p>TODO: examples? (prob put this in the non-python-file docs)</p>
+<p><strong>Data:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.hashing.PARAMETERS_BLACKLIST" title="curifactory.hashing.PARAMETERS_BLACKLIST"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PARAMETERS_BLACKLIST</span></code></a></p></td>
+<td><p>The default parameters on the ExperimentParameters class that we always ignore as part of the hash.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Functions:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.hashing.add_params_combo_hash" title="curifactory.hashing.add_params_combo_hash"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_params_combo_hash</span></code></a>(active_record, …[, …])</p></td>
+<td><p>Returns a hex string representing the the combined parameter set hashes from the passed records list.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.hashing.compute_hash" title="curifactory.hashing.compute_hash"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_hash</span></code></a>(hash_representations)</p></td>
+<td><p>Returns a combined order-independent md5 hash of the passed representations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.hashing.get_param_set_hash_values" title="curifactory.hashing.get_param_set_hash_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_param_set_hash_values</span></code></a>(param_set)</p></td>
+<td><p>Collect the hash representations from every parameter in the passed parameter set.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.hashing.get_parameter_hash_value" title="curifactory.hashing.get_parameter_hash_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_parameter_hash_value</span></code></a>(param_set, param_name)</p></td>
+<td><p>Determines which hashing representation mechanism to use for the specified parameter, computes the result of the mechanism, and returns both.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.hashing.hash_param_set" title="curifactory.hashing.hash_param_set"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hash_param_set</span></code></a>(param_set[, …])</p></td>
+<td><p>Returns a hex string representing the passed arguments, optionally recording the parameters and hash in the params registry.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.hashing.param_set_string_hash_representations" title="curifactory.hashing.param_set_string_hash_representations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">param_set_string_hash_representations</span></code></a>(param_set)</p></td>
+<td><p>Get the hash representation of a parameter set into a json-dumpable dictionary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.hashing.set_hash_functions" title="curifactory.hashing.set_hash_functions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_hash_functions</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Convenience function for easily setting the hash_representations dictionary with the appropriate dataclass field.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py data">
+<dt id="curifactory.hashing.PARAMETERS_BLACKLIST">
+<code class="sig-prename descclassname"><span class="pre">curifactory.hashing.</span></code><code class="sig-name descname"><span class="pre">PARAMETERS_BLACKLIST</span></code><em class="property"> <span class="pre">=</span> <span class="pre">['name',</span> <span class="pre">'hash',</span> <span class="pre">'overwrite',</span> <span class="pre">'hash_representations']</span></em><a class="headerlink" href="#curifactory.hashing.PARAMETERS_BLACKLIST" title="Permalink to this definition"></a></dt>
+<dd><p>The default parameters on the ExperimentParameters class that we always
+ignore as part of the hash.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="curifactory.hashing.add_params_combo_hash">
+<code class="sig-prename descclassname"><span class="pre">curifactory.hashing.</span></code><code class="sig-name descname"><span class="pre">add_params_combo_hash</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">active_record</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">records_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">registry_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_in_registry</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.hashing.add_params_combo_hash" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a hex string representing the the combined parameter set hashes from the
+passed records list. This is mainly used for getting a hash for an aggregate stage,
+which may not have a meaningful argument set of its own.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>active_record</strong> (<a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><em>Record</em></a>) – The currently in-use record (likely owned by the aggregate
+stage.)</p></li>
+<li><p><strong>records_list</strong> (<em>List</em><em>[</em><a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><em>Record</em></a><em>]</em>) – The list of records to include as part of the resulting
+hash.</p></li>
+<li><p><strong>registry_path</strong> (<em>str</em>) – The location to keep the <code class="code docutils literal notranslate"><span class="pre">params_registry.json</span></code>.</p></li>
+<li><p><strong>store_in_registry</strong> (<em>bool</em>) – Whether to update the params registry with the passed
+records or not.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The hash string computed from the combined record arguments.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="curifactory.hashing.compute_hash">
+<code class="sig-prename descclassname"><span class="pre">curifactory.hashing.</span></code><code class="sig-name descname"><span class="pre">compute_hash</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hash_representations</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.hashing.compute_hash" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a combined order-independent md5 hash of the passed representations.</p>
+<p>We do this by individually computing a hash for each item, and add the integer values up,
+turning the final number into a hash string.  this ensures that the order in which
+things are hashed won’t change the hash as long as the values themselves are
+the same.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="curifactory.hashing.get_param_set_hash_values">
+<code class="sig-prename descclassname"><span class="pre">curifactory.hashing.</span></code><code class="sig-name descname"><span class="pre">get_param_set_hash_values</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_set</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="headerlink" href="#curifactory.hashing.get_param_set_hash_values" title="Permalink to this definition"></a></dt>
+<dd><p>Collect the hash representations from every parameter in the passed parameter set.</p>
+<p>This essentially just calls <code class="docutils literal notranslate"><span class="pre">get_parameter_hash_value</span></code> on every parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dictionary keyed by the string parameter names, and the value the dry tuple result
+from <code class="docutils literal notranslate"><span class="pre">get_parameter_hash_value</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="curifactory.hashing.get_parameter_hash_value">
+<code class="sig-prename descclassname"><span class="pre">curifactory.hashing.</span></code><code class="sig-name descname"><span class="pre">get_parameter_hash_value</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">tuple</span><a class="headerlink" href="#curifactory.hashing.get_parameter_hash_value" title="Permalink to this definition"></a></dt>
+<dd><p>Determines which hashing representation mechanism to use for the specified
+parameter, computes the result of the mechanism, and returns both.</p>
+<p>This function takes any overriding <code class="docutils literal notranslate"><span class="pre">hash_representations</span></code> into account. The list of mechanisms
+it attempts to use to get a hashable representation of the parameter in order are:</p>
+<ol class="arabic">
+<li><dl class="simple">
+<dt>Skip any blacklisted internal curifactory parameters that shouldn’t affect the hash.</dt><dd><p>This includes <cite>name</cite>, <cite>hash</cite>, <cite>overwrite</cite>, and the <cite>hash_representations</cite> attribute
+itself.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>If the value of the parameter is <code class="docutils literal notranslate"><span class="pre">None</span></code>, skip it. This allows default-ignoring</dt><dd><p>new parameters.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>If there’s an associated hashing function in <code class="docutils literal notranslate"><span class="pre">hash_representations</span></code>, call that,</dt><dd><p>passing in the entire parameter set and the current value of the parameter to
+be hashed</p>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>If a parameter is another dataclass, recursively <code class="docutils literal notranslate"><span class="pre">get_paramset_hash_values</span></code> on it.</dt><dd><p>Note that if this is unintended functionality, and you need the default
+dataclass <code class="docutils literal notranslate"><span class="pre">repr</span></code> for any reason, you can override it with the following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">curifactory</span> <span class="k">as</span> <span class="nn">cf</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Params</span><span class="p">(</span><span class="n">cf</span><span class="o">.</span><span class="n">ExperimentParameters</span><span class="p">):</span>
+    <span class="n">some_other_dataclass</span><span class="p">:</span> <span class="n">OtherDataclass</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">hash_representations</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">set_hash_functions</span><span class="p">(</span>
+        <span class="n">some_other_dataclass</span> <span class="o">=</span> <span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span>
+    <span class="p">)</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>If a parameter is a callable, by default it might turn up a pointer address</dt><dd><p>(we found this occurs with torch modules), so use the <code class="docutils literal notranslate"><span class="pre">__qualname__</span></code>
+instead.</p>
+</dd>
+</dl>
+</li>
+<li><p>Otherwise just use the normal <code class="docutils literal notranslate"><span class="pre">repr</span></code>.</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameter_set</strong> – The parameter set (dataclass instance) to get the requested parameter from.</p></li>
+<li><p><strong>parameter_name</strong> (<em>str</em>) – The name of the parameter to get the hashable representation of.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A tuple where the first element is the strategy used to compute the hashable representation,
+and the second element is that computed representation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="curifactory.hashing.hash_param_set">
+<code class="sig-prename descclassname"><span class="pre">curifactory.hashing.</span></code><code class="sig-name descname"><span class="pre">hash_param_set</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_set</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_in_registry</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">registry_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#curifactory.hashing.hash_param_set" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a hex string representing the passed arguments, optionally recording
+the parameters and hash in the params registry.</p>
+<p>Note that this hash is computed once and then stored on the parameter set. If values
+on parameter set are changed and <code class="docutils literal notranslate"><span class="pre">hash_param_set</span></code> is called again, it won’t be reflected
+in the hash.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_set</strong> (<a class="reference internal" href="params.html#curifactory.params.ExperimentParameters" title="curifactory.params.ExperimentParameters"><em>ExperimentParameters</em></a>) – The argument set to hash.</p></li>
+<li><p><strong>registry_path</strong> (<em>str</em>) – The location to keep the <code class="code docutils literal notranslate"><span class="pre">params_registry.json</span></code>.
+If this is <code class="docutils literal notranslate"><span class="pre">None</span></code>, ignore <code class="docutils literal notranslate"><span class="pre">store_in_registry</span></code>.</p></li>
+<li><p><strong>store_in_registry</strong> (<em>bool</em>) – Whether to update the params registry with the passed
+arguments or not.</p></li>
+<li><p><strong>dry</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, don’t store and instead return a dictionary
+with each value as the tuple that contains the strategy used to compute
+the values to be hashed as well as the output from that hashing function
+code. Useful for debugging custom hashing functions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The hash string computed from the arguments, or the dictionary of hashing functions
+if <code class="docutils literal notranslate"><span class="pre">dry</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>. (The output from <code class="docutils literal notranslate"><span class="pre">get_param_set_hash_values</span></code>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="curifactory.hashing.param_set_string_hash_representations">
+<code class="sig-prename descclassname"><span class="pre">curifactory.hashing.</span></code><code class="sig-name descname"><span class="pre">param_set_string_hash_representations</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_set</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">dict</span><a class="headerlink" href="#curifactory.hashing.param_set_string_hash_representations" title="Permalink to this definition"></a></dt>
+<dd><p>Get the hash representation of a parameter set into a json-dumpable dictionary.</p>
+<p>This is used both in the output report as well as in the params registry.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="curifactory.hashing.set_hash_functions">
+<code class="sig-prename descclassname"><span class="pre">curifactory.hashing.</span></code><code class="sig-name descname"><span class="pre">set_hash_functions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.hashing.set_hash_functions" title="Permalink to this definition"></a></dt>
+<dd><p>Convenience function for easily setting the hash_representations dictionary
+with the appropriate dataclass field. Parameters passed to this function should
+be the same as the parameter name in the parameters class itself.</p>
+<p>You can either call this function and pass in a dictionary with the hashing functions,
+or pass each hashing function as a kwarg. If you pass in both a dictionary as the first
+positional arg and specify kwargs, the kwarg hashing functions will be added to the
+dictionary.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">ExperimentParameters</span>
+<span class="kn">from</span> <span class="nn">curifactory.params</span> <span class="kn">import</span> <span class="n">set_hash_functions</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Params</span><span class="p">(</span><span class="n">ExperimentParameters</span><span class="p">):</span>
+    <span class="n">a</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">b</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">hash_representations</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">set_hash_functions</span><span class="p">(</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># this means that b will _not be included in the hash_.</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="experiment.html" class="btn btn-neutral float-left" title="Experiment" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="manager.html" class="btn btn-neutral float-right" title="Manager" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>
