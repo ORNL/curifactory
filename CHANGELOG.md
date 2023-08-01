@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unreleased]
+## [0.15.0] - 2023-08-01
 
 ### Added
 * `PandasCacher` as a more generalized variant of `PandasCsvCacher` and
@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Generated experiment notebook not reference correct cache path for artifacts on store full runs.
 * `set_logging_prefix` incorrectly handling global logging scope (which can lead
   to recursion errors.)
+
 
 
 

@@ -438,6 +438,9 @@ class Cacheable:
         Note:
             Any subclass is **required** to implement this.
         """
+        raise NotImplementedError(
+            "Cacheable class does not have a save function implemented"
+        )
 
 
 class JsonCacher(Cacheable):
@@ -627,6 +630,9 @@ class PandasJsonCacher(PandasCacher):
             ``to_json()`` call.
         read_json_args (Dict): Dictionary of arguments to use in the pandas
             ``read_json()`` call.
+
+    Note:
+        This is equivalent to using ``PandasCacher(format='json')``
     """
 
     def __init__(
@@ -653,6 +659,9 @@ class PandasCsvCacher(PandasCacher):
             ``to_csv()`` call.
         read_csv_args (Dict): Dictionary of arguments to use in the pandas
             ``read_csv()`` call.
+
+    Note:
+        This is equivalent to using ``PandasCacher(format='csv')``
     """
 
     def __init__(

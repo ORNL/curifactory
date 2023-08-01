@@ -27,8 +27,9 @@ There are several pre-implemented cachers that come with Curifactory in the :ref
 module that should cover many basic needs:
 
 * ``JsonCacher``
-* ``PandasCsvCacher``
-* ``PandasJsonCacher`` - stores a dataframe as a json file (array of dictionaries, the keys as column names.)
+* ``PandasCacher`` - store a dataframe using a specified format
+* ``PandasCsvCacher``  - shortcut for ``PandasCacher(format='csv')``
+* ``PandasJsonCacher`` - shortcut for ``PandasCacher(format='json')``, stores a dataframe as a json file (array of dictionaries, the keys as column names.)
 * ``PickleCacher``
 * ``FileReferenceCacher`` - a json file that stores references to one or more file paths.
 * ``RawJupyterNotebookCacher`` - turns a list of list of strings of python code into a jupyter notebook
