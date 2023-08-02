@@ -805,7 +805,7 @@ def write_experiment_notebook(
         f"Reference: **{manager.get_reference_name()}**  ",
         f"Git commit: {manager.git_commit_hash}  ",
         f"Param files: {str(manager.parameter_files)}",
-        "\n**Parameters**:",
+        "\n**Parameters**:\n",
     ]
 
     # output the list of parameters used and assoc hashes
