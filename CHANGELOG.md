@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Added
+* Hash dry representation output to params registry, to help debug hashing.
+
 ### Fixed
 * Spacing issue around parameter set list in generated notebook.
 

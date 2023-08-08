@@ -134,7 +134,7 @@ def get_parameter_hash_value(param_set, param_name: str) -> tuple[str, Any]:
         if param_set.hash_representations[param_name] is None:
             return ("SKIPPED: set to None in hash_representations", None)
         return (
-            f"param_set.hash_representations['{param_name}'](param_set, param_set.{param_name})",
+            f"param_set.hash_representations['{param_name}'](param_set, {param_name})",
             param_set.hash_representations[param_name](param_set, value),
         )
 
@@ -158,10 +158,10 @@ def get_parameter_hash_value(param_set, param_name: str) -> tuple[str, Any]:
 
     # 5. use the function name if it's a callable, rather than a pointer address
     elif isinstance(value, Callable):
-        return ("value.__qualname__", value.__qualname__)
+        return (f"{param_name}.__qualname__", value.__qualname__)
 
     # 6. otherwise just use the default representation!
-    return (f"repr(param_set.{param_name})", repr(value))
+    return (f"repr({param_name})", repr(value))
 
 
 def get_param_set_hash_values(param_set) -> dict[str, tuple[str, Any]]:
@@ -300,7 +300,9 @@ def hash_param_set(
             with open(registry_path) as infile:
                 registry = json.load(infile)
 
-        registry[hash_str] = param_set_string_hash_representations(param_set)
+        reps_dictionary = param_set_string_hash_representations(param_set)
+        reps_dictionary["_DRY_REPS"] = hash_reps
+        registry[hash_str] = reps_dictionary
         with open(registry_path, "w") as outfile:
             json.dump(registry, outfile, indent=4, default=lambda x: str(x))
 
