@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * Spacing issue around parameter set list in generated notebook.
+* Extra metadata not grabbed in save_metadata if metadata had already been collected.
 
 
 

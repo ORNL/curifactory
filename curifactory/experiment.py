@@ -647,7 +647,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     TextColumn("{task.fields[name]}"),
                 )
                 for i, record in enumerate(mngr.map.records):
-                    name = record.args.name if record.args is not None else "None"
+                    name = record.params.name if record.params is not None else "None"
                     if record.is_aggregate:
                         name += " (aggregate)"
                     hash_big = record.get_hash()
