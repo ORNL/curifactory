@@ -1370,3 +1370,30 @@ def test_extra_metadata_used_inline(configured_test_manager):
         ).load()
         == "testing"
     )
+
+
+def test_extra_metadata_should_be_used_even_if_metadata_set(configured_test_manager):
+    """If the metadata is directly set or previously collected on a cacher before
+    extra_metadata is set, that extra_metadata should still end up saved in the output
+    (extra_metadata specifically should be collected again in save.)"""
+
+    class UsesExtraMetadataCacher(Cacheable):
+        def save(self, obj):
+            self.extra_metadata["best_number"] = 13
+            JsonCacher(self.get_path()).save(obj)
+            self.save_metadata()
+
+        def load(self):
+            self.load_metadata()
+            assert self.extra_metadata["best_number"] == 13
+            return JsonCacher(self.get_path()).load()
+
+    cacher = UsesExtraMetadataCacher(f"{configured_test_manager.cache_path}/test_thing")
+    cacher.metadata = {"stuff_and_things": "15", "extra": {}}
+    cacher.save("testing")
+    assert (
+        UsesExtraMetadataCacher(
+            f"{configured_test_manager.cache_path}/test_thing"
+        ).load()
+        == "testing"
+    )
