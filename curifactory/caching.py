@@ -345,13 +345,14 @@ class Cacheable:
         with open(metadata_path, "w") as outfile:
             if self.metadata is None:
                 # this either means we haven't collected metadata, or this is save() being called inline
-                logging.warning(
-                    "Cacher metadata hasn't been collected or has no associated record. Only saving extra_metadata fields."
-                )
+                # logging.warning(
+                #     "Cacher metadata hasn't been collected or has no associated record. Only saving extra_metadata fields."
+                # )
                 json.dump(
                     dict(extra=self.extra_metadata), outfile, indent=2, default=str
                 )
             else:
+                self.metadata["extra"].update(self.extra_metadata)
                 json.dump(self.metadata, outfile, indent=2, default=str)
 
     def load_metadata(self) -> dict:
