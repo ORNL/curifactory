@@ -73,6 +73,7 @@ Once enabled, the `experiment` command will provide tab complete for experiment 
 ## Requirements
 
 **OS**: We primarily develop and test Curifactory on Linux, but it runs on Windows and MacOS as well.
+
 **Python**: 3.9-3.11
 
 **Optional**:
