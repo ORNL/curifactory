@@ -70,6 +70,19 @@ curifactory completion [--bash|--zsh]  # use the shell flag appropriate
 
 Once enabled, the `experiment` command will provide tab complete for experiment names, parameter names, and flags.
 
+## Requirements
+
+**OS**: We primarily develop and test Curifactory on Linux, but it runs on Windows and MacOS as well.
+**Python**: 3.9-3.11
+
+**Optional**:
+
+* Conda/Mamba
+* Graphviz
+* Docker
+* Jupyter notebook/lab
+
+
 ## Documentation
 
 The documentation for the latest version of Curifactory can be found at:
