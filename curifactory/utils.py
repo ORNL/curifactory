@@ -12,6 +12,8 @@ import warnings
 from rich import get_console, reconfigure
 from rich.logging import RichHandler
 
+import curifactory
+
 TIMESTAMP_FORMAT = "%Y-%m-%d-T%H%M%S"
 """The datetime format string used for timestamps in experiment run reference names."""
 CONFIGURATION_FILE = "curifactory_config.json"
@@ -348,6 +350,14 @@ def preview_object(object: any) -> str:
         preview += f" shape: {shape}"
     elif hasattr(object, "__len__"):
         preview += f" len: {len(object)}"
+
+    # handle lazy instances differently - since it's possible we've never loaded it
+    # into memory the string rep might _just_ be the lazy instance. Grab the preview
+    # string from the cacher's metadata if so.
+    if type(object) == curifactory.Lazy:
+        metadata = object.cacher.load_metadata()
+        preview = metadata["preview"]
+
     return preview
 
 

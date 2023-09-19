@@ -675,7 +675,7 @@ def run_report(
     return folder_path, graphs_path, reportables_path
 
 
-def _add_record_subgraph(dot, record_index, record, manager, detailed=True):
+def _add_record_subgraph(dot, record_index: int, record, manager, detailed=True):
     with dot.subgraph(name=f"cluster_{record_index}") as c:
         c.attr(color=str(_get_color(record_index)))
         c.attr(style="filled")

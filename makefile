@@ -5,7 +5,7 @@ VERSION := $(shell python -c "import curifactory as cf; print(cf.__version__)")
 .PHONY: help
 help:
 	@echo "Commands:"
-	@echo "publish     : build the package and bush to pypi."
+	@echo "publish     : build the package and push to pypi."
 	@echo "pre-commit  : run all of the pre-commit checks."
 	@echo "apply-docs  : copy current sphinx documentation into version-specific docs/ folder"
 	@echo "style       : executes style formatting."

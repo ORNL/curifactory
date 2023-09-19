@@ -111,3 +111,27 @@ def test_detailed_record_subgraph_aggregate_doesnot_include_previous_artifacts(
         if "->" in line:
             conn_count += 1
     assert conn_count == 1
+
+
+def test_preview_gets_used_for_cached_artifact_reuse(configured_test_manager):
+    """A run that re-uses a lazy cached artifact from a previous run should still display
+    its preview string correctly in the output map."""
+
+    @cf.stage(None, [cf.Lazy("Things")], [PickleCacher])
+    def do_thing(record):
+        return "needle in a haystack"
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
+    do_thing(r0)
+
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
+    do_thing(r1)
+
+    dot0 = Digraph()
+    _add_record_subgraph(dot0, 0, r0, configured_test_manager)
+
+    dot1 = Digraph()
+    _add_record_subgraph(dot1, 1, r1, configured_test_manager)
+
+    assert "(str) needle in a haystack" in dot0.body[6]
+    assert "(str) needle in a haystack" in dot1.body[6]
