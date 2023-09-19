@@ -1,6 +1,14 @@
 Getting Started
 ###############
 
+.. important::
+    It is strongly recommended to use curifactory from within a git repo to
+    support experiment reproducibility and provenance (every run will record the
+    current git commit hash.) The ``curifactory init`` command will prompt you
+    to run ``git init`` if the ``.git`` folder is not detected. Any experiment
+    runs executed outside of a git repo will carry an associated warning in the
+    output log and report.
+
 Basic components
 ================
 

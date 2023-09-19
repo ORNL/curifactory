@@ -21,7 +21,7 @@ In conda, you can do this with:
     conda install python-graphviz
 
 
-Curifactory comes with a CLI :code:`curifactory` runnable, which can bootstrap a
+Curifactory comes with a CLI ``curifactory`` runnable, which can bootstrap a
 curifactory-enabled project directory for you.
 
 .. code-block:: bash
@@ -33,6 +33,14 @@ folder or in an existing project, and it will create any necessary paths for
 curifactory to work. Descriptions of the various folders created in the
 initialization process are in the
 :ref:`configuration and directory structure` section.
+
+.. important::
+    It is strongly recommended to use curifactory from within a git repo to
+    support experiment reproducibility and provenance (every run will record the
+    current git commit hash.) The ``curifactory init`` command will prompt you
+    to run ``git init`` if the ``.git`` folder is not detected. Any experiment
+    runs executed outside of a git repo will carry an associated warning in the
+    output log and report.
 
 
 Tab completion
