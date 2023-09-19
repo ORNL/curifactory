@@ -106,7 +106,7 @@ def initialize_project():  # noqa: C901 yeaaaah break up into sub functions
     # if this isn't being run in a git repository, ask the user if they want to git init
     if not os.path.exists(".git"):
         print(
-            "No .git folder found. Curifactoy expects to run from within a git repository."
+            "No .git folder found. Curifactory expects to run from within a git repository."
         )
         valid_gitinit_choice = False
         while not valid_gitinit_choice:

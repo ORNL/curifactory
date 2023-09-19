@@ -333,7 +333,12 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         )
 
     logging.info("Running experiment %s" % experiment_name)
-    if mngr.git_workdir_dirty:
+    if mngr.git_commit_hash == "No git repository found":
+        logging.warning(
+            "No git repository found. It is strongly recommended to run experiments from a git repository to aid reproducibility."
+        )
+    elif mngr.git_workdir_dirty:
+        # elif so we don't warn twice
         logging.warning(
             "Git working directory contains uncommited changes. Reproduction may not be exact."
         )

@@ -113,7 +113,7 @@ def test_detailed_record_subgraph_aggregate_doesnot_include_previous_artifacts(
     assert conn_count == 1
 
 
-def test_preview_gets_used_for_cached_artifact_reuse(configured_test_manager):
+def test_preview_gets_used_for_lazy_cached_artifact_reuse(configured_test_manager):
     """A run that re-uses a lazy cached artifact from a previous run should still display
     its preview string correctly in the output map."""
 

@@ -189,7 +189,7 @@ def get_command_output(cmd: list[str], silent: bool = False) -> str:
             ``subprocess.run()``
     """
     try:
-        cmd_return = subprocess.run(cmd, stdout=subprocess.PIPE)
+        cmd_return = subprocess.run(cmd, capture_output=True)
     except:  # noqa: E722 -- TODO: we should actually handle this for the below note
         # NOTE - seems like we get filenotfound exceptions if it's an invalid command?
         # (e.g. on windows calling git when git isn't found from the env?)
@@ -221,12 +221,16 @@ def run_command(cmd: list[str]):
 
 def get_current_commit() -> str:
     """Returns printed output from running ``git rev-parse HEAD`` command."""
+    if not os.path.exists(".git"):
+        return "No git repository found"
     return get_command_output(["git", "rev-parse", "HEAD"])
 
 
-def check_git_dirty_workingdir() -> str:
+def check_git_dirty_workingdir() -> bool:
     """Checks if git working directory is dirty or not. This is used to indicate
     potential reproducibility problems in the report and console output."""
+    if not os.path.exists(".git"):
+        return True
     if get_command_output(["git", "diff", "--stat"]) != "":
         return True
     return False
