@@ -67,7 +67,8 @@ def test_stores_multiple_outputs_in_record(configured_test_manager):
 
 
 def test_returns_less_than_expected_errors(configured_test_manager):
-    """A function that doesn't return the same number of objects as specified in the stage outputs should throw an OutputSignatureError."""
+    """A function that doesn't return the same number of objects as specified in the
+    stage outputs should throw an OutputSignatureError."""
 
     @stage([], ["test1", "test2"])
     def output_stage(record):
@@ -75,6 +76,22 @@ def test_returns_less_than_expected_errors(configured_test_manager):
 
     record = Record(configured_test_manager, None)
     with pytest.raises(OutputSignatureError):
+        output_stage(record)
+
+
+def test_outputsigerror_with_lazy_shows_output_name(configured_test_manager):
+    """A stage with lazy outputs that doesn't return the correct number of things
+    should show the names of the things it's expecting out, not lazy object pointer
+    addresses."""
+
+    @stage([], [Lazy("test1"), Lazy("test2")], [PickleCacher, PickleCacher])
+    def output_stage(record):
+        return "hello world"
+
+    record = Record(configured_test_manager, None)
+    with pytest.raises(
+        OutputSignatureError, match=r'.*Lazy\("test1"\), Lazy\("test2"\).*'
+    ):
         output_stage(record)
 
 

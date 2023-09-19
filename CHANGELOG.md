@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changed
+* Repr for Lazy objects, so OutputSignatureErrors don't just list pointer addresses.
+
 ### Fixed
 * Lazy instance cached from previous run not displaying correct preview in detailed report map.
 * Experiment run spewing out command error if running from non-git-repo. (Single line warning is now displayed instead.)

@@ -59,6 +59,9 @@ class Lazy:
     def __str__(self):
         return self.name
 
+    def __repr__(self):
+        return f'Lazy("{self.name}")'
+
 
 # NOTE: this isn't a requirement for DAGs to work, leaving here as a reminder, but deciding if
 # this versus simply a pathcacher works better should be a different issue
