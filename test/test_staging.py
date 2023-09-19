@@ -10,6 +10,7 @@ from curifactory import (
     stage,
 )
 from curifactory.caching import Lazy, PickleCacher
+from curifactory.staging import _missing_signature_inputs
 
 # --------------------------
 # @stage tests
@@ -263,6 +264,52 @@ def test_input_name_incorrect(configured_test_manager):
     record.state["my_input"] = 13
     with pytest.raises(InputSignatureError):
         replicate_input(record)
+
+
+def test_unrelated_typeerror_does_not_throw_inputsigerror(configured_test_manager):
+    """If some unrelated stage code causes a typeerror, we should _not_ be throwing an InputSignatureError."""
+
+    def do_something(thing):
+        return "NO!"
+
+    @stage()
+    def replicate_input(record):
+        do_something(this_is_not_a_thing="oops")
+
+    r0 = Record(configured_test_manager, None)
+    with pytest.raises(TypeError):
+        replicate_input(r0)
+
+
+@pytest.mark.parametrize(
+    "input_names,assigned,expected",
+    [
+        ([], {}, ([], [])),
+        ([], {"thing1": None, "thing2": None}, ([], [])),
+        (["thing1"], {"thing1": None, "thing2": None}, ([], [])),
+        (["thing1", "thing2"], {"thing1": None, "thing2": None}, ([], [])),
+        (["thign1"], {"thing1": None, "thing2": None}, (["thign1"], [])),
+        (
+            ["thign1", "what"],
+            {"thing1": None, "thing2": None},
+            (["thign1", "what"], []),
+        ),
+        (["thign1", "what"], {}, (["thign1", "what"], [])),
+        (["thing1", "thing2"], {}, ([], ["thing1", "thing2"])),
+        (["thing1"], {}, ([], ["thing1"])),
+        (["thign1", "thing2"], {}, (["thign1"], ["thing2"])),
+    ],
+)
+def test_missing_signature_inputs_correctly_finds_missing(
+    input_names, assigned, expected
+):
+    """_missing_signature_inputs should return a list of any arguments not found in
+    function signature line."""
+
+    def do_thing(thing1, thing2, thing3=4, thing4=5):
+        ...
+
+    assert _missing_signature_inputs(do_thing, input_names, assigned) == expected
 
 
 def test_lazy_obj_in_record(configured_test_manager):

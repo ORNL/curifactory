@@ -257,7 +257,7 @@ def test_stage_with_missing_inputs_handled_correctly(
     @cf.stage(
         inputs=["nothing"], outputs=outputs, suppress_missing_inputs=suppress_missing
     )
-    def do_nothing(record, nothing):
+    def do_nothing(record, nothing=None):
         return 6
 
     r0 = cf.Record(configured_test_manager, cf.ExperimentParameters("test"))

@@ -2,6 +2,7 @@
 input/output passing through record state between stages."""
 
 import copy
+import inspect
 import logging
 import os
 import pickle
@@ -254,8 +255,6 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                             "Suppressed missing inputs, will expect function signature default value for '%s' or a direct argument pass on the stage function call..."
                             % function_input
                         )
-                        # function_inputs[function_input] = None
-                        # NOTE: we don't actually need to pass in None, we can expect the user to implement whatever defaults they want for optional parameters. If they don't specify a default, this will fail as normal.
                     elif function_input not in kwargs and not record.manager.map_mode:
                         raise KeyError(
                             "Stage '%s' input '%s' not found in record state and not passed to function call. Set 'suppress_missing_inputs=True' on the stage and give a default value in the function signature if this should run anyway."
@@ -265,6 +264,31 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                     function_inputs[function_input] = record.state[function_input]
             function_inputs.update(kwargs)
             record.state.resolve = True
+
+            # check that the stage function signature has all the correct input arguments
+            missing_inputs, no_default_inputs = _missing_signature_inputs(
+                function, inputs, function_inputs
+            )
+            if len(missing_inputs) > 0:
+                missing_names = ",".join(
+                    [f'"{input_name}"' for input_name in missing_inputs]
+                )
+                # TODO: (9/19/2023) eventually move raising so that map mode doesn't raise it
+                # _here_ when experiment validation is implemented, will want to be able to
+                # analyze entire experiment before showing errors. However, this error _will_
+                # need to be raised if we get past map mode.
+                raise InputSignatureError(
+                    "Signature for stage %s does not match stage input list. The stage function is missing '%s'"
+                    % (name, missing_names)
+                )
+            elif suppress_missing_inputs and len(no_default_inputs) > 0:
+                no_defaults = ",".join(
+                    [f'"{no_default}"' for no_default in no_default_inputs]
+                )
+                raise InputSignatureError(
+                    "Stage %s is marked to suppress missing inputs but has no defaults in the signature for inputs %s"
+                    % (name, no_defaults)
+                )
 
             # note to future self and anyone else who's IDE says this is repeated code (with aggregate below)
             # no, you cannot abstract this into _check_cached_outputs - if you try to reassign to cachers from
@@ -407,13 +431,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             # run the function
             logging.info("Stage %s executing...", name)
             exec_time_start = time.perf_counter()
-            try:
-                function_outputs = function(record, *args, **function_inputs)
-            except TypeError as e:
-                raise InputSignatureError(
-                    "Signature for '%s' does not match stage input list. Signature should include %s, or there may be missing default values for a stage called with suppress_missing_inputs. Sub error: %s"
-                    % (name, str(inputs), str(e))
-                )
+            function_outputs = function(record, *args, **function_inputs)
             exec_time_end = time.perf_counter()
 
             # handle storing outputs in record
@@ -679,6 +697,23 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                         ] = prev_record.state[function_input]
                         prev_record.state.resolve = True
             function_inputs.update(kwargs)
+
+            # check that the stage function signature has all the correct input arguments
+            missing_inputs, no_default_inputs = _missing_signature_inputs(
+                function, inputs, function_inputs
+            )
+            if len(missing_inputs) > 0:
+                missing_names = ",".join(
+                    [f'"{input_name}"' for input_name in missing_inputs]
+                )
+                # TODO: eventually move raising so that map mode doesn't raise it _here_
+                # when experiment validation is implemented, will want to be able to analyze
+                # entire experiment before showing errors. However, this error _will_
+                # need to be raised if we get past map mode.
+                raise InputSignatureError(
+                    "Signature for stage %s does not match stage input list. The stage function is missing '%s'"
+                    % (name, missing_names)
+                )
 
             # see note in stage
             if cachers is not None:
@@ -1194,3 +1229,29 @@ def _store_outputs(
         # if specified as lazy, be sure to populate the cacher
         if type(outputs[index]) == Lazy:
             outputs[index].cacher = cachers[index]
+
+
+def _missing_signature_inputs(
+    function: callable, input_names: list[str], function_inputs: dict[str, any]
+) -> list[str]:
+    """Check that the function signature contains the necessary inputs, and return
+    the list of missing ones if any, and the list of variables without defaults.
+    (Latter is used for determining if suppress_missing_inputs will still fail)"""
+
+    sig = inspect.signature(function)
+    missing = []
+    for name in input_names:
+        if name not in sig.parameters:
+            missing.append(name)
+
+    no_defaults = []
+    for param_name, param_value in sig.parameters.items():
+        if (
+            param_name in input_names
+            and param_value.default == inspect.Parameter.empty
+            and param_name not in function_inputs
+            and param_name not in missing
+        ):
+            no_defaults.append(param_name)
+
+    return missing, no_defaults
