@@ -36,7 +36,7 @@ class Procedure:
                 mngr)
 
     Args:
-        stages: A list of function names that are wrapped in ``@stage`` or ``@aggregate``
+        stages list[Callable]: A list of function names that are wrapped in ``@stage`` or ``@aggregate``
             decorators. Note that if using an aggregate state, it _must_ be the first one in the
             list.
         manager (ArtifactManager): The manager to associate this procedure and corresponding record
@@ -106,7 +106,7 @@ class Procedure:
         hide: bool = False,
         manager: ArtifactManager = None,
         records: list[Record] = None,
-    ):
+    ) -> Record:
         """Run this procedure with the passed parameter set. This allows easily running
         multiple parameter sets through the same set of stages and automatically getting a separate
         record for each.
