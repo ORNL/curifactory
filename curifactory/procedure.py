@@ -3,6 +3,7 @@
 from typing import Callable
 
 from curifactory.manager import ArtifactManager, Record
+from curifactory.params import ExperimentParameters
 
 
 class NoArtifactManagerError(Exception):
@@ -100,9 +101,9 @@ class Procedure:
 
     def run(
         self,
-        param_set,
-        record=None,
-        hide=False,
+        param_set: ExperimentParameters,
+        record: Record = None,
+        hide: bool = False,
         manager: ArtifactManager = None,
         records: list[Record] = None,
     ):
@@ -127,6 +128,11 @@ class Procedure:
         Returns:
             The returned output from the last stage in ``self.stages``.
         """
+        # NOTE: don't try to add a check for if we're setting an already set
+        # artifact manager - silently use whatever is already there. The reason
+        # for this is if someone is calling .run on a procedure inside of a loop
+        # and passing the manager there (for convenience we allow this)
+
         # handle setting any previously unset values that are passed directly
         if self.manager is None and manager is None:
             # We have to have a manager and we definitely shouldn't try to

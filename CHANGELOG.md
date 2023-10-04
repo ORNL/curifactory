@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 * Repr for Lazy objects, so OutputSignatureErrors don't just list pointer addresses.
+* Procedures initialized without an artifact manager don't auto-create one.
+  Instead, the `procedure.run()` function now optionally takes a manager and
+  records list.
 
 ### Fixed
 * Lazy instance cached from previous run not displaying correct preview in detailed report map.
