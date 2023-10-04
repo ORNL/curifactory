@@ -1,6 +1,12 @@
 """Convenience class for grouping stages and automatically passing a record between them."""
 
+from typing import Callable
+
 from curifactory.manager import ArtifactManager, Record
+
+
+class NoArtifactManagerError(Exception):
+    pass
 
 
 class Procedure:
@@ -33,7 +39,7 @@ class Procedure:
             decorators. Note that if using an aggregate state, it _must_ be the first one in the
             list.
         manager (ArtifactManager): The manager to associate this procedure and corresponding record
-            with. If you specify :code:`None`, one will be created with the default constructor.
+            with. If this is ``None``, a manager will need to be passed when ``.run()`` is called.
         name (str): An optional name for the procedure. Currently unused, may eventually be put into
             logging or reporting.
         previous_proc (Procedure): If specified and this procedure begins with an aggregate stage,
@@ -45,10 +51,40 @@ class Procedure:
         If a procedure begins with an aggregate stage and neither ``previous_proc`` nor
         ``records`` are specified, it will automatically grab all existing records from the
         artifact manager.
+
+    Note that you can predefine a procedure and "apply"/run it later, since the ``.run()`` function
+    can take both a manager and records list directly.
+
+    Example:
+
+        .. code-block:: python
+
+            @stage(...)
+            def data_stage(...):
+                # ...
+
+            @stage(...)
+            def model_stage(...):
+                # ...
+
+            proc = Procedure(
+                [
+                    data_stage,
+                    model_stage
+                ])
+
+            def run(paramsets, manager):
+                for paramset in paramsets:
+                    proc.run(paramset, manager=manager)
     """
 
     def __init__(
-        self, stages, manager=None, name=None, previous_proc=None, records=None
+        self,
+        stages: list[Callable],
+        manager: ArtifactManager = None,
+        name: str = None,
+        previous_proc: "Procedure" = None,
+        records: list[Record] = None,
     ):
         # NOTE: pass in previous procedure to auto aggregate across just the records
         # from that previous procedure
@@ -56,17 +92,20 @@ class Procedure:
         self.stages = stages
         self.record = None
         self.manager = manager
-        if manager is None:
-            self.manager = (
-                ArtifactManager()
-            )  # TODO: notably this doesn't respect the config.
 
         self.records = []  # keeps track of all records run through this procedure
         # this is just for convenience for being able to aggregate off previous proc
         self.previous_proc = previous_proc
         self.use_records = records
 
-    def run(self, param_set, record=None, hide=False):
+    def run(
+        self,
+        param_set,
+        record=None,
+        hide=False,
+        manager: ArtifactManager = None,
+        records: list[Record] = None,
+    ):
         """Run this procedure with the passed parameter set. This allows easily running
         multiple parameter sets through the same set of stages and automatically getting a separate
         record for each.
@@ -79,10 +118,28 @@ class Procedure:
                 use from the previous one), pass it here. If unspecified, a new record will
                 automatically be created for the passed args and relevant artifact manager.
             hide (bool): If ``True``, don't add the created record to the artifact manager.
+            manager (ArtifactManager): If a manager hasn't been set yet on this procedure,
+                do so now. An exception will be thrown if the manager has already been set on
+                this procedure.
+            records (list[Record]): If this procedure begins with an aggregate and the
+                list of input records wasn't set on init, do so now.
 
         Returns:
             The returned output from the last stage in ``self.stages``.
         """
+        # handle setting any previously unset values that are passed directly
+        if self.manager is None and manager is None:
+            # We have to have a manager and we definitely shouldn't try to
+            # create one on the fly!
+            raise NoArtifactManagerError(
+                "This procedure does not have an artifact manager. Either initialize it with one, or call with `proc.run(manager=...)`"
+            )
+        elif self.manager is None and manager is not None:
+            self.manager = manager
+
+        if records is not None:
+            self.use_records = records
+
         # create a new record as needed
         if record is None:
             self.record = Record(self.manager, param_set, hide=hide)
