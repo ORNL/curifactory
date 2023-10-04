@@ -59,4 +59,5 @@ setup(
         "rich",
         "argcomplete",
     ],
+    extras_require={"h5": ["tables"]},
 )
