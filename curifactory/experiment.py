@@ -1266,6 +1266,12 @@ Examples:
         help="Specifying this _only_ runs the pre-execution record and stage mapping for the experiment, and prints out the resulting DAG information before immediately exiting. Specifying this implies --dry. You can use this flag to check which artifacts are found in cache.",
     )
     display_group.add_argument(
+        "--check",
+        dest="validation_only",
+        action="store_true",
+        help="Run experiment validation and output results. (This only runs experiment mapping phase, it doesn't run the experiment itself.)",
+    )
+    display_group.add_argument(
         "--quiet",
         dest="quiet",
         action="store_true",
