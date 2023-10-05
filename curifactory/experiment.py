@@ -1052,7 +1052,15 @@ def experiments_completer(**kwargs) -> list[str]:
         .stdout.decode("utf-8")[:-1]
         .split("\n")
     )
+    # handle if there's a ./ at the beginning (this happens with macOS's version
+    # of grep)
+    for index, file in enumerate(files):
+        if file.startswith("./"):
+            files[index] = file[2:]
+
+    # remove .py
     files = [file[:-3] for file in files if file != ""]
+
     files.sort()
     return [filename.replace("/", ".") for filename in files]
 
@@ -1072,6 +1080,13 @@ def params_completer(**kwargs) -> list[str]:
         .stdout.decode("utf-8")[:-1]
         .split("\n")
     )
+    # handle if there's a ./ at the beginning (this happens with macOS's version
+    # of grep)
+    for index, file in enumerate(experiment_files):
+        if file.startswith("./"):
+            experiment_files[index] = file[2:]
+
+    # remove .py
     experiment_files = [file[:-3] for file in experiment_files if file != ""]
 
     param_files = (
@@ -1083,7 +1098,15 @@ def params_completer(**kwargs) -> list[str]:
         .stdout.decode("utf-8")[:-1]
         .split("\n")
     )
+    # handle if there's a ./ at the beginning (this happens with macOS's version
+    # of grep)
+    for index, file in enumerate(param_files):
+        if file.startswith("./"):
+            param_files[index] = file[2:]
+
+    # remove .py
     param_files = [file[:-3] for file in param_files if file != ""]
+
     files = param_files + experiment_files
     files.sort()
     return [filename.replace("/", ".") for filename in files]

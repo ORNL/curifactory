@@ -441,3 +441,25 @@ def test_experiments_completer():
 def test_params_completer():
     output = params_completer()
     assert output == ["empty", "nonarrayargs", "params1", "params2", "subparams.thing"]
+
+
+def test_macos_experiment_completer(mocker):  # noqa: F811
+    """The BSD verison of grep on macOS puts './' at the beginning of returned paths,
+    we should handle this appropriately"""
+
+    mock = mocker.patch("subprocess.run")
+    mock.return_value.stdout = b"./basic.py\n./subexp/example.py\n"
+
+    output = experiments_completer()
+    assert output == ["basic", "subexp.example"]
+
+
+def test_macos_params_completer(mocker):  # noqa: F811
+    """The BSD verison of grep on macOS puts './' at the beginning of returned paths,
+    we should handle this appropriately"""
+
+    mock = mocker.patch("subprocess.run")
+    mock.return_value.stdout = b"./empty.py\n./subparams/thing.py\n"
+
+    output = params_completer()
+    assert output == ["empty", "empty", "subparams.thing", "subparams.thing"]
