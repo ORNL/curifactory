@@ -7,6 +7,7 @@ extends it.
 
 import datetime
 import html
+import importlib.resources
 import json
 import logging
 import os
@@ -669,6 +670,11 @@ def run_report(
     if css_path is not None:
         if not os.path.exists(css_path):
             logging.warning("Reports CSS file %s not found" % css_path)
+            logging.warning("Falling back to default curifactory packed CSS")
+            with importlib.resources.as_file(
+                importlib.resources.files("curifactory") / "data/style.css"
+            ) as style_path:
+                shutil.copyfile(style_path, f"{folder_path}/style.css")
         else:
             shutil.copyfile(css_path, f"{folder_path}/style.css")
 

@@ -135,3 +135,12 @@ def test_preview_gets_used_for_lazy_cached_artifact_reuse(configured_test_manage
 
     assert "(str) needle in a haystack" in dot0.body[6]
     assert "(str) needle in a haystack" in dot1.body[6]
+
+
+def test_fallback_css_used(configured_test_manager):
+    """If the report css file is missing, it should use the one that comes with the cf package."""
+
+    configured_test_manager.generate_report()
+    assert os.path.exists(
+        f"{configured_test_manager.reports_path}/{configured_test_manager.get_reference_name()}/style.css"
+    )
