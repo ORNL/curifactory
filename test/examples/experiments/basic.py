@@ -14,3 +14,5 @@ def run(argsets, manager: ArtifactManager):
     for argset in argsets:
         output = pipeline.run(argset)
         print(output)
+
+    manager.generate_report()

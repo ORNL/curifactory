@@ -565,7 +565,7 @@ class ArtifactManager:
     def generate_report(self):
         """Output report files to a run-specific report folder, the reports/_latest, and the
         store-full folder if applicable."""
-        if self.dry:
+        if self.dry or self.map_mode:
             return
         logging.info("Generating report...")
 
