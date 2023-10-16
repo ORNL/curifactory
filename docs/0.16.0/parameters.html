@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parameter files and parameter sets &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Cache" href="cache.html" />
+    <link rel="prev" title="Components" href="components.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Parameter files and parameter sets</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#the-experimentparameters-class">The <code class="code docutils literal notranslate"><span class="pre">ExperimentParameters</span></code> class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#programmatic-definition">Programmatic definition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-parameters">Using parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parameter-set-hashes-and-operational-parameters">Parameter set hashes and operational parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#subparameter-classes">Subparameter classes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing_mechanics.html">Hashing Mechanics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment_graph.html">Experiment Graph (DAG)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Curifactory Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="args.html">Args</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dag.html">DAG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing.html">Hashing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="params.html">Params</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Parameter files and parameter sets</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/parameters.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="parameter-files-and-parameter-sets">
+<h1>Parameter files and parameter sets<a class="headerlink" href="#parameter-files-and-parameter-sets" title="Permalink to this headline"></a></h1>
+<p>Another goal of Curifactory is to allow effective parameterization of experiments. Where this might normally be
+done with a json or yaml file, Curifactory directly uses python files for experiment parameterization/configuration.
+This has a few advantages:</p>
+<ol class="arabic simple">
+<li><p>Parameters can be any python object, rather than simply a primitive type or dictionary.</p></li>
+<li><p>Parameter files can reference/use other parameter files, allowing modularity and composition.</p></li>
+<li><p>The resulting parameter sets that are passed into an experiment can be algorithmically generated or modified inside an
+parameter file, with the full power of the python language! An example for how this might be useful is a single
+parameter file that generates 10 very similar parameter sets for comparison, rather than having to individually define
+10 different parameter configuration files. This could allow custom gridsearches for example.</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Throughout this documentation we use specific language to refer to different parts of parameterization:</p>
+<ul class="simple">
+<li><p><strong>Parameter</strong> - a single parameter is a single attribute of a parameter class.</p></li>
+<li><p><strong>Parameter class</strong> - a dataclass that extends curifactory’s <code class="docutils literal notranslate"><span class="pre">ExperimentParameters</span></code> and defines the possible hyperparameters.</p></li>
+<li><p><strong>Parameter set</strong> - an instance of a parameter class, every stage operates on a record with a single specific parameter set.</p></li>
+<li><p><strong>Parameter file</strong> - a python script as defined below that creates one or more parameter sets.</p></li>
+</ul>
+</div>
+<div class="section" id="the-experimentparameters-class">
+<h2>The <code class="code docutils literal notranslate"><span class="pre">ExperimentParameters</span></code> class<a class="headerlink" href="#the-experimentparameters-class" title="Permalink to this headline"></a></h2>
+<p>As discussed on the <a class="reference internal" href="getting_started.html#getting-started"><span class="std std-ref">Getting Started</span></a> page, To define possible parameters, there should be a
+class that inherits <code class="code docutils literal notranslate"><span class="pre">curifactory.ExperimentParameters</span></code>, and for ease of use should have the
+<code class="code docutils literal notranslate"><span class="pre">&#64;dataclass</span></code> decorator. Possible parameters your experiment stages can use are the attributes
+within this class, and by defining default values for each one, a parameter set constructor need only
+specify the parameters that differ from the defaults.</p>
+<p>An example <code class="code docutils literal notranslate"><span class="pre">Params</span></code> class is shown below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+
+<span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">ExperimentParameters</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Params</span><span class="p">(</span><span class="n">ExperimentParameters</span><span class="p">):</span>
+    <span class="n">example_param</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">example_number_of_epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span>
+
+    <span class="c1"># due to how dataclasses handle initialization, default lists and dictionaries need to</span>
+    <span class="c1"># be handled with field factory from the dataclasses package.</span>
+    <span class="n">example_data</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The actual parameter files (by default go in the <code class="docutils literal notranslate"><span class="pre">params/</span></code> folder) are then each expected to define a
+<code class="docutils literal notranslate"><span class="pre">get_params()</span></code> function, which should return a list of <code class="docutils literal notranslate"><span class="pre">Params</span></code> instances. A very simple example based on
+the above <code class="docutils literal notranslate"><span class="pre">Params</span></code> class might look like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">params</span> <span class="kn">import</span> <span class="n">Params</span>
+
+<span class="k">def</span> <span class="nf">get_params</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;test_params&#39;</span><span class="p">,</span> <span class="n">example_number_of_epochs</span><span class="o">=</span><span class="mi">15</span><span class="p">)]</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As <code class="docutils literal notranslate"><span class="pre">Params</span></code> is a completely user-defined class, you can technically name this class whatever you
+choose. The rest of this documentation is written under the assumption it is named <code class="docutils literal notranslate"><span class="pre">Params</span></code>.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>While the parameters in your dataclass can be arbitrary types, weird issues
+can sometimes arise if you include non-serializable objects. We’ve run into
+problems with things like including a pytorch distributed strategy object as
+an argument, as it can end up in a weird recursive serialization loop when
+curifactory tries to get a serialized JSON string representation of the
+corresponding arguments.</p>
+</div>
+</div>
+<div class="section" id="programmatic-definition">
+<h2>Programmatic definition<a class="headerlink" href="#programmatic-definition" title="Permalink to this headline"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">get_params()</span></code> function can contain arbitrary code, and this is where advantages 2 and 3 listed above can be
+exploited. For instance, if we wanted to define sets for testing multiple different numbers of epochs,
+we could return a list of multiple <code class="docutils literal notranslate"><span class="pre">Params</span></code> instances, each with a different epochs number:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">params</span> <span class="kn">import</span> <span class="n">Params</span>
+
+<span class="k">def</span> <span class="nf">get_params</span><span class="p">():</span>
+    <span class="n">param_sets</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">):</span>
+        <span class="n">param_sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;epochs_run_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">example_number_of_epochs</span><span class="o">=</span><span class="n">i</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">param_sets</span>
+</pre></div>
+</div>
+<p>If we wanted to make parameter sets compositional, we can import one of the other parameter files and
+reference its <code class="docutils literal notranslate"><span class="pre">get_params()</span></code> call in the new one:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">params</span> <span class="kn">import</span> <span class="n">base</span><span class="p">,</span> <span class="n">Params</span>
+
+<span class="k">def</span> <span class="nf">get_params</span><span class="p">():</span>
+    <span class="n">param_sets</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">get_params</span><span class="p">()</span>
+    <span class="n">param_sets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;modified&#39;</span> <span class="c1"># assuming we know there&#39;s only one Args instance (otherwise we do this in a loop)</span>
+    <span class="n">param_sets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">starting_data</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">param_sets</span>
+</pre></div>
+</div>
+<p>In the above example, there’s another parameters file named <code class="docutils literal notranslate"><span class="pre">base</span></code>, we get its arguments with <code class="docutils literal notranslate"><span class="pre">base.get_params()</span></code>,
+run our modifications, and return the modified argsets. In this way, any changes that get made to the base parameters also influence
+this one, allowing for a form of parameter set hierarchy.</p>
+<p>We can also create common functions for helping build up large amounts of argsets. As an example, we may frequently
+wish to create “seeded” argsets, where we have the same arguments several times but with a different seed for sklearn
+models or similar. Rather than manually define this, or reimplementing it in every relevant <code class="docutils literal notranslate"><span class="pre">get_params()</span></code> function,
+we could extract it as in this example:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">params/common.py</span><a class="headerlink" href="#id1" title="Permalink to this code"></a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">params</span> <span class="kn">import</span> <span class="n">Params</span>
+
+<span class="k">def</span> <span class="nf">seed_set</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">Params</span><span class="p">,</span> <span class="n">seed_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">):</span>
+    <span class="n">seed_params</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">seed_count</span><span class="p">):</span>
+        <span class="c1"># Make a copy of the passed params and apply a different seed</span>
+        <span class="n">new_params</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">new_params</span><span class="o">.</span><span class="n">name</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;_seed</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">new_params</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">seed_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_params</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">seed_params</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">params/seeded_models.py</span><a class="headerlink" href="#id2" title="Permalink to this code"></a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">params</span> <span class="kn">import</span> <span class="n">Params</span>
+<span class="kn">from</span> <span class="nn">params.common</span> <span class="kn">import</span> <span class="n">seed_set</span>
+
+<span class="k">def</span> <span class="nf">get_params</span><span class="p">():</span>
+    <span class="n">knn_params</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;test_knn&quot;</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;knn&quot;</span><span class="p">)</span>
+    <span class="n">svm_params</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;test_svm&quot;</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;svm&quot;</span><span class="p">)</span>
+
+    <span class="n">all_params</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">all_params</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">seed_set</span><span class="p">(</span><span class="n">knn_params</span><span class="p">))</span>
+    <span class="n">all_params</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">seed_set</span><span class="p">(</span><span class="n">svm_params</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">all_params</span>
+</pre></div>
+</div>
+</div>
+<p>Calling the <code class="docutils literal notranslate"><span class="pre">get_params()</span></code> in the <code class="docutils literal notranslate"><span class="pre">params/seeded_models.py</span></code> parameter file would return:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;test_knn_seed0&#39;</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;knn&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;test_knn_seed1&#39;</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;knn&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;test_knn_seed2&#39;</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;knn&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;test_knn_seed3&#39;</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;knn&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;test_knn_seed4&#39;</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;knn&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;test_svm_seed0&#39;</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;svm&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;test_svm_seed1&#39;</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;svm&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;test_svm_seed2&#39;</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;svm&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-parameters">
+<h2>Using parameters<a class="headerlink" href="#using-parameters" title="Permalink to this headline"></a></h2>
+<p>Every stage automatically has access to the currently relevant <code class="docutils literal notranslate"><span class="pre">Params</span></code> instance, as it is part of
+the passed record.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">Record</span>
+
+<span class="kn">from</span> <span class="nn">params</span> <span class="kn">import</span> <span class="n">Params</span>
+<span class="kn">import</span> <span class="nn">src</span>
+
+<span class="nd">@stage</span><span class="p">([</span><span class="s1">&#39;training_data&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">train_model</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">Record</span><span class="p">,</span> <span class="n">training_data</span><span class="p">):</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">Params</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">params</span> <span class="c1"># use the type hinting to get good autocomplete in IDEs</span>
+
+    <span class="k">if</span> <span class="n">params</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;knn&quot;</span><span class="p">:</span>
+        <span class="c1"># pass relevant parameters into the codebase functions</span>
+        <span class="n">src</span><span class="o">.</span><span class="n">train_knn</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
+        <span class="c1"># ...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="parameter-set-hashes-and-operational-parameters">
+<h2>Parameter set hashes and operational parameters<a class="headerlink" href="#parameter-set-hashes-and-operational-parameters" title="Permalink to this headline"></a></h2>
+<p>Curifactory automatically versions cached artifacts based on the parameter set used. It does this
+by computing a hash (the full details of which can be found on the <a class="reference internal" href="hashing_mechanics.html#hashing-mechanics"><span class="std std-ref">Hashing Mechanics</span></a> page,) which
+involves taking a form of string representation of the value for every attribute in a parameter
+set and computing the combined md5 hash.</p>
+<p>There are a few types of cases where we may want to modify how that hash is being computed</p>
+<ol class="arabic simple">
+<li><p>Some parameters may be “operational”, they influence how an experiment runs but shouldn’t change the results.</p></li>
+<li><p>By default the <code class="docutils literal notranslate"><span class="pre">repr</span></code> of some times of objects may not correctly return a value that uniquely and consistently represents what we want it to.</p></li>
+</ol>
+<p>Say we have the following dataclasses:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Params</span><span class="p">(</span><span class="n">cf</span><span class="o">.</span><span class="n">ExperimentParameters</span><span class="p">):</span>
+    <span class="n">model_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9000</span>
+    <span class="n">num_gpus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>If we create two parameter sets with different gpu counts, we get two different hashes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">p1</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;one_gpu&quot;</span><span class="p">,</span> <span class="n">num_gpus</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">p2</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;two_gpus&quot;</span><span class="p">,</span> <span class="n">num_gpus</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">p1</span><span class="o">.</span><span class="n">params_hash</span><span class="p">()</span>
+<span class="c1">#&gt; &#39;1ae3169d21cc23f1665561f7e91fe266e&#39;</span>
+<span class="n">p2</span><span class="o">.</span><span class="n">params_hash</span><span class="p">()</span>
+<span class="c1">#&gt; &#39;f1b00c12e820963221b1f60501d3822e&#39;</span>
+</pre></div>
+</div>
+<p>This would mean any stages we run these two parameter sets through would compute and cache two
+sets of outputs. However, we may want to change the number of gpus we use (when moving between
+machines), and we want it to use the same cached values because we wouldn’t expect the results
+to change.</p>
+<p>Curifactory will look for a special <code class="docutils literal notranslate"><span class="pre">hash_representations</span></code> dictionary on any <code class="docutils literal notranslate"><span class="pre">ExperimentParameters</span></code>
+class or composed dataclass on an <code class="docutils literal notranslate"><span class="pre">ExperimentParameters</span></code> subclass instance, which can optionally
+contain string keys of one or more of the attributes on the parameter class and an associated function
+that is passed the entire parameter set instance as well as the value of that specific parameter. By
+setting that function to <code class="docutils literal notranslate"><span class="pre">None</span></code>, we can tell Curifactory to ignore that parameter as part of the hash.</p>
+<p>Since setting default dictionaries on dataclasses requires an annoying amount of syntax, Curifactory
+provides a <code class="docutils literal notranslate"><span class="pre">set_hash_functions</span></code> function to initialize it correctly.</p>
+<p>If we want to ignore <code class="docutils literal notranslate"><span class="pre">num_gpus</span></code>, it might look like this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Params</span><span class="p">(</span><span class="n">cf</span><span class="o">.</span><span class="n">ExperimentParameters</span><span class="p">):</span>
+    <span class="n">model_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9000</span>
+    <span class="n">num_gpus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">hash_representations</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">set_hash_functions</span><span class="p">(</span><span class="n">num_gpus</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If we now run the same code as above:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">p1</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;one_gpu&quot;</span><span class="p">,</span> <span class="n">num_gpus</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">p2</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;two_gpus&quot;</span><span class="p">,</span> <span class="n">num_gpus</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">p1</span><span class="o">.</span><span class="n">params_hash</span><span class="p">()</span>
+<span class="c1">#&gt; &#39;b50ba553739feea66c8aab97787c22e0&#39;</span>
+<span class="n">p2</span><span class="o">.</span><span class="n">params_hash</span><span class="p">()</span>
+<span class="c1">#&gt; &#39;b50ba553739feea66c8aab97787c22e0&#39;</span>
+</pre></div>
+</div>
+<p>If we specify an actual function, that function takes both the whole parameter set
+as well as the specified parameter, meaning we can condition the hash representation
+for a specific parameter based on the others. (This is primarily useful if a parameter
+is a complex object and the <code class="docutils literal notranslate"><span class="pre">repr</span></code> doesn’t include some of the parameters it was
+initialized with.)</p>
+<p>As a simplistic and somewhat silly example, we can condition our model_size hash
+representation on num_gpus:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Params</span><span class="p">(</span><span class="n">cf</span><span class="o">.</span><span class="n">ExperimentParameters</span><span class="p">):</span>
+    <span class="n">model_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9000</span>
+    <span class="n">num_gpus</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">hash_representations</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">set_hash_functions</span><span class="p">(</span>
+        <span class="n">num_gpus</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">model_size</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">num_gpus</span><span class="p">)</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">p1</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;one_gpu&quot;</span><span class="p">,</span> <span class="n">model_size</span><span class="o">=</span><span class="mi">4500</span><span class="p">,</span> <span class="n">num_gpus</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">p2</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;two_gpus&quot;</span><span class="p">,</span> <span class="n">model_size</span><span class="o">=</span><span class="mi">9000</span><span class="p">,</span> <span class="n">num_gpus</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">p3</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;big_one_gpu&quot;</span><span class="p">,</span> <span class="n">model_size</span><span class="o">=</span><span class="mi">9000</span><span class="p">,</span> <span class="n">num_gpus</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">p1</span><span class="o">.</span><span class="n">params_hash</span><span class="p">()</span>
+<span class="c1">#&gt; &#39;a04bd13c314c694d8f1cff76cc34d2b&#39;</span>
+<span class="n">p2</span><span class="o">.</span><span class="n">params_hash</span><span class="p">()</span>
+<span class="c1">#&gt; &#39;a04bd13c314c694d8f1cff76cc34d2b&#39;</span>
+<span class="n">p3</span><span class="o">.</span><span class="n">params_hash</span><span class="p">()</span>
+<span class="c1">#&gt; &#39;ff1275fb121412c666259c7baefbf4e9&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="subparameter-classes">
+<h2>Subparameter classes<a class="headerlink" href="#subparameter-classes" title="Permalink to this headline"></a></h2>
+<p>It is possible to have parameter dataclasses composed of other dataclasses, which can
+help keep parameters organized and syntactically convenient:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">DataParams</span><span class="p">:</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Params</span><span class="p">(</span><span class="n">cf</span><span class="o">.</span><span class="n">ExperimentParameters</span><span class="p">):</span>
+    <span class="n">a</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">DataParams</span> <span class="o">=</span> <span class="n">DataParams</span><span class="p">()</span>
+
+<span class="n">my_params</span> <span class="o">=</span> <span class="n">Params</span><span class="p">()</span>
+<span class="n">my_params</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">path</span>
+</pre></div>
+</div>
+<p>Note that in python 3.11, the mutability requirements for dataclass fields were tightened,
+and the above code may not work (since a dataclass is mutable by default.) There are two
+ways around this, the first is easier but not recommended, placing a <code class="docutils literal notranslate"><span class="pre">unsafe_hash=True</span></code>
+in the sub dataclass:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">unsafe_hash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">DataParams</span><span class="p">:</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+</pre></div>
+</div>
+<p>The more correct way is to use dataclasses’ <code class="docutils literal notranslate"><span class="pre">default_factory</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">DataParams</span><span class="p">:</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Params</span><span class="p">(</span><span class="n">cf</span><span class="o">.</span><span class="n">ExperimentParameters</span><span class="p">):</span>
+    <span class="n">a</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">DataParams</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">DataParams</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="components.html" class="btn btn-neutral float-left" title="Components" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cache.html" class="btn btn-neutral float-right" title="Cache" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staging &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Store" href="store.html" />
+    <link rel="prev" title="Reporting" href="reporting.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and parameter sets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing_mechanics.html">Hashing Mechanics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment_graph.html">Experiment Graph (DAG)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Curifactory Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="args.html">Args</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dag.html">DAG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing.html">Hashing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="params.html">Params</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Staging</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/staging.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="module-curifactory.staging">
+<span id="staging"></span><h1>Staging<a class="headerlink" href="#module-curifactory.staging" title="Permalink to this headline"></a></h1>
+<p>Testing the decorators to help orchestrate caching and
+input/output passing through record state between stages.</p>
+<p><strong>Exceptions:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.staging.CachersMismatchError" title="curifactory.staging.CachersMismatchError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CachersMismatchError</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.staging.EmptyCachersError" title="curifactory.staging.EmptyCachersError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EmptyCachersError</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.staging.ExecutingWithSkippedInputError" title="curifactory.staging.ExecutingWithSkippedInputError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExecutingWithSkippedInputError</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.staging.InputSignatureError" title="curifactory.staging.InputSignatureError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InputSignatureError</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.staging.OutputSignatureError" title="curifactory.staging.OutputSignatureError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OutputSignatureError</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Classes:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.staging.SkippedOutput" title="curifactory.staging.SkippedOutput"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SkippedOutput</span></code></a>(record, stage_name, artifact_rep)</p></td>
+<td><p>An object placed into record state when a stage’s execution is skipped based on the DAG.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Functions:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.staging.aggregate" title="curifactory.staging.aggregate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aggregate</span></code></a>([inputs, outputs, cachers])</p></td>
+<td><p>Decorator to wrap around a function that represents some step that must operate across multiple different parameter sets or “execution chains” within an experiment.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.staging.stage" title="curifactory.staging.stage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stage</span></code></a>([inputs, outputs, cachers, …])</p></td>
+<td><p>Decorator to wrap around a function that represents a single step in an experiment, a block with inputs and outputs pertaining to the remainder of that experiment.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py exception">
+<dt id="curifactory.staging.CachersMismatchError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.staging.</span></code><code class="sig-name descname"><span class="pre">CachersMismatchError</span></code><a class="headerlink" href="#curifactory.staging.CachersMismatchError" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt id="curifactory.staging.EmptyCachersError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.staging.</span></code><code class="sig-name descname"><span class="pre">EmptyCachersError</span></code><a class="headerlink" href="#curifactory.staging.EmptyCachersError" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt id="curifactory.staging.ExecutingWithSkippedInputError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.staging.</span></code><code class="sig-name descname"><span class="pre">ExecutingWithSkippedInputError</span></code><a class="headerlink" href="#curifactory.staging.ExecutingWithSkippedInputError" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt id="curifactory.staging.InputSignatureError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.staging.</span></code><code class="sig-name descname"><span class="pre">InputSignatureError</span></code><a class="headerlink" href="#curifactory.staging.InputSignatureError" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt id="curifactory.staging.OutputSignatureError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.staging.</span></code><code class="sig-name descname"><span class="pre">OutputSignatureError</span></code><a class="headerlink" href="#curifactory.staging.OutputSignatureError" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="curifactory.staging.SkippedOutput">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.staging.</span></code><code class="sig-name descname"><span class="pre">SkippedOutput</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><span class="pre">curifactory.record.Record</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">stage_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">artifact_rep</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="record.html#curifactory.record.ArtifactRepresentation" title="curifactory.record.ArtifactRepresentation"><span class="pre">curifactory.record.ArtifactRepresentation</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.staging.SkippedOutput" title="Permalink to this definition"></a></dt>
+<dd><p>An object placed into record state when a stage’s execution is skipped based
+on the DAG. This is so that the inputs check at the beginning of the stage (prior
+to DAG execution check) does not fail.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="curifactory.staging.aggregate">
+<code class="sig-prename descclassname"><span class="pre">curifactory.staging.</span></code><code class="sig-name descname"><span class="pre">aggregate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cachers</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.staging.aggregate" title="Permalink to this definition"></a></dt>
+<dd><p>Decorator to wrap around a function that represents some step that must operate across
+multiple different parameter sets or “execution chains” within an experiment. This is normally
+used to run final analyses and comparisons of results across all passed parameter sets.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Any function wrapped with the aggregate decorator must take a Record instance as the first
+argument and a list of Record instances as the second. The former is the record that applies
+to this function, and the latter is the set of other records from elsewhere in the experiment
+that this function needs to aggregate across.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – A list of variable names this stage expects to find in the
+state of each record passed into it. A warning will be thrown on any records that
+do not have the requested variable in state. Variables listed here are used for the
+DAG/map calculation to determine which stages are actually required to run for this
+stage to have everything it needs. <strong>Note that all inputs listed here must have a
+corresponding input parameter in the function definition line, each with the exact
+same name as in this list.</strong> These arguments are each dictionaries of the requested
+state artifacts, keyed by the record they come from.</p></li>
+<li><p><strong>outputs</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – A list of variable names that this stage will return and store
+in the record state. These represent, in order, the tuple of returned values from
+the function being wrapped.</p></li>
+<li><p><strong>cachers</strong> (<em>list</em><em>[</em><a class="reference internal" href="caching.html#curifactory.caching.Cacheable" title="curifactory.caching.Cacheable"><em>Cacheable</em></a><em>]</em>) – An optional list of <code class="docutils literal notranslate"><span class="pre">Cacheable</span></code> instances (“strategies”) to
+apply to each of the return outputs. If specified, for each output, an instance
+of the corresponding cacher is initialized, and the <code class="docutils literal notranslate"><span class="pre">save()</span></code> function is called.
+Before the wrapped function is called, the output path is first checked, and if it
+exists and the current record parameters are not set to overwrite, the <code class="docutils literal notranslate"><span class="pre">load()</span></code>
+function is called and the wrapped function <strong>does not execute.</strong> Note that caching
+is all or nothing for a single function, you cannot cache only one returned value
+out of several.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@aggregate</span><span class="p">([</span><span class="s2">&quot;results&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;final_results&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">JsonCacher</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">compile_results</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">Record</span><span class="p">,</span> <span class="n">records</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Record</span><span class="p">],</span> <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Record</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+    <span class="n">final_results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">in_record</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">results</span><span class="p">[</span><span class="n">in_record</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+    <span class="k">return</span> <span class="n">final_results</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="curifactory.staging.stage">
+<code class="sig-prename descclassname"><span class="pre">curifactory.staging.</span></code><code class="sig-name descname"><span class="pre">stage</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cachers</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suppress_missing_inputs</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.staging.stage" title="Permalink to this definition"></a></dt>
+<dd><p>Decorator to wrap around a function that represents a single step in an experiment,
+a block with inputs and outputs pertaining to the remainder of that experiment.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Any function wrapped with the stage decorator must take a Record instance as the first
+parameter, followed by the input parameters corresponding to the <code class="code docutils literal notranslate"><span class="pre">inputs</span></code> list.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – A list of variable names that this stage will need from the
+record state. <strong>Note that all inputs listed here must have a corresponding
+input argument in the function definition line, each with the exact same name
+as in this list.</strong></p></li>
+<li><p><strong>outputs</strong> (<em>list</em><em>[</em><em>Union</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="caching.html#curifactory.caching.Lazy" title="curifactory.caching.Lazy"><em>Lazy</em></a><em>]</em><em>]</em>) – A list of variable names that this stage will return and store
+in the record state. These represent, in order, the tuple of returned values from
+the function being wrapped.</p></li>
+<li><p><strong>cachers</strong> (<em>list</em><em>[</em><a class="reference internal" href="caching.html#curifactory.caching.Cacheable" title="curifactory.caching.Cacheable"><em>Cacheable</em></a><em>]</em>) – An optional list of <code class="docutils literal notranslate"><span class="pre">Cacheable</span></code> instances (“strategies”) to
+apply to each of the return outputs. If specified, for each output, an instance
+of the corresponding cacher is initialized, and the <code class="docutils literal notranslate"><span class="pre">save()</span></code> function is called.
+Before the wrapped function is called, the output path is first checked, and if it
+exists and the current record parameter set is not configured to overwrite, the <code class="docutils literal notranslate"><span class="pre">load()</span></code> function
+is called and the wrapped function <strong>does not execute.</strong> Note that caching is all
+or nothing for a single function, you cannot cache only one returned value out of
+several.</p></li>
+<li><p><strong>suppress_missing_inputs</strong> (<em>bool</em>) – If true, any stage inputs that are not found in the record’s
+state will be passed in as <code class="docutils literal notranslate"><span class="pre">None</span></code> rather than raising an exception. This can
+be used to make all inputs optional, such as if a stage will be used after different
+sets of previous stages and not all values are necessarily required.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">],</span> <span class="n">cachers</span><span class="o">=</span><span class="p">[</span><span class="n">JsonCacher</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">test_model</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">Record</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+    <span class="c1"># ...</span>
+    <span class="k">return</span> <span class="n">results_dictionary</span>
+</pre></div>
+</div>
+<p>Note that from this example, this stage assumes some other stages have output
+<code class="docutils literal notranslate"><span class="pre">&quot;data&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;model&quot;</span></code> at some point.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="reporting.html" class="btn btn-neutral float-left" title="Reporting" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="store.html" class="btn btn-neutral float-right" title="Store" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>
