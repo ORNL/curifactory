@@ -1,4 +1,4 @@
-""" Helper and utility functions for the library. """
+"""Helper and utility functions for the library."""
 
 import json
 import logging
@@ -366,13 +366,14 @@ def preview_object(object: any) -> str:
 
 
 def init_logging(
-    log_path=None,
+    log_path: str = None,
     level=logging.INFO,
-    log_errors=False,
-    include_process=False,
-    no_color=False,
-    quiet=False,
-    plain=False,
+    log_errors: bool = False,
+    include_process: bool = False,
+    no_color: bool = False,
+    quiet: bool = False,
+    plain: bool = False,
+    disable_non_cf_loggers: bool = True,
 ):
     """Sets up logging configuration, including the associated file output.
 
@@ -387,6 +388,8 @@ def init_logging(
         no_color (bool): Suppress colors in console output.
         quiet (bool): Suppress all console log output.
         plain (bool): Output plain text log rather than rich output.
+        disable_non_cf_loggers (bool): Hide loggers from other libraries. This is true
+            by default because some libraries can generate a lot of noise.
     """
     if include_process:
         # NOTE: taking out %(filename)s because it takes up space and makes the beginning of the log entries "jagged"
@@ -441,9 +444,10 @@ def init_logging(
             root_logger.addHandler(console_handler)
 
     # https://stackoverflow.com/questions/27538879/how-to-disable-loggers-from-other-modules
-    # disable all loggers except ours (TODO: may want to config this at some point)
-    for name, logger in logging.root.manager.loggerDict.items():
-        logger.disabled = True
+    # disable all loggers except ours
+    if disable_non_cf_loggers:
+        for name, logger in logging.root.manager.loggerDict.items():
+            logger.disabled = True
 
     # sys.stdout = StreamToLogger(logging.INFO)
     if log_errors:

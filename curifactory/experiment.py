@@ -57,6 +57,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     progress: bool = False,
     plain: bool = False,
     notes: str = None,
+    all_loggers: bool = False,
 ):
     """The experiment entrypoint function. This executes the given experiment
     with the given parameters.
@@ -130,6 +131,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             this negates progress.
         notes (str): A git-log-like message to store in the run info for the current run. If this is an
             empty string, query the user for an input string.
+        all_loggers (bool): Whether to include all non-curifactory library loggers in the output logs
+            as well.
 
     Returns:
         Whatever is returned from the experiment :code:`run()`.
@@ -200,6 +203,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             run_string += " --no-color"
         if quiet:
             run_string += " --quiet"
+        if all_loggers:
+            run_string += " --all-loggers"
 
         # TODO: remainder of flags
 
@@ -268,6 +273,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             ignore_lazy=ignore_lazy,
             status_override=None,
             notes=notes,
+            disable_non_cf_loggers=not all_loggers,
         )
         # mngr.experiment_name = experiment_name
         mngr.parameter_files = param_files
@@ -330,6 +336,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             quiet=quiet,
             no_color=no_color,
             plain=plain,
+            disable_non_cf_loggers=not all_loggers,
         )
 
     logging.info("Running experiment %s" % experiment_name)
@@ -1222,6 +1229,12 @@ Examples:
         action="store_true",
         help="Include errors and stack traces in output logs. NOTE: this redirects stderr - output from libraries like tqdm will be logged as well.",
     )
+    outputs_group.add_argument(
+        "--all-loggers",
+        dest="all_loggers",
+        action="store_true",
+        help="Include loggers from all non-cf libraries in logging output.",
+    )
 
     # ---- CACHING ----
     caching_group.add_argument(
@@ -1435,6 +1448,7 @@ Examples:
         progress=args.progress,
         plain=args.plain,
         notes=args.notes,
+        all_loggers=args.all_loggers,
     )
 
 

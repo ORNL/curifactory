@@ -61,6 +61,8 @@ class ArtifactManager:
             'LIVE' indicates that this manager is being run from a non-experiment script or interactive terminal.
         suppress_live_log (bool): If true, on live/interactive runs don't automatically spawn a logger.
         live_log_debug (bool): If true, spawn live logger with the DEBUG level.
+        disable_non_cf_loggers (bool): Hide loggers from other libraries. This is true
+            by default because some libraries can generate a lot of noise.
     """
 
     def __init__(
@@ -86,6 +88,7 @@ class ArtifactManager:
         status_override: str = "LIVE",
         suppress_live_log: bool = False,
         live_log_debug: bool = False,
+        disable_non_cf_loggers: bool = True,
     ):
         self.current_stage_name = ""
         """The name of the stage currently executing."""
@@ -256,7 +259,9 @@ class ArtifactManager:
             level = logging.DEBUG if live_log_debug else logging.INFO
             if self.dry:
                 log_path = None
-            utils.init_logging(log_path, level, False)
+            utils.init_logging(
+                log_path, level, False, disable_non_cf_loggers=disable_non_cf_loggers
+            )
 
     # TODO: move this into dag
     def map_records(self):

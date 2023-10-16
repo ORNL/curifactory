@@ -30,6 +30,7 @@ from curifactory.manager import ArtifactManager
                 parallel_mode=False,
                 lazy=False,
                 ignore_lazy=False,
+                disable_non_cf_loggers=True,
             ),
         ),
         (
@@ -44,6 +45,7 @@ from curifactory.manager import ArtifactManager
                 parallel_mode=False,
                 lazy=False,
                 ignore_lazy=False,
+                disable_non_cf_loggers=True,
             ),
         ),
         (
@@ -62,6 +64,7 @@ from curifactory.manager import ArtifactManager
                 parallel_mode=False,
                 lazy=False,
                 ignore_lazy=False,
+                disable_non_cf_loggers=True,
             ),
         ),
         (
@@ -80,6 +83,7 @@ from curifactory.manager import ArtifactManager
                 parallel_mode=False,
                 lazy=False,
                 ignore_lazy=False,
+                disable_non_cf_loggers=True,
             ),
         ),
         (
@@ -99,6 +103,7 @@ from curifactory.manager import ArtifactManager
                 parallel_mode=False,
                 lazy=False,
                 ignore_lazy=False,
+                disable_non_cf_loggers=True,
             ),
         ),
         (
@@ -117,6 +122,7 @@ from curifactory.manager import ArtifactManager
                 parallel_mode=False,
                 lazy=False,
                 ignore_lazy=False,
+                disable_non_cf_loggers=True,
             ),
         ),
         (
@@ -131,6 +137,7 @@ from curifactory.manager import ArtifactManager
                 parallel_mode=False,
                 lazy=True,
                 ignore_lazy=False,
+                disable_non_cf_loggers=True,
             ),
         ),
         (
@@ -145,6 +152,27 @@ from curifactory.manager import ArtifactManager
                 parallel_mode=False,
                 lazy=False,
                 ignore_lazy=True,
+                disable_non_cf_loggers=True,
+            ),
+        ),
+        (
+            dict(
+                experiment_name="test",
+                param_files=["params1"],
+                ignore_lazy=True,
+                all_loggers=True,
+            ),
+            dict(
+                store_full=False,
+                dry=False,
+                dry_cache=False,
+                prefix=None,
+                run_line="experiment test -p params1 --ignore-lazy --all-loggers",
+                parallel_lock=None,
+                parallel_mode=False,
+                lazy=False,
+                ignore_lazy=True,
+                disable_non_cf_loggers=False,
             ),
         ),
     ],
@@ -221,6 +249,7 @@ def test_rank_manager_integration(
         ignore_lazy=False,
         status_override=None,
         notes=None,
+        disable_non_cf_loggers=True,
     )
 
 
@@ -270,6 +299,7 @@ def test_rank_manager_store_full_integration(
         ignore_lazy=False,
         status_override=None,
         notes=None,
+        disable_non_cf_loggers=True,
     )
 
 
