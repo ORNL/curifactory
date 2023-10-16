@@ -5,10 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [unreleased]
+## [0.16.0] - 2023-10-16
 
 ### Added
 * Optional dependency `curifactory[h5]` (pytables, for h5 pandas cacher) to setup.
+* Ability to configure whether non-curifactory logs are silenced with
+  `--all-loggers` flag.
 
 ### Changed
 * Repr for Lazy objects, so OutputSignatureErrors don't just list pointer addresses.
@@ -18,7 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * Lazy instance cached from previous run not displaying correct preview in detailed report map.
-* Experiment run spewing out command error if running from non-git-repo. (Single line warning is now displayed instead.)
+* Experiment run spewing out command error if running from non-git-repo. (Single line
+  warning is now displayed instead.)
 * Raising InputSignatureError for potentially unrelated TypeErrors raised within stages.
 * Completer parsing for experiments and parameters on MacOS.
 * `generate_report()` calls inside an experiment `run()` breaking in map mode.
