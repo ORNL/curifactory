@@ -1077,7 +1077,7 @@ def _check_cached_outputs(
 
 def _add_output_artifact(
     record,
-    object: Any,
+    obj: Any,
     outputs: list[Union[str, Lazy]],
     index: int,
     metadata=None,
@@ -1088,7 +1088,7 @@ def _add_output_artifact(
     to the manager's artifacts."""
     if not record.manager.map_mode:
         artifact = ArtifactRepresentation(
-            record, outputs[index], object, metadata=metadata, cacher=cacher
+            record, outputs[index], obj, metadata=metadata, cacher=cacher
         )
     else:
         artifact = MapArtifactRepresentation(
