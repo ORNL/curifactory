@@ -2,6 +2,6 @@
 from curifactory - this allows running it from inside an IDE
 such as pycharm, in order to get debugging."""
 
-from curifactory import experiment
+from curifactory import cli
 
-experiment.main()
+cli.main()

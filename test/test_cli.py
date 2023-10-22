@@ -1,8 +1,9 @@
 """Tests to make sure the command line interface to running experiments isn't broken."""
+import argparse
 
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
-from curifactory.cli import completer_experiments, completer_params
+from curifactory.cli import completer_experiments, completer_params, main
 
 
 def test_experiments_completer():
@@ -39,3 +40,17 @@ def test_macos_params_completer(mocker):  # noqa: F811
 
     output = completer_params()
     assert output == ["empty", "empty", "subparams.thing", "subparams.thing"]
+
+
+def test_experiment_ls_output(mocker, capfd):  # noqa: F811
+    """``experiment ls`` should return the list of experiment scripts and parameter files."""
+    mock = mocker.patch(  # noqa: F841
+        "argparse.ArgumentParser.parse_args",
+        return_value=argparse.Namespace(experiment_name="ls", parameters_name=""),
+    )
+    test = main()  # noqa: F841
+    out, err = capfd.readouterr()
+    assert (
+        out
+        == "EXPERIMENTS:\n\tbasic\n\tsubexp.example\n\nPARAMS:\n\tempty\n\tnonarrayargs\n\tparams1\n\tparams2\n\tsubparams.thing\n"
+    )
