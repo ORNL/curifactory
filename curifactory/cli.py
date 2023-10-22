@@ -218,7 +218,6 @@ def cmd_reports(args):
 def main():
     """'Main' command line entrypoint, parses command line flags and makes the
     appropriate ``run_experiment()`` call as relevant."""
-
     parser = argparse.ArgumentParser(
         description="Run a given curifactory experiment with specified parameters.",
         formatter_class=argparse.RawDescriptionHelpFormatter,

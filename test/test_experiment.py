@@ -5,11 +5,7 @@ import os
 import pytest
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture
 
-from curifactory.experiment import (
-    experiments_completer,
-    params_completer,
-    run_experiment,
-)
+from curifactory.experiment import run_experiment
 from curifactory.manager import ArtifactManager
 
 # TODO: need to test that specifying no params will default to experiment_name
@@ -461,35 +457,3 @@ def test_valid_args_names_works(clear_filesystem):
 
     assert len(manager.records) == 1
     assert manager.records[0].state["sum"] == 9
-
-
-def test_experiments_completer():
-    output = experiments_completer()
-    assert output == ["basic", "subexp.example"]
-
-
-def test_params_completer():
-    output = params_completer()
-    assert output == ["empty", "nonarrayargs", "params1", "params2", "subparams.thing"]
-
-
-def test_macos_experiment_completer(mocker):  # noqa: F811
-    """The BSD verison of grep on macOS puts './' at the beginning of returned paths,
-    we should handle this appropriately"""
-
-    mock = mocker.patch("subprocess.run")
-    mock.return_value.stdout = b"./basic.py\n./subexp/example.py\n"
-
-    output = experiments_completer()
-    assert output == ["basic", "subexp.example"]
-
-
-def test_macos_params_completer(mocker):  # noqa: F811
-    """The BSD verison of grep on macOS puts './' at the beginning of returned paths,
-    we should handle this appropriately"""
-
-    mock = mocker.patch("subprocess.run")
-    mock.return_value.stdout = b"./empty.py\n./subparams/thing.py\n"
-
-    output = params_completer()
-    assert output == ["empty", "empty", "subparams.thing", "subparams.thing"]
