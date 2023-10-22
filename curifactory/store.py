@@ -3,7 +3,24 @@
 import json
 import os
 
+from sqlalchemy import create_engine
+
 from curifactory import utils
+
+
+class SQLStore:
+    """EXPERIMENTAL, making an sqlite version of the data below."""
+
+    def __init__(self, manager_cache_path: str):
+        self.path = manager_cache_path
+        """The location to store the ``store.db``."""
+
+        if self.path[-1] != "/":
+            self.path += "/"
+
+        self.path += "store.db"
+
+        self.engine = create_engine(f"sqlite:///{self.path}")
 
 
 class ManagerStore:
