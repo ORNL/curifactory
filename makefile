@@ -1,5 +1,5 @@
 # https://madewithml.com/courses/mlops/makefile
-SHELL = /bin/bash
+SHELL = /usr/bin/env bash
 VERSION := $(shell python -c "import curifactory as cf; print(cf.__version__)")
 
 .PHONY: help
