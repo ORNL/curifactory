@@ -37,3 +37,8 @@ def filerefcacher_stage(record):
 @cf.stage(None, ["my_output"], [JsonCacher])
 def store_an_output(record):
     return record.params.a + record.params.b
+
+
+@cf.aggregate(None, ["my_agg_output"], [JsonCacher])
+def agg_store_an_output(record, records):
+    return record.params.a + record.params.b

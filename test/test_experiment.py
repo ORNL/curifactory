@@ -465,12 +465,19 @@ def test_valid_args_names_works(clear_filesystem):
 
 def test_experiments_completer():
     output = experiments_completer()
-    assert output == ["basic", "subexp.example"]
+    assert output == ["basic", "simple_cache", "subexp.example"]
 
 
 def test_params_completer():
     output = params_completer()
-    assert output == ["empty", "nonarrayargs", "params1", "params2", "subparams.thing"]
+    assert output == [
+        "empty",
+        "nonarrayargs",
+        "params1",
+        "params2",
+        "simple_cache",
+        "subparams.thing",
+    ]
 
 
 def test_macos_experiment_completer(mocker):  # noqa: F811
@@ -498,7 +505,12 @@ def test_macos_params_completer(mocker):  # noqa: F811
 def test_single_run_many_records_are_distinct(configured_test_manager):
     """Running an experiment that returns multiple records with different data should
     indeed have different data in their respective states."""
-    run_experiment("simple_cache", ["simple_cache"], mngr=configured_test_manager)
+    run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing1", "thing2"],
+        mngr=configured_test_manager,
+    )
 
     assert len(configured_test_manager.records) == 2
     assert (
@@ -512,9 +524,18 @@ def test_double_run_many_records_are_distinct(
 ):
     """Running an experiment (twice) that returns multiple records with different data should
     indeed have different data in their respective states."""
-    run_experiment("simple_cache", ["simple_cache"], mngr=configured_test_manager)
     run_experiment(
-        "simple_cache", ["simple_cache"], mngr=configured_test_manager2, dry=True
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing1", "thing2"],
+        mngr=configured_test_manager,
+    )
+    run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing1", "thing2"],
+        mngr=configured_test_manager2,
+        dry=True,
     )  # NOTE: this works (prior to fix) with no_dag=True
 
     assert len(configured_test_manager.records) == 2
@@ -530,4 +551,56 @@ def test_double_run_many_records_are_distinct(
     assert (
         configured_test_manager2.records[0].state["my_output"]
         != configured_test_manager2.records[1].state["my_output"]
+    )
+
+
+def test_single_run_many_records_are_distinct_agg(configured_test_manager):
+    """Running an experiment that returns multiple records with different data should
+    indeed have different data in their respective states."""
+    run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing3", "thing4"],
+        mngr=configured_test_manager,
+    )
+
+    assert len(configured_test_manager.records) == 2
+    assert (
+        configured_test_manager.records[0].state["my_agg_output"]
+        != configured_test_manager.records[1].state["my_agg_output"]
+    )
+
+
+def test_double_run_many_records_are_distinct_agg(
+    configured_test_manager, configured_test_manager2
+):
+    """Running an experiment (twice) that returns multiple records with different data should
+    indeed have different data in their respective states."""
+    run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing3", "thing4"],
+        mngr=configured_test_manager,
+    )
+    run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing3", "thing4"],
+        mngr=configured_test_manager2,
+        dry=True,
+    )  # NOTE: this works (prior to fix) with no_dag=True
+
+    assert len(configured_test_manager.records) == 2
+    assert (
+        configured_test_manager.records[0].state["my_agg_output"]
+        != configured_test_manager.records[1].state["my_agg_output"]
+    )
+
+    for mapped_artifact in configured_test_manager2.mapped_artifacts:
+        assert mapped_artifact.cached
+
+    assert len(configured_test_manager2.records) == 2
+    assert (
+        configured_test_manager2.records[0].state["my_agg_output"]
+        != configured_test_manager2.records[1].state["my_agg_output"]
     )

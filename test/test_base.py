@@ -51,5 +51,5 @@ def test_experiment_ls_output(mocker, capfd):
     out, err = capfd.readouterr()
     assert (
         out
-        == "EXPERIMENTS:\n\tbasic\n\tsubexp.example\n\nPARAMS:\n\tempty\n\tnonarrayargs\n\tparams1\n\tparams2\n\tsubparams.thing\n"
+        == "EXPERIMENTS:\n\tbasic\n\tsimple_cache\n\tsubexp.example\n\nPARAMS:\n\tempty\n\tnonarrayargs\n\tparams1\n\tparams2\n\tsimple_cache\n\tsubparams.thing\n"
     )
