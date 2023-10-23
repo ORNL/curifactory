@@ -504,7 +504,10 @@ def test_macos_params_completer(mocker):  # noqa: F811
 
 def test_single_run_many_records_are_distinct(configured_test_manager):
     """Running an experiment that returns multiple records with different data should
-    indeed have different data in their respective states."""
+    indeed have different data in their respective states.
+
+    This is to test that stage decorator cachers aren't singleton instances.
+    """
     run_experiment(
         "simple_cache",
         ["simple_cache"],
@@ -523,7 +526,10 @@ def test_double_run_many_records_are_distinct(
     configured_test_manager, configured_test_manager2
 ):
     """Running an experiment (twice) that returns multiple records with different data should
-    indeed have different data in their respective states."""
+    indeed have different data in their respective states.
+
+    This is to test that stage decorator cachers aren't singleton instances.
+    """
     run_experiment(
         "simple_cache",
         ["simple_cache"],
@@ -556,7 +562,10 @@ def test_double_run_many_records_are_distinct(
 
 def test_single_run_many_records_are_distinct_agg(configured_test_manager):
     """Running an experiment that returns multiple records with different data should
-    indeed have different data in their respective states."""
+    indeed have different data in their respective states.
+
+    This is to test that stage decorator cachers aren't singleton instances.
+    """
     run_experiment(
         "simple_cache",
         ["simple_cache"],
@@ -575,7 +584,10 @@ def test_double_run_many_records_are_distinct_agg(
     configured_test_manager, configured_test_manager2
 ):
     """Running an experiment (twice) that returns multiple records with different data should
-    indeed have different data in their respective states."""
+    indeed have different data in their respective states.
+
+    This is to test that stage decorator cachers aren't singleton instances.
+    """
     run_experiment(
         "simple_cache",
         ["simple_cache"],
