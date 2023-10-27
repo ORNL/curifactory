@@ -175,6 +175,28 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             if outputs is None:
                 outputs = []
 
+            # NOTE: this local_cachers is necessary because otherwise you run
+            # into the potential for accidental singleton cachers that all
+            # records running through one stage then incidentally share. I
+            # believe this happens because there's only technically one "stage"
+            # instance, so multiple records running the same stage are all using
+            # the cacher that's defined either directly in the stage header, or
+            # that is directly replaced in the stage header when given a type
+            # (that is then initialized below) To mitigate, we create a _copy_
+            # of any provided cachers, and this works both for cacher types as
+            # well as already initialized cachers. However, this does mean that
+            # if in say a notebook, if someone passes in a cacher initialized
+            # elsewhere, and expects it to have any state that might have been
+            # manipulated in the cacher's save etc. this will no longer work.
+            # Instead, they would have to manually get the copy of the cacher
+            # off of the artifact in manager in order to get the actual cacher
+            # instance that was used.
+            local_cachers = None
+            if cachers is not None:
+                local_cachers = []
+                for cacher in cachers:
+                    local_cachers.append(copy.deepcopy(cacher))
+
             record.manager.current_stage_name = name
             record.manager.stage_active = True
             record.stages.append(name)
@@ -189,7 +211,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             for output in outputs:
                 if (
                     type(output) == Lazy
-                    and cachers is None
+                    and local_cachers is None
                     and not record.manager.lazy
                     and not record.manager.ignore_lazy
                 ):
@@ -208,15 +230,15 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                         # NOTE: since Lazy caching doesn't work without a cacher, we need to ensure
                         # one if none exists. Pickle is pretty broad, but obviously there are some things
                         # that don't work, so we need to warn about this
-                        if cachers is None:
+                        if local_cachers is None:
                             no_cachers = True
                             logging.warning(
                                 "Stage %s does not have cachers specified, a --lazy run will force caching by applying PickleCachers to anything with none specified, but this can potentially cause errors."
                                 % name
                             )
-                            cachers = []
+                            local_cachers = []
                         if no_cachers:
-                            cachers.append(PickleCacher)
+                            local_cachers.append(PickleCacher)
             elif record.manager.ignore_lazy:
                 for index, output in enumerate(outputs):
                     if type(output) == Lazy:
@@ -224,7 +246,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                         outputs[index] = output.name
 
             # check for mismatched amounts of cachers
-            if cachers is not None and len(cachers) != len(outputs):
+            if local_cachers is not None and len(local_cachers) != len(outputs):
                 raise CachersMismatchError(
                     f"Stage '{name}' - the number of cachers does not match the number of outputs to cache."
                 )
@@ -294,24 +316,27 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             # no, you cannot abstract this into _check_cached_outputs - if you try to reassign to cachers from
             # another function, because of the deep voodoo black magic sorcery that is decorators with arguments,
             # it considers it different code.
-            if cachers is not None:
+            if local_cachers is not None:
                 # instantiate cachers if not already
-                for i in range(len(cachers)):
-                    cacher = cachers[i]
+                for i in range(len(local_cachers)):
+                    cacher = local_cachers[i]
                     if type(cacher) == type:
-                        cachers[i] = cacher()
+                        local_cachers[i] = cacher()
                     # set the active record on the cacher as well as provide a default name
                     # (the name of the output)
-                    cachers[i].set_record(record)
-                    cachers[
+                    local_cachers[i].set_record(record)
+                    local_cachers[
                         i
                     ].stage = name  # set current stage name, so get_path is correct in later stages (particularly for lazy)
-                    if cachers[i].name is None and cachers[i].path_override is None:
+                    if (
+                        local_cachers[i].name is None
+                        and local_cachers[i].path_override is None
+                    ):
                         if type(outputs[i]) == Lazy:
-                            cachers[i].name = outputs[i].name
+                            local_cachers[i].name = outputs[i].name
                         else:
-                            cachers[i].name = outputs[i]
-            record.stage_cachers = cachers
+                            local_cachers[i].name = outputs[i]
+            record.stage_cachers = local_cachers
 
             # at this point we've grabbed all information we would need if we're
             # just mapping out the stages, so return at this point.
@@ -322,7 +347,9 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                 # we need to create pseudo-state-artifact-representations for the outputs. Since
                 # we obviously can't add the actual artifacts (there are none without running!),
                 # we just add the string key and a name, so record __repr__ has something to use
-                _get_output_representations_for_map(record, outputs, cachers, None)
+                _get_output_representations_for_map(
+                    record, outputs, local_cachers, None
+                )
                 record.stage_cachers = None
                 return record
 
@@ -339,7 +366,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                 stage_rep = (record.get_record_index(), name)
                 if stage_rep not in record.manager.map.execution_list:
                     logging.debug('DAG-indicated stage skip "%s".' % str(stage_rep))
-                    _dag_skip_check_cached_outputs(name, record, outputs, cachers)
+                    _dag_skip_check_cached_outputs(name, record, outputs, local_cachers)
 
                     # grab any possible previous reportables so they still end up in report.
                     _check_cached_reportables(name, record)
@@ -359,7 +386,9 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             # So the flow is: if we have a DAG, and it says to execute this stage, or if we don't have
             # a DAG, check if we actually need to run this based on cached values.
             if record.manager.map is None or execute_stage:
-                cache_valid = _check_cached_outputs(name, record, outputs, cachers)
+                cache_valid = _check_cached_outputs(
+                    name, record, outputs, local_cachers
+                )
                 if cache_valid:
                     # get previous reportables if available
                     _check_cached_reportables(name, record)
@@ -437,7 +466,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             # handle storing outputs in record
             post_cache_time_start = time.perf_counter()
             record.manager.lock()
-            _store_outputs(name, record, outputs, cachers, function_outputs)
+            _store_outputs(name, record, outputs, local_cachers, function_outputs)
             _store_reportables(name, record)
             record.store_tracked_paths()
             record.manager.unlock()
@@ -600,6 +629,28 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             if outputs is None:
                 outputs = []
 
+            # NOTE: this local_cachers is necessary because otherwise you run
+            # into the potential for accidental singleton cachers that all
+            # records running through one stage then incidentally share. I
+            # believe this happens because there's only technically one "stage"
+            # instance, so multiple records running the same stage are all using
+            # the cacher that's defined either directly in the stage header, or
+            # that is directly replaced in the stage header when given a type
+            # (that is then initialized below) To mitigate, we create a _copy_
+            # of any provided cachers, and this works both for cacher types as
+            # well as already initialized cachers. However, this does mean that
+            # if in say a notebook, if someone passes in a cacher initialized
+            # elsewhere, and expects it to have any state that might have been
+            # manipulated in the cacher's save etc. this will no longer work.
+            # Instead, they would have to manually get the copy of the cacher
+            # off of the artifact in manager in order to get the actual cacher
+            # instance that was used.
+            local_cachers = None
+            if cachers is not None:
+                local_cachers = []
+                for cacher in cachers:
+                    local_cachers.append(copy.deepcopy(cacher))
+
             record.manager.current_stage_name = name
             record.set_aggregate(records)
             record.stages.append(name)
@@ -619,7 +670,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             for output in outputs:
                 if (
                     type(output) == Lazy
-                    and cachers is None
+                    and local_cachers is None
                     and not record.manager.lazy
                     and not record.manager.ignore_lazy
                 ):
@@ -638,15 +689,15 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                         # NOTE: since Lazy caching doesn't work without a cacher, we need to ensure
                         # one if none exists. Pickle is pretty broad, but obviously there are some things
                         # that don't work, so we need to warn about this
-                        if cachers is None:
+                        if local_cachers is None:
                             no_cachers = True
                             logging.warning(
                                 "Aggregate stage %s does not have cachers specified, a --lazy run will force caching by applying PickleCachers to anything with none specified, but this can potentially cause errors."
                                 % name
                             )
-                            cachers = []
+                            local_cachers = []
                         if no_cachers:
-                            cachers.append(PickleCacher)
+                            local_cachers.append(PickleCacher)
             elif record.manager.ignore_lazy:
                 for index, output in enumerate(outputs):
                     if type(output) == Lazy:
@@ -654,7 +705,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                         outputs[index] = output.name
 
             # check for mismatched amounts of cachers
-            if cachers is not None and len(cachers) != len(outputs):
+            if local_cachers is not None and len(local_cachers) != len(outputs):
                 raise CachersMismatchError(
                     f"Stage '{name}' - the number of cachers does not match the number of outputs to cache"
                 )
@@ -716,24 +767,27 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 )
 
             # see note in stage
-            if cachers is not None:
+            if local_cachers is not None:
                 # instantiate cachers if not already
-                for i in range(len(cachers)):
-                    cacher = cachers[i]
+                for i in range(len(local_cachers)):
+                    cacher = local_cachers[i]
                     if type(cacher) == type:
-                        cachers[i] = cacher()
+                        local_cachers[i] = cacher()
                     # set the active record on the cacher as well as provide a default name
                     # (the name of the output)
-                    cachers[i].set_record(record)
-                    cachers[
+                    local_cachers[i].set_record(record)
+                    local_cachers[
                         i
                     ].stage = name  # set current stage name, so get_path is correct in later stages (particularly for lazy)
-                    if cachers[i].name is None and cachers[i].path_override is None:
+                    if (
+                        local_cachers[i].name is None
+                        and local_cachers[i].path_override is None
+                    ):
                         if type(outputs[i]) == Lazy:
-                            cachers[i].name = outputs[i].name
+                            local_cachers[i].name = outputs[i].name
                         else:
-                            cachers[i].name = outputs[i]
-            record.stage_cachers = cachers
+                            local_cachers[i].name = outputs[i]
+            record.stage_cachers = local_cachers
 
             # at this point we've grabbed all information we would need if we're
             # just mapping out the stages, so return at this point.
@@ -744,7 +798,9 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 # we need to create pseudo-state-artifact-representations for the outputs. Since
                 # we obviously can't add the actual artifacts (there are none without running!),
                 # we just add the string key and a name, so record __repr__ has something to use
-                _get_output_representations_for_map(record, outputs, cachers, records)
+                _get_output_representations_for_map(
+                    record, outputs, local_cachers, records
+                )
                 record.stage_cachers = None
                 return record
 
@@ -762,7 +818,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 if stage_rep not in record.manager.map.execution_list:
                     logging.debug('DAG-indicated stage skip "%s".' % str(stage_rep))
                     _dag_skip_check_cached_outputs(
-                        name, record, outputs, cachers, records
+                        name, record, outputs, local_cachers, records
                     )
 
                     # grab any possible previous reportables so they still end up in report.
@@ -784,7 +840,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             # a DAG, check if we actually need to run this based on cached values.
             if record.manager.map is None or execute_stage:
                 cache_valid = _check_cached_outputs(
-                    name, record, outputs, cachers, records
+                    name, record, outputs, local_cachers, records
                 )
                 if cache_valid:
                     # get previous reportables if available
@@ -859,7 +915,9 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             # handle storing outputs in record
             post_cache_time_start = time.perf_counter()
             record.manager.lock()
-            _store_outputs(name, record, outputs, cachers, function_outputs, records)
+            _store_outputs(
+                name, record, outputs, local_cachers, function_outputs, records
+            )
             _store_reportables(name, record, records)
             record.store_tracked_paths()
             record.manager.unlock()
@@ -1077,7 +1135,7 @@ def _check_cached_outputs(
 
 def _add_output_artifact(
     record,
-    object: Any,
+    obj: Any,
     outputs: list[Union[str, Lazy]],
     index: int,
     metadata=None,
@@ -1088,7 +1146,7 @@ def _add_output_artifact(
     to the manager's artifacts."""
     if not record.manager.map_mode:
         artifact = ArtifactRepresentation(
-            record, outputs[index], object, metadata=metadata, cacher=cacher
+            record, outputs[index], obj, metadata=metadata, cacher=cacher
         )
     else:
         artifact = MapArtifactRepresentation(
@@ -1217,6 +1275,7 @@ def _store_outputs(
             )
             cachers[index].save(output)
             artifact.file = cachers[index].get_path()
+            artifact.cacher = cachers[index]
 
             # generate and save metadata
             # note that if we got to this point, we actually ran the stage code, so

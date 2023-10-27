@@ -457,3 +457,119 @@ def test_valid_args_names_works(clear_filesystem):
 
     assert len(manager.records) == 1
     assert manager.records[0].state["sum"] == 9
+
+
+def test_single_run_many_records_are_distinct(configured_test_manager):
+    """Running an experiment that returns multiple records with different data should
+    indeed have different data in their respective states.
+
+    This is to test that stage decorator cachers aren't singleton instances.
+    """
+    run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing1", "thing2"],
+        mngr=configured_test_manager,
+    )
+
+    assert len(configured_test_manager.records) == 2
+    assert (
+        configured_test_manager.records[0].state["my_output"]
+        != configured_test_manager.records[1].state["my_output"]
+    )
+
+
+def test_double_run_many_records_are_distinct(
+    configured_test_manager, configured_test_manager2
+):
+    """Running an experiment (twice) that returns multiple records with different data should
+    indeed have different data in their respective states.
+
+    This is to test that stage decorator cachers aren't singleton instances.
+    """
+    run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing1", "thing2"],
+        mngr=configured_test_manager,
+    )
+    run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing1", "thing2"],
+        mngr=configured_test_manager2,
+        dry=True,
+    )  # NOTE: this works (prior to fix) with no_dag=True
+
+    assert len(configured_test_manager.records) == 2
+    assert (
+        configured_test_manager.records[0].state["my_output"]
+        != configured_test_manager.records[1].state["my_output"]
+    )
+
+    for mapped_artifact in configured_test_manager2.mapped_artifacts:
+        assert mapped_artifact.cached
+
+    assert len(configured_test_manager2.records) == 2
+    assert (
+        configured_test_manager2.records[0].state["my_output"]
+        != configured_test_manager2.records[1].state["my_output"]
+    )
+
+
+def test_single_run_many_records_are_distinct_agg(configured_test_manager):
+    """Running an experiment that returns multiple records with different data should
+    indeed have different data in their respective states.
+
+    This is to test that stage decorator cachers aren't singleton instances.
+    """
+    run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing3", "thing4"],
+        mngr=configured_test_manager,
+    )
+
+    assert len(configured_test_manager.records) == 2
+    assert (
+        configured_test_manager.records[0].state["my_agg_output"]
+        != configured_test_manager.records[1].state["my_agg_output"]
+    )
+
+
+def test_double_run_many_records_are_distinct_agg(
+    configured_test_manager, configured_test_manager2
+):
+    """Running an experiment (twice) that returns multiple records with different data should
+    indeed have different data in their respective states.
+
+    This is to test that stage decorator cachers aren't singleton instances.
+    """
+    run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing3", "thing4"],
+        mngr=configured_test_manager,
+    )
+    run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing3", "thing4"],
+        mngr=configured_test_manager2,
+        dry=True,
+    )  # NOTE: this works (prior to fix) with no_dag=True
+
+    assert len(configured_test_manager.records) == 2
+    assert (
+        configured_test_manager.records[0].state["my_agg_output"]
+        != configured_test_manager.records[1].state["my_agg_output"]
+    )
+
+    for mapped_artifact in configured_test_manager2.mapped_artifacts:
+        assert mapped_artifact.cached
+
+    assert len(configured_test_manager2.records) == 2
+    assert (
+        configured_test_manager2.records[0].state["my_agg_output"]
+        != configured_test_manager2.records[1].state["my_agg_output"]
+    )
