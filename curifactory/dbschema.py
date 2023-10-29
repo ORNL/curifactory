@@ -1,74 +1,38 @@
 """The metadata and table definitions for sqlalchemy for the experiment store."""
 
 # TODO: will need to decide beteen Core and ORM usage
-# from sqlalchemy import MetaData, Table, Column
+from sqlalchemy import Boolean, Column, DateTime, Integer, MetaData, String, Table
 
+metadata_obj = MetaData()
 
-# metadata_obj = MetaData()
-#
-# store_info = Table(
-#
-# )
-#
-
-# https://docs.sqlalchemy.org/en/20/tutorial/metadata.html
-
-from sqlalchemy.orm import (
-    DeclarativeBase,
-    ForeignKey,
-    Mapped,
-    mapped_column,
-    relationship,
+store_info = Table(
+    "store_info",
+    metadata_obj,
+    Column("key", String, primary_key=True),
+    Column("value", String),
 )
 
-# TODO: it may be useful to have a module that just tracks per-version schemas,
-# and this file loads in the correct version based on dbinfo?
+runs_table = Table(
+    "run",
+    metadata_obj,
+    Column("id", Integer, primary_key=True),
+    Column("reference", String),
+    Column("experiment_name", String),
+    Column("run_number", Integer),
+    Column("timestamp", DateTime),
+    Column("commit", String),
+    Column("param_files", String),  # NOTE: this will be a json.dumps,
+    # since this is likely to change in later cf versions, I don't want
+    # to bother correctly normalizing this part of the table, since I
+    # don't think there will be need to query on it anyway.
+    Column("full_store", Boolean),
+    Column("status", String),
+    Column("cli", String),
+    Column("hostname", String),
+    Column("user", String),
+    Column("notes", String),
+)
 
 
-class Base(DeclarativeBase):
-    pass
-
-
-class DBInfo(Base):
-    """We probably expect to have a "version", "user", and "machine" properties."""
-
-    __tablename__ = "db_info"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    key: Mapped[str]
-    value: Mapped[str]
-
-
-class Run(Base):
-    __tablename__ = "run"
-
-    id: Mapped[int] = mapped_column(
-        primary_key=True
-    )  # TODO id should maybe actually be ref name
-    reference: Mapped[str]
-    experiment_name: Mapped[str]
-    run_number: Mapped[int]
-    timestamp: Mapped[str]  # TODO: maybe we can make this an actual datetime stamp now?
-    commit: Mapped[str]
-    param_files: Mapped[list["RunParamFileNames"]] = relationship(back_populates="run")
-
-    # params
-
-    full_store: Mapped[bool]
-    status: Mapped[str]
-    cli: Mapped[str]
-    hostname: Mapped[str]
-    user: Mapped[str]
-    notes: Mapped[str]
-
-
-class RunParamFileNames(Base):
-    __tablename__ = "run_param_file_name"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-
-    run_id = mapped_column(ForeignKey("run.id"))
-    run: Mapped[Run] = relationship(back_populates="param_files")
-
-
-# TODO: need a run param_file_name to paramname and param hash
+# https://docs.sqlalchemy.org/en/20/tutorial/metadata.html
+# https://docs.sqlalchemy.org/en/20/tutorial/data_insert.html#tutorial-core-insert
