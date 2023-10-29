@@ -3,9 +3,10 @@
 import json
 import os
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 
 from curifactory import utils
+from curifactory.dbschema import runs_table
 
 
 class SQLStore:
@@ -21,6 +22,36 @@ class SQLStore:
         self.path += "store.db"
 
         self.engine = create_engine(f"sqlite:///{self.path}")
+
+    def get_run(self, ref_name: str) -> tuple[dict, int]:
+        """Get the metadata block for the run with the specified reference name.
+
+        Args:
+            ref_name (str): The run reference name, following the [experiment_name]_[run_number]_[timestamp] format.
+
+        Returns:
+            A dictionary (metadata block) for the run with the requested reference name, and the
+            index of the run in the table.
+        """
+        # https://docs.sqlalchemy.org/en/20/tutorial/data_select.html
+
+        with self.engine.connect() as conn:
+            stmt = select(runs_table).where(
+                runs_table.c.reference == ref_name
+            )  # TODO: do I need to use prepare?
+            result = conn.execute(stmt)
+
+            # if we didn't get any rows back, this run doesn't exist.
+            if len(result) == 0:
+                return None, -1
+
+            run = result[
+                0
+            ]._asdict()  # NOTE: documented function of namedtuple, _ here doesn't imply hidden/not intended for use
+            run.param_files = json.loads(run.param_files)
+            return run, run.id
+
+        return None, -1
 
 
 class ManagerStore:
