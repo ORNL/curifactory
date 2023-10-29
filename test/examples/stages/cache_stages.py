@@ -1,7 +1,7 @@
 import os
 
 import curifactory as cf
-from curifactory.caching import FileReferenceCacher
+from curifactory.caching import FileReferenceCacher, JsonCacher
 
 
 @cf.stage(None, ["output_paths"], [FileReferenceCacher])
@@ -32,3 +32,13 @@ def filerefcacher_stage(record):
         outfile.write("\n")
 
     return file_path
+
+
+@cf.stage(None, ["my_output"], [JsonCacher])
+def store_an_output(record):
+    return record.params.a + record.params.b
+
+
+@cf.aggregate(None, ["my_agg_output"], [JsonCacher])
+def agg_store_an_output(record, records):
+    return record.params.a + record.params.b

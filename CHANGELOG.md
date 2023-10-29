@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.16.1] - 2023-10-23
+
+### Fixed
+* Accidental singleton cacher objects in stage decorators causing all DAG-mode
+  reproduction artifacts to always show as the artifacts from the first record.
+
+
+
+
 ## [0.16.0] - 2023-10-16
 
 ### Added

@@ -45,7 +45,7 @@ setup(
     include_package_data=True,
     entry_points={
         "console_scripts": [
-            "experiment=curifactory.experiment:main",
+            "experiment=curifactory.cli:main",
             "curifactory=curifactory.project:main",
         ]
     },

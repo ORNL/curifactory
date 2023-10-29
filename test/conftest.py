@@ -81,6 +81,19 @@ def configured_test_manager(
 
 
 @pytest.fixture()
+def configured_test_manager2(
+    mocker, configuration  # noqa: F811 -- mocker has to be passed in as fixture
+):
+    shutil.rmtree("test/examples/data", ignore_errors=True)
+    mock = mocker.patch("curifactory.utils.get_configuration")
+    mock.return_value = configuration
+
+    yield ArtifactManager("test", live_log_debug=True)
+
+    shutil.rmtree("test/examples/data", ignore_errors=True)
+
+
+@pytest.fixture()
 def alternate_test_manager2(
     mocker, configuration  # noqa: F811 -- mocker has to be passed in as fixture
 ):

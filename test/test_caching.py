@@ -1042,12 +1042,20 @@ def test_cacher_getpath_keeps_stagename_after_later_stages(configured_test_manag
 
     r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     r0 = output_thing(r0)
-    assert cacher.stage == "output_thing"
-    first_path = cacher.get_path()
 
+    # we expect the raw cacher to not have been changed
+    assert cacher.stage is None
+
+    r0_cacher = configured_test_manager.artifacts[
+        r0.state_artifact_reps["output"]
+    ].cacher
+    assert r0_cacher.stage == "output_thing"
+    first_path = r0_cacher.get_path()
+
+    # new things having happened shouldn't affect the previous cacher
     do_something_else(r0)
-    assert cacher.stage == "output_thing"
-    second_path = cacher.get_path()
+    assert r0_cacher.stage == "output_thing"
+    second_path = r0_cacher.get_path()
 
     assert first_path == second_path
 
@@ -1277,6 +1285,8 @@ def test_custom_cacher_using_get_dir_store_full(configured_test_manager):
     assert os.path.exists(full_path)
     assert os.path.exists(f"{full_path}/thing.json")
     assert os.path.exists(f"{full_path}/what.txt")
+
+    cacher = configured_test_manager.artifacts[-1].cacher
 
     assert cacher.load()["message"] == "hello world!"
 
