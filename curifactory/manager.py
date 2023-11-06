@@ -458,6 +458,43 @@ class ArtifactManager:
                 non_grouped_reportables.append(reportable)
         return non_grouped_reportables
 
+    def get_artifact_filename(
+        self, obj_name: str, record: Record, prefix: str = None, stage_name: str = None
+    ):
+        """Get the non-directory-specific filename of an artifact, following this convention:
+
+        ```
+        [prefix]_[parameterset_hash]_[stage name]_[artifact name
+        ```
+
+        Note:
+            This is used by get_artifact_path, which primarily handles the directory for an artifact. This
+            function was also created to assist with templated cacher paths.
+
+        Args:
+            obj_name (str): The name to associate with the object as the last part of the filename.
+            record (Record): The record that this object is associated with. (Used to get experiment name, args hash
+                and so on.)
+            prefix (str): An optional alternative prefix to the experiment-wide prefix (either the experiment name or
+                custom-specified experiment prefix). This can be used if you want a cached object to work easier across
+                multiple experiments, rather than being experiment specific. WARNING: use with caution, cross-experiment
+                caching can mess with provenance.
+            stage_name (str): The stage that produced an artifact. If not supplied, uses
+                the currently executing stage name.
+        """
+        # TODO: provide some examples in the docstring
+        params_hash = record.get_hash()
+        if prefix is None:
+            prefix = self._get_name()
+
+        if stage_name is None:
+            stage_name = self.current_stage_name
+
+        # NOTE: at some point if we have better parallel handling in cf, we'll probably
+        # want "current_stage_name" to be on the record level rather than the manager level.
+        object_path = f"{prefix}_{params_hash}_{stage_name}_{obj_name}"
+        return object_path
+
     def get_artifact_path(
         self,
         obj_name: str,
@@ -493,17 +530,7 @@ class ArtifactManager:
         Returns:
             A string filepath that an object can be written to.
         """
-        # TODO: provide some examples in the docstring
-        args_hash = record.get_hash()
-        if prefix is None:
-            prefix = self._get_name()
-
-        if stage_name is None:
-            stage_name = self.current_stage_name
-
-        # NOTE: at some point if we have better parallel handling in cf, we'll probably
-        # want "current_stage_name" to be on the record level rather than the manager level.
-        object_path = f"{prefix}_{args_hash}_{stage_name}_{obj_name}"
+        object_path = self.get_artifact_filename(obj_name, record, prefix, stage_name)
 
         base_path = self.cache_path
         if store:
