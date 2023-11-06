@@ -732,9 +732,6 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         except:  # noqa: E722
             pass
         write_experiment_notebook(
-            experiment_name,
-            param_files,
-            final_param_sets,
             mngr,
             path=os.path.join(notebook_loc, mngr.get_reference_name()),
             use_global_cache=None,
@@ -746,9 +743,6 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             logging.warning("The experiment threw an error - docker build skipped.")
         else:
             write_experiment_notebook(
-                experiment_name,
-                param_files,
-                final_param_sets,
                 mngr,
                 mngr.get_run_output_path("run_notebook"),
                 use_global_cache=True,

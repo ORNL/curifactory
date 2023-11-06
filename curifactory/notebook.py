@@ -6,9 +6,6 @@ import subprocess
 
 
 def write_experiment_notebook(
-    experiment_name,
-    param_files,
-    param_sets,
     manager,
     path: str,
     directory_change_back_depth: int = 2,
@@ -24,7 +21,6 @@ def write_experiment_notebook(
     Args:
         experiment_name (str): The name of the run experiment
         param_files (List[str]): List of parameter file names
-        param_sets (List[ExperimentParameters]): List of all used ``ExperimentParameters`` from parameter files.
         manager (ArtifactManager): :code:`ArtifactManager` used in the experiment.
         path (str): The path to the directory to store the notebook in.
         directory_change_back_depth (int): How many directories up the notebook needs
@@ -40,6 +36,9 @@ def write_experiment_notebook(
             primarily just for testing purposes)
     """
     logging.info("Creating experiment notebook...")
+
+    experiment_name = manager.experiment_name
+    param_files = manager.parameter_files
 
     if use_global_cache is None:
         use_global_cache = not manager.store_full
