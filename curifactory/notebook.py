@@ -91,7 +91,7 @@ def write_experiment_notebook(
                 ]
             )
     else:
-        dry_warning = "# Note that if this experiment uses lazy artifacts, you will want to remove the `dry=True` args below"
+        dry_warning = "\n# Note that if this experiment uses lazy artifacts, you will want to remove the `dry=True` args below"
 
     if errored:
         output_lines.extend(
@@ -118,10 +118,11 @@ def write_experiment_notebook(
             "logger = logging.getLogger()",
             "logger.setLevel(logging.INFO)",
             "",
-            "# %%",
-            dry_warning,
+            f"# %%{dry_warning}",
             f'manager = ArtifactManager("{experiment_name}", {cache_dir_arg} dry=True)',
-            f'experiment.run_experiment("{experiment_name}", {str(param_files)}, dry=True, mngr=manager)',
+            f'experiment.run_experiment("{experiment_name}", {str(param_files)}, dry=True, mngr=manager, no_dag=False)',
+            "# Set `no_dag=True` in the above `run_experiment` function if need access to every artifact.",
+            "# Set `dry=False` on both of the above calls if any Lazy artifacts need to be computed and are erroring.",
             "",
             "# %%",
         ]
