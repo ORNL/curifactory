@@ -758,6 +758,10 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     if not dry and not parallel_mode:
         mngr.generate_report()
 
+    # At the end, in case we're in a live context, turn off dag mode on the
+    # manager so that further stages can be used
+    mngr.map = None
+
     return results, mngr
 
 

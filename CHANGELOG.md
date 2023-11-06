@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   paths outside of the cache folder or directly including parameters in the
   filename etc.
 
+### Fixed
+* `--notebook` manager's not using modified experiment cache paths.
+* Manager maps are disabled after a `run_experiment` call, so managers used in
+  live contexts (e.g. notebooks) may continue to run stages after the experiment
+  has completed.
+
 ### Removed
 * Old `ExperimentArgs` references and associated deprecation warnings.
 

@@ -1,5 +1,6 @@
 import os
 
+import curifactory as cf
 from curifactory.experiment import run_experiment
 from curifactory.notebook import write_experiment_notebook
 
@@ -39,8 +40,8 @@ def test_experiment_notebook_is_runnable(configured_test_manager):
     code = code.replace("%cd ../..", "")
     thelocals = {}
     exec(code, None, thelocals)
-    assert thelocals["state0"]["my_output"] == 11
-    assert thelocals["state1"]["my_output"] == 15
+    assert thelocals["state_0"]["my_output"] == 11
+    assert thelocals["state_1"]["my_output"] == 15
 
 
 def test_notebook_uses_correct_cache_path(configured_test_manager):
@@ -71,4 +72,34 @@ def test_notebook_uses_correct_cache_path(configured_test_manager):
     assert thelocals["manager"].cache_path == "test/examples/data/extraspecial_cache"
 
 
-# TODO: test can run new stages after experiment run in notebook
+def test_dag_mode_doesnot_interfere_after_experiment_in_notebook(
+    configured_test_manager,
+):
+    """After an experiment has been run from inside a notebook, DAG mode should be disabled
+    so that additional stages can be run inside."""
+
+    @cf.stage(["my_output"], ["modified_output"])
+    def modify_output(record, my_output):
+        return my_output + 3
+
+    results, mngr = run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing1", "thing2"],
+        build_notebook=True,
+    )
+
+    write_experiment_notebook(
+        mngr, "test/examples/notebooks/experiment", leave_script=True
+    )
+
+    with open("test/examples/notebooks/experiment.py") as infile:
+        code = infile.read()
+
+    code = code.replace("%cd ../..", "")
+    thelocals = {}
+    exec(code, None, thelocals)
+
+    modify_output(thelocals["record_0"])
+
+    assert thelocals["record_0"].state["modified_output"] == 14

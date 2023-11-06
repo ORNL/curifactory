@@ -131,23 +131,23 @@ def write_experiment_notebook(
     for i, param in enumerate(manager.records):
         output_lines.extend(
             [
-                f"records{i} = manager.records[{i}]",
-                f"state{i} = manager.records[{i}].state",
+                f"record_{i} = manager.records[{i}]",
+                f"state_{i} = manager.records[{i}].state",
             ]
         )
 
         if manager.records[i].params is not None:
             output_lines.extend(
                 [
-                    f'print("state{i} - (" + records{i}.params.name + ") stages: " + str(records{i}.stages))',
-                    f'print("keys: " + str(state{i}.keys()) + "\\n")',
+                    f'print("state_{i} - (" + record_{i}.params.name + ") stages: " + str(record_{i}.stages))',
+                    f'print("keys: " + str(state_{i}.keys()) + "\\n")',
                 ]
             )
         else:
             output_lines.extend(
                 [
-                    f'print("state{i} - ((aggregate record)) stages: " + str(records{i}.stages))',
-                    f'print("keys: " + str(state{i}.keys()) + "\\n")',
+                    f'print("state_{i} - ((aggregate record)) stages: " + str(record_{i}.stages))',
+                    f'print("keys: " + str(state_{i}.keys()) + "\\n")',
                 ]
             )
         output_lines.append("")
