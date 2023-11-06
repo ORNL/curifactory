@@ -43,6 +43,32 @@ def test_experiment_notebook_is_runnable(configured_test_manager):
     assert thelocals["state1"]["my_output"] == 15
 
 
-# TODO: test that cache_path is provided to manager
+def test_notebook_uses_correct_cache_path(configured_test_manager):
+    """A notebook for a run that used a non-default cache path (e.g. reproducing
+    from full store) should set the new manager to use that non-default cache path."""
+    results, mngr = run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing1", "thing2"],
+        build_notebook=True,
+        cache_dir_override="test/examples/data/extraspecial_cache",
+    )
+
+    assert os.path.exists(mngr.artifacts[-1].file)
+    assert "extraspecial_cache" in mngr.artifacts[-1].file
+
+    write_experiment_notebook(
+        mngr, "test/examples/notebooks/experiment", leave_script=True
+    )
+
+    with open("test/examples/notebooks/experiment.py") as infile:
+        code = infile.read()
+
+    code = code.replace("%cd ../..", "")
+    thelocals = {}
+    exec(code, None, thelocals)
+    assert mngr.cache_path == "test/examples/data/extraspecial_cache"
+    assert thelocals["manager"].cache_path == "test/examples/data/extraspecial_cache"
+
 
 # TODO: test can run new stages after experiment run in notebook

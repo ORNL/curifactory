@@ -72,10 +72,13 @@ def write_experiment_notebook(
 
     # pathing for whether full run or not
     directory_change_back = "/".join([".."] * directory_change_back_depth)
-    cache_dir_arg = f"manager_cache_path='{manager.get_run_output_path()}', cache_path='{manager.get_run_output_path()}/artifacts', "
+
+    if manager.store_full:
+        cache_dir_arg = f"manager_cache_path='{manager.get_run_output_path()}', cache_path='{manager.get_run_output_path()}/artifacts', "
+
     # warn if data is potentially wrong
     if use_global_cache:
-        cache_dir_arg = ""
+        cache_dir_arg = f"cache_path='{manager.cache_path}',"
         dry_warning = ""
         if not suppress_global_warning:
             output_lines.extend(
