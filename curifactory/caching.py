@@ -105,7 +105,21 @@ class Cacheable:
 
     Args:
         path_override (str): Use a specific path for the cacheable, rather than
-            automatically setting it based on name etc.
+            automatically setting it based on name etc. You can specify string
+            formatting keywords to allow more control over caching when not
+            specifying this as an inline cacher. (Please note that currently if
+            path_override is specified, the resulting path is not included in a
+            full store.)
+
+            Possible keyword replacement fields:
+
+            * `{hash}` - the hash of the record.
+            * `{cache}` - the path to the manager's cache directory (does not include final '/')
+            * `{stage}` - the name of the current stage.
+            * `{name}` - the name of this output object.
+            * `{params.X}` - parameter `X` of the parameters associated with the record.
+            * `{experiment}` - the name of the current experiment.
+            * `{artifact_filename}` - the normal filename for this cacher (doesn't include dir path etc.)
         name (str): The obj name to use in automatically constructing a path. If
             a cacheable is used in stage header, this is automatically provided as
             the output string name from the stage outputs list.
@@ -214,7 +228,7 @@ class Cacheable:
 
         return suffix
 
-    def resolve_path_template(self, path: str) -> str:
+    def _resolve_path_template(self, path: str) -> str:
         """Intended for when path_override is specified, this returns the path with
         formatting applied/resolved.
 
@@ -243,6 +257,21 @@ class Cacheable:
         if cache_path.endswith("/"):
             cache_path = cache_path[:-1]
 
+        # NOTE: that get_artifact_filename may not have the suffix on it if
+        # path_override wasn't specified with the extension. (which, if we're
+        # using artifact_filename, it almost certainly wasn't.) So, to correctly
+        # make it match, we have to resolve the suffix _only_ for this portion
+        if self.name is None:
+            # TODO: (11/6/2023) the only way this happens is if we define a cacher outside
+            # of a stage with a path_override and request a name template. This
+            # should throw an error
+            self.name = "None"
+        suffix = self._resolve_suffix(self.name, None)
+        obj_name = self.name + suffix
+        artifact_filename = self.record.manager.get_artifact_filename(
+            obj_name, self.record
+        )
+
         return path.format(
             hash=self.record.get_hash(),
             cache=cache_path,
@@ -250,9 +279,7 @@ class Cacheable:
             name=self.name,
             params=self.record.params,
             experiment=self.record.manager.experiment_name,
-            artifact_filename=self.record.manager.get_artifact_filename(
-                self.name, self.record
-            ),
+            artifact_filename=artifact_filename,
         )
 
     def get_path(self, suffix=None) -> str:
@@ -271,12 +298,14 @@ class Cacheable:
             the path_override won't get copied. **For multiple file cachers you should use ``name``/``subdir``/``prefix``
             instead of setting a ``path_override``.**
         """
+        # NOTE: Acutally don't think the above NOTE: is correct, please double
+        # check
         path = None
         if self.path_override is not None:
             path = self.path_override
 
             # handle any templating
-            path = self.resolve_path_template(path)
+            path = self._resolve_path_template(path)
 
             # if the path_override has the extension in it already, remove it to handle
             # suffix addition consistently with non-path_override case

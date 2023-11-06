@@ -328,14 +328,14 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                     local_cachers[
                         i
                     ].stage = name  # set current stage name, so get_path is correct in later stages (particularly for lazy)
-                    if (
-                        local_cachers[i].name is None
-                        and local_cachers[i].path_override is None
-                    ):
-                        if type(outputs[i]) == Lazy:
-                            local_cachers[i].name = outputs[i].name
-                        else:
-                            local_cachers[i].name = outputs[i]
+                    # if (
+                    #     local_cachers[i].name is None
+                    #     and local_cachers[i].path_override is None
+                    # ):
+                    if type(outputs[i]) == Lazy:
+                        local_cachers[i].name = outputs[i].name
+                    else:
+                        local_cachers[i].name = outputs[i]
             record.stage_cachers = local_cachers
 
             # at this point we've grabbed all information we would need if we're
