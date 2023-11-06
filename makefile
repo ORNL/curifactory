@@ -11,7 +11,9 @@ help:
 	@echo "style       : executes style formatting."
 	@echo "clean       : cleans all unnecessary files."
 	@echo "test        : runs unit tests."
-	@echo "paper-draft : generate JOSS paper draft"
+	@echo "test-all    : runs unit tests in python 3.9-3.11."
+	@echo "testing-envs: create envs for running unit tests in python 3.9-3.11."
+	@echo "paper-draft : generate JOSS paper draft."
 
 
 .PHONY: pre-commit

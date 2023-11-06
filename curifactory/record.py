@@ -5,12 +5,10 @@ import copy
 import logging
 import os
 import shutil
-from typing import Any
 
 from curifactory import hashing, utils
 from curifactory.caching import Lazy
 from curifactory.reporting import Reportable
-from curifactory.utils import _warn_deprecation
 
 
 class CacheAwareDict(dict):
@@ -48,8 +46,6 @@ class Record:
         # TODO: would be nice to be able to initialize a record with a pre-defined state dictionary
         self.manager = manager
         """The ``ArtifactManager`` associated with this record."""
-        self.args = None
-        """DEPRECATED."""
         self.params = param_set
         """The parameter set (subclass of ``ExperimentParameters``) to apply to any stages
         this record is passed through."""
@@ -108,14 +104,6 @@ class Record:
         self.set_hash()
         if not hide:
             self.manager.records.append(self)
-
-    def __getattribute__(self, __name: str) -> Any:
-        if __name == "args":
-            _warn_deprecation(
-                "'Record.args' is deprecated and will likely be removed in 0.16.0. Please use 'Record.params' instead."
-            )
-            return self.params
-        return object.__getattribute__(self, __name)
 
     def store_tracked_paths(self):
         """Copy all of the recent relevant files generated (likely from the recently executing
