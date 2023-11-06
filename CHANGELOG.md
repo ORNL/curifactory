@@ -5,6 +5,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [unreleased]
+
+### Added
+* Templating/keyword formating for cacher path overrides. This allows overriding
+  cacher paths (at the expense of automatically not tracking them) to specify
+  paths outside of the cache folder or directly including parameters in the
+  filename etc.
+
+### Removed
+* Old `ExperimentArgs` references and associated deprecation warnings.
+
+
+
+
 ## [0.16.1] - 2023-10-23
 
 ### Fixed
