@@ -73,6 +73,7 @@ def configured_test_manager(
 ):
     shutil.rmtree("test/examples/data", ignore_errors=True)
     shutil.rmtree("test/examples/notebooks", ignore_errors=True)
+    shutil.rmtree("test/examples/reports", ignore_errors=True)
     mock = mocker.patch("curifactory.utils.get_configuration")
     mock.return_value = configuration
 
@@ -80,6 +81,7 @@ def configured_test_manager(
 
     shutil.rmtree("test/examples/data", ignore_errors=True)
     shutil.rmtree("test/examples/notebooks", ignore_errors=True)
+    shutil.rmtree("test/examples/reports", ignore_errors=True)
 
 
 @pytest.fixture()
