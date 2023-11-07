@@ -99,8 +99,21 @@ solely in Jupyter.
 
 ## Citation
 
-Please see the following DOI if citing this project:
-[10.11578/dc.20220208.1](https://doi.org/10.11578/dc.20220208.1)
+Please use the following BibTeX if citing this project:
+```bibtex
+@article{Martindale2023,
+  doi = {10.21105/joss.05793},
+  url = {https://doi.org/10.21105/joss.05793},
+  year = {2023},
+  publisher = {The Open Journal},
+  volume = {8},
+  number = {90},
+  pages = {5793},
+  author = {Nathan Martindale and Scott L. Stewart and Jason Hite and Mark B. Adams},
+  title = {Curifactory: A research experiment manager},
+  journal = {Journal of Open Source Software}
+}
+```
 
 
 ## Similar Projects

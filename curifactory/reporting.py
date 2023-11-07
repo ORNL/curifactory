@@ -791,8 +791,10 @@ def update_report_index(experiments_path: str, reports_root_dir: str):
 
         if os.path.exists(f"{full_filename}/run_info.json"):
             with open(f"{full_filename}/run_info.json") as infile:
+                logging.debug("Run info path %s" % f"{full_filename}/run_info.json")
                 info = json.load(infile)
 
+                logging.debug("Info dictionary: %s" % str(info))
                 info["order_timestamp"] = datetime.datetime.strptime(
                     info["timestamp"], utils.TIMESTAMP_FORMAT
                 )

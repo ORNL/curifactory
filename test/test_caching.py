@@ -789,6 +789,67 @@ def test_cacheable_get_path(
     assert path == path_prefix + expected_path
 
 
+@pytest.mark.parametrize(
+    "path_override,expected_path",
+    [
+        (
+            None,
+            "test/examples/data/cache/test_a8a97ac6322ee2448f22f7d168a4c154_do_thing_my_thing.json",
+        ),
+        (
+            "test/examples/data/{params.a}_mything.json",
+            "test/examples/data/5_mything.json",
+        ),
+        ("test/examples/data/{params.a}_mything", "test/examples/data/5_mything"),
+        ("{cache}/{params.a}_mything", "test/examples/data/cache/5_mything"),
+        (
+            "{cache}/{hash}_mything",
+            "test/examples/data/cache/a8a97ac6322ee2448f22f7d168a4c154_mything",
+        ),
+        (
+            "{cache}/{artifact_filename}",
+            "test/examples/data/cache/test_a8a97ac6322ee2448f22f7d168a4c154_do_thing_my_thing.json",
+        ),
+        ("{cache}/{name}.json", "test/examples/data/cache/my_thing.json"),
+        (
+            "{cache}/{experiment}_{name}.json",
+            "test/examples/data/cache/test_my_thing.json",
+        ),
+        (
+            "{cache}/{experiment}_{stage}_{name}.json",
+            "test/examples/data/cache/test_do_thing_my_thing.json",
+        ),
+    ],
+)
+def test_cacheable_path_templating(
+    configured_test_manager, path_override, expected_path
+):
+    """Cacheable's resolve_path_template should correctly do keyword replacement."""
+
+    @dataclass
+    class MyParams(cf.ExperimentParameters):
+        a: int = 5
+        b: int = 6
+
+    r = cf.Record(configured_test_manager, MyParams(name="thing", b=8))
+
+    @cf.stage([], ["my_thing"], [JsonCacher(path_override)])
+    def do_thing(record: cf.Record):
+        assert record.stage_cachers[0].get_path() == expected_path
+
+    do_thing(r)
+
+    assert os.path.exists(expected_path)
+    metadata_path = expected_path
+    if expected_path.endswith(".json"):
+        metadata_path = (
+            metadata_path[: metadata_path.rindex(".json")] + "_metadata.json"
+        )
+    else:
+        metadata_path = metadata_path + "_metadata.json"
+    assert os.path.exists(metadata_path)
+
+
 def test_cacher_outputs_metadata(configured_test_manager):
     """A basic cacher output should also output a metadata file associated with it."""
 
@@ -1369,7 +1430,6 @@ def test_extra_metadata_used_inline(configured_test_manager):
             assert self.extra_metadata["best_number"] == 13
             return JsonCacher(self.get_path()).load()
 
-    # r0 = cf.Record(configured_test_manager, cf.ExperimentArgs(name="test"))
     # UsesExtraMetadataCacher(f"{configured_test_manager.cache_path}/test_thing", record=r0).save("testing")
     UsesExtraMetadataCacher(f"{configured_test_manager.cache_path}/test_thing").save(
         "testing"

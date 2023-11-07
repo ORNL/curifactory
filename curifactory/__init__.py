@@ -17,7 +17,6 @@ from curifactory import (
 )
 
 # make super important things accessible directly off of the top level module
-from curifactory.args import ExperimentArgs  # TODO: remove once fully deprecated
 from curifactory.caching import Lazy
 from curifactory.hashing import set_hash_functions
 from curifactory.manager import ArtifactManager
