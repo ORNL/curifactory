@@ -3,10 +3,10 @@
 import json
 import os
 
-from sqlalchemy import create_engine, select
+from sqlalchemy import create_engine, func, insert, select
 
 from curifactory import utils
-from curifactory.dbschema import runs_table
+from curifactory.dbschema import metadata_obj, runs_table
 
 
 class SQLStore:
@@ -22,6 +22,11 @@ class SQLStore:
         self.path += "store.db"
 
         self.engine = create_engine(f"sqlite:///{self.path}")
+
+        self._ensure_tables()
+
+    def _ensure_tables(self):
+        metadata_obj.create_all(self.engine)
 
     def get_run(self, ref_name: str) -> tuple[dict, int]:
         """Get the metadata block for the run with the specified reference name.
@@ -52,6 +57,73 @@ class SQLStore:
             return run, run.id
 
         return None, -1
+
+    def add_run(self, mngr) -> dict:
+        """Add a new metadata block to the store for the passed ``ArtifactManager`` instance.
+
+        Note that this automatically calls the ``save()`` function.
+
+        Args:
+            mngr (ArtifactManager): The manager to grab run metadata from.
+
+        Returns:
+            The newly created dictionary (metadata block) for the current manager's run.
+        """
+
+        # get the new run number
+        with self.engine.connect() as conn:
+            stmt = select(func.count(runs_table.c.id)).where(
+                runs_table.c.experiment_name == mngr.experiment_name
+            )
+            result = conn.execute(stmt)
+
+        # TODO: (11/6/2023) none of these should be set here...
+        run_count = result.all()[0][0]
+        mngr.experiment_run_number = run_count + 1
+        mngr.git_commit_hash = utils.get_current_commit()
+        mngr.git_workdir_dirty = utils.check_git_dirty_workingdir()
+
+        # insert the new entry
+        with self.engine.connect() as conn:
+            stmt = insert(runs_table).values(
+                reference=mngr.get_reference_name(),
+                experiment_name=mngr.experiment_name,
+                run_number=mngr.experiment_run_number,
+                timestamp=mngr.run_timestamp,
+                commit=mngr.git_commit_hash,
+                workdir_dirty=mngr.git_workdir_dirty,
+                param_files=str(mngr.parameter_files),
+                params=str(mngr.param_file_param_sets),
+                full_store=mngr.store_full,
+                status="incomplete",
+                cli=mngr.run_line,
+                hostname=mngr.hostname,
+                notes=mngr.notes,
+            )
+            conn.execute(stmt)
+
+        # create the metadata block
+        run_dict = {
+            "reference": mngr.get_reference_name(),
+            "experiment_name": mngr.experiment_name,
+            "run_number": mngr.experiment_run_number,
+            "timestamp": mngr.get_str_timestamp(),
+            "commit": mngr.git_commit_hash,
+            "workdir_dirty": mngr.git_workdir_dirty,
+            "param_files": mngr.parameter_files,
+            "params": mngr.param_file_param_sets,
+            "full_store": mngr.store_full,
+            "status": "incomplete",
+            "cli": mngr.run_line,
+            "hostname": mngr.hostname,
+            "notes": mngr.notes,
+        }
+
+        # sanitize reproduction cli command
+        if mngr.store_full:
+            run_dict = self._get_reproduction_line(mngr, run_dict)
+
+        return run_dict
 
 
 class ManagerStore:

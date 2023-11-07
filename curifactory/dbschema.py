@@ -25,6 +25,8 @@ runs_table = Table(
     # since this is likely to change in later cf versions, I don't want
     # to bother correctly normalizing this part of the table, since I
     # don't think there will be need to query on it anyway.
+    Column("params", String),
+    Column("workdir_dirty", Boolean),
     Column("full_store", Boolean),
     Column("status", String),
     Column("cli", String),
