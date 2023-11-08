@@ -948,7 +948,9 @@ class PathRef(Cacheable):
         something got mis-aligned and the path they wrote to wasn't this cacher's path.
         """
         internal_path = self.get_path()
-        assert internal_path == obj
+        assert (
+            internal_path == obj
+        ), f"Stage returned unexpected path to PathRef cacher for artifact '{self.name}':\n\tExpected: '{internal_path}'\n\tReturned: '{obj}'"
         return internal_path
 
     def load(self) -> str:
