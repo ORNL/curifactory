@@ -6,6 +6,7 @@ import json
 import logging
 import multiprocessing as mp
 import os
+import shutil
 import sys
 from datetime import datetime
 from socket import gethostname
@@ -603,15 +604,29 @@ class ArtifactManager:
 
         self.store()
 
-        reporting.run_report(self, self.reports_path, "_latest", self.report_css_path)
+        # generate the named report
         self.live_report_paths = reporting.run_report(
             self, self.reports_path, self.get_reference_name(), self.report_css_path
         )
         self.live_report_path_generated = True
+
+        # link it into the "_latest" report
+        report_path = os.path.join(self.reports_path, self.get_reference_name())
+        latest_path = os.path.join(self.reports_path, "_latest")
+        if os.path.exists(latest_path):
+            if os.path.isfile(latest_path) or os.path.islink(latest_path):
+                os.remove(latest_path)
+            else:
+                shutil.rmtree(latest_path)
+        logging.info("Linking report to '%s'" % latest_path)
+        os.symlink(self.get_reference_name(), latest_path, target_is_directory=True)
+
+        # if this is a full store run, _copy_ the output to the new folder
         if self.store_full:
-            reporting.run_report(
-                self, self.get_run_output_path(), "report", self.report_css_path
-            )
+            stored_report_path = os.path.join(self.get_run_output_path(), "report")
+            logging.info("Copying report to '%s'" % stored_report_path)
+            shutil.copytree(report_path, stored_report_path)
+
         reporting.update_report_index(
             self.config["experiments_module_name"], self.reports_path
         )

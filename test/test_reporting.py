@@ -7,6 +7,7 @@ from graphviz import Digraph
 import curifactory as cf
 from curifactory import reporting
 from curifactory.caching import JsonCacher, PickleCacher
+from curifactory.experiment import run_experiment
 from curifactory.reporting import JsonReporter, _add_record_subgraph, render_reportable
 
 
@@ -143,4 +144,28 @@ def test_fallback_css_used(configured_test_manager):
     configured_test_manager.generate_report()
     assert os.path.exists(
         f"{configured_test_manager.reports_path}/{configured_test_manager.get_reference_name()}/style.css"
+    )
+
+
+def test_all_relevant_reports_generated(configured_test_manager):
+    """When a store full run of an experiment occurs, the regular report should exist, the linked
+    "_latest" should exist, and the full store output should have a copy."""
+
+    configured_test_manager.store_full = True
+    run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing1", "thing2"],
+        mngr=configured_test_manager,
+        store_full=True,
+    )
+
+    assert os.path.exists(
+        f"{configured_test_manager.reports_path}/{configured_test_manager.get_reference_name()}/index.html"
+    )
+
+    assert os.path.exists(f"{configured_test_manager.reports_path}/_latest/index.html")
+
+    assert os.path.exists(
+        f"{configured_test_manager.get_run_output_path()}/report/index.html"
     )
