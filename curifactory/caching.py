@@ -927,12 +927,12 @@ class PathRef(Cacheable):
 
         .. code-block:: python
 
-            @stage(["large_dataset_path"], ["model_path"], [PathRef()])
+            @stage(["large_dataset_path"], ["model_path"], [PathRef])
             def make_big_data(record, large_dataset_path):
                 # the other way you can get a path that should be correct
                 # is through record's ``get_path()``. The assert inside
                 # PathRef's save will help us double check that it's correct.
-                output_path = record.get_path(obj_name="model")
+                output_path = record.get_path(obj_name="model_path")
                 ...
                 # train model using large_dataset_path, the string path we need.
                 ...
@@ -940,7 +940,7 @@ class PathRef(Cacheable):
     """
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, extension="", **kwargs)
+        super().__init__(*args, **kwargs)
 
     def save(self, obj: str):
         """This is effectively a no-op, this cacher is just a reference to its own path.

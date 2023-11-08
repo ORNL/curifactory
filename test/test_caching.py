@@ -186,6 +186,25 @@ def test_pathref_cacher_with_record_getpath(configured_test_manager):
     )
 
 
+def test_pathref_cacher_with_getpath_and_custom_extension(configured_test_manager):
+    """Using PathRef with a custom extension should translate to being able to get the path
+    inside the stage with an extension through record.get_path."""
+
+    @cf.stage([], ["test_path"], [PathRef(extension=".txt")])
+    def do_thing(record):
+        path_to_write_to = record.get_path("test_path.txt")
+        with open(path_to_write_to, "w") as outfile:
+            outfile.write("Things and stuff")
+
+        return path_to_write_to
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test0"))
+    do_thing(r0)
+    assert os.path.exists(
+        f"{configured_test_manager.cache_path}/test_{r0.get_hash()}_do_thing_test_path.txt"
+    )
+
+
 def test_pathref_fails_if_wrong_return(configured_test_manager):
     """The PathRef cacher should fail if the returned path does not match its own."""
 
