@@ -890,3 +890,66 @@ class RawJupyterNotebookCacher(Cacheable):
         os.remove(script_path)
 
         JsonCacher(cells_path).save(obj)
+
+
+class PathRef(Cacheable):
+    """Special type of cacher that doesn't directly save or load anything, it just tracks a file path
+    for reference.
+
+    This is primarily useful for stages that never keep a particular object in memory and just want to
+    directly pass around paths. The ``PathRef`` cacher allows still short-circuiting if the referenced
+    path already exists, rather than needing to do it manually in the stage.
+
+    Note that when using a ``PathRef`` cacher you still need to return a value from the stage for the
+    cacher to "save". This cacher expects that return value to be the path that was written to, and
+    internally runs an ``assert returned_path == self.get_path()`` to double check that the stage wrote
+    to the correct place. This also means that the value stored "in memory" is just the path, and that
+    path string is what gets gets "loaded".
+
+    This cacher is distinct from the ``FileReferenceCacher`` in that the path of this cacher _is the
+    referenced path_, rather than saving a file that contains the referenced path. (In the case of the
+    latter, a new record/hash etc that refers to the same target filepath would still trigger stage
+    execution and still requires the stage to do it's own check of if the original file already exists
+    before saving.
+
+    Example:
+
+        .. code-block:: python
+
+            @stage([], ["large_dataset_path"], [PathRef("./data/raw/big_data_{params.dataset}.csv")])
+            def make_big_data(record):
+                # you can use record's ``stage_cachers`` to get the expected path
+                output_path = record.stage_cachers[0].get_path()
+                ...
+                # make big data without keeping it in memory
+                ...
+                return output_path
+
+        .. code-block:: python
+
+            @stage(["large_dataset_path"], ["model_path"], [PathRef()])
+            def make_big_data(record, large_dataset_path):
+                # the other way you can get a path that should be correct
+                # is through record's ``get_path()``. The assert inside
+                # PathRef's save will help us double check that it's correct.
+                output_path = record.get_path(obj_name="model")
+                ...
+                # train model using large_dataset_path, the string path we need.
+                ...
+                return output_path
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, extension="", **kwargs)
+
+    def save(self, obj: str):
+        """This is effectively a no-op, this cacher is just a reference to its own path.
+        ``obj`` is expected to be the same, and we assert that to help alert the user if
+        something got mis-aligned and the path they wrote to wasn't this cacher's path.
+        """
+        internal_path = self.get_path()
+        assert internal_path == obj
+        return internal_path
+
+    def load(self) -> str:
+        return self.get_path()
