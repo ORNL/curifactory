@@ -125,6 +125,26 @@ class SQLStore:
 
         return run_dict
 
+    # NOTE: we have to call this both from add_run and update_run because manager stores itself on init, but if
+    # someone _later_ sets store_full (maybe in a live run) we need to be able to handle this being added to the run_info
+    def _get_reproduction_line(self, mngr, run: dict) -> dict:
+        sanitized_run_line = mngr.run_line
+        if "--overwrite " in sanitized_run_line:
+            sanitized_run_line = sanitized_run_line.replace("--overwrite ", "")
+        if sanitized_run_line.endswith("--overwrite"):
+            sanitized_run_line = sanitized_run_line[:-12]
+        sanitized_run_line = sanitized_run_line.replace("--store-full ", "")
+        if sanitized_run_line.endswith("--store-full"):
+            sanitized_run_line = sanitized_run_line[:-13]
+
+        cache_path = mngr.get_run_output_path()
+        mngr.reproduction_line = (
+            f"{sanitized_run_line} --cache {cache_path}/artifacts --dry-cache"
+        )
+
+        run["reproduce"] = mngr.reproduction_line
+        return run
+
 
 class ManagerStore:
     """Manages the mini database of metadata on previous experiment runs. This is how we
