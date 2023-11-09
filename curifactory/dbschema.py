@@ -15,8 +15,7 @@ store_info = Table(
 runs_table = Table(
     "run",
     metadata_obj,
-    Column("id", Integer, primary_key=True),
-    Column("reference", String),
+    Column("reference", String, primary_key=True),
     Column("experiment_name", String),
     Column("run_number", Integer),
     Column("timestamp", DateTime),
@@ -33,6 +32,12 @@ runs_table = Table(
     Column("hostname", String),
     Column("user", String),
     Column("notes", String),
+    Column("uncommited_patch", String),
+    Column("pip_freeze", String),
+    Column("conda_env", String),
+    Column("conda_env_full", String),
+    Column("os", String),
+    Column("reproduce", String),
 )
 
 

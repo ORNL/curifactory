@@ -12,6 +12,7 @@ from curifactory.dbschema import metadata_obj, runs_table
 class SQLStore:
     """EXPERIMENTAL, making an sqlite version of the data below."""
 
+    # TODO: (11/8/2023) make this take the full store path instead
     def __init__(self, manager_cache_path: str):
         self.path = manager_cache_path
         """The location to store the ``store.db``."""
@@ -26,9 +27,11 @@ class SQLStore:
         self._ensure_tables()
 
     def _ensure_tables(self):
+        """Check for the existence of (and create if necessary) all of the tables
+        listed in dbscheme.py"""
         metadata_obj.create_all(self.engine)
 
-    def get_run(self, ref_name: str) -> tuple[dict, int]:
+    def get_run(self, ref_name: str) -> dict:
         """Get the metadata block for the run with the specified reference name.
 
         Args:
@@ -41,22 +44,18 @@ class SQLStore:
         # https://docs.sqlalchemy.org/en/20/tutorial/data_select.html
 
         with self.engine.connect() as conn:
-            stmt = select(runs_table).where(
-                runs_table.c.reference == ref_name
-            )  # TODO: do I need to use prepare?
+            stmt = select(runs_table).where(runs_table.c.reference == ref_name)
+            # TODO: do I need to use prepare?
             result = conn.execute(stmt)
 
             # if we didn't get any rows back, this run doesn't exist.
             if len(result) == 0:
-                return None, -1
+                return None
 
-            run = result[
-                0
-            ]._asdict()  # NOTE: documented function of namedtuple, _ here doesn't imply hidden/not intended for use
+            run = result[0]._asdict()
+            # NOTE: documented function of namedtuple, _ here doesn't imply hidden/not intended for use
             run.param_files = json.loads(run.param_files)
-            return run, run.id
-
-        return None, -1
+            return run
 
     def add_run(self, mngr) -> dict:
         """Add a new metadata block to the store for the passed ``ArtifactManager`` instance.
@@ -72,7 +71,7 @@ class SQLStore:
 
         # get the new run number
         with self.engine.connect() as conn:
-            stmt = select(func.count(runs_table.c.id)).where(
+            stmt = select(func.count()).where(
                 runs_table.c.experiment_name == mngr.experiment_name
             )
             result = conn.execute(stmt)
