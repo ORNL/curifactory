@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   cacher paths (at the expense of automatically not tracking them) to specify
   paths outside of the cache folder or directly including parameters in the
   filename etc.
+* `PathRef` cacher, a special type of cacher that allows exclusively passing around
+  paths and short-circuiting directly based on that path's existence (as opposed
+  to the `FileReferenceCacher` which saves a file containing the path), rather
+  than handling saving/loading itself.
 
 ### Fixed
 * `--notebook` manager's not using modified experiment cache paths.

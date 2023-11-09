@@ -795,6 +795,11 @@ def update_report_index(experiments_path: str, reports_root_dir: str):
                 info = json.load(infile)
 
                 logging.debug("Info dictionary: %s" % str(info))
+                if info is None:
+                    infile.seek(0)
+                    contents = list(infile)
+                    logging.debug("Raw contents: %s" % str(contents))
+
                 info["order_timestamp"] = datetime.datetime.strptime(
                     info["timestamp"], utils.TIMESTAMP_FORMAT
                 )

@@ -17,6 +17,7 @@ from curifactory.caching import (
     PandasCacher,
     PandasCsvCacher,
     PandasJsonCacher,
+    PathRef,
     PickleCacher,
     RawJupyterNotebookCacher,
     _PandasIOType,
@@ -118,6 +119,106 @@ def test_filerefcacher_runs_when_file_missing(configured_test_manager, clear_sta
     r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test"))
     filerefcacher_stage_multifile(r1)
     assert os.path.exists(ran_path)
+
+
+def test_pathref_cacher(configured_test_manager):
+    """The PathRef cacher should short-circuit if the path it points to exists."""
+    runs = 0
+
+    @dataclass
+    class Params(cf.ExperimentParameters):
+        a: int = 5
+
+    @cf.stage([], ["test_path"], [PathRef("./test/examples/data/my_test_thing.txt")])
+    def do_thing(record):
+        nonlocal runs
+        runs += 1
+
+        path_to_write_to = record.stage_cachers[0].get_path()
+        with open(path_to_write_to, "w") as outfile:
+            outfile.write("Things and stuff")
+
+        return path_to_write_to
+
+    r0 = cf.Record(configured_test_manager, Params(name="test0", a=6))
+    do_thing(r0)
+    assert runs == 1
+    assert os.path.exists("./test/examples/data/my_test_thing.txt")
+
+    r1 = cf.Record(configured_test_manager, Params(name="test1", a=7))
+    do_thing(r1)
+    assert runs == 1
+    assert r1.state["test_path"] == "./test/examples/data/my_test_thing.txt"
+
+
+def test_pathref_cacher_with_record_getpath(configured_test_manager):
+    """Using record.get_path inside a stage for the PathRef cacher should also work/e.g.
+    return the same path the cacher uses."""
+    runs = 0
+
+    @cf.stage([], ["test_path", "test_dir"], [PathRef] * 2)
+    def do_thing(record):
+        nonlocal runs
+        runs += 1
+
+        path_to_write_to = record.get_path("test_path")
+        with open(path_to_write_to, "w") as outfile:
+            outfile.write("Things and stuff")
+
+        other_path = record.get_dir("test_dir")
+        with open(f"{other_path}/something.txt", "w") as outfile:
+            outfile.write("yes")
+
+        return path_to_write_to, other_path
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test0"))
+    do_thing(r0)
+    assert runs == 1
+    r1 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test1"))
+    do_thing(r1)
+    assert runs == 1
+
+    assert os.path.exists(
+        f"{configured_test_manager.cache_path}/test_{r0.get_hash()}_do_thing_test_path"
+    )
+    assert os.path.exists(
+        f"{configured_test_manager.cache_path}/test_{r0.get_hash()}_do_thing_test_dir/something.txt"
+    )
+
+
+def test_pathref_cacher_with_getpath_and_custom_extension(configured_test_manager):
+    """Using PathRef with a custom extension should translate to being able to get the path
+    inside the stage with an extension through record.get_path."""
+
+    @cf.stage([], ["test_path"], [PathRef(extension=".txt")])
+    def do_thing(record):
+        path_to_write_to = record.get_path("test_path.txt")
+        with open(path_to_write_to, "w") as outfile:
+            outfile.write("Things and stuff")
+
+        return path_to_write_to
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test0"))
+    do_thing(r0)
+    assert os.path.exists(
+        f"{configured_test_manager.cache_path}/test_{r0.get_hash()}_do_thing_test_path.txt"
+    )
+
+
+def test_pathref_fails_if_wrong_return(configured_test_manager):
+    """The PathRef cacher should fail if the returned path does not match its own."""
+
+    @cf.stage([], ["test_path"], [PathRef("./test/examples/data/my_test_thing.txt")])
+    def do_thing(record):
+        path_to_write_to = "./test/examples/data/not_correct.txt"
+        with open(path_to_write_to, "w") as outfile:
+            outfile.write("Things and stuff")
+
+        return path_to_write_to
+
+    r0 = cf.Record(configured_test_manager, cf.ExperimentParameters(name="test0"))
+    with pytest.raises(AssertionError):
+        do_thing(r0)
 
 
 def test_reportables_are_cached(configured_test_manager):
