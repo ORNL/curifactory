@@ -427,7 +427,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                 if param_set.name == print_params:
                     display_parameters(param_set)
                     found = True
-                    break
+                    return param_set, mngr
             # if not found search params registry
             if not found:
                 registry_path = os.path.join(
@@ -443,9 +443,11 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                         print(param_hash, param_set["name"])
                         print(json.dumps(param_set, indent=4))
                         found = True
-                        break
+                        return (param_hash, registry[param_hash]), mngr
             if not found:
-                print(f"ERROR: parameter set name or hash '{print_params}' not found")
+                print(
+                    f"ERROR: parameter set name or hash starting with '{print_params}' not found"
+                )
         else:
             for param_set in final_param_sets:
                 display_parameters(param_set)
