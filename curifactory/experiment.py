@@ -11,6 +11,7 @@ import multiprocessing as mp
 import os
 import re
 import sys
+from typing import Union
 
 from curifactory import utils
 from curifactory.manager import ArtifactManager
@@ -49,6 +50,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     ignore_lazy: bool = False,
     no_dag: bool = False,
     map_only: bool = False,
+    hashes_only: bool = False,
+    print_params: Union[bool, str] = False,
     no_color: bool = False,
     quiet: bool = False,
     progress: bool = False,
@@ -121,6 +124,10 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             Mapping is done by running the experiment but skipping all stage execution.
         map_only (bool): Runs the pre-execution mapping of an experiment and immediately exits, printing the
             map to stdout. **Note that setting this to True automatically sets dry.**
+        hashes_only (bool): Runs only the parameter set collection from parameter files and then prints out
+            the corresponding hashes to stdout. **Note that setting this to True automatically sets dry.**
+        print_params (Union[bool, str]): Runs only the parameter set collection from parameter files and then prints out
+            the corresponding parameters to stdout. **Note that setting this to True automatically sets dry.**
         no_color (bool): Suppress fancy colors in console output.
         quiet (bool): Suppress all console log output.
         progress (bool): Display fancy rich progress bars for each record.
@@ -144,6 +151,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
     # doing imports here to avoid needing such a long import list for tab completion functionality
     import glob
+    import json
     import shutil
     import traceback
 
@@ -153,8 +161,12 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
     # if we request a map only run, make sure we don't impact any files, so
     # automatically set "dry"
-    if map_only:
+    if map_only or hashes_only or print_params:
         dry = True
+
+    # for certain debug commands, don't print logs to stdout
+    if hashes_only or print_params:
+        quiet = True
 
     if run_string is None:
         run_string = f"experiment {experiment_name}"
@@ -196,6 +208,10 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             run_string += " --no-dag"
         if map_only:
             run_string += " --map"
+        if hashes_only:
+            run_string += " --hashes"
+        if print_params:
+            run_string += " --print-params"
         if no_color:
             run_string += " --no-color"
         if quiet:
@@ -386,6 +402,54 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         store_full,
         parallel_mode,
     )
+    # exit early if debugging flags
+    if hashes_only:
+        hashes = {}
+        for param_set in final_param_sets:
+            hashes[param_set.hash] = param_set.name
+            print(param_set.hash, param_set.name)
+        return hashes, mngr
+
+    if print_params:
+
+        def display_parameters(param_set):
+            print(param_set.hash, param_set.name)
+            print(
+                json.dumps(
+                    hashing.param_set_string_hash_representations(param_set), indent=4
+                )
+            )
+
+        if type(print_params) == str:
+            # check names in final_param_sets
+            found = False
+            for param_set in final_param_sets:
+                if param_set.name == print_params:
+                    display_parameters(param_set)
+                    found = True
+                    break
+            # if not found search params registry
+            if not found:
+                registry_path = os.path.join(
+                    mngr.manager_cache_path, "params_registry.json"
+                )
+
+                if os.path.exists(registry_path):
+                    with open(registry_path) as infile:
+                        registry = json.load(infile)
+                for param_hash in registry:
+                    if param_hash.startswith(print_params):
+                        param_set = registry[param_hash]
+                        print(param_hash, param_set["name"])
+                        print(json.dumps(param_set, indent=4))
+                        found = True
+                        break
+            if not found:
+                print(f"ERROR: parameter set name or hash '{print_params}' not found")
+        else:
+            for param_set in final_param_sets:
+                display_parameters(param_set)
+        return final_param_sets, mngr
 
     # check that there wasn't an invalid name and all requested parameterset names were found
     if param_set_names is not None:

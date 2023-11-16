@@ -163,6 +163,8 @@ def cmd_run(args):
         ignore_lazy=args.ignore_lazy,
         no_dag=args.no_dag,
         map_only=args.map_only,
+        hashes_only=args.hashes_only,
+        print_params=args.print_params,
         no_color=args.no_color,
         quiet=args.quiet,
         progress=args.progress,
@@ -396,6 +398,22 @@ Examples:
         dest="map_only",
         action="store_true",
         help="Specifying this _only_ runs the pre-execution record and stage mapping for the experiment, and prints out the resulting DAG information before immediately exiting. Specifying this implies --dry. You can use this flag to check which artifacts are found in cache.",
+    )
+    # TODO: (11/16/2023) this will need to be its own "hashes" command once we
+    # split out CLI subparsers
+    display_group.add_argument(
+        "--hashes",
+        dest="hashes_only",
+        action="store_true",
+        help="Specifying this _only_ runs the parameter set collection and prints the resulting parameter set hashes. Specifying this implies --dry. You can use this flag to check expected file paths.",
+    )
+    display_group.add_argument(
+        "--print-params",
+        nargs="?",
+        dest="print_params",
+        const=True,
+        default=False,
+        help="Specifying this _only_ runs the parameter set collection and prints the resulting parameter sets hashes. Specifying this implies --dry. You can use this flag to debug output parameter sets. If you provide an argument to this flag (either a parameter set name, or a parameter set hash) it will output only that parameter set. (A hash will search the parameter registry.)",
     )
     display_group.add_argument(
         "--quiet",

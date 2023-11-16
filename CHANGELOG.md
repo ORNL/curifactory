@@ -16,6 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   paths and short-circuiting directly based on that path's existence (as opposed
   to the `FileReferenceCacher` which saves a file containing the path), rather
   than handling saving/loading itself.
+* `--hashes` debugging flag, when specified it prints out the hash and name of
+  each parameter set passed into an experiment and then exits.
+* `--print-params` debugging flag, when specified it prints out the full string
+  representation of each parameter set passed into an experiment, or, if at
+  least the first few characters of a hash are specified, it prints out the
+  corresponding parameter set hash from the `params_registry.json`. Note that
+  both this and the `--hashes` flag are temporary debugging tools until the CLI
+  gets broken out into subcommands, where they may become part of a separate
+  command.
 
 ### Fixed
 * `--notebook` manager's not using modified experiment cache paths.
