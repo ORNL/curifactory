@@ -375,80 +375,17 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
         )
 
     # load params files
-    final_param_sets = []
-    for param_file_name in param_files:
-        mngr.param_file_param_sets[param_file_name] = []
-        # TODO: if we get a ModuleNotFoundError, suggest ensuring __init__.py as appropriate and that module paths don't have '/'
-        param_module_string = f"{mngr.config['params_module_name']}.{param_file_name}"
-        experiment_module_string = (
-            f"{mngr.config['experiments_module_name']}.{param_file_name}"
-        )
-        try:
-            logging.debug("Trying to load params module '%s'" % param_module_string)
-            param_module = importlib.import_module(param_module_string)
-        except ModuleNotFoundError:
-            try:
-                logging.debug(
-                    "Module not found, trying '%s'" % experiment_module_string
-                )
-                param_module = importlib.import_module(experiment_module_string)
-            except ModuleNotFoundError as e:
-                logging.error(
-                    "Parameter file '%s' could not be found in either experiments or parameters directory. Ensure curifactory_config.json is correct and if module subpaths are used, try including an __init__.py in each folder."
-                    % param_file_name
-                )
-                raise e
-
-        param_sets = param_module.get_params()
-        if type(param_sets) != list:
-            logging.error(
-                "Parameter file '%s' did not return a list, please make sure any `get_params()` functions are returning non-empty arrays."
-                % param_file_name
-            )
-            raise RuntimeError(
-                "Parameter file '%s' did not return a list, please make sure any `get_params()` functions are returning non-empty arrays."
-                % param_file_name
-            )
-        param_sets_to_add = []
-
-        # NOTE: we don't want to set override in parent proc on parallel runs.
-        if overwrite_override and parallel is None:
-            for argset in param_sets:
-                argset.overwrite = True
-
-        # compute the hash of every argset and store the params
-        for index, param_set in enumerate(param_sets):
-            # if specific names requested, just grab those
-            if param_set_names is not None:
-                if param_set.name not in param_set_names:
-                    continue
-
-            # if specific indices requested, just grab those
-            if len(param_set_indices_resolved) > 0:
-                if index not in param_set_indices_resolved:
-                    continue
-
-            param_set.hash = hashing.hash_param_set(
-                param_set,
-                store_in_registry=(not dry and not parallel_mode),
-                registry_path=mngr.manager_cache_path,
-            )
-            mngr.param_file_param_sets[param_file_name].append(
-                (param_set.name, param_set.hash)
-            )
-            # TODO: (01/24/2022) I have no idea what the point of this args_hash is...
-            # it's not storing anything, and args_hash has no side-effects, so unclear
-            # on why this matters.
-            # NOTE: (3/5/2023) is it just so that the hash is computed and stored
-            # on the args? Unclear exactly why that's necessary but that is technically
-            # a side-effect
-            if store_full:
-                hashing.hash_param_set(
-                    param_set, store_in_registry=False
-                )  # don't try to store because get_run_output_path does not exist yet
-            param_sets_to_add.append(param_set)
-
-        final_param_sets.extend(param_sets_to_add)
+    final_param_sets = collect_parameter_sets(
+        mngr,
+        param_files,
+        overwrite_override,
+        parallel,
+        param_set_names,
+        param_set_indices_resolved,
+        dry,
+        store_full,
+        parallel_mode,
+    )
 
     # check that there wasn't an invalid name and all requested parameterset names were found
     if param_set_names is not None:
@@ -849,3 +786,99 @@ def list_params():
     param_names.extend(regex_lister(experiment_module, r"^def get_params\(.*\)"))
     param_names.sort()
     return param_names
+
+
+def collect_parameter_sets(
+    manager,
+    param_files: list[str],
+    overwrite_override: bool,
+    parallel: int,
+    param_set_names: list[str],
+    param_set_indices_resolved: list[int],
+    dry: bool,
+    store_full: bool,
+    parallel_mode: bool,
+):
+    """Load the requested parameter files, run their get_params, and filter down based
+    on any other relevant CLI args."""
+    from curifactory import hashing
+
+    final_param_sets = []
+    for param_file_name in param_files:
+        manager.param_file_param_sets[param_file_name] = []
+        # TODO: if we get a ModuleNotFoundError, suggest ensuring __init__.py as appropriate and that module paths don't have '/'
+        param_module_string = (
+            f"{manager.config['params_module_name']}.{param_file_name}"
+        )
+        experiment_module_string = (
+            f"{manager.config['experiments_module_name']}.{param_file_name}"
+        )
+        try:
+            logging.debug("Trying to load params module '%s'" % param_module_string)
+            param_module = importlib.import_module(param_module_string)
+        except ModuleNotFoundError:
+            try:
+                logging.debug(
+                    "Module not found, trying '%s'" % experiment_module_string
+                )
+                param_module = importlib.import_module(experiment_module_string)
+            except ModuleNotFoundError as e:
+                logging.error(
+                    "Parameter file '%s' could not be found in either experiments or parameters directory. Ensure curifactory_config.json is correct and if module subpaths are used, try including an __init__.py in each folder."
+                    % param_file_name
+                )
+                raise e
+
+        param_sets = param_module.get_params()
+        if type(param_sets) != list:
+            logging.error(
+                "Parameter file '%s' did not return a list, please make sure any `get_params()` functions are returning non-empty arrays."
+                % param_file_name
+            )
+            raise RuntimeError(
+                "Parameter file '%s' did not return a list, please make sure any `get_params()` functions are returning non-empty arrays."
+                % param_file_name
+            )
+        param_sets_to_add = []
+
+        # NOTE: we don't want to set override in parent proc on parallel runs.
+        # TODO: (11/16/2023) maybe overwrite setting happens elsewhere, which
+        # would clean up some of the parallel stuff we check for here?
+        if overwrite_override and parallel is None:
+            for argset in param_sets:
+                argset.overwrite = True
+
+        # compute the hash of every argset and store the params
+        for index, param_set in enumerate(param_sets):
+            # if specific names requested, just grab those
+            if param_set_names is not None:
+                if param_set.name not in param_set_names:
+                    continue
+
+            # if specific indices requested, just grab those
+            if len(param_set_indices_resolved) > 0:
+                if index not in param_set_indices_resolved:
+                    continue
+
+            param_set.hash = hashing.hash_param_set(
+                param_set,
+                store_in_registry=(not dry and not parallel_mode),
+                registry_path=manager.manager_cache_path,
+            )
+            manager.param_file_param_sets[param_file_name].append(
+                (param_set.name, param_set.hash)
+            )
+            # TODO: (01/24/2022) I have no idea what the point of this args_hash is...
+            # it's not storing anything, and args_hash has no side-effects, so unclear
+            # on why this matters.
+            # NOTE: (3/5/2023) is it just so that the hash is computed and stored
+            # on the args? Unclear exactly why that's necessary but that is technically
+            # a side-effect
+            # if store_full:
+            #     hashing.hash_param_set(
+            #         param_set, store_in_registry=False
+            #     )  # don't try to store because get_run_output_path does not exist yet
+            param_sets_to_add.append(param_set)
+
+        final_param_sets.extend(param_sets_to_add)
+    return final_param_sets
