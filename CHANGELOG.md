@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [unreleased]
+## [0.17.0] - 2023-11-16
 
 ### Added
 * Templating/keyword formating for cacher path overrides. This allows overriding
@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Manager maps are disabled after a `run_experiment` call, so managers used in
   live contexts (e.g. notebooks) may continue to run stages after the experiment
   has completed.
+* Experiments generating multiple reports instead of just once and
+  linking/copying the folders as necessary.
 
 ### Removed
 * Old `ExperimentArgs` references and associated deprecation warnings.
