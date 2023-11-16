@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Curifactory Cookbook &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Migration Guide" href="migration.html" />
+    <link rel="prev" title="Tips and tricks" href="tips.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and parameter sets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing_mechanics.html">Hashing Mechanics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment_graph.html">Experiment Graph (DAG)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Curifactory Cookbook</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#distributed-torchrun-via-external-stage">Distributed <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> via external stage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cachers-for-pytorch-lightning-models">Cachers for Pytorch Lightning models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="args.html">Args</a></li>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dag.html">DAG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing.html">Hashing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="params.html">Params</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Curifactory Cookbook</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cookbook.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="curifactory-cookbook">
+<h1>Curifactory Cookbook<a class="headerlink" href="#curifactory-cookbook" title="Permalink to this headline"></a></h1>
+<p>This page contains a set of recipes or solutions to challenges we’ve encountered.</p>
+<div class="section" id="distributed-torchrun-via-external-stage">
+<h2>Distributed <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> via external stage<a class="headerlink" href="#distributed-torchrun-via-external-stage" title="Permalink to this headline"></a></h2>
+<p>Training pytorch models in distributed mode can sometimes cause issues in curifactory - when running
+on GPUs with DDP, pytorch will start a new process for each GPU and run a copy of whatever command
+initially spawned it. If directly setting up a pytorch lightning trainer inside a stage, this means
+that each process will be re-running the entire curifactory experiment.</p>
+<p>In theory this should be fine - curifactory can detect the MPI env variables and put itself into
+<code class="docutils literal notranslate"><span class="pre">--parallel-mode</span></code>, and as long as stages are set up appropriately any work prior to the trainer
+should already be cached anyway. However, in practice we’ve run into performance issues.</p>
+<p>A pattern that works relatively well in curifactory to get around this is having a stage act simply
+as a wrapper around an external command - using either <code class="docutils literal notranslate"><span class="pre">os.system</span></code> or <code class="docutils literal notranslate"><span class="pre">subprocess.run</span></code> (or even
+curifactory’s own internal utility for this, <code class="docutils literal notranslate"><span class="pre">curifactory.utils.run_command</span></code>) to run a separate
+python script (or any other CLI tool, this can be a way to integrate with other languages and
+applications), and then passing in parameters as CLI args, artifact inputs as paths, and desired
+output locations as paths.</p>
+<p>The stage then handles getting the associated paths of everything, constructing the CLI line, running it,
+and then loading any outputs back into curifactory and returning them.</p>
+<p>In particular, we’ve found it pretty easy to use the click python library to quickly make an external
+python function into something callable by a stage.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">external/my_model_trainer.py</span><a class="headerlink" href="#id1" title="Permalink to this code"></a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">click</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">Trainer</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning.callbacks</span> <span class="kn">import</span> <span class="n">ModelCheckpoint</span>
+
+
+<span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;--dataset_path&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>   <span class="c1"># input artifact path</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;--model_path&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>     <span class="c1"># output artifact path</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;--checkpoint_dir&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+<span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;--num_gpus&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>       <span class="c1"># a parameter</span>
+<span class="k">def</span> <span class="nf">train_model</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">model_path</span><span class="p">,</span> <span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">num_gpus</span><span class="p">):</span>
+    <span class="c1"># load data from dataset_path however needed</span>
+    <span class="o">...</span>
+
+    <span class="n">checkpoint_callback</span> <span class="o">=</span> <span class="n">ModelCheckpoint</span><span class="p">(</span>
+        <span class="n">dirpath</span><span class="o">=</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save_last</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">every_n_epochs</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>
+
+    <span class="n">trainer</span> <span class="o">=</span> <span class="n">Trainer</span><span class="p">(</span>
+        <span class="n">default_root_dir</span><span class="o">=</span><span class="n">checkpoint_dir</span><span class="p">,</span>
+        <span class="n">enable_checkpointing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">checkpoint_callback</span><span class="p">],</span>
+        <span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;gpu&quot;</span><span class="p">,</span>
+        <span class="n">devices</span><span class="o">=</span><span class="n">num_gpus</span><span class="p">,</span>
+        <span class="n">strategy</span><span class="o">=</span><span class="s2">&quot;ddp&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># create model</span>
+    <span class="o">...</span>
+
+    <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>  <span class="c1"># pass in data however needed, e.g. if</span>
+                                   <span class="c1"># using a datamodule</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">save_checkpoint</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span> <span class="c1"># put a final copy of the model</span>
+                                              <span class="c1"># at expected output location</span>
+
+    <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+        <span class="n">train_model</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>On the curifactory side, it’s currently a little annoying to get the correct paths
+for input artifacts (this will hopefully change in a couple versions). Essentially
+you either need to store the string path directly as an artifact, or you can use
+a lazy cacher with <code class="docutils literal notranslate"><span class="pre">resolve=True</span></code> (meaning when used as an input, you get access
+directly to the <code class="docutils literal notranslate"><span class="pre">Lazy</span></code> object, thus the cacher, thus the cacher’s <code class="docutils literal notranslate"><span class="pre">get_path()</span></code>)</p>
+<p>An example of how you would set this up in some prior stage:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">stages/data_setup.py</span><a class="headerlink" href="#id2" title="Permalink to this code"></a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">curifactory</span> <span class="k">as</span> <span class="nn">cf</span>
+
+<span class="nd">@cf</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span><span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="n">cf</span><span class="o">.</span><span class="n">Lazy</span><span class="p">(</span><span class="s2">&quot;dataset&quot;</span><span class="p">,</span> <span class="n">resolve</span><span class="o">=</span><span class="kc">False</span><span class="p">)],</span> <span class="n">cachers</span><span class="o">=</span><span class="p">[</span><span class="n">PickleCacher</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">create_dataset</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</div>
+<p>Then, to set up a stage to call the external trainer, we collect all the necessary paths
+(inputs either directly as the input or by getting the cacher from unresolved lazy instances),
+output paths from the record’s current <code class="docutils literal notranslate"><span class="pre">stage_cachers</span></code> or by outputing a file reference cacher,
+and any other side effect paths from the record’s <code class="docutils literal notranslate"><span class="pre">.get_path()</span></code> or <code class="docutils literal notranslate"><span class="pre">.get_dir()</span></code>. We construct
+the CLI call, and then run it.</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">stages/model.py</span><a class="headerlink" href="#id3" title="Permalink to this code"></a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">curifactory</span> <span class="k">as</span> <span class="nn">cf</span>
+<span class="kn">from</span> <span class="nn">params</span> <span class="kn">import</span> <span class="n">Params</span>  <span class="c1"># assume this is your ExperimentParameters class</span>
+
+<span class="nd">@cf</span><span class="o">.</span><span class="n">stage</span><span class="p">([</span><span class="s2">&quot;dataset&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;model_path&quot;</span><span class="p">],</span> <span class="p">[</span><span class="n">FileReferenceCacher</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">externally_train</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">cf</span><span class="o">.</span><span class="n">Lazy</span><span class="p">):</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">Params</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">params</span>
+
+    <span class="c1"># get all the associated paths</span>
+
+    <span class="n">dataset_path</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">cacher</span><span class="o">.</span><span class="n">get_path</span><span class="p">()</span>  <span class="c1"># dataset is an unresolved lazy so</span>
+                                              <span class="c1"># we get the path from its cacher</span>
+    <span class="n">output_model_path</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="s2">&quot;model.ckpt&quot;</span><span class="p">)</span>  <span class="c1"># this ensures the model</span>
+                                                       <span class="c1"># path is tracked</span>
+    <span class="n">checkpoint_dir</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get_dir</span><span class="p">(</span><span class="s2">&quot;model_checkpoints&quot;</span><span class="p">)</span>
+
+    <span class="n">python_cmd</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;torchrun&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--standalone&quot;</span><span class="p">,</span>  <span class="c1"># means we&#39;re only using 1 node</span>
+        <span class="sa">f</span><span class="s2">&quot;--nproc_per_node </span><span class="si">{</span><span class="n">params</span><span class="o">.</span><span class="n">num_gpus</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--module&quot;</span><span class="p">,</span> <span class="s2">&quot;external.my_model_trainer.py&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--dataset_path&quot;</span><span class="p">,</span> <span class="n">dataset_path</span><span class="p">,</span>
+        <span class="s2">&quot;--model_path&quot;</span><span class="p">,</span> <span class="n">output_model_path</span><span class="p">,</span>
+        <span class="s2">&quot;--checkpoint_dir&quot;</span><span class="p">,</span> <span class="n">checkpoint_dir</span><span class="p">,</span>
+        <span class="s2">&quot;--num_gpus&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">num_gpus</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="o">*</span><span class="n">python_cmd</span><span class="p">)</span>  <span class="c1"># it&#39;s helpful to print the exact command so you</span>
+                        <span class="c1"># can separately debug it if needed</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">python_cmd</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">output_model_path</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="cachers-for-pytorch-lightning-models">
+<h2>Cachers for Pytorch Lightning models<a class="headerlink" href="#cachers-for-pytorch-lightning-models" title="Permalink to this headline"></a></h2>
+<p>Implementing a cacher for a pytorch lightning model can be difficult to make generic
+across multiple different model classes. (Mainly because you have to call <code class="docutils literal notranslate"><span class="pre">load_from_checkpoint</span></code>
+on the correct type.)</p>
+<p>It’s possible to use a cacher’s extra metadata to track this type on save, and then manually
+condition on it in the load function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pytorch_lighting</span> <span class="k">as</span> <span class="nn">pl</span>
+
+<span class="kn">from</span> <span class="nn">my_code</span> <span class="kn">import</span> <span class="n">ModelType1</span><span class="p">,</span> <span class="n">ModelType2</span>
+
+<span class="k">class</span> <span class="nc">ModelCacher</span><span class="p">(</span><span class="n">cf</span><span class="o">.</span><span class="n">caching</span><span class="o">.</span><span class="n">Cacheable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;.ckpt&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">):</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">save_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extra_metadata</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_metadata</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_metadata</span><span class="p">()</span>
+        <span class="n">type_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_metadata</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">type_str</span> <span class="o">==</span> <span class="s2">&quot;ModelType1&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ModelType1</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">type_str</span> <span class="o">==</span> <span class="s2">&quot;ModelType2&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ModelType2</span><span class="o">.</span><span class="n">load_from_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tips.html" class="btn btn-neutral float-left" title="Tips and tricks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="migration.html" class="btn btn-neutral float-right" title="Migration Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>
