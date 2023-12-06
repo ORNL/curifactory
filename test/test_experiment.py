@@ -428,6 +428,12 @@ def test_empty_parameters_errors(clear_filesystem):
     )
 
 
+def test_experiment_none_parameters_runs(clear_filesystem):
+    """Not passing in any value to run_experiment for parameters should be equivalent to passing [] or implicitly passing the experiment's name."""
+    results, manager = run_experiment("simple_cache")
+    assert len(manager.records) == 4
+
+
 def test_invalid_args_names_errors(clear_filesystem):
     """Using a --names flag but with a non-existant parameterset name should error."""
     with pytest.raises(RuntimeError) as exc_info:

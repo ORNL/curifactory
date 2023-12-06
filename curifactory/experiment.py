@@ -22,7 +22,7 @@ CONFIGURATION_FILE = "curifactory_config.json"
 
 def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at some point
     experiment_name,
-    param_files,
+    param_files=None,
     overwrite_override=None,
     cache_dir_override=None,
     mngr: ArtifactManager = None,
@@ -170,8 +170,9 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
     if run_string is None:
         run_string = f"experiment {experiment_name}"
-        for param_file in param_files:
-            run_string += f" -p {param_file}"
+        if param_files is not None:
+            for param_file in param_files:
+                run_string += f" -p {param_file}"
         if param_set_names is not None:
             for param_set_name in param_set_names:
                 run_string += f" --names {param_set_name}"
