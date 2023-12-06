@@ -383,9 +383,6 @@ class Cacheable:
         if self.record.manager.run_info is not None:
             manager_run_info = copy.copy(self.record.manager.run_info)
         else:
-            logging.warning(
-                "Manager does not currently have run info, artifact metadata will not contain specific experiment run data."
-            )
             manager_run_info = {}
         if "status" in manager_run_info:
             del manager_run_info[
