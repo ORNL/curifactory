@@ -610,6 +610,12 @@ class ArtifactManager:
         )
         self.live_report_path_generated = True
 
+        # copy the log into the report folder if it exists
+        log_path = os.path.join(self.logs_path, f"{self.get_reference_name()}.log")
+        if os.path.exists(log_path):
+            target_log_path = os.path.join(self.live_report_paths[0], "log.txt")
+            shutil.copy(log_path, target_log_path)
+
         # link it into the "_latest" report
         report_path = os.path.join(self.reports_path, self.get_reference_name())
         latest_path = os.path.join(self.reports_path, "_latest")

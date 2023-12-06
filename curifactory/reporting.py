@@ -457,6 +457,8 @@ def render_report_info_block(  # noqa: C901 -- TODO: yeaaaaah break it up at som
         notes = notes.replace("\n", "</br>")
         html_lines.append(f"<p>{notes}</p>")
 
+    html_lines.append("<a href='log.txt'>View log</a>")
+
     return html_lines
 
 

@@ -169,3 +169,25 @@ def test_all_relevant_reports_generated(configured_test_manager):
     assert os.path.exists(
         f"{configured_test_manager.get_run_output_path()}/report/index.html"
     )
+
+
+def test_log_copied_to_report(configured_test_manager):
+    """A copy of the log should be included in the report folder."""
+    configured_test_manager.store_full = True
+    run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing1", "thing2"],
+        mngr=configured_test_manager,
+        store_full=True,
+    )
+
+    assert os.path.exists(
+        f"{configured_test_manager.reports_path}/{configured_test_manager.get_reference_name()}/log.txt"
+    )
+
+    assert os.path.exists(f"{configured_test_manager.reports_path}/_latest/log.txt")
+
+    assert os.path.exists(
+        f"{configured_test_manager.get_run_output_path()}/report/log.txt"
+    )
