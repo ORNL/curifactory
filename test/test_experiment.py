@@ -601,6 +601,9 @@ def test_hashes_only_output(configured_test_manager, capsys):
     assert lines[-2] == f"{last_param_set[1]} {last_param_set[0]}"
 
 
+# NOTE: We have to skip these because in the full tests I can't get the log
+# statements to not be part of the captured output, thus making the line numbers
+# wrong. These tests do work if you run them individually.
 @pytest.mark.skip
 def test_print_params_output(configured_test_manager, capsys):
     """Running experiment with print-params should just output the parameter set representations
@@ -617,6 +620,29 @@ def test_print_params_output(configured_test_manager, capsys):
     lines = stdout.split("\n")
     last_param_set = mngr.param_file_param_sets["simple_cache"][0]
     assert lines[7] == f"{last_param_set[1]} {last_param_set[0]}"
+
+
+@pytest.mark.skip
+def test_print_params_output_verbose(configured_test_manager, capsys):
+    """Running experiment with print-params should just output the parameter set representations
+    of the parameter sets passed into the experiment, and should include DRY_REPS if verbose.
+    """
+    out, mngr = run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing1"],
+        print_params=True,
+        mngr=configured_test_manager,
+        log_debug=True,
+    )
+
+    stdout = capsys.readouterr().out
+    lines = stdout.split("\n")
+    last_param_set = mngr.param_file_param_sets["simple_cache"][0]
+    assert lines[7] == f"{last_param_set[1]} {last_param_set[0]}"
+
+    printed_param_set = json.loads("\n".join(lines[8:]))
+    assert "_DRY_REPS" in printed_param_set
 
 
 @pytest.mark.skip
@@ -647,5 +673,38 @@ def test_print_params_for_registry(
     assert lines[7] == f"{param_set.hash} {param_set.name}"
 
     printed_param_set = json.loads("\n".join(lines[8:]))
-    del printed_param_set["_DRY_REPS"]
+    # del printed_param_set["_DRY_REPS"]
+    assert "_DRY_REPS" not in printed_param_set
     assert printed_param_set == string_to_match
+
+
+@pytest.mark.skip
+def test_print_params_for_registry_verbose(
+    configured_test_manager, configured_test_manager2, capsys
+):
+    """Running experiment with print-params should just output the parameter set representation from the params_registry if a value was passed."""
+    with capsys.disabled():
+        out, mngr = run_experiment("basic", ["params1"], mngr=configured_test_manager2)
+    param_set = mngr.records[-1].params
+
+    # just get the first few letters of the query
+    hash_query = param_set.hash[:6]
+
+    # actual_params = params1.get_params()[0]
+    # string_to_match = param_set_string_hash_representations(actual_params)
+
+    out, mngr = run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing1"],
+        print_params=hash_query,
+        mngr=configured_test_manager,
+        log_debug=True,
+    )
+
+    stdout = capsys.readouterr().out
+    lines = stdout.split("\n")
+    assert lines[7] == f"{param_set.hash} {param_set.name}"
+
+    printed_param_set = json.loads("\n".join(lines[8:]))
+    assert "_DRY_REPS" in printed_param_set

@@ -19,6 +19,9 @@ from curifactory.notebook import write_experiment_notebook
 
 CONFIGURATION_FILE = "curifactory_config.json"
 
+# TODO: (12/06/2023) - log_debug is the --verbose flag,
+# we probably should make verbose be a thing on the manager?
+
 
 def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at some point
     experiment_name,
@@ -414,12 +417,13 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     if print_params:
 
         def display_parameters(param_set):
-            print(param_set.hash, param_set.name)
-            print(
-                json.dumps(
-                    hashing.param_set_string_hash_representations(param_set), indent=4
+            params_dictionary = hashing.param_set_string_hash_representations(param_set)
+            if log_debug:
+                params_dictionary["_DRY_REPS"] = hashing.get_param_set_hash_values(
+                    param_set
                 )
-            )
+            print(param_set.hash, param_set.name)
+            print(json.dumps(params_dictionary, indent=4))
 
         if type(print_params) == str:
             # check names in final_param_sets
@@ -441,6 +445,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                 for param_hash in registry:
                     if param_hash.startswith(print_params):
                         param_set = registry[param_hash]
+                        if not log_debug:
+                            del param_set["_DRY_REPS"]
                         print(param_hash, param_set["name"])
                         print(json.dumps(param_set, indent=4))
                         found = True
