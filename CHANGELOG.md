@@ -5,6 +5,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.17.1] - 2023-12-07
+
+### Added
+* Link to the output log in generated reports.
+
+### Changed
+* `--print-params` output is now conditioned on `--verbose`: whether specifying
+  a hash directly or the flag by itself, the `_DRY_REPS` will be included when
+  `--verbose` is specified and removed when not.
+
+### Fixed
+* Excessive "no run info" warnings from caching when running an experiment
+  notebook.
+* `run_experiment` not correctly handling a `param_files` of `None`
+
+
+
+
 ## [0.17.0] - 2023-11-16
 
 ### Added
