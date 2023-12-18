@@ -20,3 +20,4 @@ pyarrow>=7
 lxml
 openpyxl
 tables
+sqlalchemy
