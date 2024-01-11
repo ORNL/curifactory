@@ -14,6 +14,22 @@ class Experiment:
     name: str
 
     def __post_init__(self):
+        # default flow verison
+        for f in dataclasses.fields(self):
+            print(f)
+            field_attribute = getattr(self, f.name)
+            if isinstance(field_attribute, DefaultFlow):
+                print("Found a defaultflow")
+                setattr(self, f.name, field_attribute.run_flow(self))
+
+        # underscore artifact function def version
+        for f in dataclasses.fields(self):
+            if f.type is Artifact and getattr(self, f.name) is None:
+                if hasattr(self, f"_{f.name}"):
+                    print("Found assignment function for artifact, running...")
+                    setattr(self, f.name, getattr(self, f"_{f.name}")())
+
+        # explicit flow function
         self.flow()
 
     def flow(self):
@@ -269,6 +285,69 @@ class ModelTest3(Experiment):
         self.training.define(
             self.test.real_thing, self.test.act_t2, some_parameter=self.my_param
         )
+
+
+class DefaultFlow:
+    def __init__(self, flow):
+        self.flow = flow
+
+    def run_flow(self, container):
+        return self.flow(container)
+
+
+def default(func):
+    return field(default_factory=lambda: DefaultFlow(func))
+
+
+@dataclass
+class ModelTest4(Experiment):
+    test: DataTest
+    my_param: int = 6
+
+    model: Artifact = default(
+        lambda self: train_model(
+            self.test.real_thing, self.test.act_t2, self.my_param
+        ).final_model
+    )
+
+    # training: Stage = field(default_factory=lambda: train_model())
+
+    # model: Artifact = training.final_model
+
+
+@dataclass
+class ModelTest5(Experiment):
+    test: DataTest
+    my_param: int = 6
+
+    model: Artifact = None
+
+    def _model(self) -> Artifact:
+        return train_model(
+            self.test.real_thing, self.test.act_t2, self.my_param
+        ).final_model
+
+
+@dataclass
+class DataTest2(Experiment):
+    real_thing: Artifact = default(lambda self: this_is_thing().thing)
+
+    first_creation: Stage = default(lambda self: this_is_tuple(self.real_thing))
+
+    act_t1: Artifact = default(lambda self: self.first_creation.thing1)
+    act_t2: Artifact = default(lambda self: self.first_creation.thing2)
+
+
+@dataclass
+class ModelTest6(Experiment):
+    test: DataTest2
+    my_param: int = 6
+
+    training: Stage = default(
+        lambda self: train_model(self.test.real_thing, self.test.act_t2, self.my_param)
+    )
+
+    model: Artifact = default(lambda self: self.training.final_model)
 
 
 # @dataclass
