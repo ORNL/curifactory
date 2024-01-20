@@ -1,5 +1,6 @@
 import json
 import os
+import pickle
 
 from artifact import Artifact
 
@@ -36,4 +37,18 @@ class JsonCacher(Cacheable):
     def load(self):
         with open(self.get_path()) as infile:
             obj = json.load(infile)
+        return obj
+
+
+class PickleCacher(Cacheable):
+    def __init__(self, path_override: str = None):
+        super().__init__(path_override, ".pkl")
+
+    def save(self, obj):
+        with open(self.get_path(), "wb") as outfile:
+            pickle.dump(obj, outfile)
+
+    def load(self):
+        with open(self.get_path(), "rb") as infile:
+            obj = pickle.load(infile)
         return obj

@@ -1,5 +1,8 @@
-from experiment import Experiment
-from stage import Stage
+# from simplification.experiment import Experiment
+# from simplification.stage import Stage
+
+import experiment
+import stage
 
 
 class ArtifactManager:
@@ -42,14 +45,14 @@ class Artifact:
         self.hash_str = None
         self.hash_debug = None
 
-        self.compute: Stage = None
+        self.compute: stage.Stage = None
 
         # care needs to be taken when _using_ context, because the same artifact
         # can obviously be used from multiple experiments, meaning this always
         # probably reflects the _last_ experiment that was assigned this
         # artifact. So far context is only being used to compute a filter name,
         # which as a function shouldn't be used directly by the user anyway.
-        self.context: Experiment = None
+        self.context: experiment.Experiment = None
         self.context_name: str = None
 
     def compute_hash(self):

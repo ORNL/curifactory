@@ -4,7 +4,10 @@ from dataclasses import dataclass
 from functools import wraps
 from typing import Callable
 
-from artifact import Artifact
+# import simplification
+import artifact
+
+# import simplification.artifact
 
 
 @dataclass
@@ -19,7 +22,7 @@ class Stage:
     args: list
     kwargs: dict
 
-    outputs: list[Artifact]
+    outputs: list["artifact.Artifact"]
     hashing_functions: dict[str, callable] = None
     pass_self: bool = False
 
@@ -30,13 +33,13 @@ class Stage:
 
             # setattr(self, name, field(default=None))
             # TODO: there should probably be an artifact copy function
-            artifact = Artifact()
-            artifact.name = output.name
-            artifact.cacher = output.cacher
+            art = artifact.Artifact()
+            art.name = output.name
+            art.cacher = output.cacher
 
-            artifact.compute = self
-            setattr(self, output.name, artifact)
-            artifacts.append(artifact)
+            art.compute = self
+            setattr(self, output.name, art)
+            artifacts.append(art)
         self.outputs = artifacts
 
     def define(self, *args, **kwargs):
@@ -96,7 +99,7 @@ class Stage:
             return ("SKIPPED: value is None", None)
 
         # 3. if the parameter is an artifact, use its hash
-        if isinstance(param_value, Artifact):
+        if isinstance(param_value, artifact.Artifact):
             # TODO: artifact needs to track the hash_debug and re-include it here.
             param_value.compute_hash()
             return (
@@ -119,8 +122,8 @@ class Stage:
 
         # compute any inputs
         for arg in self.args:
-            print("\tType of arg", type(arg), isinstance(arg, Artifact))
-            if isinstance(arg, Artifact):
+            print("\tType of arg", type(arg), isinstance(arg, artifact.Artifact))
+            if isinstance(arg, artifact.Artifact):
                 if not arg.computed:
                     print("\t\tNot computed!")
                     arg.compute()
@@ -128,7 +131,7 @@ class Stage:
             else:
                 passed_args.append(arg)
         for kwarg in self.kwargs:
-            if isinstance(self.kwargs[kwarg], Artifact):
+            if isinstance(self.kwargs[kwarg], artifact.Artifact):
                 if not self.kwargs[kwarg].computed:
                     print("\t\tNot computed!")
                     self.kwargs[kwarg].compute()
@@ -144,14 +147,14 @@ class Stage:
         if len(self.outputs) < 1:
             return
         elif len(self.outputs) == 1:
-            artifact: Artifact = self.outputs[0]
-            artifact.computed = True
-            artifact.object = function_outputs
-            return artifact
+            art: "artifact.Artifact" = self.outputs[0]
+            art.computed = True
+            art.object = function_outputs
+            return art
         else:
-            for index, artifact in enumerate(self.outputs):
-                artifact.computed = True
-                artifact.object = function_outputs[index]
+            for index, art in enumerate(self.outputs):
+                art.computed = True
+                art.object = function_outputs[index]
             return self.outputs
 
     def __repr__(self):
@@ -160,7 +163,7 @@ class Stage:
 
 
 def stage(
-    outputs: list[Artifact],
+    outputs: list["artifact.Artifact"],
     hashing_functions: dict[str, callable] = None,
     pass_self: bool = False,
 ):

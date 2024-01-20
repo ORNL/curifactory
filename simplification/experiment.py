@@ -4,7 +4,7 @@ import inspect
 from dataclasses import dataclass, field, make_dataclass
 from typing import Any
 
-from artifact import Artifact, Artifacts
+import artifact
 
 
 @dataclass
@@ -14,14 +14,14 @@ class Experiment:
     context: "Experiment" = field(default=None, init=False, repr=False)
     context_name: str = field(default=None, init=False, repr=False)
 
-    outputs: list["Artifact"] = field(
+    outputs: list["artifact.Artifact"] = field(
         default_factory=lambda: [], init=False, repr=False
     )
 
     def __post_init__(self):
         self.outputs = self.define()
 
-    def define(self) -> list["Artifact"]:
+    def define(self) -> list["artifact.Artifact"]:
         pass
 
     # TODO: require new name to be passed?
@@ -31,9 +31,9 @@ class Experiment:
     def run(self):
         if isinstance(self.outputs, list):
             returns = []
-            for artifact in self.outputs:
+            for art in self.outputs:
                 # TODO: obviously will need to change once artifact has get()
-                returns.append(artifact.compute())
+                returns.append(art.compute())
         else:
             returns = self.outputs.compute()
         return returns
@@ -49,11 +49,11 @@ class Experiment:
         # 2. This won't handle lists of artifacts I don't think?
         # IDEA: this should probably be handled by a map() call instead that
         # searches for any sub objects of type Artifact/Experiment
-        if isinstance(value, Artifact):
+        if isinstance(value, artifact.Artifact):
             print(f"Setting context name of {value.name} to {name}")
             value.context = self
             value.context_name = name
-            Artifacts.artifacts[value.filter_name()] = value
+            artifact.Artifacts.artifacts[value.filter_name()] = value
         if isinstance(value, Experiment) and name != "context":
             print(f"Setting context name of {value.name} to {name}")
             value.context = self
@@ -61,9 +61,9 @@ class Experiment:
             # oooh I don't like this, better way?
             for item in dir(value):
                 value_attr = getattr(value, item)
-                if isinstance(value_attr, Artifact):
+                if isinstance(value_attr, artifact.Artifact):
                     print(f"Setting sub-experiment context name for {item}")
-                    Artifacts.artifacts[value_attr.filter_name()] = value_attr
+                    artifact.Artifacts.artifacts[value_attr.filter_name()] = value_attr
 
         super().__setattr__(name, value)
 
