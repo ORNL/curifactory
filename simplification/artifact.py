@@ -90,3 +90,43 @@ class Artifact:
     def from_metadata(metadata=None, path=None):
         # TODO
         pass
+
+    @staticmethod
+    def from_cacher(cacher):
+        # TODO: effectively allows specifying a raw file path as an artifact
+        # that you want as your initial "input"
+        pass
+
+    @staticmethod
+    def from_list(name, *artifacts):
+        # combined = _aggregate_artifact_list(*artifacts)
+        # combined.outputs[0].name = name
+        # # TODO: getattr(combined, name) will not return correct thing
+        # return combined.outputs[0]
+        return ArtifactList(name, *artifacts)
+
+
+# TODO: in order to avoid duplicating hashing logic, maybe this will still need
+# to use the aggregate_artifact_list stage, but it'll be set up better than the
+# from_list method above. And since this is a special type, it'll be easier to
+# filter out weird "aggregate_artifact_list" names in list of executed stages.
+# (making it almost an implicit stage)
+class ArtifactList(Artifact):  # , list):
+    def __init__(self, name: str = None, *artifacts):
+        super().__init__(name)
+        self.artifacts = [*artifacts]
+        self.compute = stage.Stage(
+            function=_aggregate_artifact_list,
+            args=self.artifacts,
+            kwargs=None,
+            outputs=[Artifact(name=self.name)],
+        )
+
+    def __repr__(self):
+        return f"ArtifactList('{self.name}', {repr(self.artifacts)})"
+
+
+# TODO: no I don't like this
+# @stage.stage([Artifact("combined")])
+def _aggregate_artifact_list(*input_artifacts):
+    return [*input_artifacts]

@@ -20,6 +20,7 @@ class Experiment:
 
     def __post_init__(self):
         self.outputs = self.define()
+        self.map()
 
     def define(self) -> list["artifact.Artifact"]:
         pass
@@ -27,6 +28,17 @@ class Experiment:
     # TODO: require new name to be passed?
     def modify(self, **modifications):
         return dataclasses.replace(self, **modifications)
+
+    def map(self):
+        """Assumes define() has already run."""
+        outputs = artifact.Artifact.from_list("outputs", self.outputs)
+        outputs.context = self
+        outputs.context_name = "outputs"
+        artifact.Artifacts.artifacts[outputs.filter_name()] = outputs
+        # for art in self.outputs:
+        #     # TODO: unclear if the context/context_name is the right approach
+        #     art.context = self
+        #     art.context_name = name
 
     def run(self):
         if isinstance(self.outputs, list):

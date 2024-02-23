@@ -159,7 +159,10 @@ def compare_sklearn_algs(
             train_model(train, model.model_type, model.n, seed, model.balanced).model
         )
 
-    scores = test_models([model.name for model in model_set], models, test).outputs
+    # scores = test_models([model.name for model in model_set], models, test).outputs
+    scores = test_models(
+        [model.name for model in model_set], Artifact.from_list("models", *models), test
+    ).outputs
 
     return scores, {"scores": scores, "models": models, "test_data": test}
 
