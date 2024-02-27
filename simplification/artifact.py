@@ -98,12 +98,12 @@ class Artifact:
         pass
 
     @staticmethod
-    def from_list(name, *artifacts):
+    def from_list(name, artifacts):
         # combined = _aggregate_artifact_list(*artifacts)
         # combined.outputs[0].name = name
         # # TODO: getattr(combined, name) will not return correct thing
         # return combined.outputs[0]
-        return ArtifactList(name, *artifacts)
+        return ArtifactList(name, artifacts)
 
 
 # TODO: in order to avoid duplicating hashing logic, maybe this will still need
@@ -112,18 +112,32 @@ class Artifact:
 # filter out weird "aggregate_artifact_list" names in list of executed stages.
 # (making it almost an implicit stage)
 class ArtifactList(Artifact):  # , list):
-    def __init__(self, name: str = None, *artifacts):
+    def __init__(self, name: str = None, artifacts=None):
         super().__init__(name)
-        self.artifacts = [*artifacts]
+        if artifacts is None:
+            artifacts = []
+        self.artifacts = artifacts
         self.compute = stage.Stage(
             function=_aggregate_artifact_list,
             args=self.artifacts,
-            kwargs=None,
+            kwargs={},
             outputs=[Artifact(name=self.name)],
         )
 
     def __repr__(self):
         return f"ArtifactList('{self.name}', {repr(self.artifacts)})"
+
+    def __getitem__(self, key):
+        return self.artifacts[key]
+
+    def __setitem__(self, key, item):
+        self.artifacts[key] = item
+
+    def __len__(self):
+        return len(self.artifacts)
+
+    def append(self, value):
+        self.artifacts.append(value)
 
 
 # TODO: no I don't like this

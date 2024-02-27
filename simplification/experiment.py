@@ -11,15 +11,22 @@ import artifact
 class Experiment:
     name: str
 
+    # NOTE: keep in mind context/context_mine are always changing based on
+    # whatever called it last, this needs to be recomputed whenever needed?
     context: "Experiment" = field(default=None, init=False, repr=False)
     context_name: str = field(default=None, init=False, repr=False)
 
-    outputs: list["artifact.Artifact"] = field(
-        default_factory=lambda: [], init=False, repr=False
+    outputs: "artifact.ArtifactList" = field(
+        default_factory=lambda: artifact.ArtifactList("outputs", []),
+        init=False,
+        repr=False,
     )
 
     def __post_init__(self):
-        self.outputs = self.define()
+        definition_outputs = self.define()
+        if not isinstance(definition_outputs, artifact.ArtifactList):
+            definition_outputs = artifact.ArtifactList("outputs", definition_outputs)
+        self.outputs = definition_outputs
         self.map()
 
     def define(self) -> list["artifact.Artifact"]:
@@ -31,7 +38,7 @@ class Experiment:
 
     def map(self):
         """Assumes define() has already run."""
-        outputs = artifact.Artifact.from_list("outputs", self.outputs)
+        outputs = self.outputs
         outputs.context = self
         outputs.context_name = "outputs"
         artifact.Artifacts.artifacts[outputs.filter_name()] = outputs

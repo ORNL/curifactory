@@ -114,6 +114,27 @@ class Stage:
         # 5. otherwise just use the default representation
         return (f"repr({param_name})", repr(param_value))
 
+    def _artifact_tree(self) -> dict[str, dict]:
+        """Recursive all the way down."""
+        tree = {}
+        # TODO: if two artifacts have the same name in an artifact list, they
+        # overwrite eachother in the tree dict. Will need to handle auto array
+        # logic for ArtifactLists? Or make everything be a list of dicts instead
+        for arg in self.args:
+            if isinstance(arg, artifact.Artifact):
+                tree[arg.name] = arg.compute._artifact_tree()
+        for kwarg in self.kwargs:
+            if isinstance(arg, artifact.Artifact):
+                tree[arg.name] = arg.compute._artifact_tree()
+
+        if len(tree.keys()) == 0:
+            return None
+        return tree
+
+    def _stage_list():
+        # TODO
+        pass
+
     def __call__(self):
         print("Executing stage for " + self.function.__name__)
 

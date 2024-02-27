@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Callable
 
-from artifact import Artifact, Artifacts
+from artifact import Artifact, ArtifactList, Artifacts
 from caching import PickleCacher
 from experiment import experiment
 from sklearn.base import ClassifierMixin
@@ -153,16 +153,13 @@ def compare_sklearn_algs(
 ):
     train, test = load_data(test_percent, seed).outputs
 
-    models = []
+    models = ArtifactList("models")
     for model in model_set:
         models.append(
             train_model(train, model.model_type, model.n, seed, model.balanced).model
         )
 
-    # scores = test_models([model.name for model in model_set], models, test).outputs
-    scores = test_models(
-        [model.name for model in model_set], Artifact.from_list("models", *models), test
-    ).outputs
+    scores = test_models([model.name for model in model_set], models, test).outputs
 
     return scores, {"scores": scores, "models": models, "test_data": test}
 
