@@ -151,15 +151,18 @@ class ModelParameters:
 def compare_sklearn_algs(
     model_set: list[ModelParameters], test_percent: float = 0.25, seed=1
 ):
-    train, test = load_data(test_percent, seed).outputs
+    # train, test = load_data(test_percent, seed).outputs
+    train, test = load_data(test_percent, seed)
 
     models = ArtifactList("models")
     for model in model_set:
         models.append(
-            train_model(train, model.model_type, model.n, seed, model.balanced).model
+            # train_model(train, model.model_type, model.n, seed, model.balanced).model
+            train_model(train, model.model_type, model.n, seed, model.balanced)
         )
 
-    scores = test_models([model.name for model in model_set], models, test).outputs
+    # scores = test_models([model.name for model in model_set], models, test).outputs
+    scores = test_models([model.name for model in model_set], models, test)
 
     return scores, {"scores": scores, "models": models, "test_data": test}
 

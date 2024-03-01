@@ -2,7 +2,7 @@ import hashlib
 import inspect
 from dataclasses import dataclass
 from functools import wraps
-from typing import Callable
+from typing import Callable, Union
 
 # import simplification
 import artifact
@@ -22,7 +22,7 @@ class Stage:
     args: list
     kwargs: dict
 
-    outputs: list["artifact.Artifact"]
+    outputs: Union[list["artifact.Artifact"], "artifact.Artifact"]
     hashing_functions: dict[str, callable] = None
     pass_self: bool = False
 
@@ -41,6 +41,11 @@ class Stage:
             setattr(self, output.name, art)
             artifacts.append(art)
         self.outputs = artifacts
+
+        # unclear if this is the way to go to handle more tuple like returns
+        # from experiment definitions when assigning stage outputs
+        if len(self.outputs) == 1:
+            self.outputs = self.outputs[0]
 
     def define(self, *args, **kwargs):
         # TODO: only necessary for modeltest2, prob not the best name
@@ -114,6 +119,11 @@ class Stage:
         # 5. otherwise just use the default representation
         return (f"repr({param_name})", repr(param_value))
 
+    def _combined_args(self) -> list:
+        """Put the kwargs into a list, this is mostly just to make it easier to scan
+        all inputs for artifacts."""
+        return self.args + list(self.kwargs.values())
+
     def _artifact_tree(self) -> dict[str, dict]:
         """Recursive all the way down."""
         tree = {}
@@ -124,7 +134,7 @@ class Stage:
             if isinstance(arg, artifact.Artifact):
                 tree[arg.name] = arg.compute._artifact_tree()
         for kwarg in self.kwargs:
-            if isinstance(arg, artifact.Artifact):
+            if isinstance(self.kwargs[kwarg], artifact.Artifact):
                 tree[arg.name] = arg.compute._artifact_tree()
 
         if len(tree.keys()) == 0:
@@ -146,8 +156,9 @@ class Stage:
             print("\tType of arg", type(arg), isinstance(arg, artifact.Artifact))
             if isinstance(arg, artifact.Artifact):
                 if not arg.computed:
-                    print("\t\tNot computed!")
+                    print("\t\t", arg.name, " not computed! ,", type(arg), arg)
                     arg.compute()
+                    print("\t\t\tOkay appending", arg.object)
                 passed_args.append(arg.object)
             else:
                 passed_args.append(arg)
@@ -165,18 +176,19 @@ class Stage:
 
         function_outputs = self.function(*passed_args, **passed_kwargs)
 
-        if len(self.outputs) < 1:
-            return
-        elif len(self.outputs) == 1:
-            art: "artifact.Artifact" = self.outputs[0]
+        if type(self.outputs) is list:
+            if len(self.outputs) < 1:
+                return
+            else:
+                for index, art in enumerate(self.outputs):
+                    art.computed = True
+                    art.object = function_outputs[index]
+                return self.outputs
+        else:
+            art: "artifact.Artifact" = self.outputs
             art.computed = True
             art.object = function_outputs
             return art
-        else:
-            for index, art in enumerate(self.outputs):
-                art.computed = True
-                art.object = function_outputs[index]
-            return self.outputs
 
     def __repr__(self):
         kws = [f"{key}={value!r}" for key, value in self.__dict__.items()]
@@ -191,7 +203,10 @@ def stage(
     def decorator(function):
         @wraps(function)
         def wrapper(*args, **kwargs):
-            return Stage(function, args, kwargs, outputs, hashing_functions, pass_self)
+            # return Stage(function, args, kwargs, outputs, hashing_functions, pass_self)
+            return Stage(
+                function, args, kwargs, outputs, hashing_functions, pass_self
+            ).outputs
 
         return wrapper
 

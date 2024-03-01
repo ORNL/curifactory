@@ -16,6 +16,8 @@ class Experiment:
     context: "Experiment" = field(default=None, init=False, repr=False)
     context_name: str = field(default=None, init=False, repr=False)
 
+    # TODO: maybe outputs should be redefined to output since that can mean both
+    # plural and singular (we auto-flatten in the @experiment dec)
     outputs: "artifact.ArtifactList" = field(
         default_factory=lambda: artifact.ArtifactList("outputs", []),
         init=False,
@@ -23,9 +25,14 @@ class Experiment:
     )
 
     def __post_init__(self):
+        self.artifacts = artifact.ArtifactManager()
         definition_outputs = self.define()
-        if not isinstance(definition_outputs, artifact.ArtifactList):
-            definition_outputs = artifact.ArtifactList("outputs", definition_outputs)
+        # TODO: I don't actually think outputs needs to be an artifact list
+        # TODO TODO we need to determine if there's more than one output, in
+        # which case yes make it an ArtifactList, but self.output should always
+        # be an artifact?
+        # if not isinstance(definition_outputs, artifact.ArtifactList) and :
+        #     definition_outputs = artifact.ArtifactList("outputs", definition_outputs)
         self.outputs = definition_outputs
         self.map()
 
@@ -38,10 +45,17 @@ class Experiment:
 
     def map(self):
         """Assumes define() has already run."""
-        outputs = self.outputs
-        outputs.context = self
-        outputs.context_name = "outputs"
-        artifact.Artifacts.artifacts[outputs.filter_name()] = outputs
+        pass
+        # for art in self.outputs:
+        #     self.artifacts.artifacts[art.name] = art
+        #
+        #     for arg in art.compute.
+
+        # TODO TODO TODO this is where we add to the local artifact manager
+        # outputs = self.outputs
+        # outputs.context = self
+        # outputs.context_name = "outputs"
+        # artifact.Artifacts.artifacts[outputs.filter_name()] = outputs
         # for art in self.outputs:
         #     # TODO: unclear if the context/context_name is the right approach
         #     art.context = self
@@ -149,6 +163,7 @@ def experiment(function):
 
         # search the outputs for any dictionaries, which we'll use to assign
         # artifact attributes to the dataclass
+        # TODO: with artifactmanager stuff I don't know that this is necessary
         experiment_outputs = []
         for output in outputs:
             if isinstance(output, dict):

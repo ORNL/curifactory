@@ -6,12 +6,16 @@ import stage
 
 
 class ArtifactManager:
+    # TODO: possibly needs a name?
     def __init__(self):
-        self.artifacts: dict[str, Artifact] = {}
+        self.artifacts: dict[str, Artifact | ArtifactManager] = {}
         pass
 
-    def __getitem__(self, item):
-        return self.artifacts[item]
+    def __getitem__(self, key):
+        return self.artifacts[key]
+
+    # def __setitem__(self, key, value):
+    #     pass
 
     def display(self):
         for key, value in self.artifacts.items():
@@ -75,8 +79,17 @@ class Artifact:
             string += f": {repr(self.object)}"
         return string
 
+    # def replace(self, artifact):
+    #     self.pointer = artifact
     def replace(self, artifact):
-        self.pointer = artifact
+        # TODO: replace all attributes of this artifact with the other one
+        # (prob also need a variable to directly point to the other one? That
+        # way if when compute/get is called on this one we can check if it
+        # already was or not and just return that)
+        pass
+
+    def artifact_tree(self):
+        return self.compute._artifact_tree()
 
     # TODO: make this _ function to indicate shouldn't be called outside of cf
     # code
