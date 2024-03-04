@@ -121,11 +121,17 @@ def train_model(training_data, model_type, n=100, seed: int = 13, balanced=False
     if balanced:
         model_args["class_weight"] = "balanced"
 
-    if type(model_type) == RandomForestClassifier:
+    if type(model_type) is RandomForestClassifier:
         model_args["n_estimators"] = n
 
     clf = model_type(**model_args).fit(training_data[0], training_data[1])
     return clf
+
+
+@stage([Artifact("score")])
+def test_model(model, testing_data):
+    score = model.score(testing_data[0], testing_data[1])
+    return score
 
 
 @stage([Artifact("scores")])
@@ -139,6 +145,49 @@ def test_models(names, models, testing_data):
     return scores
 
 
+@experiment
+def test_sklearn_alg(
+    model_type: Callable,
+    n: int = 100,
+    balanced: bool = False,
+    test_percent: float = 0.25,
+    seed: int = 1,
+):
+    train, test = load_data(test_percent, seed)
+    model = train_model(train, model_type, n, seed, balanced)
+    score = test_model(model, test)
+    return score
+
+
+simple_lr = test_sklearn_alg("simple_lr", LogisticRegression, balanced=True)
+simple_rf = test_sklearn_alg("simple_rf", RandomForestClassifier, seed=2)
+simple_lr_unbalanced = test_sklearn_alg(
+    "simple_lr_unbalanced", RandomForestClassifier, seed=3
+)
+
+
+@experiment
+def compare_algs(alg_experiments: list[test_sklearn_alg]):
+    # ensure they're all using the same data
+    # FOOTGUN
+    # Ahhh so the problem with this is the fact that this function is even
+    # defined and "run" below for compare_all's instantiation, this actively
+    # changes the artifacts in the sort of separate simple_lr, simple_rf,
+    # etc. definitions, which is probably surprising. I wouldn't want code
+    # inside later experiments to modify entirely other experiments.
+    for exp in alg_experiments[1:]:
+        exp.artifacts["data"].replace(alg_experiments[0].artifacts["data"])
+
+    score_list = ArtifactList(
+        "scores", [{exp.name: exp.outputs[0]} for exp in alg_experiments]
+    )
+    maximum = find_max(score_list)
+    return maximum
+
+
+compare_all = compare_algs("compare_all", [simple_lr, simple_rf, simple_lr_unbalanced])
+
+
 @dataclass
 class ModelParameters:
     name: str
@@ -147,6 +196,10 @@ class ModelParameters:
     balanced: bool = False
 
 
+# FOOTGUN
+# Might be tempting to make larger all encompassing experiments like
+# previous cf, where now it's probably better to split up each (what was
+# previously a record) into a different experiment...
 @experiment
 def compare_sklearn_algs(
     model_set: list[ModelParameters], test_percent: float = 0.25, seed=1
@@ -167,13 +220,50 @@ def compare_sklearn_algs(
     return scores, {"scores": scores, "models": models, "test_data": test}
 
 
-lr_vs_rf = compare_sklearn_algs(
-    "lr_vs_rf",
-    [
-        ModelParameters("simple_lr", balanced=True, model_type=LogisticRegression),
-        ModelParameters("simple_rf", model_type=RandomForestClassifier),
-    ],
-    seed=1,
-)
+#
+# lr_vs_rf = compare_sklearn_algs(
+#     "lr_vs_rf",
+#     [
+#         ModelParameters("simple_lr", balanced=True, model_type=LogisticRegression),
+#         ModelParameters("simple_rf", model_type=RandomForestClassifier),
+#     ],
+#     seed=1,
+# )
+#
+# lr_vs_rf_unbalanced = compare_sklearn_algs(
+#     "lr_vs_rf_unablanced",
+#     [
+#         ModelParameters(
+#             "simple_lr_unbalanced", balanced=False, model_type=LogisticRegression
+#         ),
+#         ModelParameters("simple_rf", model_type=RandomForestClassifier),
+#     ],
+#     seed=1,
+# )
 
 Artifacts.display()
+
+
+@stage([Artifact("max_score")])
+def find_max(scores: list[dict[str, float]]):
+    maximum_val = 0.0
+    maximum_name = None
+    for score in scores:
+        for model_name in score:
+            if score[model_name] > maximum_val:
+                maximum_val = score[model_name]
+                maximum_name = model_name
+    return {"name": maximum_name, "score": maximum_val}
+
+
+@experiment
+def analyze_experiments(comparison_experiments: list[compare_sklearn_algs]):
+    all_scores = ArtifactList(
+        "all_scores", [expr.scores for expr in comparison_experiments]
+    )
+    best_score = find_max(all_scores)
+
+    return best_score
+
+
+# which_is_best = analyze_experiments("comparison", [lr_vs_rf, lr_vs_rf_unbalanced])

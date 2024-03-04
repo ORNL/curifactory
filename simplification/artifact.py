@@ -86,7 +86,12 @@ class Artifact:
         # (prob also need a variable to directly point to the other one? That
         # way if when compute/get is called on this one we can check if it
         # already was or not and just return that)
-        pass
+        self.name = artifact.name
+        self.cacher = artifact.cacher
+        self.object = artifact.object
+        self.hash_str = artifact.hash_str
+        self.hash_debug = artifact.hash_debug
+        self.compute = artifact.compute
 
     def artifact_tree(self):
         return self.compute._artifact_tree()
@@ -136,6 +141,7 @@ class ArtifactList(Artifact):  # , list):
             kwargs={},
             outputs=[Artifact(name=self.name)],
         )
+        self.compute.outputs = self
 
     def __repr__(self):
         return f"ArtifactList('{self.name}', {repr(self.artifacts)})"

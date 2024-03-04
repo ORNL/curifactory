@@ -165,12 +165,15 @@ def experiment(function):
         # artifact attributes to the dataclass
         # TODO: with artifactmanager stuff I don't know that this is necessary
         experiment_outputs = []
-        for output in outputs:
-            if isinstance(output, dict):
-                for key, value in output.items():
-                    setattr(self, key, value)
-            else:
-                experiment_outputs.append(output)
+        if type(outputs) is tuple:
+            for output in outputs:
+                if isinstance(output, dict):
+                    for key, value in output.items():
+                        setattr(self, key, value)
+                else:
+                    experiment_outputs.append(output)
+        else:
+            experiment_outputs.append(outputs)
 
         # flatten if single object
         if len(experiment_outputs) == 1:
