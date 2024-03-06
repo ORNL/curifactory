@@ -71,40 +71,40 @@ class Experiment:
             returns = self.outputs.compute()
         return returns
 
-    def __setattr__(self, name: str, value):
-        # TODO: this has a lot of potential flaws,
-        # 1. I don't think we actually need a filter_name here, we should (in
-        # theory?) be able to get the full attribute access list maybe? I guess
-        # we can't get _this_ experiment's parents, so I suppose this works as
-        # long as we understand that context should really only be used for this
-        # exact thing, it's not a stable concept? (alternatively, it can be made
-        # more concrete during an actual experiment run())
-        # 2. This won't handle lists of artifacts I don't think?
-        # IDEA: this should probably be handled by a map() call instead that
-        # searches for any sub objects of type Artifact/Experiment
-        if isinstance(value, artifact.Artifact):
-            print(f"Setting context name of {value.name} to {name}")
-            value.context = self
-            value.context_name = name
-            artifact.Artifacts.artifacts[value.filter_name()] = value
-        if isinstance(value, Experiment) and name != "context":
-            print(f"Setting context name of {value.name} to {name}")
-            value.context = self
-            value.context_name = name
-            # oooh I don't like this, better way?
-            for item in dir(value):
-                value_attr = getattr(value, item)
-                if isinstance(value_attr, artifact.Artifact):
-                    print(f"Setting sub-experiment context name for {item}")
-                    artifact.Artifacts.artifacts[value_attr.filter_name()] = value_attr
-
-        super().__setattr__(name, value)
-
-    def filter_name(self) -> str:
-        if self.context is not None:
-            this_name = self.name if self.context_name is None else self.context_name
-            return f"{self.context.filter_name()}.{this_name}"
-        return self.name
+    # def __setattr__(self, name: str, value):
+    #     # TODO: this has a lot of potential flaws,
+    #     # 1. I don't think we actually need a filter_name here, we should (in
+    #     # theory?) be able to get the full attribute access list maybe? I guess
+    #     # we can't get _this_ experiment's parents, so I suppose this works as
+    #     # long as we understand that context should really only be used for this
+    #     # exact thing, it's not a stable concept? (alternatively, it can be made
+    #     # more concrete during an actual experiment run())
+    #     # 2. This won't handle lists of artifacts I don't think?
+    #     # IDEA: this should probably be handled by a map() call instead that
+    #     # searches for any sub objects of type Artifact/Experiment
+    #     if isinstance(value, artifact.Artifact):
+    #         print(f"Setting context name of {value.name} to {name}")
+    #         value.context = self
+    #         value.context_name = name
+    #         artifact.Artifacts.artifacts[value.filter_name()] = value
+    #     if isinstance(value, Experiment) and name != "context":
+    #         print(f"Setting context name of {value.name} to {name}")
+    #         value.context = self
+    #         value.context_name = name
+    #         # oooh I don't like this, better way?
+    #         for item in dir(value):
+    #             value_attr = getattr(value, item)
+    #             if isinstance(value_attr, artifact.Artifact):
+    #                 print(f"Setting sub-experiment context name for {item}")
+    #                 artifact.Artifacts.artifacts[value_attr.filter_name()] = value_attr
+    #
+    #     super().__setattr__(name, value)
+    #
+    # def filter_name(self) -> str:
+    #     if self.context is not None:
+    #         this_name = self.name if self.context_name is None else self.context_name
+    #         return f"{self.context.filter_name()}.{this_name}"
+    #     return self.name
 
 
 def experiment(function):

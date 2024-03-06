@@ -1,5 +1,6 @@
 # from simplification.experiment import Experiment
 # from simplification.stage import Stage
+import inspect
 
 import experiment
 import stage
@@ -57,7 +58,39 @@ class Artifact:
         # artifact. So far context is only being used to compute a filter name,
         # which as a function shouldn't be used directly by the user anyway.
         self.context: experiment.Experiment = None
-        self.context_name: str = None
+        # self.context_name: str = None
+
+        # print(inspect.getouterframes(inspect.currentframe())[1])
+        # print(inspect.stack()[2])
+        # TODO: perhaps a better way is to check each attribute for an
+        # ArtifactManager type instead of assuming it has to come from an
+        # experiment definition?
+        print("===========")
+        if name is not None:
+            print(name)
+        else:
+            print("?")
+
+        for frame in inspect.stack():
+            # print("---")
+            # print(frame)
+            # print(frame.function)
+            # print(frame.frame.f_locals.keys())
+            if (
+                "self" in frame.frame.f_locals.keys()
+            ):  # and hasattr(frame.frame.f_locals["self"], "artifacts"):
+                try:
+                    # print(frame.frame.f_locals["self"])
+                    if (
+                        hasattr(frame.frame.f_locals["self"], "artifacts")
+                        and type(frame.frame.f_locals["self"].artifacts)
+                        is ArtifactManager
+                    ):
+                        print("!!!! WE FOUND YOU.")
+                        self.context = frame.frame.f_locals["self"].artifacts
+                        break
+                except:
+                    pass
 
     def compute_hash(self):
         if self.compute is None:
@@ -98,11 +131,11 @@ class Artifact:
 
     # TODO: make this _ function to indicate shouldn't be called outside of cf
     # code
-    def filter_name(self) -> str:
-        if self.context is not None:
-            this_name = self.name if self.context_name is None else self.context_name
-            return f"{self.context.filter_name()}.{this_name}"
-        return self.name
+    # def filter_name(self) -> str:
+    #     if self.context is not None:
+    #         this_name = self.name if self.context_name is None else self.context_name
+    #         return f"{self.context.filter_name()}.{this_name}"
+    #     return self.name
 
     @staticmethod
     def from_metadata(metadata=None, path=None):
