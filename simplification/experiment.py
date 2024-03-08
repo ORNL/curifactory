@@ -46,6 +46,15 @@ class Experiment:
     def map(self):
         """Assumes define() has already run."""
         pass
+
+        for art in self.outputs:
+            # if there are any artifacts not from this artifact manager, make a
+            # copy that is
+            # if art.context is not None and != self.artifacts
+            if art.context != self.artifacts:
+
+                # TODO: make copy (recursive)
+
         # for art in self.outputs:
         #     self.artifacts.artifacts[art.name] = art
         #

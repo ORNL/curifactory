@@ -1,5 +1,6 @@
 # from simplification.experiment import Experiment
 # from simplification.stage import Stage
+import copy
 import inspect
 
 import experiment
@@ -57,7 +58,9 @@ class Artifact:
         # probably reflects the _last_ experiment that was assigned this
         # artifact. So far context is only being used to compute a filter name,
         # which as a function shouldn't be used directly by the user anyway.
-        self.context: experiment.Experiment = None
+        # self.context: experiment.Experiment = None
+        self.context: ArtifactManager = None
+        # self.original_context:
         # self.context_name: str = None
 
         # print(inspect.getouterframes(inspect.currentframe())[1])
@@ -125,6 +128,17 @@ class Artifact:
         self.hash_str = artifact.hash_str
         self.hash_debug = artifact.hash_debug
         self.compute = artifact.compute
+
+    def copy(self):
+        artifact = Artifact(self.name)
+        artifact.cacher = copy.deepcopy(self.cacher)
+        artifact.object = self.object
+        artifact.hash_str = self.hash_str
+        artifact.hash_debug = self.hash_debug
+        artifact.compute = self.compute
+        # TODO: ... so we need a new compute though, because the output artifact
+        # will now be wrong.
+        return artifact
 
     def artifact_tree(self):
         return self.compute._artifact_tree()

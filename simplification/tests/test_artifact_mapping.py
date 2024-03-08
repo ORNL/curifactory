@@ -8,7 +8,8 @@ Flatten where possible
 (artifact) should exist in that experiment's ArtifactManager."""
 
 
-"""An Artifact can only belong to one ArtifactManager?"""
+"""An Artifact can only belong to one ArtifactManager? Artifacts referenced
+through a different ArtifactManager must be a copy"""
 
 
 """Artifacts are only the same instance throughout a single outermost
