@@ -49,16 +49,13 @@ class Artifact:
 
         self.computed: bool = False
 
+        # TODO: these should probably be properties that just return the
+        # compute stage's hash str
         self.hash_str = None
         self.hash_debug = None
 
         self.compute: stage.Stage = None
 
-        # care needs to be taken when _using_ context, because the same artifact
-        # can obviously be used from multiple experiments, meaning this always
-        # probably reflects the _last_ experiment that was assigned this
-        # artifact. So far context is only being used to compute a filter name,
-        # which as a function shouldn't be used directly by the user anyway.
         self.context: experiment.Experiment = None
         # self.context: ArtifactManager = None
         # self.original_context:
@@ -69,36 +66,31 @@ class Artifact:
         # TODO: perhaps a better way is to check each attribute for an
         # ArtifactManager type instead of assuming it has to come from an
         # experiment definition?
-        print("===========")
-        if name is not None:
-            print("artifact:", name)
-        else:
-            print("?")
+        # print("===========")
+        # if name is not None:
+        #     print("artifact:", name)
+        # else:
+        #     print("?")
 
+        self.context = self._find_context()
+
+        # the reason I'm hesitant to explicitly track dependents is that someone
+        # could theoretically define a custom experiment dataclass and do weird
+        # things like set one of the artifacts as a class variable, which
+        # wouldn't be caught? Quite frankly that's such a ridiculous use case
+        # though, that I don't think that's realistically going to be an issue.
+        self.dependents: list[stage.Stage] = []
+        # self.pointer = None
+
+    def _find_context(self) -> experiment.Experiment:
+        # TODO: check if context is none first?
         for frame in inspect.stack():
-            # print("---")
-            # print(frame)
-            # print(frame.function)
-            # print(frame.frame.f_locals.keys())
-            if (
-                "self" in frame.frame.f_locals.keys()
-            ):  # and hasattr(frame.frame.f_locals["self"], "artifacts"):
-                # try:
-                # print(frame.frame.f_locals["self"])
-                print(type(frame.frame.f_locals["self"]))
-                if isinstance(frame.frame.f_locals["self"], experiment.Experiment):
-                    print("FOUND THE EXPERIMENT")
-                    self.context = frame.frame.f_locals["self"]
-                    # if (
-                    #     hasattr(frame.frame.f_locals["self"], "artifacts")
-                    #     and type(frame.frame.f_locals["self"].artifacts)
-                    #     is ArtifactManager
-                    # ):
-                    #     print("!!!! WE FOUND YOU.")
-                    #     self.context = frame.frame.f_locals["self"].artifacts
-                    break
-                # except:
-                #     pass
+            if "self" in frame.frame.f_locals.keys() and isinstance(
+                frame.frame.f_locals["self"], experiment.Experiment
+            ):
+                # print("FOUND THE EXPERIMENT")
+                return frame.frame.f_locals["self"]
+        return None
 
     def compute_hash(self):
         if self.compute is None:
@@ -123,16 +115,32 @@ class Artifact:
     # def replace(self, artifact):
     #     self.pointer = artifact
     def replace(self, artifact):
+        # TODO: TODO: TODO: TODO: here is where we would copy the incoming
+        # artifact if different context
+
         # TODO: replace all attributes of this artifact with the other one
         # (prob also need a variable to directly point to the other one? That
         # way if when compute/get is called on this one we can check if it
         # already was or not and just return that)
-        self.name = artifact.name
-        self.cacher = artifact.cacher
-        self.object = artifact.object
-        self.hash_str = artifact.hash_str
-        self.hash_debug = artifact.hash_debug
-        self.compute = artifact.compute
+        # self.name = artifact.name
+        # self.cacher = artifact.cacher
+        # self.object = artifact.object
+        # self.hash_str = artifact.hash_str
+        # self.hash_debug = artifact.hash_debug
+        # self.compute = artifact.compute
+        # self.pointer = artifact
+        for stage in self.dependents:
+            for i, arg in enumerate(stage.args):
+                if arg == self:
+                    stage.args[i] = artifact
+            for key in stage.kwargs:
+                if stage.kwargs[key] == self:
+                    stage.kwargs[key] = artifact
+            # if self in stage.args:
+            #     stage.args.rep
+
+        # when we replace an artifact, we only need to search _forward_ for
+        # stage args to replace.
 
     def copy(self):
         artifact = Artifact(self.name)
@@ -261,12 +269,14 @@ class ArtifactList(Artifact):  # , list):
 
     def __setitem__(self, key, item):
         self.artifacts[key] = item
+        self.compute._assign_dependents()
 
     def __len__(self):
         return len(self.artifacts)
 
     def append(self, value):
         self.artifacts.append(value)
+        self.compute._assign_dependents()
 
     # TODO: define iterator?
 

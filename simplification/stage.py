@@ -47,10 +47,29 @@ class Stage:
         if len(self.outputs) == 1:
             self.outputs = self.outputs[0]
 
-    def define(self, *args, **kwargs):
-        # TODO: only necessary for modeltest2, prob not the best name
-        self.args = args
-        self.kwargs = kwargs
+        self._assign_dependents()
+
+    def __setattr__(self, name, value):
+        super().__setattr__(name, value)
+        if name == "args" or name == "kwargs":
+            self._assign_dependents()
+
+    def _assign_dependents(self):
+        """Go through args and kwargs and for any artifacts, add this stage
+        to their dependents."""
+        # TODO: we obv don't want cross experiment/context dependents, so
+        # maybe we error if the input is from different context? Or maybe
+        # this is where we handle automatically creating a copy instead. (No
+        # actually I think that should get handled in replace in artifact?) Or
+        # maybe both.
+        for arg in self._combined_args():
+            if isinstance(arg, artifact.Artifact) and self not in arg.dependents:
+                arg.dependents.append(self)
+
+    # def define(self, *args, **kwargs):
+    #     # TODO: only necessary for modeltest2, prob not the best name
+    #     self.args = args
+    #     self.kwargs = kwargs
 
     def compute_hash(self) -> tuple[str, dict[str, str]]:
         parameter_names = list(inspect.signature(self.function).parameters.keys())
@@ -122,7 +141,10 @@ class Stage:
     def _combined_args(self) -> list:
         """Put the kwargs into a list, this is mostly just to make it easier to scan
         all inputs for artifacts."""
-        return list(self.args) + list(self.kwargs.values())
+        if hasattr(self, "kwargs"):
+            return list(self.args) + list(self.kwargs.values())
+        else:
+            return list(self.args)
 
     def _artifact_tree(self) -> dict[str, dict]:
         """Recursive all the way down."""
@@ -205,7 +227,7 @@ def stage(
         def wrapper(*args, **kwargs):
             # return Stage(function, args, kwargs, outputs, hashing_functions, pass_self)
             return Stage(
-                function, args, kwargs, outputs, hashing_functions, pass_self
+                function, list(args), kwargs, outputs, hashing_functions, pass_self
             ).outputs
 
         return wrapper

@@ -189,10 +189,15 @@ def compare_algs(alg_experiments: list[test_sklearn_alg]):
     # for exp in alg_experiments[1:]:
     #     exp.artifacts["data"].replace(alg_experiments[0].artifacts["data"])
 
+    actual_training_data = (
+        alg_experiments[0].outputs.dependencies()[0].dependencies()[0]
+    )
     actual_testing_data = alg_experiments[0].outputs.dependencies()[1]
     # TODO: ah, this doesn't actually work yet because replace doesn't modify
     # compute stage ins/outs?
     for exp in alg_experiments[1:]:
+        exp.outputs.dependencies()[0].dependencies()[0].replace(actual_training_data)
+        # exp.outputs.dependencies()[0].replace(actual_training_data)
         exp.outputs.dependencies()[1].replace(actual_testing_data)
 
     score_list = ArtifactList("scores", [exp.outputs for exp in alg_experiments])
