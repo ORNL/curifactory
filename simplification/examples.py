@@ -166,6 +166,17 @@ simple_lr_unbalanced = test_sklearn_alg(
 )
 
 
+@stage([Artifact("max_score")])
+def find_max_of_scores(names: list[str], scores: list[float]):
+    maximum_val = 0.0
+    maximum_name = None
+    for i, score in enumerate(scores):
+        if score > maximum_val:
+            maximum_val = score
+            maximum_name = names[i]
+    return {"name": maximum_name, "score": maximum_val}
+
+
 @experiment
 def compare_algs(alg_experiments: list[test_sklearn_alg]):
     # ensure they're all using the same data
@@ -175,13 +186,17 @@ def compare_algs(alg_experiments: list[test_sklearn_alg]):
     # changes the artifacts in the sort of separate simple_lr, simple_rf,
     # etc. definitions, which is probably surprising. I wouldn't want code
     # inside later experiments to modify entirely other experiments.
-    for exp in alg_experiments[1:]:
-        exp.artifacts["data"].replace(alg_experiments[0].artifacts["data"])
+    # for exp in alg_experiments[1:]:
+    #     exp.artifacts["data"].replace(alg_experiments[0].artifacts["data"])
 
-    score_list = ArtifactList(
-        "scores", [{exp.name: exp.outputs[0]} for exp in alg_experiments]
-    )
-    maximum = find_max(score_list)
+    actual_testing_data = alg_experiments[0].outputs.dependencies()[1]
+    # TODO: ah, this doesn't actually work yet because replace doesn't modify
+    # compute stage ins/outs?
+    for exp in alg_experiments[1:]:
+        exp.outputs.dependencies()[1].replace(actual_testing_data)
+
+    score_list = ArtifactList("scores", [exp.outputs for exp in alg_experiments])
+    maximum = find_max_of_scores([exp.name for exp in alg_experiments], score_list)
     return maximum
 
 

@@ -5,6 +5,7 @@ import inspect
 
 import experiment
 import stage
+from graphviz import Digraph, Graph
 
 
 class ArtifactManager:
@@ -58,8 +59,8 @@ class Artifact:
         # probably reflects the _last_ experiment that was assigned this
         # artifact. So far context is only being used to compute a filter name,
         # which as a function shouldn't be used directly by the user anyway.
-        # self.context: experiment.Experiment = None
-        self.context: ArtifactManager = None
+        self.context: experiment.Experiment = None
+        # self.context: ArtifactManager = None
         # self.original_context:
         # self.context_name: str = None
 
@@ -70,7 +71,7 @@ class Artifact:
         # experiment definition?
         print("===========")
         if name is not None:
-            print(name)
+            print("artifact:", name)
         else:
             print("?")
 
@@ -82,18 +83,22 @@ class Artifact:
             if (
                 "self" in frame.frame.f_locals.keys()
             ):  # and hasattr(frame.frame.f_locals["self"], "artifacts"):
-                try:
-                    # print(frame.frame.f_locals["self"])
-                    if (
-                        hasattr(frame.frame.f_locals["self"], "artifacts")
-                        and type(frame.frame.f_locals["self"].artifacts)
-                        is ArtifactManager
-                    ):
-                        print("!!!! WE FOUND YOU.")
-                        self.context = frame.frame.f_locals["self"].artifacts
-                        break
-                except:
-                    pass
+                # try:
+                # print(frame.frame.f_locals["self"])
+                print(type(frame.frame.f_locals["self"]))
+                if isinstance(frame.frame.f_locals["self"], experiment.Experiment):
+                    print("FOUND THE EXPERIMENT")
+                    self.context = frame.frame.f_locals["self"]
+                    # if (
+                    #     hasattr(frame.frame.f_locals["self"], "artifacts")
+                    #     and type(frame.frame.f_locals["self"].artifacts)
+                    #     is ArtifactManager
+                    # ):
+                    #     print("!!!! WE FOUND YOU.")
+                    #     self.context = frame.frame.f_locals["self"].artifacts
+                    break
+                # except:
+                #     pass
 
     def compute_hash(self):
         if self.compute is None:
@@ -143,6 +148,44 @@ class Artifact:
     def artifact_tree(self):
         return self.compute._artifact_tree()
 
+    def dependencies(self) -> list["Artifact"]:
+        """Gets any input artifacts from the compute stage."""
+        artifact_dependencies = []
+        for arg in self.compute._combined_args():
+            if isinstance(arg, Artifact):
+                artifact_dependencies.append(arg)
+        return artifact_dependencies
+
+    def artifact_list(self, building_list: list = None):
+        if building_list is None:
+            building_list = []
+        building_list.append(self)
+
+        for arg in self.compute._combined_args():
+            if isinstance(arg, Artifact) and arg not in building_list:
+                building_list = arg.artifact_list(building_list)
+                # building_list.append(arg)
+            # if isinstance(arg, ArtifactList):
+            #     for list_artifact in arg.artifacts:
+            #         print(list_artifact)
+            #         building_list = list_artifact.artifact_list(building_list)
+
+        return building_list
+
+    def artifact_list_debug(self):
+        artifacts = self.artifact_list()
+        for artifact in artifacts:
+            artifact.compute_hash()
+            print("----")
+            print(
+                artifact.name,
+                "-",
+                artifact.compute.function.__name__,
+                "-",
+                artifact.hash_str,
+            )
+            print(artifact.hash_debug)
+
     # TODO: make this _ function to indicate shouldn't be called outside of cf
     # code
     # def filter_name(self) -> str:
@@ -169,6 +212,26 @@ class Artifact:
         # # TODO: getattr(combined, name) will not return correct thing
         # return combined.outputs[0]
         return ArtifactList(name, artifacts)
+
+    def _node(self, dot):
+        self.compute_hash()
+        dot.node(name=str(id(self)), label=str(self.name + "\n" + self.hash_str[:6]))
+
+    def _visualize(self, dot=None):
+        if dot is None:
+            dot = Digraph()
+
+        self._inner_visualize(dot)
+        return dot
+
+    def _inner_visualize(self, g):
+        self._node(g)
+
+        for dependency in self.dependencies():
+            g.edge(str(id(dependency)), str(id(self)))
+            g = dependency._visualize(g)
+
+        return g
 
 
 # TODO: in order to avoid duplicating hashing logic, maybe this will still need
@@ -204,6 +267,8 @@ class ArtifactList(Artifact):  # , list):
 
     def append(self, value):
         self.artifacts.append(value)
+
+    # TODO: define iterator?
 
 
 # TODO: no I don't like this

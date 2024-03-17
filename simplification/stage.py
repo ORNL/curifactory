@@ -122,7 +122,7 @@ class Stage:
     def _combined_args(self) -> list:
         """Put the kwargs into a list, this is mostly just to make it easier to scan
         all inputs for artifacts."""
-        return self.args + list(self.kwargs.values())
+        return list(self.args) + list(self.kwargs.values())
 
     def _artifact_tree(self) -> dict[str, dict]:
         """Recursive all the way down."""
