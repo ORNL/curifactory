@@ -10,6 +10,8 @@ import artifact
 @dataclass
 class Experiment:
     name: str
+    artifacts: "artifact.ArtifactManager" = field(default_factory=lambda: artifact.ArtifactManager(), init=False, repr=False)
+
 
     # NOTE: keep in mind context/context_mine are always changing based on
     # whatever called it last, this needs to be recomputed whenever needed?
@@ -25,7 +27,7 @@ class Experiment:
     )
 
     def __post_init__(self):
-        self.artifacts = artifact.ArtifactManager()
+        # self.artifacts = artifact.ArtifactManager()
         definition_outputs = self.define()
         # TODO: I don't actually think outputs needs to be an artifact list
         # TODO TODO we need to determine if there's more than one output, in
@@ -80,6 +82,11 @@ class Experiment:
         else:
             returns = self.outputs.compute()
         return returns
+
+    # TODO: (3/17/2024) override setattr and essentially make the fields frozen
+    # - if you try to modify an experiment parameter, that won't necessarily
+    # auto apply to the stages it's used in because we have no direct way of
+    # knowing which stages it was used in.
 
     # def __setattr__(self, name: str, value):
     #     # TODO: this has a lot of potential flaws,

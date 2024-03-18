@@ -5,14 +5,15 @@ import inspect
 
 import experiment
 import stage
-from graphviz import Digraph, Graph
+from graphviz import Digraph
 
 
 class ArtifactManager:
     # TODO: possibly needs a name?
     def __init__(self):
-        self.artifacts: dict[str, Artifact | ArtifactManager] = {}
-        pass
+        # self.artifacts: dict[str, Artifact | ArtifactManager] = {}
+        # pass
+        self.artifacts: list[Artifact] = []
 
     def __getitem__(self, key):
         return self.artifacts[key]
@@ -21,10 +22,8 @@ class ArtifactManager:
     #     pass
 
     def display(self):
-        for key, value in self.artifacts.items():
-            print(
-                key.ljust(20), ":", repr(value).ljust(50), ":", str(id(value)).ljust(30)
-            )
+        for artifact in self.artifacts:
+            print(artifact)
 
 
 Artifacts = ArtifactManager()  # TODO: set up as part of global config?
@@ -61,24 +60,18 @@ class Artifact:
         # self.original_context:
         # self.context_name: str = None
 
-        # print(inspect.getouterframes(inspect.currentframe())[1])
-        # print(inspect.stack()[2])
-        # TODO: perhaps a better way is to check each attribute for an
-        # ArtifactManager type instead of assuming it has to come from an
-        # experiment definition?
-        # print("===========")
-        # if name is not None:
-        #     print("artifact:", name)
-        # else:
-        #     print("?")
 
         self.context = self._find_context()
+        self._add_to_context()
 
         # the reason I'm hesitant to explicitly track dependents is that someone
         # could theoretically define a custom experiment dataclass and do weird
         # things like set one of the artifacts as a class variable, which
         # wouldn't be caught? Quite frankly that's such a ridiculous use case
         # though, that I don't think that's realistically going to be an issue.
+        # TODO: the better way to do this once artifacts are auto-added to the
+        # context's artifactmanager might be to just check args of compute stage 
+        # of every artifact in the manager
         self.dependents: list[stage.Stage] = []
         # self.pointer = None
 
@@ -91,6 +84,13 @@ class Artifact:
                 # print("FOUND THE EXPERIMENT")
                 return frame.frame.f_locals["self"]
         return None
+
+    def _add_to_context(self):
+        """Add this artifact to the context experiment's artifact manager."""
+        if self.context is None:
+            Artifacts.artifacts.append(self)
+        else:
+            self.context.artifacts.artifacts.append(self)
 
     def compute_hash(self):
         if self.compute is None:
@@ -138,6 +138,8 @@ class Artifact:
                     stage.kwargs[key] = artifact
             # if self in stage.args:
             #     stage.args.rep
+
+        # TODO: remove self from context
 
         # when we replace an artifact, we only need to search _forward_ for
         # stage args to replace.
