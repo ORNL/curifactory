@@ -189,23 +189,35 @@ def compare_algs(alg_experiments: list[test_sklearn_alg]):
     # for exp in alg_experiments[1:]:
     #     exp.artifacts["data"].replace(alg_experiments[0].artifacts["data"])
 
-    actual_training_data = (
-        alg_experiments[0].outputs.dependencies()[0].dependencies()[0]
-    )
-    actual_testing_data = alg_experiments[0].outputs.dependencies()[1]
-    # TODO: ah, this doesn't actually work yet because replace doesn't modify
-    # compute stage ins/outs?
-    for exp in alg_experiments[1:]:
-        exp.outputs.dependencies()[0].dependencies()[0].replace(actual_training_data)
-        # exp.outputs.dependencies()[0].replace(actual_training_data)
-        exp.outputs.dependencies()[1].replace(actual_testing_data)
+    score_list = ArtifactList("scores", [exp.outputs.copy() for exp in alg_experiments])
 
-    score_list = ArtifactList("scores", [exp.outputs for exp in alg_experiments])
+    actual_training_data = (
+        score_list[0].dependencies()[0].dependencies()[0]
+    )
+    actual_testing_data = score_list[0].dependencies()[1]
+
+    for score in score_list.artifacts[1:]:
+        score.dependencies()[0].dependencies()[0].replace(actual_training_data)
+        score.dependencies()[1].replace(actual_testing_data)
+
+    # actual_training_data = (
+    #     alg_experiments[0].outputs.dependencies()[0].dependencies()[0]
+    # )
+    # actual_testing_data = alg_experiments[0].outputs.dependencies()[1]
+    # # TODO: ah, this doesn't actually work yet because replace doesn't modify
+    # # compute stage ins/outs?
+    # for exp in alg_experiments[1:]:
+    #     exp.outputs.dependencies()[0].dependencies()[0].replace(actual_training_data)
+    #     # exp.outputs.dependencies()[0].replace(actual_training_data)
+    #     exp.outputs.dependencies()[1].replace(actual_testing_data)
+    #
+    # score_list = ArtifactList("scores", [exp.outputs for exp in alg_experiments])
     maximum = find_max_of_scores([exp.name for exp in alg_experiments], score_list)
     return maximum
 
 
 compare_all = compare_algs("compare_all", [simple_lr, simple_rf, simple_lr_unbalanced])
+
 
 
 @dataclass

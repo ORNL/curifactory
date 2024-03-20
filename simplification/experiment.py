@@ -49,6 +49,8 @@ class Experiment:
         """Assumes define() has already run."""
         return
 
+        # TODO: do any necessary collapsing of sufficiently equivalent artifacts
+
         for art in self.outputs:
             # if there are any artifacts not from this artifact manager, make a
             # copy that is

@@ -1,5 +1,6 @@
 import hashlib
 import inspect
+import copy
 from dataclasses import dataclass
 from functools import wraps
 from typing import Callable, Union
@@ -28,6 +29,10 @@ class Stage:
 
     def __post_init__(self):
         artifacts = []
+        if not isinstance(self.outputs, list):
+            # turn it into a list for now just for consistent handling, will be
+            # collapsed later
+            self.outputs = [self.outputs]
         for output in self.outputs:
             # TODO: throw error if output name isn't a valid python var name
 
@@ -70,6 +75,26 @@ class Stage:
     #     # TODO: only necessary for modeltest2, prob not the best name
     #     self.args = args
     #     self.kwargs = kwargs
+
+    def copy(self):
+        # TODO: I don't think this will preserve collapsed artifacts.
+        # new_stage = Stage(self.function, 
+        copied_args = []
+        for arg in self.args:
+            if isinstance(arg, artifact.Artifact):
+                copied_args.append(arg.copy())
+            else:
+                copied_args.append(copy.deepcopy(arg))
+        copied_kwargs = {}
+        for kw in self.kwargs:
+            arg = self.kwargs[kw]
+            if isinstance(arg, artifact.Artifact):
+                copied_kwargs[kw] = arg.copy()
+            else:
+                copied_kwargs[kw] = copy.deepcopy(arg)
+        
+        new_stage = Stage(self.function, copied_args, copied_kwargs, self.outputs, self.hashing_functions, self.pass_self)
+        return new_stage
 
     def compute_hash(self) -> tuple[str, dict[str, str]]:
         parameter_names = list(inspect.signature(self.function).parameters.keys())

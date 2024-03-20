@@ -2,6 +2,7 @@
 # from simplification.stage import Stage
 import copy
 import inspect
+import logging
 
 import experiment
 import stage
@@ -55,6 +56,9 @@ class Artifact:
 
         self.compute: stage.Stage = None
 
+        # previous context names means every time we copy an artifact into a
+        # new context, we assign the
+        self.previous_context_names: list[str] = []
         self.context: experiment.Experiment = None
         # self.context: ArtifactManager = None
         # self.original_context:
@@ -112,11 +116,27 @@ class Artifact:
             string += f": {repr(self.object)}"
         return string
 
+    @property
+    def context_name(self):
+        current = "None"
+        if self.context is not None:
+            current = self.context.name
+        if len(self.previous_context_names) > 0:
+            current += f" ({','.join(self.previous_context_names)})"
+        return current
+
     # def replace(self, artifact):
     #     self.pointer = artifact
     def replace(self, artifact):
-        # TODO: TODO: TODO: TODO: here is where we would copy the incoming
-        # artifact if different context
+        # TODO: check for differing contexts and warn as applicable
+        # hmm so this only makes sense if we know what the actual "current"
+        # context is, we don't want to replace another context's artifact
+        # without warning, but it would be quite fine to replace one of this
+        # context's artifact with one from another. I think we can just use
+        # _find_context again
+        current_context = self._find_context()
+        if current_context != self.context and current_context is not None and self.context is not None:
+            logging.warning("Context %s is replacing an artifact (%s) owned by a different context %s. Recommend using a .copy()", current_context.name, self.name, self.context.name)
 
         # TODO: replace all attributes of this artifact with the other one
         # (prob also need a variable to directly point to the other one? That
@@ -139,7 +159,7 @@ class Artifact:
             # if self in stage.args:
             #     stage.args.rep
 
-        # TODO: remove self from context
+        # TODO: remove self from context?
 
         # when we replace an artifact, we only need to search _forward_ for
         # stage args to replace.
@@ -150,9 +170,15 @@ class Artifact:
         artifact.object = self.object
         artifact.hash_str = self.hash_str
         artifact.hash_debug = self.hash_debug
-        artifact.compute = self.compute
+        artifact.compute = self.compute.copy()
+        artifact.compute.outputs = self
+        artifact.previous_context_names = [*self.previous_context_names]
         # TODO: ... so we need a new compute though, because the output artifact
         # will now be wrong.
+
+        # TODO: put current context name into previous contexts, then replace
+        # context?
+        artifact.previous_context_names.append(self.context.name)
         return artifact
 
     def artifact_tree(self):
@@ -225,7 +251,7 @@ class Artifact:
 
     def _node(self, dot):
         self.compute_hash()
-        dot.node(name=str(id(self)), label=str(self.name + "\n" + self.hash_str[:6]))
+        dot.node(name=str(id(self)), label=str(self.name + "\n" + self.context_name + "\n" + self.hash_str[:6]))
 
     def _visualize(self, dot=None):
         if dot is None:
