@@ -3,10 +3,31 @@
 import copy
 import inspect
 import logging
+from functools import partial
 
 import experiment
 import stage
 from graphviz import Digraph
+
+
+def pointer_based_property_getter(self, name):
+    if self.pointer is not None:
+        return getattr(self.pointer, name)
+    return getattr(self, f"_{name}")
+
+
+def pointer_based_property_setter(self, value, name):
+    if self.pointer is not None:
+        setattr(self.pointer, name, value)
+    else:
+        setattr(self, f"_{name}", value)
+
+
+def pointer_based_property(name):
+    return property(
+        partial(pointer_based_property_getter, name=name),
+        partial(pointer_based_property_setter, name=name),
+    )
 
 
 class ArtifactManager:
@@ -42,28 +63,42 @@ Artifacts = ArtifactManager()  # TODO: set up as part of global config?
 # TODO: is it possible to add our own type [] thing, so someone could say:
 # Artifact[pytorch.Module]
 class Artifact:
-    def __init__(self, name=None, cacher=None):
-        self.name = name
-        self.cacher = cacher
-        self.object = None
+    internal_id = pointer_based_property("internal_id")
+    name = pointer_based_property("name")
+    cacher = pointer_based_property("cacher")
+    obj = pointer_based_property("obj")
+    computed = pointer_based_property("computed")
+    compute = pointer_based_property("compute")
+    hash_str = pointer_based_property("hash_str")
+    hash_debug = pointer_based_property("hash_debug")
+    previous_context_names = pointer_based_property("previous_context_names")
+    context = pointer_based_property("context")
 
-        self.computed: bool = False
+    def __init__(self, name=None, cacher=None):
+        self.pointer = None
+
+        self._internal_id = id(self)
+
+        self._name = name
+        self._cacher = cacher
+        self._obj = None
+
+        self._computed: bool = False
 
         # TODO: these should probably be properties that just return the
         # compute stage's hash str
-        self.hash_str = None
-        self.hash_debug = None
+        self._hash_str = None
+        self._hash_debug = None
 
-        self.compute: stage.Stage = None
+        self._compute: stage.Stage = None
 
         # previous context names means every time we copy an artifact into a
         # new context, we assign the
-        self.previous_context_names: list[str] = []
-        self.context: experiment.Experiment = None
+        self._previous_context_names: list[str] = []
+        self._context: experiment.Experiment = None
         # self.context: ArtifactManager = None
         # self.original_context:
         # self.context_name: str = None
-
 
         self.context = self._find_context()
         self._add_to_context()
@@ -74,10 +109,12 @@ class Artifact:
         # wouldn't be caught? Quite frankly that's such a ridiculous use case
         # though, that I don't think that's realistically going to be an issue.
         # TODO: the better way to do this once artifacts are auto-added to the
-        # context's artifactmanager might be to just check args of compute stage 
+        # context's artifactmanager might be to just check args of compute stage
         # of every artifact in the manager
-        self.dependents: list[stage.Stage] = []
-        # self.pointer = None
+        # self.dependents: list[stage.Stage] = []
+
+    def __eq__(self, o):
+        return self.internal_id == o.internal_id
 
     def _find_context(self) -> experiment.Experiment:
         # TODO: check if context is none first?
@@ -113,7 +150,7 @@ class Artifact:
         # TODO: think through better set of things to show
         string = f"Artifact '{self.name}'"
         if self.computed:
-            string += f": {repr(self.object)}"
+            string += f": {repr(self.obj)}"
         return string
 
     @property
@@ -135,8 +172,17 @@ class Artifact:
         # context's artifact with one from another. I think we can just use
         # _find_context again
         current_context = self._find_context()
-        if current_context != self.context and current_context is not None and self.context is not None:
-            logging.warning("Context %s is replacing an artifact (%s) owned by a different context %s. Recommend using a .copy()", current_context.name, self.name, self.context.name)
+        if (
+            current_context != self.context
+            and current_context is not None
+            and self.context is not None
+        ):
+            logging.warning(
+                "Context %s is replacing an artifact (%s) owned by a different context %s. Recommend using a .copy()",
+                current_context.name,
+                self.name,
+                self.context.name,
+            )
 
         # TODO: replace all attributes of this artifact with the other one
         # (prob also need a variable to directly point to the other one? That
@@ -148,16 +194,16 @@ class Artifact:
         # self.hash_str = artifact.hash_str
         # self.hash_debug = artifact.hash_debug
         # self.compute = artifact.compute
-        # self.pointer = artifact
-        for stage in self.dependents:
-            for i, arg in enumerate(stage.args):
-                if arg == self:
-                    stage.args[i] = artifact
-            for key in stage.kwargs:
-                if stage.kwargs[key] == self:
-                    stage.kwargs[key] = artifact
-            # if self in stage.args:
-            #     stage.args.rep
+        self.pointer = artifact
+        # for stage in self.dependents:
+        #     for i, arg in enumerate(stage.args):
+        #         if arg == self:
+        #             stage.args[i] = artifact
+        #     for key in stage.kwargs:
+        #         if stage.kwargs[key] == self:
+        #             stage.kwargs[key] = artifact
+        # if self in stage.args:
+        #     stage.args.rep
 
         # TODO: remove self from context?
 
@@ -167,18 +213,20 @@ class Artifact:
     def copy(self):
         artifact = Artifact(self.name)
         artifact.cacher = copy.deepcopy(self.cacher)
-        artifact.object = self.object
+        artifact.obj = self.obj
         artifact.hash_str = self.hash_str
         artifact.hash_debug = self.hash_debug
-        artifact.compute = self.compute.copy()
-        artifact.compute.outputs = self
+        if self.compute is not None:
+            artifact.compute = self.compute.copy()  # TODO: still wrong I think
+            artifact.compute.outputs = self
         artifact.previous_context_names = [*self.previous_context_names]
         # TODO: ... so we need a new compute though, because the output artifact
         # will now be wrong.
 
         # TODO: put current context name into previous contexts, then replace
         # context?
-        artifact.previous_context_names.append(self.context.name)
+        if self.context is not None:
+            artifact.previous_context_names.append(self.context.name)
         return artifact
 
     def artifact_tree(self):
@@ -251,7 +299,10 @@ class Artifact:
 
     def _node(self, dot):
         self.compute_hash()
-        dot.node(name=str(id(self)), label=str(self.name + "\n" + self.context_name + "\n" + self.hash_str[:6]))
+        dot.node(
+            name=str(self.internal_id),
+            label=str(self.name + "\n" + self.context_name + "\n" + self.hash_str[:6]),
+        )
 
     def _visualize(self, dot=None):
         if dot is None:
@@ -264,7 +315,7 @@ class Artifact:
         self._node(g)
 
         for dependency in self.dependencies():
-            g.edge(str(id(dependency)), str(id(self)))
+            g.edge(str(dependency.internal_id), str(self.internal_id))
             g = dependency._visualize(g)
 
         return g

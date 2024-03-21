@@ -1,6 +1,6 @@
+import copy
 import hashlib
 import inspect
-import copy
 from dataclasses import dataclass
 from functools import wraps
 from typing import Callable, Union
@@ -52,24 +52,24 @@ class Stage:
         if len(self.outputs) == 1:
             self.outputs = self.outputs[0]
 
-        self._assign_dependents()
+        # self._assign_dependents()
 
     def __setattr__(self, name, value):
         super().__setattr__(name, value)
-        if name == "args" or name == "kwargs":
-            self._assign_dependents()
+        # if name == "args" or name == "kwargs":
+        #     self._assign_dependents()
 
-    def _assign_dependents(self):
-        """Go through args and kwargs and for any artifacts, add this stage
-        to their dependents."""
-        # TODO: we obv don't want cross experiment/context dependents, so
-        # maybe we error if the input is from different context? Or maybe
-        # this is where we handle automatically creating a copy instead. (No
-        # actually I think that should get handled in replace in artifact?) Or
-        # maybe both.
-        for arg in self._combined_args():
-            if isinstance(arg, artifact.Artifact) and self not in arg.dependents:
-                arg.dependents.append(self)
+    # def _assign_dependents(self):
+    #     """Go through args and kwargs and for any artifacts, add this stage
+    #     to their dependents."""
+    #     # TODO: we obv don't want cross experiment/context dependents, so
+    #     # maybe we error if the input is from different context? Or maybe
+    #     # this is where we handle automatically creating a copy instead. (No
+    #     # actually I think that should get handled in replace in artifact?) Or
+    #     # maybe both.
+    #     for arg in self._combined_args():
+    #         if isinstance(arg, artifact.Artifact) and self not in arg.dependents:
+    #             arg.dependents.append(self)
 
     # def define(self, *args, **kwargs):
     #     # TODO: only necessary for modeltest2, prob not the best name
@@ -78,7 +78,9 @@ class Stage:
 
     def copy(self):
         # TODO: I don't think this will preserve collapsed artifacts.
-        # new_stage = Stage(self.function, 
+        # new_stage = Stage(self.function,
+        # TODO: this also might create duplicate stages for stages that output
+        # multiple artifacts?
         copied_args = []
         for arg in self.args:
             if isinstance(arg, artifact.Artifact):
@@ -92,8 +94,15 @@ class Stage:
                 copied_kwargs[kw] = arg.copy()
             else:
                 copied_kwargs[kw] = copy.deepcopy(arg)
-        
-        new_stage = Stage(self.function, copied_args, copied_kwargs, self.outputs, self.hashing_functions, self.pass_self)
+
+        new_stage = Stage(
+            self.function,
+            copied_args,
+            copied_kwargs,
+            self.outputs,
+            self.hashing_functions,
+            self.pass_self,
+        )
         return new_stage
 
     def compute_hash(self) -> tuple[str, dict[str, str]]:
@@ -205,8 +214,8 @@ class Stage:
                 if not arg.computed:
                     print("\t\t", arg.name, " not computed! ,", type(arg), arg)
                     arg.compute()
-                    print("\t\t\tOkay appending", arg.object)
-                passed_args.append(arg.object)
+                    print("\t\t\tOkay appending", arg.obj)
+                passed_args.append(arg.obj)
             else:
                 passed_args.append(arg)
         for kwarg in self.kwargs:
@@ -214,7 +223,7 @@ class Stage:
                 if not self.kwargs[kwarg].computed:
                     print("\t\tNot computed!")
                     self.kwargs[kwarg].compute()
-                passed_kwargs[kwarg] = self.kwargs[kwarg].object
+                passed_kwargs[kwarg] = self.kwargs[kwarg].obj
             else:
                 passed_kwargs[kwarg] = self.kwargs[kwarg]
 
@@ -229,12 +238,12 @@ class Stage:
             else:
                 for index, art in enumerate(self.outputs):
                     art.computed = True
-                    art.object = function_outputs[index]
+                    art.obj = function_outputs[index]
                 return self.outputs
         else:
             art: "artifact.Artifact" = self.outputs
             art.computed = True
-            art.object = function_outputs
+            art.obj = function_outputs
             return art
 
     def __repr__(self):
