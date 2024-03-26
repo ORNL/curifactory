@@ -34,6 +34,10 @@ class Stage:
             # collapsed later
             self.outputs = [self.outputs]
         for output in self.outputs:
+            # TODO: after new artifact created below, probably need to remove
+            # output from its context's artifact manager? (since it was likely
+            # just the stage decorator artifact)
+
             # TODO: throw error if output name isn't a valid python var name
 
             # setattr(self, name, field(default=None))
@@ -43,7 +47,8 @@ class Stage:
             art.cacher = output.cacher
 
             art.compute = self
-            setattr(self, output.name, art)
+            if output.name is not None:
+                setattr(self, output.name, art)
             artifacts.append(art)
         self.outputs = artifacts
 
@@ -200,6 +205,10 @@ class Stage:
     def _stage_list():
         # TODO
         pass
+
+    @property
+    def name(self):
+        return self.function.__name__
 
     def __call__(self):
         print("Executing stage for " + self.function.__name__)

@@ -143,6 +143,7 @@ class Artifact:
         # pass a reference for this artifact to the cacher so it can access info
         # like the artifact name etc.
         if name == "cacher" and value is not None:
+            # TODO: unclear if this is now broken because of the pointer logic
             value.artifact = self
         super().__setattr__(name, value)
 
@@ -270,6 +271,28 @@ class Artifact:
             )
             print(artifact.hash_debug)
 
+    # def filter(self, artifact_name=None, context_name=None, stage_name=None) -> list["Artifact"]:
+    def filter(self, search_str: str) -> "ArtifactFilter":
+        results = []
+        for artifact in self.dependencies():
+            if (
+                artifact.name == search_str
+                or (
+                    artifact.context is not None and artifact.context.name == search_str
+                )
+                or (
+                    artifact.compute is not None and artifact.compute.name == search_str
+                )
+                or search_str in artifact.previous_context_names
+            ):
+                if artifact not in results:
+                    results.append(artifact)
+            sub_results = artifact.filter(search_str).artifacts
+            for result in sub_results:
+                if result not in results:
+                    results.append(result)
+        return ArtifactFilter(results, search_str)
+
     # TODO: make this _ function to indicate shouldn't be called outside of cf
     # code
     # def filter_name(self) -> str:
@@ -299,14 +322,21 @@ class Artifact:
 
     def _node(self, dot):
         self.compute_hash()
+        if self.name is not None:
+            str_name = str(
+                self.name + "\n" + self.context_name + "\n" + self.hash_str[:6]
+            )
+        else:
+            str_name = str("NONE\n" + self.context_name + "\n" + self.hash_str[:6])
         dot.node(
             name=str(self.internal_id),
-            label=str(self.name + "\n" + self.context_name + "\n" + self.hash_str[:6]),
+            label=str_name,
         )
 
     def _visualize(self, dot=None):
         if dot is None:
             dot = Digraph()
+            dot._edges = []
 
         self._inner_visualize(dot)
         return dot
@@ -315,10 +345,62 @@ class Artifact:
         self._node(g)
 
         for dependency in self.dependencies():
-            g.edge(str(dependency.internal_id), str(self.internal_id))
+            # don't add duplicate edges (can happen when visualizing from a
+            # filter)
+            if (str(dependency.internal_id), str(self.internal_id)) not in g._edges:
+                g.edge(str(dependency.internal_id), str(self.internal_id))
+                g._edges.append((str(dependency.internal_id), str(self.internal_id)))
             g = dependency._visualize(g)
 
         return g
+
+
+class ArtifactFilter:
+    def __init__(self, starting_artifacts=None, filter_string=""):
+        if starting_artifacts is None:
+            starting_artifacts = []
+        self.artifacts = starting_artifacts
+        self.filter_string = filter_string
+
+    def replace(self, artifact):
+        pass
+
+    def copy(self):
+        pass
+
+    # TODO: if the starting_artifacts is a single artifact, just call filter on
+    def filter(self, search_str: str) -> "ArtifactFilter":
+        results = []
+        for artifact in self.artifacts:
+            if (
+                artifact.name == search_str
+                or (
+                    artifact.context is not None and artifact.context.name == search_str
+                )
+                or (
+                    artifact.compute is not None and artifact.compute.name == search_str
+                )
+                or search_str in artifact.previous_context_names
+            ):
+                if artifact not in results:
+                    results.append(artifact)
+            sub_results = artifact.filter(search_str).artifacts
+            for result in sub_results:
+                if result not in results:
+                    results.append(result)
+        return ArtifactFilter(results, f"{self.filter_string}.{search_str}")
+
+    def _visualize(self):
+        dot = None
+        for artifact in self.artifacts:
+            dot = artifact._visualize(dot)
+        return dot
+
+    def resolve(self) -> "Artifact":
+        if len(self.artifacts) == 1:
+            return self.artifacts[0]
+        else:
+            return ArtifactList(artifacts=self.artifacts)
 
 
 # TODO: in order to avoid duplicating hashing logic, maybe this will still need

@@ -191,14 +191,16 @@ def compare_algs(alg_experiments: list[test_sklearn_alg]):
 
     score_list = ArtifactList("scores", [exp.outputs.copy() for exp in alg_experiments])
 
-    actual_training_data = (
-        score_list[0].dependencies()[0].dependencies()[0]
-    )
+    actual_training_data = score_list[0].dependencies()[0].dependencies()[0]
     actual_testing_data = score_list[0].dependencies()[1]
 
     for score in score_list.artifacts[1:]:
         score.dependencies()[0].dependencies()[0].replace(actual_training_data)
         score.dependencies()[1].replace(actual_testing_data)
+
+    # TODO: what I want to be able to do:
+    # score_list.training_data.replace(score_list.training_data[0])
+    # score_list.testing_data.replace(score_list.testing_data[0])
 
     # actual_training_data = (
     #     alg_experiments[0].outputs.dependencies()[0].dependencies()[0]
@@ -217,7 +219,6 @@ def compare_algs(alg_experiments: list[test_sklearn_alg]):
 
 
 compare_all = compare_algs("compare_all", [simple_lr, simple_rf, simple_lr_unbalanced])
-
 
 
 @dataclass
