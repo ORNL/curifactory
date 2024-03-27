@@ -10,8 +10,8 @@ import artifact
 @dataclass
 class Experiment:
     name: str
-    artifacts: "artifact.ArtifactManager" = field(default_factory=lambda: artifact.ArtifactManager(), init=False, repr=False)
-
+    # artifacts: "artifact.ArtifactManager" = field(default_factory=lambda: artifact.ArtifactManager(), init=False, repr=False)
+    # artifacts: "artifact.ArtifactFilter" = field(default_factory=lambda: artifact.ArtifactFilter(), init=False, repr=False)
 
     # NOTE: keep in mind context/context_mine are always changing based on
     # whatever called it last, this needs to be recomputed whenever needed?
@@ -37,6 +37,10 @@ class Experiment:
         #     definition_outputs = artifact.ArtifactList("outputs", definition_outputs)
         self.outputs = definition_outputs
         self.map()
+
+    @property
+    def artifacts(self):
+        return artifact.ArtifactFilter(self.outputs.artifact_list())
 
     def define(self) -> list["artifact.Artifact"]:
         pass

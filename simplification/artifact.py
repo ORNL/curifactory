@@ -126,12 +126,15 @@ class Artifact:
                 return frame.frame.f_locals["self"]
         return None
 
+    # TODO: if experiment.artifacts is just filter of outputs, we may not
+    # actually need this at all
     def _add_to_context(self):
         """Add this artifact to the context experiment's artifact manager."""
-        if self.context is None:
-            Artifacts.artifacts.append(self)
-        else:
-            self.context.artifacts.artifacts.append(self)
+        # if self.context is None:
+        #     Artifacts.artifacts.append(self)
+        # else:
+        #     self.context.artifacts.artifacts.append(self)
+        pass
 
     def compute_hash(self):
         if self.compute is None:
@@ -163,6 +166,10 @@ class Artifact:
             current += f" ({','.join(self.previous_context_names)})"
         return current
 
+    @property
+    def artifacts(self):
+        return ArtifactFilter(self.artifact_list())
+
     # def replace(self, artifact):
     #     self.pointer = artifact
     def replace(self, artifact):
@@ -172,6 +179,7 @@ class Artifact:
         # without warning, but it would be quite fine to replace one of this
         # context's artifact with one from another. I think we can just use
         # _find_context again
+
         current_context = self._find_context()
         if (
             current_context != self.context
@@ -184,6 +192,14 @@ class Artifact:
                 self.name,
                 self.context.name,
             )
+        # TODO: might be useful to track the frame/line/file that this
+        # replacement is called from, could help debugging if spit out in the
+        # logs
+
+        if artifact == self:
+            self.pointer = None
+            logging.warning("Replacing self with self")
+            return
 
         # TODO: replace all attributes of this artifact with the other one
         # (prob also need a variable to directly point to the other one? That
@@ -362,6 +378,11 @@ class ArtifactFilter:
         self.artifacts = starting_artifacts
         self.filter_string = filter_string
 
+    def __repr__(self):
+        # TODO: should probably add something to distinguish this from a true
+        # list
+        return repr(self.artifacts)
+
     def replace(self, artifact):
         pass
 
@@ -402,6 +423,22 @@ class ArtifactFilter:
         else:
             return ArtifactList(artifacts=self.artifacts)
 
+    def list(self):
+        """TODO: maybe this should return ArtifactList instead?"""
+        return self.artifacts
+
+    def __getattr__(self, name):
+        return self.filter(name)
+
+    def __getitem__(self, key):
+        return self.artifacts[key]
+
+    def __setitem__(self, key, item):
+        self.artifacts[key] = item
+
+    def __len__(self):
+        return len(self.artifacts)
+
 
 # TODO: in order to avoid duplicating hashing logic, maybe this will still need
 # to use the aggregate_artifact_list stage, but it'll be set up better than the
@@ -413,30 +450,30 @@ class ArtifactList(Artifact):  # , list):
         super().__init__(name)
         if artifacts is None:
             artifacts = []
-        self.artifacts = artifacts
+        self.inner_artifact_list = artifacts
         self.compute = stage.Stage(
             function=_aggregate_artifact_list,
-            args=self.artifacts,
+            args=self.inner_artifact_list,
             kwargs={},
             outputs=[Artifact(name=self.name)],
         )
         self.compute.outputs = self
 
     def __repr__(self):
-        return f"ArtifactList('{self.name}', {repr(self.artifacts)})"
+        return f"ArtifactList('{self.name}', {repr(self.inner_artifact_list)})"
 
     def __getitem__(self, key):
-        return self.artifacts[key]
+        return self.inner_artifact_list[key]
 
     def __setitem__(self, key, item):
-        self.artifacts[key] = item
+        self.inner_artifact_list[key] = item
         self.compute._assign_dependents()
 
     def __len__(self):
-        return len(self.artifacts)
+        return len(self.inner_artifact_list)
 
     def append(self, value):
-        self.artifacts.append(value)
+        self.inner_artifact_list.append(value)
         self.compute._assign_dependents()
 
     # TODO: define iterator?

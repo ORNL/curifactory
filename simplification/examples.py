@@ -191,12 +191,22 @@ def compare_algs(alg_experiments: list[test_sklearn_alg]):
 
     score_list = ArtifactList("scores", [exp.outputs.copy() for exp in alg_experiments])
 
-    actual_training_data = score_list[0].dependencies()[0].dependencies()[0]
-    actual_testing_data = score_list[0].dependencies()[1]
+    # actual_training_data = score_list[0].dependencies()[0].dependencies()[0]
+    # actual_testing_data = score_list[0].dependencies()[1]
 
-    for score in score_list.artifacts[1:]:
-        score.dependencies()[0].dependencies()[0].replace(actual_training_data)
-        score.dependencies()[1].replace(actual_testing_data)
+    actual_training_data = score_list.artifacts.training_data[0]
+    actual_testing_data = score_list.artifacts.testing_data[0]
+
+    print(score_list.artifacts)
+
+    # TODO: this is super weird though, should probably be better way of getting
+    # artifacts from an explicit artifact list?
+    for score in score_list.artifacts.score[1:]:
+        print(score.context.name, score.previous_context_names)
+        score.artifacts.training_data[0].replace(actual_training_data)
+        score.artifacts.testing_data[0].replace(actual_testing_data)
+        # score.dependencies()[0].dependencies()[0].replace(actual_training_data)
+    #     score.dependencies()[1].replace(actual_testing_data)
 
     # TODO: what I want to be able to do:
     # score_list.training_data.replace(score_list.training_data[0])
