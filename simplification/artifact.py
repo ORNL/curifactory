@@ -168,7 +168,9 @@ class Artifact:
 
     @property
     def artifacts(self):
-        return ArtifactFilter(self.artifact_list())
+        # TODO: not sure which of these is more correct
+        # return ArtifactFilter(self.artifact_list())
+        return ArtifactFilter([self])
 
     # def replace(self, artifact):
     #     self.pointer = artifact
@@ -227,24 +229,64 @@ class Artifact:
         # when we replace an artifact, we only need to search _forward_ for
         # stage args to replace.
 
-    def copy(self):
+    def _inner_copy(
+        self,
+        building_stages: dict[stage.Stage, stage.Stage] = None,
+        building_artifacts: dict["Artifact", "Artifact"] = None,
+    ):
+        if building_stages is None:
+            building_stages = {}
+        if building_artifacts is None:
+            building_artifacts = {}
+
+        if self.internal_id in building_artifacts.keys():
+            return building_artifacts[self.internal_id]
+
         artifact = Artifact(self.name)
+        building_artifacts[self.internal_id] = artifact
         artifact.cacher = copy.deepcopy(self.cacher)
         artifact.obj = self.obj
         artifact.hash_str = self.hash_str
         artifact.hash_debug = self.hash_debug
         if self.compute is not None:
-            artifact.compute = self.compute.copy()  # TODO: still wrong I think
-            artifact.compute.outputs = self
+            artifact.compute = self.compute._inner_copy(
+                building_stages, building_artifacts
+            )
+            if not isinstance(artifact.compute.outputs, list):
+                artifact.compute.outputs = artifact
+            else:
+                # if it's a list, this artifact was only one of multiple
+                # outputs, so search through and replace just the one with the
+                # same name
+                for index, output in enumerate(artifact.compute.outputs):
+                    # print("Changing multioutputs for stage", artifact.compute.name
+                    if output.name == self.name:
+                        artifact.compute.outputs[index] = artifact
         artifact.previous_context_names = [*self.previous_context_names]
-        # TODO: ... so we need a new compute though, because the output artifact
-        # will now be wrong.
 
-        # TODO: put current context name into previous contexts, then replace
-        # context?
         if self.context is not None:
             artifact.previous_context_names.append(self.context.name)
         return artifact
+
+    def copy(self):
+        return self._inner_copy(None, None)
+        # artifact = Artifact(self.name)
+        # artifact.cacher = copy.deepcopy(self.cacher)
+        # artifact.obj = self.obj
+        # artifact.hash_str = self.hash_str
+        # artifact.hash_debug = self.hash_debug
+        # if self.compute is not None:
+        #     artifact.compute = self.compute.copy()  # TODO: still wrong I think
+        #     artifact.compute.outputs = self
+        # artifact.previous_context_names = [*self.previous_context_names]
+        # # TODO: ... so we need a new compute though, because the output artifact
+        # # will now be wrong.
+        #
+        # # TODO: put current context name into previous contexts, then replace
+        # # context?
+        # if self.context is not None:
+        #     artifact.previous_context_names.append(self.context.name)
+        # return artifact
 
     def artifact_tree(self):
         return self.compute._artifact_tree()

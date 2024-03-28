@@ -81,22 +81,31 @@ class Stage:
     #     self.args = args
     #     self.kwargs = kwargs
 
-    def copy(self):
-        # TODO: I don't think this will preserve collapsed artifacts.
-        # new_stage = Stage(self.function,
-        # TODO: this also might create duplicate stages for stages that output
-        # multiple artifacts?
+    def _inner_copy(
+        self,
+        building_stages: dict["Stage", "Stage"] = None,
+        building_artifacts: dict["Artifact", "Artifact"] = None,
+    ) -> tuple["Stage", bool]:
+        """Returns the created (or prev) stage and whether it was indeed created or not."""
+        if building_stages is None:
+            building_stages = {}
+        if building_artifacts is None:
+            building_artifacts = {}
+
+        if id(self) in building_stages.keys():
+            return building_stages[id(self)]  # , False
+
         copied_args = []
         for arg in self.args:
             if isinstance(arg, artifact.Artifact):
-                copied_args.append(arg.copy())
+                copied_args.append(arg._inner_copy(building_stages, building_artifacts))
             else:
                 copied_args.append(copy.deepcopy(arg))
         copied_kwargs = {}
         for kw in self.kwargs:
             arg = self.kwargs[kw]
             if isinstance(arg, artifact.Artifact):
-                copied_kwargs[kw] = arg.copy()
+                copied_kwargs[kw] = arg._inner_copy(building_stages, building_artifacts)
             else:
                 copied_kwargs[kw] = copy.deepcopy(arg)
 
@@ -108,7 +117,38 @@ class Stage:
             self.hashing_functions,
             self.pass_self,
         )
-        return new_stage
+        building_stages[id(self)] = new_stage
+        return new_stage  # , True
+
+    def copy(self):
+        return self._inner_copy(None, None)
+        # TODO: I don't think this will preserve collapsed artifacts.
+        # new_stage = Stage(self.function,
+        # TODO: this also might create duplicate stages for stages that output
+        # multiple artifacts?
+        # copied_args = []
+        # for arg in self.args:
+        #     if isinstance(arg, artifact.Artifact):
+        #         copied_args.append(arg.copy())
+        #     else:
+        #         copied_args.append(copy.deepcopy(arg))
+        # copied_kwargs = {}
+        # for kw in self.kwargs:
+        #     arg = self.kwargs[kw]
+        #     if isinstance(arg, artifact.Artifact):
+        #         copied_kwargs[kw] = arg.copy()
+        #     else:
+        #         copied_kwargs[kw] = copy.deepcopy(arg)
+        #
+        # new_stage = Stage(
+        #     self.function,
+        #     copied_args,
+        #     copied_kwargs,
+        #     self.outputs,
+        #     self.hashing_functions,
+        #     self.pass_self,
+        # )
+        # return new_stage
 
     def compute_hash(self) -> tuple[str, dict[str, str]]:
         parameter_names = list(inspect.signature(self.function).parameters.keys())
@@ -211,7 +251,7 @@ class Stage:
         return self.function.__name__
 
     def __call__(self):
-        print("Executing stage for " + self.function.__name__)
+        print("Pre-execution phase for stage " + self.name)
 
         passed_args = []
         passed_kwargs = {}
@@ -221,9 +261,21 @@ class Stage:
             print("\tType of arg", type(arg), isinstance(arg, artifact.Artifact))
             if isinstance(arg, artifact.Artifact):
                 if not arg.computed:
-                    print("\t\t", arg.name, " not computed! ,", type(arg), arg)
+                    print(
+                        "\t\t",
+                        f"{self.name}:",
+                        arg.name,
+                        " not computed! ,",
+                        type(arg),
+                        arg,
+                    )
                     arg.compute()
-                    print("\t\t\tOkay appending", arg.obj)
+                    print(
+                        "\t\t\t",
+                        f"{self.name}, post {arg.compute.name}:",
+                        "Okay appending",
+                        arg.obj,
+                    )
                 passed_args.append(arg.obj)
             else:
                 passed_args.append(arg)
@@ -239,6 +291,7 @@ class Stage:
         if self.pass_self:
             passed_args.insert(0, self)
 
+        print("Execution phase for stage " + self.name)
         function_outputs = self.function(*passed_args, **passed_kwargs)
 
         if type(self.outputs) is list:

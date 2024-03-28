@@ -189,6 +189,12 @@ def compare_algs(alg_experiments: list[test_sklearn_alg]):
     # for exp in alg_experiments[1:]:
     #     exp.artifacts["data"].replace(alg_experiments[0].artifacts["data"])
 
+    # what I'd like to be able to do is
+    # score_list = [exp.artifacts.score.copy() for exp.alg_experiments]
+    # similarly, simple_lr.artifacts.score.copy() +
+    # simple_rf.artifacts.score.copy() should return a new artifactfilter, with
+    # filterstr {a}+{b} (literal + with the two filterstrings
+
     score_list = ArtifactList("scores", [exp.outputs.copy() for exp in alg_experiments])
 
     # actual_training_data = score_list[0].dependencies()[0].dependencies()[0]
