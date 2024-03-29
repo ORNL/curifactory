@@ -472,6 +472,9 @@ class ArtifactFilter:
     def __getattr__(self, name):
         return self.filter(name)
 
+    # TODO: setattr that detects if trying to assign to a filter and errors if
+    # so (tell to use .replace instead)
+
     def __getitem__(self, key):
         return self.artifacts[key]
 
