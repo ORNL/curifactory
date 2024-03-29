@@ -22,3 +22,5 @@ sphinx/diagrams/*.bkp
 paper/paper.jats
 paper/paper.pdf
 paper/media
+
+.virtual_documents/*

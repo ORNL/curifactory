@@ -425,11 +425,25 @@ class ArtifactFilter:
         # list
         return repr(self.artifacts)
 
-    def replace(self, artifact):
+    def replace(self, new_artifact):
+        # TODO: more complex logic for if self is list and artifact is list etc
+        for artifact in self.artifacts:
+            if artifact != new_artifact:
+                artifact.replace(new_artifact)
+
+    def _inner_copy():
         pass
 
     def copy(self):
-        pass
+        # ArtifactFilter()
+        copied_artifacts = []
+        building_artifacts = {}
+        building_stages = {}
+        for artifact in self.artifacts:
+            copied_artifacts.append(
+                artifact._inner_copy(building_stages, building_artifacts)
+            )
+        return ArtifactFilter(copied_artifacts)
 
     # TODO: if the starting_artifacts is a single artifact, just call filter on
     def filter(self, search_str: str) -> "ArtifactFilter":
@@ -512,14 +526,14 @@ class ArtifactList(Artifact):  # , list):
 
     def __setitem__(self, key, item):
         self.inner_artifact_list[key] = item
-        self.compute._assign_dependents()
+        # self.compute._assign_dependents()
 
     def __len__(self):
         return len(self.inner_artifact_list)
 
     def append(self, value):
         self.inner_artifact_list.append(value)
-        self.compute._assign_dependents()
+        # self.compute._assign_dependents()
 
     # TODO: define iterator?
 
