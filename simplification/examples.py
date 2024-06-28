@@ -145,6 +145,26 @@ def test_models(names, models, testing_data):
     return scores
 
 
+# @experiment
+# def test_sklearn_alg(
+#     model_type: Callable,
+#     n: int = 100,
+#     balanced: bool = False,
+#     test_percent: float = 0.25,
+#     seed: int = 1,
+# ):
+#     train, test = load_data(test_percent, seed)
+#     model = train_model(train, model_type, n, seed, balanced)
+#     score = test_model(model, test)
+#     return score
+
+
+# NOTE: (6/28/2024) I think I prefer this because it makes it more obvious it's
+# not directly running stage but giving you an object. Maybe makes it less
+# confusing? Specifically I think it's a better default than someone trying to
+# later change an attr on a stage and having to go some_artifact.compute.attr
+# since it looks weird if you're only doing that on one artifact for a stage
+# that returns multiple
 @experiment
 def test_sklearn_alg(
     model_type: Callable,
@@ -153,9 +173,9 @@ def test_sklearn_alg(
     test_percent: float = 0.25,
     seed: int = 1,
 ):
-    train, test = load_data(test_percent, seed)
-    model = train_model(train, model_type, n, seed, balanced)
-    score = test_model(model, test)
+    train, test = load_data(test_percent, seed).outputs
+    model = train_model(train, model_type, n, seed, balanced).outputs
+    score = test_model(model, test).outputs
     return score
 
 
@@ -249,70 +269,108 @@ class ModelParameters:
 # Might be tempting to make larger all encompassing experiments like
 # previous cf, where now it's probably better to split up each (what was
 # previously a record) into a different experiment...
-@experiment
-def compare_sklearn_algs(
-    model_set: list[ModelParameters], test_percent: float = 0.25, seed=1
-):
-    # train, test = load_data(test_percent, seed).outputs
-    train, test = load_data(test_percent, seed)
-
-    models = ArtifactList("models")
-    for model in model_set:
-        models.append(
-            # train_model(train, model.model_type, model.n, seed, model.balanced).model
-            train_model(train, model.model_type, model.n, seed, model.balanced)
-        )
-
-    # scores = test_models([model.name for model in model_set], models, test).outputs
-    scores = test_models([model.name for model in model_set], models, test)
-
-    return scores, {"scores": scores, "models": models, "test_data": test}
-
-
+# @experiment
+# def compare_sklearn_algs(
+#     model_set: list[ModelParameters], test_percent: float = 0.25, seed=1
+# ):
+#     # train, test = load_data(test_percent, seed).outputs
+#     train, test = load_data(test_percent, seed)
 #
-# lr_vs_rf = compare_sklearn_algs(
-#     "lr_vs_rf",
-#     [
-#         ModelParameters("simple_lr", balanced=True, model_type=LogisticRegression),
-#         ModelParameters("simple_rf", model_type=RandomForestClassifier),
-#     ],
-#     seed=1,
-# )
+#     models = ArtifactList("models")
+#     for model in model_set:
+#         models.append(
+#             # train_model(train, model.model_type, model.n, seed, model.balanced).model
+#             train_model(train, model.model_type, model.n, seed, model.balanced)
+#         )
 #
-# lr_vs_rf_unbalanced = compare_sklearn_algs(
-#     "lr_vs_rf_unablanced",
-#     [
-#         ModelParameters(
-#             "simple_lr_unbalanced", balanced=False, model_type=LogisticRegression
-#         ),
-#         ModelParameters("simple_rf", model_type=RandomForestClassifier),
-#     ],
-#     seed=1,
-# )
+#     # scores = test_models([model.name for model in model_set], models, test).outputs
+#     scores = test_models([model.name for model in model_set], models, test)
+#
+#     return scores, {"scores": scores, "models": models, "test_data": test}
+#
+#
+# #
+# # lr_vs_rf = compare_sklearn_algs(
+# #     "lr_vs_rf",
+# #     [
+# #         ModelParameters("simple_lr", balanced=True, model_type=LogisticRegression),
+# #         ModelParameters("simple_rf", model_type=RandomForestClassifier),
+# #     ],
+# #     seed=1,
+# # )
+# #
+# # lr_vs_rf_unbalanced = compare_sklearn_algs(
+# #     "lr_vs_rf_unablanced",
+# #     [
+# #         ModelParameters(
+# #             "simple_lr_unbalanced", balanced=False, model_type=LogisticRegression
+# #         ),
+# #         ModelParameters("simple_rf", model_type=RandomForestClassifier),
+# #     ],
+# #     seed=1,
+# # )
+#
+# Artifacts.display()
+#
+#
+# @stage([Artifact("max_score")])
+# def find_max(scores: list[dict[str, float]]):
+#     maximum_val = 0.0
+#     maximum_name = None
+#     for score in scores:
+#         for model_name in score:
+#             if score[model_name] > maximum_val:
+#                 maximum_val = score[model_name]
+#                 maximum_name = model_name
+#     return {"name": maximum_name, "score": maximum_val}
+#
+#
+# @experiment
+# def analyze_experiments(comparison_experiments: list[compare_sklearn_algs]):
+#     all_scores = ArtifactList(
+#         "all_scores", [expr.scores for expr in comparison_experiments]
+#     )
+#     best_score = find_max(all_scores)
+#
+#     return best_score
+#
+#
+# # which_is_best = analyze_experiments("comparison", [lr_vs_rf, lr_vs_rf_unbalanced])
+#
+#
+#
+#
 
-Artifacts.display()
-
-
-@stage([Artifact("max_score")])
-def find_max(scores: list[dict[str, float]]):
-    maximum_val = 0.0
-    maximum_name = None
-    for score in scores:
-        for model_name in score:
-            if score[model_name] > maximum_val:
-                maximum_val = score[model_name]
-                maximum_name = model_name
-    return {"name": maximum_name, "score": maximum_val}
-
-
-@experiment
-def analyze_experiments(comparison_experiments: list[compare_sklearn_algs]):
-    all_scores = ArtifactList(
-        "all_scores", [expr.scores for expr in comparison_experiments]
-    )
-    best_score = find_max(all_scores)
-
-    return best_score
-
-
-# which_is_best = analyze_experiments("comparison", [lr_vs_rf, lr_vs_rf_unbalanced])
+# NOTE: (6/28/2024) no don't do this, too convoluted, expect stages to return _something_
+#
+# @stage()
+# def experiment_setup():
+#     print("Setting up!")
+#
+#
+# # NOTE: maybe there's a stage arg that's "no_return" which returns the stage
+# # object itself rather than the outputs, then you can pass that as
+# # explicit dependencies (maybe have a pre and post)
+# @stage()
+# def experiment_teardown():
+#     print("Tearing down!")
+#
+#
+# @stage([Artifact("a")])
+# def get_thing_a():
+#     return 13
+#
+#
+# @experiment
+# def setup_and_teardown():
+#     setup = experiment_setup()
+#     teardown = experiment_teardown()
+#
+#     stage_thing_a = get_thing_a()
+#     # stage_thing_a.pre = [setup]
+#     # stage_thing_a.post = [teardown]
+#
+#     thing_a = stage_thing_a.outputs
+#     return thing_a
+#
+# basic_setup_and_teardown = setup_and_teardown()

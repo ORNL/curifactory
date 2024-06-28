@@ -15,6 +15,9 @@ class Experiment:
 
     # NOTE: keep in mind context/context_mine are always changing based on
     # whatever called it last, this needs to be recomputed whenever needed?
+    # TODO: (6/20/24) I think context and and context_name can be removed,
+    # context is determined through frame inspection in the artifacts themselves
+    # and I think that makes a lot more sense?
     context: "Experiment" = field(default=None, init=False, repr=False)
     context_name: str = field(default=None, init=False, repr=False)
 

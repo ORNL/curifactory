@@ -11,6 +11,10 @@ import artifact
 # import simplification.artifact
 
 
+class StageContext:
+
+
+
 @dataclass
 class Stage:
     """Essentially a fancy "partial" that assigns outputs to instance
@@ -26,6 +30,9 @@ class Stage:
     outputs: Union[list["artifact.Artifact"], "artifact.Artifact"]
     hashing_functions: dict[str, callable] = None
     pass_self: bool = False
+
+    # TODO: (6/28/2024) have a bool for whether this has instance has run yet or
+    # not (might be necessary for a PreStage context manager)
 
     def __post_init__(self):
         artifacts = []
@@ -258,6 +265,11 @@ class Stage:
 
         # compute any inputs
         for arg in self.args:
+            # if a stage was passed in instead of an artifact, quite possible
+            # user forgot a .outputs, so warn
+            if isinstance(arg, Stage):
+                print(f"WARNING: Stage argument passed into {self.name}, is there a missing .outputs?")
+
             print("\tType of arg", type(arg), isinstance(arg, artifact.Artifact))
             if isinstance(arg, artifact.Artifact):
                 if not arg.computed:
@@ -322,9 +334,8 @@ def stage(
         @wraps(function)
         def wrapper(*args, **kwargs):
             # return Stage(function, args, kwargs, outputs, hashing_functions, pass_self)
-            return Stage(
-                function, list(args), kwargs, outputs, hashing_functions, pass_self
-            ).outputs
+            stage_obj = Stage(function, list(args), kwargs, outputs, hashing_functions, pass_self)
+            return stage_obj
 
         return wrapper
 
