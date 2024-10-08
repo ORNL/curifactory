@@ -191,3 +191,20 @@ def test_log_copied_to_report(configured_test_manager):
     assert os.path.exists(
         f"{configured_test_manager.get_run_output_path()}/report/log.txt"
     )
+
+
+def test_image_reporter_persists_after_original_deletion(configured_test_manager):
+    """The ImageReporter should still display the image in a report for a re-run
+    experiment, even if the original image was deleted."""
+
+    run_experiment("image_reporter", ["image_reporter"], mngr=configured_test_manager)
+    assert os.path.exists(
+        f"{configured_test_manager.reports_path}/{configured_test_manager.get_reference_name()}/reportables/test_save_manual_image_0.png"
+    )
+
+    os.remove("testing.png")
+
+    run_experiment("image_reporter", ["image_reporter"], mngr=configured_test_manager)
+    assert os.path.exists(
+        f"{configured_test_manager.reports_path}/{configured_test_manager.get_reference_name()}/reportables/test_save_manual_image_0.png"
+    )

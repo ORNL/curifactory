@@ -276,6 +276,7 @@ class ImageReporter(Reportable):
             self.copied = True
 
         new_path = f"{self.path}/{self.qualified_name}{extension}"
+        # shutil.copyfile(self.image_path, self.cache_path)
         shutil.copyfile(self.cache_path, new_path)
 
     def html(self) -> str:

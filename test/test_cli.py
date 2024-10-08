@@ -10,7 +10,7 @@ def test_experiments_completer():
     """The experiments autocomplete function should return the correct set of
     experiment scripts."""
     output = completer_experiments()
-    assert output == ["basic", "simple_cache", "subexp.example"]
+    assert output == ["basic", "image_reporter", "simple_cache", "subexp.example"]
 
 
 def test_params_completer():
@@ -19,6 +19,7 @@ def test_params_completer():
     output = completer_params()
     assert output == [
         "empty",
+        "image_reporter",
         "nonarrayargs",
         "params1",
         "params2",
@@ -59,5 +60,5 @@ def test_experiment_ls_output(mocker, capfd):  # noqa: F811
     out, err = capfd.readouterr()
     assert (
         out
-        == "EXPERIMENTS:\n\tbasic\n\tsimple_cache\n\tsubexp.example\n\nPARAMS:\n\tempty\n\tnonarrayargs\n\tparams1\n\tparams2\n\tsimple_cache\n\tsubparams.thing\n"
+        == "EXPERIMENTS:\n\tbasic\n\timage_reporter\n\tsimple_cache\n\tsubexp.example\n\nPARAMS:\n\tempty\n\timage_reporter\n\tnonarrayargs\n\tparams1\n\tparams2\n\tsimple_cache\n\tsubparams.thing\n"
     )
