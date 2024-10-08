@@ -250,6 +250,42 @@ class FigureReporter(Reportable):
         return f"<img src='{self.path}/{self.qualified_name}.{self.kwargs['format']}'>"
 
 
+class ImageReporter(Reportable):
+    """Adds an image to the report from a specified path.
+
+    Args:
+        image_path (str): Path to an image to copy into report folder and display on report.
+    """
+
+    def __init__(self, image_path: str, name: str = None, group: str = None):
+        self.image_path = image_path
+        self.copied = False
+        self.cache_path = None
+        super().__init__(name=name, group=group)
+
+    def render(self):
+        _, extension = os.path.splitext(self.image_path)
+
+        # we have to copy the image into cache so that if the image gets deleted
+        # (or wasn't already being properly saved uniquely within the cache),
+        # rerunning the experiment will still replicate the image into the
+        # report correctly.
+        if not self.copied:
+            self.cache_path = self.record.get_path(self.qualified_name + extension)
+            shutil.copyfile(self.image_path, self.cache_path)
+            self.copied = True
+
+        new_path = f"{self.path}/{self.qualified_name}{extension}"
+        shutil.copyfile(self.cache_path, new_path)
+
+    def html(self) -> str:
+        # NOTE: duplicated because self.path is different for html() than
+        # render()
+        _, extension = os.path.splitext(self.image_path)
+        new_path = f"{self.path}/{self.qualified_name}{extension}"
+        return f"<img src='{new_path}'>"
+
+
 class LinePlotReporter(Reportable):
     """Takes set(s) of data, creates matplotlib line plots for it, and adds to the report.
 
