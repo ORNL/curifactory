@@ -76,6 +76,8 @@ The pre-defined reportable classes are:
 * :code:`HTMLReporter` - Directly renders given HTML.
 * :code:`JsonReporter` - Renders an indented JSON dump of a dictionary.
 * :code:`LinePlotReporter` - Creates and renders a matplotlib figure for passed data.
+* :code:`LatexTableReporter` - Outputs a latex string representation of a dataframe, suitable for a latex paper.
+* :code:`ImageReporter` - Adds a saved image (from a path) to the report.
 
 Check the :ref:`Reporting` API documentation for each of these for more information on individual usage.
 
