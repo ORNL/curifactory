@@ -2,13 +2,19 @@ import os
 from dataclasses import dataclass
 from enum import IntEnum
 
+import pandas as pd
 from graphviz import Digraph
 
 import curifactory as cf
 from curifactory import reporting
 from curifactory.caching import JsonCacher, PickleCacher
 from curifactory.experiment import run_experiment
-from curifactory.reporting import JsonReporter, _add_record_subgraph, render_reportable
+from curifactory.reporting import (
+    JsonReporter,
+    LatexTableReporter,
+    _add_record_subgraph,
+    render_reportable,
+)
 
 
 def test_reportables_cached(configured_test_manager):
@@ -208,3 +214,15 @@ def test_image_reporter_persists_after_original_deletion(configured_test_manager
     assert os.path.exists(
         f"{configured_test_manager.reports_path}/{configured_test_manager.get_reference_name()}/reportables/test_save_manual_image_0.png"
     )
+
+
+def test_latex_table_reporter():
+    """The LatexTableReporter should correctly...output a latex table? This is just
+    a basic functionality test."""
+    df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+    r = LatexTableReporter(df)
+    assert r.html() == [
+        "<pre>",
+        "\\begin{tabular}{lrr}\n & a & b \\\\\n0 & 1 & 4 \\\\\n1 & 2 & 5 \\\\\n2 & 3 & 6 \\\\\n\\end{tabular}\n",
+        "</pre>",
+    ]
