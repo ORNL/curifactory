@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * An `ImageReporter` for adding any generated and saved images into the output
-  report
+  report.
+* A `LatexTableReporter` for adding a latex string version of a dataframe in the
+  report.
 
 
 
