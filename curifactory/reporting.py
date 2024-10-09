@@ -145,6 +145,28 @@ class HTMLReporter(Reportable):
         return self.html_string
 
 
+class LatexTableReporter(Reportable):
+    """Output a latex string for a pandas dataframe, useful for copying a table from a report
+    into a latex paper.
+
+    Args:
+        df (pd.DataFrame): The pandas dataframe to render in latex in the report.
+        kwargs: Any arguments to pass to `pandas.io.formats.style.Styler.to_latex <https://pandas.pydata.org/docs/reference/api/pandas.io.formats.style.Styler.to_latex.html#pandas.io.formats.style.Styler.to_latex>`_
+    """
+
+    def __init__(self, df: pd.DataFrame, name: str = None, group: str = None, **kwargs):
+        self.df = df
+        self.kwargs = kwargs
+        super().__init__(name=name, group=group)
+
+    def html(self) -> list[str]:
+        return [
+            "<pre>",
+            self.df.style.to_latex(**self.kwargs),
+            "</pre>",
+        ]
+
+
 class DFReporter(Reportable):
     """Adds an HTML table to the report for the given pandas dataframe.
 
@@ -186,11 +208,7 @@ class DFReporter(Reportable):
             output.append(f"<th>{index}</th>")
 
             for item in row:
-                if (
-                    type(item) == float
-                    or type(item) == np.float64
-                    or type(item) == np.float32
-                ):
+                if isinstance(item, (float, np.float64, np.float32)):
                     output.append(
                         "<td align='right'><pre>{0:.{1}f}</pre></td>".format(
                             item, self.float_prec
