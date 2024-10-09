@@ -173,6 +173,8 @@ by extending the base <code class="code docutils literal notranslate"><span clas
 <li><p><code class="code docutils literal notranslate"><span class="pre">HTMLReporter</span></code> - Directly renders given HTML.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">JsonReporter</span></code> - Renders an indented JSON dump of a dictionary.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">LinePlotReporter</span></code> - Creates and renders a matplotlib figure for passed data.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">LatexTableReporter</span></code> - Outputs a latex string representation of a dataframe, suitable for a latex paper.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">ImageReporter</span></code> - Adds a saved image (from a path) to the report.</p></li>
 </ul>
 <p>Check the <a class="reference internal" href="reporting.html#module-curifactory.reporting"><span class="std std-ref">Reporting</span></a> API documentation for each of these for more information on individual usage.</p>
 <p>Reportables are added to the report by calling <code class="code docutils literal notranslate"><span class="pre">record.report(REPORTABLE_CLASS(...))</span></code> and optionally

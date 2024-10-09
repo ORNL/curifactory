@@ -121,8 +121,14 @@ extends it.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.HTMLReporter" title="curifactory.reporting.HTMLReporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HTMLReporter</span></code></a>(html_string, list], name, group)</p></td>
 <td><p>Adds the raw string of HTML passed to it to the report.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.JsonReporter" title="curifactory.reporting.JsonReporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JsonReporter</span></code></a>(dictionary, name, group)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.ImageReporter" title="curifactory.reporting.ImageReporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ImageReporter</span></code></a>(image_path, name, group)</p></td>
+<td><p>Adds an image to the report from a specified path.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.JsonReporter" title="curifactory.reporting.JsonReporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JsonReporter</span></code></a>(dictionary, name, group)</p></td>
 <td><p>Adds an indented JSON dump in a <code class="docutils literal notranslate"><span class="pre">&lt;pre&gt;</span></code> tag for a passed dictionary.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.LatexTableReporter" title="curifactory.reporting.LatexTableReporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LatexTableReporter</span></code></a>(df, name, group, **kwargs)</p></td>
+<td><p>Output a latex string for a pandas dataframe, useful for copying a table from a report into a latex paper.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.LinePlotReporter" title="curifactory.reporting.LinePlotReporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LinePlotReporter</span></code></a>(y[, x])</p></td>
 <td><p>Takes set(s) of data, creates matplotlib line plots for it, and adds to the report.</p></td>
@@ -354,6 +360,50 @@ string of html, or can return a list of lines of html.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt id="curifactory.reporting.ImageReporter">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></code><code class="sig-name descname"><span class="pre">ImageReporter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.ImageReporter" title="Permalink to this definition"></a></dt>
+<dd><p>Adds an image to the report from a specified path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>image_path</strong> (<em>str</em>) – Path to an image to copy into report folder and display on report.</p>
+</dd>
+</dl>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.ImageReporter.html" title="curifactory.reporting.ImageReporter.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">html</span></code></a>()</p></td>
+<td><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is called and appended to the report.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.ImageReporter.render" title="curifactory.reporting.ImageReporter.render"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render</span></code></a>()</p></td>
+<td><p>Any file outputs or calculations that should only run once go here.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="curifactory.reporting.ImageReporter.html">
+<code class="sig-name descname"><span class="pre">html</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.reporting.ImageReporter.html" title="Permalink to this definition"></a></dt>
+<dd><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is
+called and appended to the report. This function should either return a single
+string of html, or can return a list of lines of html.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.reporting.ImageReporter.render">
+<code class="sig-name descname"><span class="pre">render</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.ImageReporter.render" title="Permalink to this definition"></a></dt>
+<dd><p>Any file outputs or calculations that should only run once go here.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt id="curifactory.reporting.JsonReporter">
 <em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></code><code class="sig-name descname"><span class="pre">JsonReporter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictionary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.JsonReporter" title="Permalink to this definition"></a></dt>
 <dd><p>Adds an indented JSON dump in a <code class="docutils literal notranslate"><span class="pre">&lt;pre&gt;</span></code> tag for a passed dictionary.</p>
@@ -379,6 +429,45 @@ lists.</p>
 <dl class="py method">
 <dt id="curifactory.reporting.JsonReporter.html">
 <code class="sig-name descname"><span class="pre">html</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#curifactory.reporting.JsonReporter.html" title="Permalink to this definition"></a></dt>
+<dd><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is
+called and appended to the report. This function should either return a single
+string of html, or can return a list of lines of html.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="curifactory.reporting.LatexTableReporter">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></code><code class="sig-name descname"><span class="pre">LatexTableReporter</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pandas.core.frame.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.LatexTableReporter" title="Permalink to this definition"></a></dt>
+<dd><p>Output a latex string for a pandas dataframe, useful for copying a table from a report
+into a latex paper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – The pandas dataframe to render in latex in the report.</p></li>
+<li><p><strong>kwargs</strong> – Any arguments to pass to <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.io.formats.style.Styler.to_latex.html#pandas.io.formats.style.Styler.to_latex">pandas.io.formats.style.Styler.to_latex</a></p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.LatexTableReporter.html" title="curifactory.reporting.LatexTableReporter.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">html</span></code></a>()</p></td>
+<td><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is called and appended to the report.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="curifactory.reporting.LatexTableReporter.html">
+<code class="sig-name descname"><span class="pre">html</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#curifactory.reporting.LatexTableReporter.html" title="Permalink to this definition"></a></dt>
 <dd><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is
 called and appended to the report. This function should either return a single
 string of html, or can return a list of lines of html.</p>

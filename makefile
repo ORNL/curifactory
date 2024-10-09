@@ -17,12 +17,12 @@ publish: ## build the package and push to pypi.
 
 .PHONY: apply-docs
 apply-docs: ## copy current built sphinx documentation into version-specific docs/folder.
-	@rm -rf docs/latest
-	@echo "Copying documentation to 'docs/latest'..."
-	@cp -r sphinx/build/html docs/latest
+	-@unlink docs/stable
 	@echo "Copying documentation to docs/$(VERSION)"
-	@rm -f docs/$(VERSION)
+	-@rm -rf docs/$(VERSION)
 	@cp -r sphinx/build/html docs/$(VERSION)
+	@echo "Linking to docs/stable"
+	@ln -s $(VERSION)/ docs/stable
 
 .PHONY: style
 style: ## run autofixers and linters.

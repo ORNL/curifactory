@@ -27,7 +27,7 @@ setup(
     python_requires=">=3.9",
     url="https://github.com/ORNL/curifactory",
     project_urls={
-        "Documentation": "https://ornl.github.io/curifactory/latest/index.html"
+        "Documentation": "https://ornl.github.io/curifactory/stable/index.html"
     },
     classifiers=[
         "Programming Language :: Python :: 3",
