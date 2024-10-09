@@ -5,6 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [unreleased]
+
+### Added
+* An `ImageReporter` for adding any generated and saved images into the output
+  report
+
+
+
+
 ## [0.17.1] - 2023-12-07
 
 ### Added
