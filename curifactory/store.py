@@ -3,7 +3,146 @@
 import json
 import os
 
+from sqlalchemy import create_engine, func, insert, select
+
 from curifactory import utils
+from curifactory.dbschema import metadata_obj, runs_table
+
+
+class SQLStore:
+    """EXPERIMENTAL, making an sqlite version of the data below."""
+
+    # TODO: (11/8/2023) make this take the full store path instead
+    def __init__(self, manager_cache_path: str):
+        self.path = manager_cache_path
+        """The location to store the ``store.db``."""
+
+        if self.path[-1] != "/":
+            self.path += "/"
+
+        self.path += "store.db"
+
+        self.engine = create_engine(f"sqlite:///{self.path}")
+
+        self._ensure_tables()
+
+    def _ensure_tables(self):
+        """Check for the existence of (and create if necessary) all of the tables
+        listed in dbscheme.py"""
+        metadata_obj.create_all(self.engine)
+
+    def get_run(self, ref_name: str) -> dict:
+        """Get the metadata block for the run with the specified reference name.
+
+        Args:
+            ref_name (str): The run reference name, following the [experiment_name]_[run_number]_[timestamp] format.
+
+        Returns:
+            A dictionary (metadata block) for the run with the requested reference name, and the
+            index of the run in the table.
+        """
+        # https://docs.sqlalchemy.org/en/20/tutorial/data_select.html
+
+        with self.engine.connect() as conn:
+            stmt = select(runs_table).where(runs_table.c.reference == ref_name)
+            # TODO: do I need to use prepare?
+            result = conn.execute(stmt)
+
+            # if we didn't get any rows back, this run doesn't exist.
+            if len(result) == 0:
+                return None
+
+            run = result[0]._asdict()
+            # NOTE: documented function of namedtuple, _ here doesn't imply hidden/not intended for use
+            run.param_files = json.loads(run.param_files)
+            return run
+
+    def add_run(self, mngr) -> dict:
+        """Add a new metadata block to the store for the passed ``ArtifactManager`` instance.
+
+        Note that this automatically calls the ``save()`` function.
+
+        Args:
+            mngr (ArtifactManager): The manager to grab run metadata from.
+
+        Returns:
+            The newly created dictionary (metadata block) for the current manager's run.
+        """
+
+        # get the new run number
+        with self.engine.connect() as conn:
+            stmt = select(func.count()).where(
+                runs_table.c.experiment_name == mngr.experiment_name
+            )
+            result = conn.execute(stmt)
+
+        # TODO: (11/6/2023) none of these should be set here...
+        run_count = result.all()[0][0]
+        mngr.experiment_run_number = run_count + 1
+        mngr.git_commit_hash = utils.get_current_commit()
+        mngr.git_workdir_dirty = utils.check_git_dirty_workingdir()
+
+        # insert the new entry
+        with self.engine.connect() as conn:
+            stmt = insert(runs_table).values(
+                reference=mngr.get_reference_name(),
+                experiment_name=mngr.experiment_name,
+                run_number=mngr.experiment_run_number,
+                timestamp=mngr.run_timestamp,
+                commit=mngr.git_commit_hash,
+                workdir_dirty=mngr.git_workdir_dirty,
+                param_files=str(mngr.parameter_files),
+                params=str(mngr.param_file_param_sets),
+                full_store=mngr.store_full,
+                status="incomplete",
+                cli=mngr.run_line,
+                hostname=mngr.hostname,
+                notes=mngr.notes,
+            )
+            conn.execute(stmt)
+
+        # create the metadata block
+        run_dict = {
+            "reference": mngr.get_reference_name(),
+            "experiment_name": mngr.experiment_name,
+            "run_number": mngr.experiment_run_number,
+            "timestamp": mngr.get_str_timestamp(),
+            "commit": mngr.git_commit_hash,
+            "workdir_dirty": mngr.git_workdir_dirty,
+            "param_files": mngr.parameter_files,
+            "params": mngr.param_file_param_sets,
+            "full_store": mngr.store_full,
+            "status": "incomplete",
+            "cli": mngr.run_line,
+            "hostname": mngr.hostname,
+            "notes": mngr.notes,
+        }
+
+        # sanitize reproduction cli command
+        if mngr.store_full:
+            run_dict = self._get_reproduction_line(mngr, run_dict)
+
+        return run_dict
+
+    # NOTE: we have to call this both from add_run and update_run because manager stores itself on init, but if
+    # someone _later_ sets store_full (maybe in a live run) we need to be able to handle this being added to the run_info
+    def _get_reproduction_line(self, mngr, run: dict) -> dict:
+        sanitized_run_line = mngr.run_line
+        if "--overwrite " in sanitized_run_line:
+            sanitized_run_line = sanitized_run_line.replace("--overwrite ", "")
+        if sanitized_run_line.endswith("--overwrite"):
+            sanitized_run_line = sanitized_run_line[:-12]
+        sanitized_run_line = sanitized_run_line.replace("--store-full ", "")
+        if sanitized_run_line.endswith("--store-full"):
+            sanitized_run_line = sanitized_run_line[:-13]
+
+        cache_path = mngr.get_run_output_path()
+        mngr.reproduction_line = (
+            f"{sanitized_run_line} --cache {cache_path}/artifacts --dry-cache"
+        )
+
+        run["reproduce"] = mngr.reproduction_line
+        return run
 
 
 class ManagerStore:
