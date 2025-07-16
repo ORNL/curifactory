@@ -414,6 +414,16 @@ class Cacheable:
         )
 
     def save_metadata(self):
+        """Write all cacher metadata to a JSON metadata file associated with the
+        output cache path.
+
+        If writing a custom cacher that depends on/writes to the metadata, be
+        sure to call it within the implemented ``save()`` function. While stages
+        automatically call ``save_metadata()`` after saving the artifact normally,
+        this isn't guaranteed outside of the context of a stage (e.g. when using
+        a cacher inline.) See the ``PandasCacher`` class for an example of using
+        ``save_metadata()`` inside of ``save()``.
+        """
         metadata_path = self.get_path("_metadata.json")
         with open(metadata_path, "w") as outfile:
             if self.metadata is None:
@@ -429,10 +439,31 @@ class Cacheable:
                 json.dump(self.metadata, outfile, indent=2, default=str)
 
     def load_metadata(self) -> dict:
+        """Read in the metadata file associated with this cacher.
+
+        This populates the ``self.metadata`` and ``self.extra_metadata``
+        attributes, as well as returns ``self.metadata``.
+
+        If writing a custom cacher that depends on something in the metadata,
+        be sure to call it within the implemented ``load()`` function. While
+        stages automatically call ``load_metadata()`` before calling the
+        ``load()`` function, there's no guarantee outside of the context
+        of a stage (e.g. when using a cacher inline.) See the ``PandasCacher``
+        class for an example of using ``load_metadata()``.
+
+        Returns:
+            The populated ``self.metadata`` metadata dictionary.
+        """
         metadata_path = self.get_path("_metadata.json")
         if os.path.exists(metadata_path):
             with open(metadata_path) as infile:
-                self.metadata = json.load(infile)
+                try:
+                    self.metadata = json.load(infile)
+                except json.JSONDecodeError:
+                    logging.error(
+                        "Failed to read the JSON metadata file at %s", metadata_path
+                    )
+                    raise
                 self.extra_metadata = self.metadata["extra"]
         return self.metadata
 
