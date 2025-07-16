@@ -250,7 +250,9 @@ def compare_algs(alg_experiments: list[test_sklearn_alg]):
     #     exp.outputs.dependencies()[1].replace(actual_testing_data)
     #
     # score_list = ArtifactList("scores", [exp.outputs for exp in alg_experiments])
-    maximum = find_max_of_scores([exp.name for exp in alg_experiments], score_list)
+    maximum = find_max_of_scores(
+        [exp.name for exp in alg_experiments], score_list
+    ).outputs
     return maximum
 
 

@@ -11,8 +11,7 @@ import artifact
 # import simplification.artifact
 
 
-class StageContext:
-
+# class StageContext:
 
 
 @dataclass
@@ -268,7 +267,9 @@ class Stage:
             # if a stage was passed in instead of an artifact, quite possible
             # user forgot a .outputs, so warn
             if isinstance(arg, Stage):
-                print(f"WARNING: Stage argument passed into {self.name}, is there a missing .outputs?")
+                print(
+                    f"WARNING: Stage argument passed into {self.name}, is there a missing .outputs?"
+                )
 
             print("\tType of arg", type(arg), isinstance(arg, artifact.Artifact))
             if isinstance(arg, artifact.Artifact):
@@ -334,7 +335,9 @@ def stage(
         @wraps(function)
         def wrapper(*args, **kwargs):
             # return Stage(function, args, kwargs, outputs, hashing_functions, pass_self)
-            stage_obj = Stage(function, list(args), kwargs, outputs, hashing_functions, pass_self)
+            stage_obj = Stage(
+                function, list(args), kwargs, outputs, hashing_functions, pass_self
+            )
             return stage_obj
 
         return wrapper
