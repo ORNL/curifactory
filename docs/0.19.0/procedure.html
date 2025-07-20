@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Procedure &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Project" href="project.html" />
+    <link rel="prev" title="Params" href="params.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and parameter sets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing_mechanics.html">Hashing Mechanics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment_graph.html">Experiment Graph (DAG)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Curifactory Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dag.html">DAG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing.html">Hashing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="params.html">Params</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Procedure</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/procedure.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="module-curifactory.procedure">
+<span id="procedure"></span><h1>Procedure<a class="headerlink" href="#module-curifactory.procedure" title="Permalink to this headline"></a></h1>
+<p>Convenience class for grouping stages and automatically passing a record between them.</p>
+<p><strong>Exceptions:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.procedure.NoArtifactManagerError" title="curifactory.procedure.NoArtifactManagerError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NoArtifactManagerError</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Classes:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.procedure.Procedure" title="curifactory.procedure.Procedure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Procedure</span></code></a>(stages, manager, name, …)</p></td>
+<td><p>A defined list of stages to run in sequence, creating a record to associate with them.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py exception">
+<dt id="curifactory.procedure.NoArtifactManagerError">
+<em class="property"><span class="pre">exception</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.procedure.</span></code><code class="sig-name descname"><span class="pre">NoArtifactManagerError</span></code><a class="headerlink" href="#curifactory.procedure.NoArtifactManagerError" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt id="curifactory.procedure.Procedure">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.procedure.</span></code><code class="sig-name descname"><span class="pre">Procedure</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stages</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager" title="curifactory.manager.ArtifactManager"><span class="pre">curifactory.manager.ArtifactManager</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">previous_proc</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#curifactory.procedure.Procedure" title="curifactory.procedure.Procedure"><span class="pre">curifactory.procedure.Procedure</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">records</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.procedure.Procedure" title="Permalink to this definition"></a></dt>
+<dd><p>A defined list of stages to run in sequence, creating a record to associate
+with them.</p>
+<p>For the stage list, specify only the names of the functions.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">data_stage</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="c1"># ...</span>
+
+<span class="nd">@stage</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">model_stage</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="c1"># ...</span>
+
+<span class="n">proc</span> <span class="o">=</span> <span class="n">Procedure</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">data_stage</span><span class="p">,</span>
+        <span class="n">model_stage</span>
+    <span class="p">],</span>
+    <span class="n">mngr</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>list</strong><strong>[</strong><strong>Callable</strong><strong>]</strong> (<em>stages</em>) – A list of function names that are wrapped in <code class="docutils literal notranslate"><span class="pre">&#64;stage</span></code> or <code class="docutils literal notranslate"><span class="pre">&#64;aggregate</span></code>
+decorators. Note that if using an aggregate state, it _must_ be the first one in the
+list.</p></li>
+<li><p><strong>manager</strong> (<a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager" title="curifactory.manager.ArtifactManager"><em>ArtifactManager</em></a>) – The manager to associate this procedure and corresponding record
+with. If this is <code class="docutils literal notranslate"><span class="pre">None</span></code>, a manager will need to be passed when <code class="docutils literal notranslate"><span class="pre">.run()</span></code> is called.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – An optional name for the procedure. Currently unused, may eventually be put into
+logging or reporting.</p></li>
+<li><p><strong>previous_proc</strong> (<a class="reference internal" href="#curifactory.procedure.Procedure" title="curifactory.procedure.Procedure"><em>Procedure</em></a>) – If specified and this procedure begins with an aggregate stage,
+use the <code class="docutils literal notranslate"><span class="pre">previous_proc.records</span></code> list of records.</p></li>
+<li><p><strong>records</strong> (<em>List</em><em>[</em><a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><em>Record</em></a><em>]</em>) – If specified and this procedure begins with an aggregate stage, use
+this list of records. Note that <code class="docutils literal notranslate"><span class="pre">previous_proc</span></code> takes precedence over this argument.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If a procedure begins with an aggregate stage and neither <code class="docutils literal notranslate"><span class="pre">previous_proc</span></code> nor
+<code class="docutils literal notranslate"><span class="pre">records</span></code> are specified, it will automatically grab all existing records from the
+artifact manager.</p>
+</div>
+<p>Note that you can predefine a procedure and “apply”/run it later, since the <code class="docutils literal notranslate"><span class="pre">.run()</span></code> function
+can take both a manager and records list directly.</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">data_stage</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="c1"># ...</span>
+
+<span class="nd">@stage</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">model_stage</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="c1"># ...</span>
+
+<span class="n">proc</span> <span class="o">=</span> <span class="n">Procedure</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">data_stage</span><span class="p">,</span>
+        <span class="n">model_stage</span>
+    <span class="p">])</span>
+
+<span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">paramsets</span><span class="p">,</span> <span class="n">manager</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">paramset</span> <span class="ow">in</span> <span class="n">paramsets</span><span class="p">:</span>
+        <span class="n">proc</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">paramset</span><span class="p">,</span> <span class="n">manager</span><span class="o">=</span><span class="n">manager</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.procedure.Procedure.run" title="curifactory.procedure.Procedure.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>(param_set[, record, hide, manager, records])</p></td>
+<td><p>Run this procedure with the passed parameter set.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="curifactory.procedure.Procedure.run">
+<code class="sig-name descname"><span class="pre">run</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_set</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="params.html#curifactory.params.ExperimentParameters" title="curifactory.params.ExperimentParameters"><span class="pre">curifactory.params.ExperimentParameters</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><span class="pre">curifactory.record.Record</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hide</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager" title="curifactory.manager.ArtifactManager"><span class="pre">curifactory.manager.ArtifactManager</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">records</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><span class="pre">curifactory.record.Record</span></a><a class="headerlink" href="#curifactory.procedure.Procedure.run" title="Permalink to this definition"></a></dt>
+<dd><p>Run this procedure with the passed parameter set. This allows easily running
+multiple parameter sets through the same set of stages and automatically getting a separate
+record for each.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_set</strong> (<a class="reference internal" href="params.html#curifactory.params.ExperimentParameters" title="curifactory.params.ExperimentParameters"><em>ExperimentParameters</em></a>) – The parameteter set to put into the record created for
+this procedure.</p></li>
+<li><p><strong>record</strong> (<a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><em>Record</em></a>) – If you have a specific record you want the procedure to use (e.g.
+if you’re chaining multiple procedures and already have an applicable record to
+use from the previous one), pass it here. If unspecified, a new record will
+automatically be created for the passed args and relevant artifact manager.</p></li>
+<li><p><strong>hide</strong> (<em>bool</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, don’t add the created record to the artifact manager.</p></li>
+<li><p><strong>manager</strong> (<a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager" title="curifactory.manager.ArtifactManager"><em>ArtifactManager</em></a>) – If a manager hasn’t been set yet on this procedure,
+do so now. An exception will be thrown if the manager has already been set on
+this procedure.</p></li>
+<li><p><strong>records</strong> (<em>list</em><em>[</em><a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><em>Record</em></a><em>]</em>) – If this procedure begins with an aggregate and the
+list of input records wasn’t set on init, do so now.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The returned output from the last stage in <code class="docutils literal notranslate"><span class="pre">self.stages</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="params.html" class="btn btn-neutral float-left" title="Params" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="project.html" class="btn btn-neutral float-right" title="Project" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

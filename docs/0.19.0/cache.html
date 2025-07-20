@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cache &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Hashing Mechanics" href="hashing_mechanics.html" />
+    <link rel="prev" title="Parameter files and parameter sets" href="parameters.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and parameter sets</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Cache</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#using-cachers">Using cachers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#cacher-arguments">Cacher arguments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#inline-cachers">Inline cachers</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#metadata">Metadata</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lazy-cache-objects">Lazy cache objects</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#lazy-resolve">Lazy resolve</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hashing_mechanics.html">Hashing Mechanics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment_graph.html">Experiment Graph (DAG)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Curifactory Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dag.html">DAG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing.html">Hashing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="params.html">Params</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Cache</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/cache.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="cache">
+<h1>Cache<a class="headerlink" href="#cache" title="Permalink to this headline"></a></h1>
+<p>Curifactory makes it straightforward to store and re-use intermediate artifacts generated
+throughout an experiment with its caching mechanisms. During an experiment run, user-specified
+caching strategies dump parameter-set-versioned instances of stage outputs in a common cache folder,
+and when running a stage that already has the appropriate artifacts in the cache for the current
+parameter set, it uses the caching strategy to reload the artifact from cache instead of executing
+the stages. Storing artifacts in cache both helps re-execute the experiment faster as well as
+creates a “paper trail” for manual exploration of the artifacts.</p>
+<p>Caching strategies are <code class="docutils literal notranslate"><span class="pre">Cacher</span></code> classes that extend curifactory’s base <code class="docutils literal notranslate"><span class="pre">Cacheable</span></code> class. Using
+these cachers is as easy as listing them in your stage decorator for each output the stage generates:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">stage</span>
+<span class="kn">from</span> <span class="nn">curifactory.caching</span> <span class="kn">import</span> <span class="n">PandasJsonCacher</span><span class="p">,</span> <span class="n">JsonCacher</span><span class="p">,</span> <span class="n">PickleCacher</span>
+
+<span class="nd">@stage</span><span class="p">(</span><span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;dataset&quot;</span><span class="p">,</span> <span class="s2">&quot;metrics_dictionary&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">],</span> <span class="n">cachers</span><span class="o">=</span><span class="p">[</span><span class="n">PandasJsonCacher</span><span class="p">,</span> <span class="n">JsonCacher</span><span class="p">,</span> <span class="n">PickleCacher</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">return_all_the_things</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="k">return</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">model</span>
+</pre></div>
+</div>
+<p>There are several pre-implemented cachers that come with Curifactory in the <a class="reference internal" href="getting_started.html#caching"><span class="std std-ref">Caching</span></a>
+module that should cover many basic needs:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">JsonCacher</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PandasCacher</span></code> - store a dataframe using a specified format</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PandasCsvCacher</span></code>  - shortcut for <code class="docutils literal notranslate"><span class="pre">PandasCacher(format='csv')</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PandasJsonCacher</span></code> - shortcut for <code class="docutils literal notranslate"><span class="pre">PandasCacher(format='json')</span></code>, stores a dataframe as a json file (array of dictionaries, the keys as column names.)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PickleCacher</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FileReferenceCacher</span></code> - a json file that stores references to one or more file paths.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RawJupyterNotebookCacher</span></code> - turns a list of list of strings of python code into a jupyter notebook</p></li>
+</ul>
+<p>As a last resort, most things should be cacheable through
+the <code class="docutils literal notranslate"><span class="pre">PickleCacher</span></code>, but the advantage of using the <code class="docutils literal notranslate"><span class="pre">JsonCacher</span></code> where
+applicable allows you to manually browse through
+the cache easier, instead of needing to write a script to load a piece
+of cached data before viewing it.</p>
+<p>Some things may not cache correctly even with a <code class="docutils literal notranslate"><span class="pre">PickleCacher</span></code>,
+such as pytorch models or similarly complex objects. For these, you
+can write your own “cacheable” and plug it into a decorator in the same
+way as the pre-made cachers.</p>
+<p>Implementing a custom cacheable requires extending the <a class="reference internal" href="caching.html#curifactory.caching.Cacheable" title="curifactory.caching.Cacheable"><code class="xref py py-class docutils literal notranslate"><span class="pre">caching.Cacheable</span></code></a>
+class, and the new class must have a <code class="docutils literal notranslate"><span class="pre">save(obj)</span></code> and <code class="docutils literal notranslate"><span class="pre">load()</span> <span class="pre">-&gt;</span> <span class="pre">obj</span></code>
+function, which respectively should handle saving the passed artifact to disk,
+and loading and returning a reconstructed artifact.</p>
+<p>The base <code class="docutils literal notranslate"><span class="pre">Cacheable</span></code> has a <code class="docutils literal notranslate"><span class="pre">get_path()</span></code> function which the cacher implementation can assume
+correctly returns a full filepath including the correct versioned filename for the current artifact.
+In the case that a cacher needs to save more than one file or wants to provide a different suffix for
+the filename, this can be passed to <code class="docutils literal notranslate"><span class="pre">get_path</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">curifactory.caching</span> <span class="kn">import</span> <span class="n">Cacheable</span>
+
+<span class="k">class</span> <span class="nc">TorchModelCacher</span><span class="p">(</span><span class="n">Cacheable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># NOTE: it is recommended to always include and pass *args and **kwargs</span>
+        <span class="c1"># in custom cachers to allow functionality specified in the Cacher arguments section</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;.model_obj&quot;</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="s2">&quot;_model&quot;</span><span class="p">))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outfile</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">outfile</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="s2">&quot;_model&quot;</span><span class="p">),</span> <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">obj</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is recommended to always include and pass <code class="docutils literal notranslate"><span class="pre">*args</span></code> and <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> in custom cachers to allow
+consistent functionality as specified in <a class="reference internal" href="#cacher-arguments"><span class="std std-ref">Cacher arguments</span></a>.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The returns from <code class="docutils literal notranslate"><span class="pre">get_path()</span></code> calls should be used exactly for the paths written to and read from -
+Curifactory internally tracks the <code class="docutils literal notranslate"><span class="pre">get_path()</span></code> outputs for determining what to copy to a full
+store folder, so if you write to <code class="docutils literal notranslate"><span class="pre">get_path()</span> <span class="pre">+</span> <span class="pre">&quot;something.json&quot;</span></code>, it won’t correctly track that path.
+Instead, use the suffix capability: <code class="docutils literal notranslate"><span class="pre">get_path(&quot;something.json&quot;)</span></code>. If you have a lot of files to save,
+or need to do complicated path manipulation, instead use <code class="docutils literal notranslate"><span class="pre">self.get_dir()</span></code> as the base path, and
+curifactory will track the entire subfolder.</p>
+</div>
+<p>In this example, we’ve defined a custom cacher for some python class that contains a torch model inside of it, in
+the <code class="docutils literal notranslate"><span class="pre">.model</span></code> attribute.
+Using pickle for the torch model itself is discouraged, but we still want to store the whole class as well.
+The custom cacher therefore saves to two separate files - first we save the model state dict with a <code class="docutils literal notranslate"><span class="pre">_model</span></code>
+suffix, then pickle the whole class. On load we reverse this process, by unpickling the whole class and then
+replacing the model attribute with the more appropriate <code class="docutils literal notranslate"><span class="pre">load_state_dict</span></code> results.</p>
+<p>You can then pass this class name in a cachers list in the stage decorator as if it were one of the premade
+cacheables:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=...</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;trained_model&quot;</span><span class="p">],</span> <span class="n">cachers</span><span class="o">=</span><span class="p">[</span><span class="n">TorchModelCacher</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">train_model</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+    <span class="c1"># ...</span>
+</pre></div>
+</div>
+<div class="section" id="using-cachers">
+<h2>Using cachers<a class="headerlink" href="#using-cachers" title="Permalink to this headline"></a></h2>
+<div class="section" id="cacher-arguments">
+<h3>Cacher arguments<a class="headerlink" href="#cacher-arguments" title="Permalink to this headline"></a></h3>
+<p>As specified above, you can use a cacher in a stage simply by providing the class name in the cachers list.
+You can also initialize the cacher in the list, and there are several parameters that provide additional control
+over the path that’s used by the cacher.</p>
+<ul class="simple">
+<li><p><strong>overwrite_path</strong>: specifying this completely overrides all other path computation functionality and uses
+the provided path exactly. If using this in a stage decorator, that means it won’t use any form of parameter
+set hash versioning.   This is useful in situations where a stage is effectively a static transform that
+isn’t affected by any parameters.</p></li>
+<li><p><strong>subdir</strong>: if specified, uses this subdirectory in front of the filename, both within the cache directory
+and within a full store run’s artifacts directory.</p></li>
+<li><p><strong>prefix</strong>: By default, the experiment name is used as the prefix for every cached filepath. If there are specific
+artifacts that are safe to use across all experiments that call the stage this cacher is used from, you can specify
+the prefix here.</p></li>
+<li><p><strong>track</strong>: Tracked filepaths are paths that get copied into a full store run. This is always true by default, but
+there can be situations (especially when dealing with very large artifacts such as datasets) where it’s not desirable
+to keep a copy of every single artifact. Setting this to <code class="docutils literal notranslate"><span class="pre">False</span></code> does <strong>not</strong> disable caching it normally into
+the cache directory, but it will not transfer that file to the full store run artifacts directory.</p></li>
+</ul>
+</div>
+<div class="section" id="inline-cachers">
+<h3>Inline cachers<a class="headerlink" href="#inline-cachers" title="Permalink to this headline"></a></h3>
+<p>While the primary purpose of cachers is to use them as a “strategy” to specify to a stage, cachers can also be
+used inline, either directly in a stage or in any normal code. This is useful in cases where you need to manually
+load an artifact, and you have the path for it already.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">some_metrics_path</span> <span class="o">=</span> <span class="o">...</span>
+<span class="n">metrics</span> <span class="o">=</span> <span class="n">JsonCacher</span><span class="p">(</span><span class="n">some_metrics_path</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>You can also get the metadata associated with the artifact:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">some_metrics_path</span> <span class="o">=</span> <span class="o">...</span>
+<span class="n">cacher</span> <span class="o">=</span> <span class="n">JsonCacher</span><span class="p">(</span><span class="n">some_metrics_path</span><span class="p">)</span>
+<span class="n">metrics</span> <span class="o">=</span> <span class="n">cacher</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+<span class="n">metadata</span> <span class="o">=</span> <span class="n">cahcer</span><span class="o">.</span><span class="n">load_metadata</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="metadata">
+<h2>Metadata<a class="headerlink" href="#metadata" title="Permalink to this headline"></a></h2>
+<p>Every cached artifact saves an associated metadata json file that tracks information about the cacher,
+the current record, and the experiment run. This metadata file is copied along with the artifact in
+full store runs, and is kept when an artifact is re-used in a later run.</p>
+<p>This metadata dictionary is available on every cacher object through <code class="docutils literal notranslate"><span class="pre">.metadata</span></code>. In addition, every
+<code class="docutils literal notranslate"><span class="pre">Cacheable</span></code> object has an <code class="docutils literal notranslate"><span class="pre">.extra_metadata</span></code> dictionary that custom cachers can use to store additional
+information either for provenance/informational use, or to help direct loading code. This extra metadata
+gets added to the cacher’s <code class="docutils literal notranslate"><span class="pre">metadata</span></code> when saving, and is populated from a <code class="docutils literal notranslate"><span class="pre">.load_metadata()</span></code> call.</p>
+<p>An example might look like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">UsesExtraMetadataCacher</span><span class="p">(</span><span class="n">Cacheable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extra_metadata</span><span class="p">[</span><span class="s2">&quot;the_best_number&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">13</span>
+        <span class="n">JsonCacher</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">geet_path</span><span class="p">())</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_metadata</span><span class="p">[</span><span class="s2">&quot;best_number&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">13</span>
+        <span class="k">return</span> <span class="n">JsonCacher</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">())</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The curifactory stage decorator automatically handles calling <code class="docutils literal notranslate"><span class="pre">save_metadata()</span></code> and <code class="docutils literal notranslate"><span class="pre">load_metadata()</span></code> at
+the appropriate times for the above cacher to work. However, if you’re using this custom cacher inline, these
+functions are never explicitly called. If you want to enable this cacher to work inline, you need to add in
+explicit save/load metadata calls in the save/load functions:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">UsesExtraMetadataCacher</span><span class="p">(</span><span class="n">Cacheable</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extra_metadata</span><span class="p">[</span><span class="s2">&quot;the_best_number&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">13</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_metadata</span><span class="p">()</span>
+        <span class="n">JsonCacher</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">())</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_metadata</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_metadata</span><span class="p">[</span><span class="s2">&quot;best_number&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">13</span>
+        <span class="k">return</span> <span class="n">JsonCacher</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">())</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="lazy-cache-objects">
+<h2>Lazy cache objects<a class="headerlink" href="#lazy-cache-objects" title="Permalink to this headline"></a></h2>
+<p>While caching by itself helps reduce overall computation time when re-running
+experiments over and over, if running sizable experiments with a lot of large data
+in state at once, memory can be a problem. Many times, when stages are
+appropriately caching everything, some objects don’t need to be in
+memory at all because they’re never used in a stage that actually runs. To
+address this, curifactory has a <code class="code docutils literal notranslate"><span class="pre">Lazy</span></code> class. This class is used by
+wrapping it around the string name in the outputs array:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=...</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;small_object&quot;</span><span class="p">,</span> <span class="n">Lazy</span><span class="p">(</span><span class="s2">&quot;large-object&quot;</span><span class="p">)],</span> <span class="n">cachers</span><span class="o">=...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When an output is specified as lazy, as soon as the stage computes, the output
+object is cached and removed from memory. The <code class="code docutils literal notranslate"><span class="pre">Lazy</span></code> instance is then inserted
+into the state. Whenever the <code class="code docutils literal notranslate"><span class="pre">large-object</span></code> key is accessed on the state,
+it uses the cacher to reload the object back into memory (but maintains the Lazy
+object in state, so as long as no references persist beyond the stage, it will
+stay out of memory.</p>
+<p>Because lazy objects rely on a cacher, cachers should always be specified for
+these stages. If no cachers are given, curifactory will automatically use a
+<code class="code docutils literal notranslate"><span class="pre">PickleCacher</span></code>.</p>
+<p>When a stage with a Lazy object is computed the second time, the cachers check
+for their appropriate files as normal, and if they are found the lazy output
+again keeps only a <code class="code docutils literal notranslate"><span class="pre">Lazy</span></code> instance in the record state rather than
+reloading the actual file.</p>
+<div class="section" id="lazy-resolve">
+<h3>Lazy resolve<a class="headerlink" href="#lazy-resolve" title="Permalink to this headline"></a></h3>
+<p>By default, every time a <code class="docutils literal notranslate"><span class="pre">Lazy</span></code> instance is passed into a stage wrapped function, it resolves to
+the object itself, meaning it calls the load function on the associated cacher. If a <code class="docutils literal notranslate"><span class="pre">Lazy</span></code> instance
+is specified with <code class="docutils literal notranslate"><span class="pre">resolve=False</span></code>, then every time that artifact is used as input, the input that gets
+passed is the actual <code class="docutils literal notranslate"><span class="pre">Lazy</span></code> instance itself.</p>
+<p>The primary value in this is to be able to access the associated cacher from within a stage in order to
+get its path (this is useful when doing external calls.)</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="parameters.html" class="btn btn-neutral float-left" title="Parameter files and parameter sets" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="hashing_mechanics.html" class="btn btn-neutral float-right" title="Hashing Mechanics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

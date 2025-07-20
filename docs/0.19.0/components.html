@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Components &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Parameter files and parameter sets" href="parameters.html" />
+    <link rel="prev" title="Getting Started" href="getting_started.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Components</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#component-interactions">Component interactions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#stage-flow">Stage flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#procedure-flow">Procedure flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#experiment-flow">Experiment flow</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#anatomy-of-a-stage">Anatomy of a stage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stage-parameters">Stage parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#aggregate-parameters">Aggregate parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and parameter sets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing_mechanics.html">Hashing Mechanics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment_graph.html">Experiment Graph (DAG)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Curifactory Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dag.html">DAG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing.html">Hashing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="params.html">Params</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Components</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/components.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="components">
+<h1>Components<a class="headerlink" href="#components" title="Permalink to this headline"></a></h1>
+<div class="figure align-center" id="id1">
+<img alt="_images/experiment_workflow.png" src="_images/experiment_workflow.png" />
+<p class="caption"><span class="caption-text">Experiments route parameters into lists of stages, stages route relevant
+parameters into codebase calls. An artifact manager tracks information
+from the experiment run and all the data passed between stages.</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+</div>
+<p><strong>Stages</strong> - A stage is a small, well-defined abstraction for processing some set of inputs into some set of outputs.
+These abstractions sit on top of the codebase, and can automatically cache outputs.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">clean_data</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="c1"># ...</span>
+    <span class="k">return</span> <span class="n">cleaned_data</span>
+</pre></div>
+</div>
+<p><strong>Procedures</strong> - A procedure is a list of stages to run in sequence for a given parameter set. An example of a procedure might be to
+load, clean, and split a dataset, and then train and test a model with it. Procedures are defined inside of experiments. Procedures
+are simply an alternative way to running stages than the functional form.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">proc</span> <span class="o">=</span> <span class="n">Procedure</span><span class="p">([</span>
+    <span class="n">get_data</span><span class="p">,</span>
+    <span class="n">clean_data</span><span class="p">,</span>
+    <span class="n">split_data</span><span class="p">,</span>
+    <span class="n">train_model</span><span class="p">,</span>
+    <span class="n">test_model</span>
+<span class="p">],</span> <span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Parameter sets</strong> - Parameter sets represent a collection of configuration values or adjustable parameters for the stage functions
+to apply to the functions called in the codebase.</p>
+<p><strong>Records</strong> - A record is a collection of data/variables used in a single run of a procedure with a single parameter set.
+A record is automatically passed between stages of a procedure in order to persist the information. The currently
+active record is passed into every stage, so a stage has manual access to everything stored in it.</p>
+<p><strong>Artifact Manager</strong> - An artifact manager instance is associated with each experiment run, and it tracks and handles all intermediate
+outputs from the various stages. The manager is the overarching collection of records for an experiment run.
+It tracks all records for each procedure/parameter set
+used. A stage with an aggregate decorator can get access to all records instead of just the currently active one in
+the procedure in order to aggregate results or other data across the records.</p>
+<p><strong>Experiments</strong> - Experiments apply given parameter sets to one or more procedures, potentially running additional aggregate stages
+to collect and analyze results from multiple procedure runs across parameter sets. The intention of an experiment is
+to allow easy comparison of results for multiple similar procedures and/or multiple parameter configurations across one
+or more procedures.</p>
+<div class="section" id="component-interactions">
+<h2>Component interactions<a class="headerlink" href="#component-interactions" title="Permalink to this headline"></a></h2>
+<p>The below sections describe how the different components interact with and flow through each other.</p>
+<div class="section" id="stage-flow">
+<h3>Stage flow<a class="headerlink" href="#stage-flow" title="Permalink to this headline"></a></h3>
+<div class="figure align-center">
+<img alt="_images/interactions_stage.png" src="_images/interactions_stage.png" />
+</div>
+<p>A stage is the processing or transformation of a record. A record has a <code class="code docutils literal notranslate"><span class="pre">state</span></code> attribute, which is a dictionary
+of data from previous stages. A stage which requires input automatically finds those input variables from the passed <code class="code docutils literal notranslate"><span class="pre">record.state</span></code> and
+passes them into the function,
+and the outputs are stored from the function returns back into <code class="code docutils literal notranslate"><span class="pre">record.state</span></code>. A record is initialized with some <code class="code docutils literal notranslate"><span class="pre">ExperimentParameters</span></code> parameter
+set, and the record itself has an associated artifact manager.</p>
+<p>Note that the four components here, parameters, records, stages, and a manager are the minimum components required
+to interact with Curifactory. Procedures and experiments are helpful but not required, and you could for
+instance run stages on their own with just these four components in a jupyter notebook or similar.
+(However, most of the benefit of Curifactory comes from the experiment management side through the
+experiment CLI, which minimally requires using experiments as well.)</p>
+</div>
+<div class="section" id="procedure-flow">
+<h3>Procedure flow<a class="headerlink" href="#procedure-flow" title="Permalink to this headline"></a></h3>
+<div class="figure align-center">
+<img alt="_images/interactions_procedure.png" src="_images/interactions_procedure.png" />
+</div>
+<p>Procedures simplify calling multiple stages. A procedure is defined with a list of these stages, and then
+calling <code class="code docutils literal notranslate"><span class="pre">proc.run(params)</span></code> while passing in an <code class="code docutils literal notranslate"><span class="pre">ExperimentParameters</span></code> parameter set will automatically create an associated
+record, store it in the manager, and then execute the sequence of stages as a pipeline on the record.
+The output is the final record, which could also be accessed as <code class="code docutils literal notranslate"><span class="pre">manager.records[-1]</span></code>, since it was the
+last record added to the manager.</p>
+<p>Note that the <code class="code docutils literal notranslate"><span class="pre">run()</span></code> function optionally takes a record as a parameter, which if passed will use the existing record
+rather than creating a new one, meaning multiple procedures can technically be chained.</p>
+<p>Any aggregate stages that are applied to a given record must be the first stage in the chain for that record.
+Similarly, if including an aggregate stage as part of a procedure it must be the first one listed.
+There are several ways you can control what set of records is passed into an aggregate stage in a procedure:</p>
+<ol class="arabic">
+<li><div class="line-block">
+<div class="line">If you pass another procedure instance to <code class="docutils literal notranslate"><span class="pre">previous_proc</span></code>, it will use all records created from that</div>
+<div class="line">procedure as the input record list for this one.</div>
+</div>
+</li>
+<li><p>You can directly specify <code class="docutils literal notranslate"><span class="pre">records</span></code> and provide the desired list of previous records to use.</p></li>
+<li><div class="line-block">
+<div class="line">If neither <code class="docutils literal notranslate"><span class="pre">previous_proc</span></code> or <code class="docutils literal notranslate"><span class="pre">records</span></code> is specified, it will grab all existing records from the</div>
+<div class="line">artifact manager.</div>
+</div>
+</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">proc1</span> <span class="o">=</span> <span class="n">Procedure</span><span class="p">([</span><span class="o">...</span><span class="p">])</span>
+<span class="n">proc1</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">params1</span><span class="p">)</span>
+<span class="n">proc1</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">params2</span><span class="p">)</span>
+
+<span class="n">proc2</span> <span class="o">=</span> <span class="n">Procedure</span><span class="p">([</span><span class="n">my_aggregate</span><span class="p">],</span> <span class="n">previous_proc</span><span class="o">=</span><span class="n">proc1</span><span class="p">)</span>
+<span class="n">proc2</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># the records created for params1 and params2 will be passed to the aggregate</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="experiment-flow">
+<h3>Experiment flow<a class="headerlink" href="#experiment-flow" title="Permalink to this headline"></a></h3>
+<div class="figure align-center" id="id2">
+<img alt="_images/interactions_experiment.png" src="_images/interactions_experiment.png" />
+<p class="caption"><span class="caption-text">Note that this is a simplified example of an experiment running a single procedure. You can in principle
+define an experiment run function to be as complex as needed.</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+</div>
+<p>An experiment is a relatively free-form way of defining one or more procedures (or manually running stages) to run on any number
+of passed parameter sets. The code for an experiment is user-defined, but the Curifactory <code class="code docutils literal notranslate"><span class="pre">experiment</span></code> CLI
+expects an experiment script to have a function that takes a list of <code class="code docutils literal notranslate"><span class="pre">ExperimentParameters</span></code> instances and an
+artifact manager, and provides many additional tools for working with and getting output from the experiment runs.</p>
+<p>Running a procedure on multiple different parameter sets adds a record to the manager for each one. This
+allows for comparison between the results by getting the records through <code class="code docutils literal notranslate"><span class="pre">manager.records</span></code>.</p>
+</div>
+</div>
+<div class="section" id="anatomy-of-a-stage">
+<h2>Anatomy of a stage<a class="headerlink" href="#anatomy-of-a-stage" title="Permalink to this headline"></a></h2>
+<p>The <code class="code docutils literal notranslate"><span class="pre">&#64;stage</span></code> decorator is placed on every stage function, and this handles passing in the appropriate inputs
+from the record, storing new outputs in the record, checking for previously cached outputs (short-circuiting if so),
+and caching returned results from the function.</p>
+<p>Every stage function is expected to take a <code class="code docutils literal notranslate"><span class="pre">Record</span></code> instance as the first argument. (Procedures automatically handle this.)
+The stage will return the modified record rather than the direct output of the function the stage is decorating. The direct
+function output can be obtained from <code class="code docutils literal notranslate"><span class="pre">record.output</span></code> on the returned record.</p>
+<p>The decorator itself primarily accepts three parameters: <code class="code docutils literal notranslate"><span class="pre">inputs</span></code>, <code class="code docutils literal notranslate"><span class="pre">outputs</span></code>, and optionally <code class="code docutils literal notranslate"><span class="pre">cachers</span></code>.
+The <code class="code docutils literal notranslate"><span class="pre">inputs</span></code> and <code class="code docutils literal notranslate"><span class="pre">outputs</span></code> parameters are arrays of strings, where each string is the name of an artifact
+(piece of data) to retrieve or store on the record.</p>
+<div class="figure align-center">
+<img alt="_images/curifactory_stage_explanation.png" src="_images/curifactory_stage_explanation.png" />
+</div>
+<p>The above example shows how decorator parameters interface with the function. The cachers, if specified,
+direct the stage to store the order-respective output using that type of cacher. When the stage is running,
+if it sees pre-cached data for all requested outputs, it will load and return those instead of evaluating
+the function. (Unless overwrite has been specified in the passed arguments.)</p>
+<p>Note that caching outputs is all or nothing, you cannot cache only some of them - if any cachers are given, one
+must be given for every output.</p>
+</div>
+<div class="section" id="stage-parameters">
+<h2>Stage parameters<a class="headerlink" href="#stage-parameters" title="Permalink to this headline"></a></h2>
+<p>The functions that a stage wraps always take a record as their first argument. As
+mentioned in previous sections, input names given in the stage inputs argument
+must also show up as arguments in the function. The stage wrapper means that
+you can manually call the stage function while only passing it the record, and
+the stage will handle populating the remainder of these parameters:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;my_input&quot;</span><span class="p">],</span> <span class="o">...</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">some_stage</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">my_input</span><span class="p">):</span>
+    <span class="c1"># ...</span>
+
+<span class="n">some_stage</span><span class="p">(</span><span class="n">my_record</span><span class="p">)</span>  <span class="c1"># this is valid even though we pass nothing for my_input</span>
+</pre></div>
+</div>
+<p>The above snippet shows we don’t need to pass (and the point of curifactory is
+to not need to pass) anything in for <code class="code docutils literal notranslate"><span class="pre">my_input</span></code>. As long as a key
+<code class="code docutils literal notranslate"><span class="pre">&quot;my_input&quot;</span></code> exists on the record’s state, this stage will execute. If the
+input key does not exist, a <code class="code docutils literal notranslate"><span class="pre">KeyError</span></code> is raised.</p>
+<p>However, in some cases, we may not <em>strictly</em> need a value to be in the state
+already, if our computation can gracefully handle it. Like a normal function, we
+can specify default values for our parameters in the definition. Note that for
+this to work, we must also instruct the stage to ignore missing input keys in
+the state, which we do by setting the <code class="code docutils literal notranslate"><span class="pre">suppress_missing_inputs</span></code> flag:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;my_input&quot;</span><span class="p">],</span> <span class="o">...</span><span class="p">,</span> <span class="n">suppress_missing_inputs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">some_stage</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">my_input</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1"># ...</span>
+
+<span class="n">some_stage</span><span class="p">(</span><span class="n">my_record</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the above case, the stage will still execute even if <code class="code docutils literal notranslate"><span class="pre">my_input</span></code> does
+not exist, and inside the function its value will be <code class="code docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p>We can also directly pass a specific value for an argument when we call a stage,
+like we would a normal function. Doing so negates the need for the
+<code class="code docutils literal notranslate"><span class="pre">suppress_missing_inputs</span></code> flag, and would override a value from state if
+one exists:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;my_input&quot;</span><span class="p">],</span> <span class="o">...</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">some_stage</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">my_input</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1"># ...</span>
+
+<span class="n">some_stage</span><span class="p">(</span><span class="n">my_record</span><span class="p">,</span> <span class="n">my_input</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this case, <code class="code docutils literal notranslate"><span class="pre">my_input</span></code> inside the stage code will be 42, regardless of
+what it is in state (or even if it doesn’t exist in state.)</p>
+</div>
+<div class="section" id="aggregate-parameters">
+<h2>Aggregate parameters<a class="headerlink" href="#aggregate-parameters" title="Permalink to this headline"></a></h2>
+<p>Functions that an aggregate decorator wraps always take a record as their first argument
+(the same as a normal stage) and then a list of records as the second argument. This list
+of records (and thus parameter sets) is what the aggregate is intended to aggregate across.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">inputs</span></code> argument in the decorator is similar to a regular stage in that you’re requesting
+those named artifacts from the state to be populated in the function definition. However, it gets
+handled slightly differently since the input “state” is coming from multiple records. Each
+input argument in the function definition is populated with a <strong>dictionary</strong> keyed by each
+record that has the requested input in its state, and the associated value is that artifact from
+that record.</p>
+<p>As an example, assume we have three records:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">r0</span> <span class="o">=</span> <span class="n">Record</span><span class="p">()</span>
+<span class="n">r0</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">some_model</span>
+<span class="n">r1</span> <span class="o">=</span> <span class="n">Record</span><span class="p">()</span>
+<span class="n">r1</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">some_other_model</span>
+<span class="n">r1</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">5.0</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="n">Record</span><span class="p">()</span>
+<span class="n">r2</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">6.0</span>
+
+<span class="nd">@aggregate</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;results&quot;</span><span class="p">],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;combined_results&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">combine_results</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">records</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Record</span><span class="p">],</span> <span class="n">model</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Record</span><span class="p">,</span> <span class="nb">any</span><span class="p">],</span> <span class="n">results</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Record</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+    <span class="n">final_results</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># we can loop through only the records that have &quot;results&quot; in state</span>
+    <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">final_results</span><span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+
+        <span class="c1"># we can cross reference the dictinoaries by record</span>
+        <span class="c1"># so if that record had a model we can check:</span>
+        <span class="k">if</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">model</span><span class="p">:</span>
+            <span class="n">associated_model</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="n">r</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">final_results</span>
+
+<span class="n">combine_results</span><span class="p">(</span><span class="n">Record</span><span class="p">(),</span> <span class="p">[</span><span class="n">r0</span><span class="p">,</span> <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>In the above snippet, the <code class="docutils literal notranslate"><span class="pre">records</span></code> list will have the three passed records <code class="docutils literal notranslate"><span class="pre">r0</span></code>, <code class="docutils literal notranslate"><span class="pre">r1</span></code>, and <code class="docutils literal notranslate"><span class="pre">r2</span></code>.
+The <code class="docutils literal notranslate"><span class="pre">model</span></code> parameter will only contain two entries, keys for <code class="docutils literal notranslate"><span class="pre">r0</span></code> and <code class="docutils literal notranslate"><span class="pre">r1</span></code>, and results will have
+two keys <code class="docutils literal notranslate"><span class="pre">r1</span></code> and <code class="docutils literal notranslate"><span class="pre">r2</span></code>.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="getting_started.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="parameters.html" class="btn btn-neutral float-right" title="Parameter files and parameter sets" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

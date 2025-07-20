@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Components" href="components.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#basic-components">Basic components</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#artifact-manager">Artifact manager</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#records">Records</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stages">Stages</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#caching-and-reporting">Caching and reporting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#caching">Caching</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lazy-loading">Lazy loading</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reporting">Reporting</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#experiment-organization">Experiment organization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basic-mechanics">Basic mechanics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-experiment-script-file">The experiment script file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-experiment-cli">The experiment CLI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parameter-files">Parameter files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#organization-of-growing-projects">Organization of growing projects</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and parameter sets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing_mechanics.html">Hashing Mechanics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment_graph.html">Experiment Graph (DAG)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Curifactory Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dag.html">DAG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing.html">Hashing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="params.html">Params</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Getting Started</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/getting_started.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline"></a></h1>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>It is strongly recommended to use curifactory from within a git repo to
+support experiment reproducibility and provenance (every run will record the
+current git commit hash.) The <code class="docutils literal notranslate"><span class="pre">curifactory</span> <span class="pre">init</span></code> command will prompt you
+to run <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">init</span></code> if the <code class="docutils literal notranslate"><span class="pre">.git</span></code> folder is not detected. Any experiment
+runs executed outside of a git repo will carry an associated warning in the
+output log and report.</p>
+</div>
+<div class="section" id="basic-components">
+<h2>Basic components<a class="headerlink" href="#basic-components" title="Permalink to this headline"></a></h2>
+<p>This section follows the <a class="reference external" href="https://github.com/ORNL/curifactory/blob/main/examples/notebooks/0_BasicComponents.ipynb">0_BasicComponents</a> notebook. We first
+introduce the four basic components of curifactory and
+show how to use them from a within a live context. (A live context is either a
+notebook, REPL, or non-experiment script.)</p>
+<p>These components are:</p>
+<ul class="simple">
+<li><p>the artifact manager</p></li>
+<li><p>parameters</p></li>
+<li><p>records</p></li>
+<li><p>stages</p></li>
+</ul>
+<div class="figure align-center">
+<img alt="_images/components_all.png" src="_images/components_all.png" />
+</div>
+<div class="section" id="artifact-manager">
+<h3>Artifact manager<a class="headerlink" href="#artifact-manager" title="Permalink to this headline"></a></h3>
+<p>First up is the <strong>artifact manager</strong>. <code class="docutils literal notranslate"><span class="pre">ArtifactManager</span></code> is a class
+representing a session that tracks metadata and generated objects from
+experiment code.</p>
+<p>When an artifact manager is instantiated, it creates a new “experiment
+run”, which will have an associated log file and can generate a run-specific
+report.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">ArtifactManager</span>
+
+<span class="n">manager</span> <span class="o">=</span> <span class="n">ArtifactManager</span><span class="p">(</span><span class="s2">&quot;notebook_example_0&quot;</span><span class="p">)</span> <span class="c1"># we pass in a name to associate with this run.</span>
+</pre></div>
+</div>
+<div class="figure align-center" id="id1">
+<img alt="_images/components_manager.png" src="_images/components_manager.png" />
+<p class="caption"><span class="caption-text">The artifact manager contains and keeps track of the overall session for the experiment stuff.</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+</div>
+</div>
+<div class="section" id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline"></a></h3>
+<p>The next component is <strong>parameters</strong>. Parameter classes are a way to
+define how research code can be configured, e.g. how many layers to
+include in a neural network. By defining and initializing these directly
+in python, we have the ability to dynamically create experiment
+parameter configurations, compose them, etc.</p>
+<p>Curifactory comes with an <code class="docutils literal notranslate"><span class="pre">ExperimentParameters</span></code> base class that all
+custom parameter classes should inherit from. <code class="docutils literal notranslate"><span class="pre">ExperimentParameters</span></code>
+includes a <code class="docutils literal notranslate"><span class="pre">name</span></code> parameter, allowing you to provide a label for the
+parameter sets.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For best ergonomics, we recommend defining an parameter class with the python
+<code class="docutils literal notranslate"><span class="pre">&#64;dataclass</span></code> decorator. This makes it easy to define defaults and
+quickly view your parameter definitions simply as a collection of
+attributes.</p>
+</div>
+<p>Parameter sets can then be initialized, passed around, and used within your
+research code, making it easy to organize and keep track of hyperparameters.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">ExperimentParameters</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">MyParams</span><span class="p">(</span><span class="n">ExperimentParameters</span><span class="p">):</span>
+    <span class="n">some_scalar_multiplier</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+<span class="c1"># define a couple argument sets</span>
+<span class="n">default_params</span> <span class="o">=</span> <span class="n">MyParams</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">)</span>
+<span class="n">doubled_params</span> <span class="o">=</span> <span class="n">MyParams</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;doubled&quot;</span><span class="p">,</span> <span class="n">some_scalar_multiplier</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="figure align-center" id="id2">
+<img alt="_images/components_args.png" src="_images/components_args.png" />
+<p class="caption"><span class="caption-text">Creating and passing different parameter sets through the experiment stuff
+will give us different sets of results in the manager we can compare.</span><a class="headerlink" href="#id2" title="Permalink to this image"></a></p>
+</div>
+</div>
+<div class="section" id="records">
+<h3>Records<a class="headerlink" href="#records" title="Permalink to this headline"></a></h3>
+<p>A <strong>record</strong> is how curifactory keeps track of state in an experiment
+run. “State” includes the data, objects, and results associated with a specific
+parameter set, e.g. a trained model that came from using a particular
+<code class="docutils literal notranslate"><span class="pre">MyParams</span></code> instance. The <code class="docutils literal notranslate"><span class="pre">Record</span></code> class is initialized with the
+current manager as well as the argument set to use. Records
+have a <code class="docutils literal notranslate"><span class="pre">state</span></code> dictionary, which holds intermediate data and objects
+as research code is evaluated.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">Record</span>
+
+<span class="n">r0</span> <span class="o">=</span> <span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">default_params</span><span class="p">)</span>
+<span class="n">r1</span> <span class="o">=</span> <span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">doubled_params</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">r0</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">r0</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+<span class="c1">#&gt; {} MyParams(name=&#39;default&#39;, hash=None, overwrite=False, some_scalar_multiplier=1.0)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">r1</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">r1</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+<span class="c1">#&gt; {} MyParams(name=&#39;doubled&#39;, hash=None, overwrite=False, some_scalar_multiplier=2.0)</span>
+</pre></div>
+</div>
+<div class="figure align-center" id="id3">
+<img alt="_images/components_records.png" src="_images/components_records.png" />
+<p class="caption"><span class="caption-text">The state for each record is what’s actually storing the results from the
+experiment stuff for each given parameter set.</span><a class="headerlink" href="#id3" title="Permalink to this image"></a></p>
+</div>
+</div>
+<div class="section" id="stages">
+<h3>Stages<a class="headerlink" href="#stages" title="Permalink to this headline"></a></h3>
+<p>A <strong>stage</strong> represents a small, well-defined abstraction around portions
+of research code which process some set of inputs and create a set of
+outputs. A stage acts on a given record by taking the requested
+inputs from that record’s state, evaluating some code, and returning values
+that are then stored in the record’s state. This is implemented with a
+<code class="docutils literal notranslate"><span class="pre">&#64;stage</span></code> decorator which takes an array of string input names and an
+array of string output names. Functions with the <code class="docutils literal notranslate"><span class="pre">&#64;stage</span></code> decorator
+must accept a record as the first argument.</p>
+<p>Inside the stage, the record object that is passed in can be used to get
+the current parameter set and parameterize the computation,
+via the <code class="docutils literal notranslate"><span class="pre">record.params</span></code> attribute.</p>
+<p>In the example below, we’ve defined a very simple stage that will store
+a number in the record’s state under the “initial_value” key.</p>
+<p>Running a stage works by calling the function and passing it the
+record. The record itself is changed in-place, but it is also
+directly returned from the stage call. This allows functionally chaining
+stages, which we demonstate later on.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">stage</span>
+
+<span class="nd">@stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;initial_value&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">get_initial_value</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+    <span class="n">my_value</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="k">return</span> <span class="n">my_value</span> <span class="o">*</span> <span class="n">record</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">some_scalar_multiplier</span>
+
+<span class="n">r0</span> <span class="o">=</span> <span class="n">get_initial_value</span><span class="p">(</span><span class="n">r0</span><span class="p">)</span>
+<span class="n">r1</span> <span class="o">=</span> <span class="n">get_initial_value</span><span class="p">(</span><span class="n">r1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After running both records through our stage, printing the states shows
+the returned <code class="docutils literal notranslate"><span class="pre">initial_value</span></code> data.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">r0</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">r1</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+<span class="c1">#&gt; {&#39;initial_value&#39;: 5.0} {&#39;initial_value&#39;: 10.0}</span>
+</pre></div>
+</div>
+<div class="figure align-center" id="id4">
+<img alt="_images/components_stages.png" src="_images/components_stages.png" />
+<p class="caption"><span class="caption-text">Stages are the “experiment stuff”. A stage uses and modifies the state of a passed record. This is where the
+experiment code actually runs, taking any necessary inputs from the passed
+record state and storing any returned outputs back into it.</span><a class="headerlink" href="#id4" title="Permalink to this image"></a></p>
+</div>
+<p>Specifying inputs on the stage decorator tells curifactory to search for
+those keys in the state of the passed record. Those values are then
+injected into the record call as kwargs. Note that the argument names
+in the function definition must match the string values of the inputs
+array.</p>
+<p><code class="docutils literal notranslate"><span class="pre">&quot;initial_value&quot;</span></code> was added to the state from the
+<code class="docutils literal notranslate"><span class="pre">get_initial_value</span></code> stage, so we implement a stage below that expects
+that piece of data and computes a new value based on it.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;initial_value&quot;</span><span class="p">],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;final_value&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">multiply_again</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">initial_value</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">initial_value</span> <span class="o">*</span> <span class="n">record</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">some_scalar_multiplier</span>
+
+<span class="n">r1</span> <span class="o">=</span> <span class="n">multiply_again</span><span class="p">(</span><span class="n">r1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">r1</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+<span class="c1">#&gt; {&#39;initial_value&#39;: 10.0, &#39;final_value&#39;: 20.0}</span>
+</pre></div>
+</div>
+<p>As mentioned before, since a stage accepts and returns a record, stages
+can be functionally chained together:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">r2</span> <span class="o">=</span> <span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">MyParams</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;uber-double&quot;</span><span class="p">,</span> <span class="n">some_scalar_multiplier</span><span class="o">=</span><span class="mf">4.0</span><span class="p">))</span>
+
+<span class="n">r2</span> <span class="o">=</span> <span class="n">multiply_again</span><span class="p">(</span><span class="n">get_initial_value</span><span class="p">(</span><span class="n">r2</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">r2</span><span class="o">.</span><span class="n">state</span><span class="p">,</span> <span class="n">r2</span><span class="o">.</span><span class="n">params</span><span class="p">)</span>
+<span class="c1">#&gt; {&#39;initial_value&#39;: 20.0, &#39;final_value&#39;: 80.0} MyParams(name=&#39;uber-double&#39;, hash=None, overwrite=False, some_scalar_multiplier=4.0)</span>
+</pre></div>
+</div>
+<div class="figure align-center" id="id5">
+<img alt="_images/components_stages_in_context.png" src="_images/components_stages_in_context.png" />
+<p class="caption"><span class="caption-text">Records can be “pipelined” through sequences of stages to create a full
+experiment composed of larger abstract steps.</span><a class="headerlink" href="#id5" title="Permalink to this image"></a></p>
+</div>
+<p>Records and stages represent linear chains of compute steps, but
+in many cases it’s important to compare results and data across multiple pieces
+of an experiment run (e.g. comparing the scores of an SVM with the
+scores of a logistic regression algorithm.) <code class="docutils literal notranslate"><span class="pre">&#64;aggregate</span></code> decorated
+functions are a special kind of stage that additionally take a collection of
+records to compute over. Aggregate stages still produce outputs and both take
+and return a single record associated with it, meaning additional regular
+stages can be chained after an aggregate stage.</p>
+<p>We specify inputs to an <code class="docutils literal notranslate"><span class="pre">&#64;aggregate</span></code> decorator the same way we do with
+<code class="docutils literal notranslate"><span class="pre">&#64;stage</span></code>, with a list of string names of artifacts from record state, and the
+function definition still needs to have correspondingly named arguments for
+those inputs. However, since an aggregate takes multiple records, these input
+arguments are populated with dictionaries where each key is a record that has
+the requested input in its state, and the value is that object in the state. Any
+records that don’t have the requested input will throw a warning, and will be
+absent from that dictionary.</p>
+<p><code class="docutils literal notranslate"><span class="pre">&#64;aggregate</span></code> decorated stages must take the single record as the first parameter
+(like a normal stage,) and the collection of records to compute over as the
+second, followed by the arguments for any specified inputs.</p>
+<p>In the example below, we iterate through the records to create a
+dictionary of all associated <code class="docutils literal notranslate"><span class="pre">final_value</span></code> entries from each record’s
+state, and then determine the maximum.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">aggregate</span>
+
+<span class="nd">@aggregate</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;final_value&quot;</span><span class="p">],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;all_final_values&quot;</span><span class="p">,</span> <span class="s2">&quot;maximum_value&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">find_maximum_final_value</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">records</span><span class="p">,</span> <span class="n">final_value</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Record</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+    <span class="n">all_vals</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">final_value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">all_vals</span><span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="n">maximum</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">all_vals</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">all_vals</span><span class="p">,</span> <span class="n">maximum</span>
+</pre></div>
+</div>
+<p>Sometimes an aggregate doesn’t really need its own parameter set, e.g. if it’s
+simply comparing results from other records. In these cases, records can be initialized with <code class="docutils literal notranslate"><span class="pre">None</span></code> passed as the
+parameter set. In the cell below, we manually pass our previous records into
+the stage, but note that if we pass <code class="docutils literal notranslate"><span class="pre">None</span></code> for records (the default) it will take all existing records in the manager.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">final_record</span> <span class="o">=</span> <span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">final_record</span> <span class="o">=</span> <span class="n">find_maximum_final_value</span><span class="p">(</span><span class="n">final_record</span><span class="p">,</span> <span class="p">[</span><span class="n">r0</span><span class="p">,</span> <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">final_record</span><span class="o">.</span><span class="n">state</span><span class="p">)</span>
+<span class="c1">#&gt; {&#39;all_final_values&#39;: {&#39;doubled&#39;: 20.0, &#39;uber-double&#39;: 80.0}, &#39;maximum_value&#39;: 80.0}</span>
+</pre></div>
+</div>
+<p>Note that we ran our aggregate stage on three records, the first one of which
+(<code class="docutils literal notranslate"><span class="pre">r0</span></code>) did not have a <code class="docutils literal notranslate"><span class="pre">final_value</span></code> artifact in state. While <code class="docutils literal notranslate"><span class="pre">r0</span></code> will still be
+passed in the <code class="docutils literal notranslate"><span class="pre">records</span></code> list that the aggregate stage has access to, the
+<code class="docutils literal notranslate"><span class="pre">final_value</span></code> dictionary only had entries for <code class="docutils literal notranslate"><span class="pre">r1</span></code> and <code class="docutils literal notranslate"><span class="pre">r2</span></code>, so the output
+artifact <code class="docutils literal notranslate"><span class="pre">all_final_values</span></code> only lists those two parameter sets.</p>
+<div class="figure align-center">
+<img alt="_images/aggregates.png" src="_images/aggregates.png" />
+</div>
+<p>To recap, the artifact manager keeps track of the overall session for a
+run, the “experiment run container”. Parameter sets are created with
+different hyperparameters to test a hypothesis or vary the experiment.
+Records track state changes and intermediate data associated with a
+parameter set throughout the experiment. Stages are what modify record state,
+they apply research code
+to the passed records based on their associated parameters, and the
+results for each stage are stored back into the record’s now modified
+state.</p>
+<div class="figure align-center">
+<img alt="_images/components_all.png" src="_images/components_all.png" />
+</div>
+</div>
+</div>
+<div class="section" id="caching-and-reporting">
+<h2>Caching and reporting<a class="headerlink" href="#caching-and-reporting" title="Permalink to this headline"></a></h2>
+<p>This section follows the <a class="reference external" href="https://github.com/ORNL/curifactory/blob/main/examples/notebooks/1_CachingAndReporting.ipynb">1_CachingAndReporting</a> notebook. Here we demonstrate some features the previously discussed components
+enable. Two major abilities are easily caching
+objects (to short circuit computation of already-computed values) and
+quickly adding graphs and other “reportables” to a jupyter
+display or a generated HTML experiment run report.</p>
+<p>First we create an artifact manager, an args class, and some arg sets like in
+the previous example:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">import</span> <span class="nn">curifactory</span> <span class="k">as</span> <span class="nn">cf</span>
+
+<span class="n">manager</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">ArtifactManager</span><span class="p">(</span><span class="s2">&quot;notebook_example_1&quot;</span><span class="p">)</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Params</span><span class="p">(</span><span class="n">cf</span><span class="o">.</span><span class="n">ExperimentParameters</span><span class="p">):</span>
+    <span class="n">my_parameter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">default_params</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">)</span>
+<span class="n">doubled_params</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;doubled&quot;</span><span class="p">,</span> <span class="n">my_parameter</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="caching">
+<h3>Caching<a class="headerlink" href="#caching" title="Permalink to this headline"></a></h3>
+<p>Caching is done at each stage by listing a
+<code class="docutils literal notranslate"><span class="pre">curifactory.Cacheable</span></code> subclass for each output. After the stage
+runs, each cacher will save the returned object in the data cache path.
+The cached filename includes the name of the experiment (the string passed
+to <code class="docutils literal notranslate"><span class="pre">ArtifactManager</span></code>, “notebook_example_1” in this case), the hash
+string of the parameters (see the <a class="reference internal" href="hashing_mechanics.html#hashing-mechanics"><span class="std std-ref">Hashing Mechanics</span></a> page for more information on
+how this gets calculated), the name of the stage doing the caching, and
+the name of the output itself.</p>
+<p>On any subsequent run of that stage, the cachers all check to see if
+their file has already been created, and if it has, they directly load
+the object from file and return it rather than running the stage code.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">&#64;stage</span></code> decorator has a <code class="docutils literal notranslate"><span class="pre">cachers</span></code> parameter which should be
+given a list of the cachers to use for the associated
+outputs list. Curifactory comes with a set of default cachers you can
+use, including <code class="docutils literal notranslate"><span class="pre">JsonCacher</span></code>, <code class="docutils literal notranslate"><span class="pre">PandasCSVCacher</span></code>,
+<code class="docutils literal notranslate"><span class="pre">PandasJsonCacher</span></code>, and <code class="docutils literal notranslate"><span class="pre">PickleCacher</span></code>.</p>
+<p>In the example below, we define a “long-running compute” stage, to
+demonstrate cachers short-circuiting computation:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+<span class="kn">from</span> <span class="nn">curifactory.caching</span> <span class="kn">import</span> <span class="n">JsonCacher</span>
+
+<span class="nd">@cf</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;long-compute-data&quot;</span><span class="p">],</span> <span class="n">cachers</span><span class="o">=</span><span class="p">[</span><span class="n">JsonCacher</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">long_compute_step</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+    <span class="n">some_data</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;my_value&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">my_parameter</span><span class="p">,</span>
+        <span class="s2">&quot;magic_value&quot;</span><span class="p">:</span> <span class="mi">42</span>
+    <span class="p">}</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c1"># making dictionaries is hard work</span>
+    <span class="k">return</span> <span class="n">some_data</span>
+</pre></div>
+</div>
+<p>We run a record through our long running stage, and as expected it takes
+5 seconds:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">r0</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">default_params</span><span class="p">)</span>
+<span class="n">r0</span> <span class="o">=</span> <span class="n">long_compute_step</span><span class="p">(</span><span class="n">r0</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CPU</span> <span class="n">times</span><span class="p">:</span> <span class="n">total</span><span class="p">:</span> <span class="mi">0</span> <span class="n">ns</span>
+<span class="n">Wall</span> <span class="n">time</span><span class="p">:</span> <span class="mi">5</span> <span class="n">s</span>
+</pre></div>
+</div>
+<p>Inspecting our cache path now, there’s a new json entry for our output,
+which we can load up and see is the output from our stage:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">&quot;data/cache&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">()</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;data/cache/</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s1">&#39;data/cache&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">infile</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">infile</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;notebook_example_1_c504fab1c3ccad16d1e3ef540001172c_long_compute_step_long-compute-data.json&#39;</span><span class="p">]</span>
+
+<span class="p">{</span><span class="s1">&#39;my_value&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;magic_value&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>If we run the stage again with a record using the same parameter set as the
+previous time, it finds the correct cached output and returns before
+running the stage code:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+<span class="n">r1</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">default_params</span><span class="p">)</span>
+<span class="n">r1</span> <span class="o">=</span> <span class="n">long_compute_step</span><span class="p">(</span><span class="n">r1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CPU</span> <span class="n">times</span><span class="p">:</span> <span class="n">total</span><span class="p">:</span> <span class="mi">0</span> <span class="n">ns</span>
+<span class="n">Wall</span> <span class="n">time</span><span class="p">:</span> <span class="mi">0</span> <span class="n">ns</span>
+</pre></div>
+</div>
+<p>Using a different parameter set results in a different cache path, so
+computations with different parameters won’t conflict:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">r2</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">doubled_params</span><span class="p">)</span>
+<span class="n">r2</span> <span class="o">=</span> <span class="n">long_compute_step</span><span class="p">(</span><span class="n">r2</span><span class="p">)</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">&quot;data/cache&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;notebook_example_1_2c48da4b242c95c4eafac7e88872d319_long_compute_step_long-compute-data.json&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;notebook_example_1_c504fab1c3ccad16d1e3ef540001172c_long_compute_step_long-compute-data.json&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="lazy-loading">
+<h3>Lazy loading<a class="headerlink" href="#lazy-loading" title="Permalink to this headline"></a></h3>
+<p>One potential pitfall with caching is that it will always load
+the object into memory, even if that object is never used. Projects with
+very large data objects can run into memory problems as a result.
+Curifactory includes a <code class="docutils literal notranslate"><span class="pre">Lazy</span></code> class that can wrap around a stage
+output string name - when it is first computed, the cacher saves it and
+the object is removed from memory (replaced in the record state with a
+<code class="docutils literal notranslate"><span class="pre">Lazy</span></code> instance.) When the lazy object is accessed, it will reload the
+object into memory from cache at that point.</p>
+<p>This means that in a sequence of stages where all values are cached,
+earlier stage outputs may never need to load into memory at all.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">curifactory.caching</span> <span class="kn">import</span> <span class="n">Lazy</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="nd">@cf</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="n">Lazy</span><span class="p">(</span><span class="s2">&quot;very-large-object&quot;</span><span class="p">)],</span> <span class="n">cachers</span><span class="o">=</span><span class="p">[</span><span class="n">JsonCacher</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">make_mega_big_object</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+    <span class="n">mega_big</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">1024</span><span class="o">*</span><span class="mi">1024</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">mega_big</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">mega_big</span>
+
+<span class="n">r3</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">default_params</span><span class="p">)</span>
+<span class="n">r3</span> <span class="o">=</span> <span class="n">make_mega_big_object</span><span class="p">(</span><span class="n">r3</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">r3</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">resolve</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">r3</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;very-large-object&#39;</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">r3</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;very-large-object&#39;</span><span class="p">]))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;class &#39;curifactory.caching.Lazy&#39;&gt;
+48
+</pre></div>
+</div>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">Record.state</span></code> is actually a custom subclass of <code class="docutils literal notranslate"><span class="pre">dict</span></code>,
+and by default it will automatically resolve lazy objects any time they’re
+accessed on the state. the above cell turns this functionality off (with
+<code class="docutils literal notranslate"><span class="pre">state.resolve</span> <span class="pre">=</span> <span class="pre">False</span></code>) to show that what’s actually in memory before
+a resolved access is just the lazy object, which is significantly
+smaller.</p>
+<p>When the record’s state resolve is at it’s default value of <code class="docutils literal notranslate"><span class="pre">True</span></code>:</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">r3</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">resolve</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">r3</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;very-large-object&#39;</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">r3</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="s1">&#39;very-large-object&#39;</span><span class="p">]))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;class &#39;list&#39;&gt;
+8697456
+</pre></div>
+</div>
+</div>
+<div class="section" id="reporting">
+<h3>Reporting<a class="headerlink" href="#reporting" title="Permalink to this headline"></a></h3>
+<p>A major part of experiments for debugging, understanding, and
+publishing them is the ability to present results and pretty graphs! This can be a
+challenge to keep organized, as one tries to manage folders for
+matplotlib graph images, result tables, and so on. Curifactory provides
+shortcuts to easily create <code class="docutils literal notranslate"><span class="pre">Reportable</span></code> items from inside stages,
+which the artifact manager can then display inside an experiment run report in its own uniquely named
+run folder, which contains all of the information about the run, all of
+the created reportables, and a map of the stages that were run. Many of
+these report components can be rendered inside a notebook as well.</p>
+<p>Every record has a <code class="docutils literal notranslate"><span class="pre">report</span></code> function that takes a <code class="docutils literal notranslate"><span class="pre">Reportable</span></code>
+subclass. Curifactory includes multiple default reporters, such as
+<code class="docutils literal notranslate"><span class="pre">DFReporter</span></code>, <code class="docutils literal notranslate"><span class="pre">FigureReporter</span></code>, <code class="docutils literal notranslate"><span class="pre">HTMLReporter</span></code>, <code class="docutils literal notranslate"><span class="pre">JsonReporter</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">LinePlotReporter</span></code>.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">curifactory.reporting</span> <span class="kn">import</span> <span class="n">LinePlotReporter</span>
+
+<span class="nd">@cf</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;line_history&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">make_pretty_graphs</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+    <span class="n">multiplier</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">my_parameter</span>
+
+    <span class="c1"># here we just make a bunch of example arrays of data to plot</span>
+    <span class="n">line_0</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span> <span class="o">*</span> <span class="n">multiplier</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">multiplier</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">multiplier</span><span class="p">]</span>
+    <span class="n">line_1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">multiplier</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">multiplier</span><span class="p">,</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">multiplier</span><span class="p">]</span>
+    <span class="n">line_2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+
+    <span class="c1"># a LinePlotReporter makes a nicely formatted matplotlib graph</span>
+    <span class="n">record</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">LinePlotReporter</span><span class="p">(</span><span class="n">line_0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;single_line_plot&quot;</span><span class="p">))</span>
+    <span class="n">record</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">LinePlotReporter</span><span class="p">(</span>
+        <span class="n">y</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;ascending&quot;</span><span class="p">:</span> <span class="n">line_0</span><span class="p">,</span>
+            <span class="s2">&quot;descending&quot;</span><span class="p">:</span> <span class="n">line_1</span><span class="p">,</span>
+            <span class="s2">&quot;static&quot;</span><span class="p">:</span> <span class="n">line_2</span>
+        <span class="p">},</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;multi_line_plot&quot;</span>
+    <span class="p">))</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">line_0</span><span class="p">,</span> <span class="n">line_1</span><span class="p">,</span> <span class="n">line_2</span><span class="p">]</span>
+
+<span class="n">r4</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">default_params</span><span class="p">)</span>
+<span class="n">r5</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">doubled_params</span><span class="p">)</span>
+
+<span class="n">r4</span> <span class="o">=</span> <span class="n">make_pretty_graphs</span><span class="p">(</span><span class="n">r4</span><span class="p">)</span>
+<span class="n">r5</span> <span class="o">=</span> <span class="n">make_pretty_graphs</span><span class="p">(</span><span class="n">r5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The example stage above adds a couple simple line plots to any record
+that is run through it.</p>
+<p>When inside of a jupyter notebook or jupyter lab, the manager includes
+several display functions that allow you to render portions of the
+report directly in the notebook.</p>
+<p>A few of these are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">display_info()</span></code> - renders the top block of the report, containing
+metadata about the run</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">display_all_reportables()</span></code> - renders all reportables in the manager</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">display_record_reportables(record)</span></code> - renders only the reportables
+associated with the passed record</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">display_stage_graph()</span></code> - renders a diagram of all the records,
+state objects, and stages. Note that graphviz must be installed for
+these to generate correctly.</p></li>
+</ul>
+<div class="figure align-center">
+<img alt="_images/getting_started_display_info.png" src="_images/getting_started_display_info.png" />
+</div>
+<div class="figure align-center">
+<img alt="_images/getting_started_display_all_reportables.png" src="_images/getting_started_display_all_reportables.png" />
+</div>
+<div class="figure align-center">
+<img alt="_images/getting_started_display_record_reportables.png" src="_images/getting_started_display_record_reportables.png" />
+</div>
+<div class="figure align-center">
+<img alt="_images/getting_started_display_stage_graph.png" src="_images/getting_started_display_stage_graph.png" />
+</div>
+<p>Finally, a full HTML report can be produced with the
+<code class="docutils literal notranslate"><span class="pre">generate_report()</span></code> function. This will create a run-specific folder
+to contain the report and all rendered reportables, inside the reports
+path. Additionally, every time a report is generated, an overall project
+report index is put directly in the reports path, which lists and links
+to all of the individual reports.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">manager</span><span class="o">.</span><span class="n">generate_report</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2022</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">03</span> <span class="mi">10</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mi">11</span><span class="p">,</span><span class="mi">821</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">-</span> <span class="n">Generating</span> <span class="n">report</span><span class="o">...</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">03</span> <span class="mi">10</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mi">11</span><span class="p">,</span><span class="mi">821</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">-</span> <span class="n">Preparing</span> <span class="n">report</span> <span class="n">path</span> <span class="s1">&#39;reports/_latest&#39;</span><span class="o">...</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">03</span> <span class="mi">10</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span><span class="mi">360</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">-</span> <span class="n">Preparing</span> <span class="n">report</span> <span class="n">path</span> <span class="s1">&#39;reports/notebook_example_1_5_2022-02-03-T105859&#39;</span><span class="o">...</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">03</span> <span class="mi">10</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span><span class="mi">945</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">-</span> <span class="n">Updating</span> <span class="n">report</span> <span class="n">index</span><span class="o">...</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">03</span> <span class="mi">10</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span><span class="mi">945</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">-</span>     <span class="mi">2</span> <span class="n">labeled</span> <span class="n">reports</span> <span class="n">found</span>
+<span class="mi">2022</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">03</span> <span class="mi">10</span><span class="p">:</span><span class="mi">59</span><span class="p">:</span><span class="mi">12</span><span class="p">,</span><span class="mi">945</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="o">-</span>     <span class="mi">0</span> <span class="n">informal</span> <span class="n">runs</span> <span class="n">found</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">&quot;reports&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s1">&#39;index.html&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;notebook_example_1_4_2022-02-03-T092555&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;notebook_example_1_5_2022-02-03-T105859&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;style.css&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;_latest&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>For more information on reports, see the <a class="reference internal" href="reports.html#reports"><span class="std std-ref">Reports</span></a> section.</p>
+</div>
+</div>
+<div class="section" id="experiment-organization">
+<h2>Experiment organization<a class="headerlink" href="#experiment-organization" title="Permalink to this headline"></a></h2>
+<p>While the above sections demonstrate how to use curifactory in
+notebooks or a python shell, most of the power of curifactory comes from its ability to help
+organize experiment scripts and conduct more formal experiment runs with the
+included <code class="code docutils literal notranslate"><span class="pre">experiment</span></code> CLI tool.</p>
+<div class="section" id="basic-mechanics">
+<h3>Basic mechanics<a class="headerlink" href="#basic-mechanics" title="Permalink to this headline"></a></h3>
+<p>An official experiment in curifactory fundamentally relies on two functions:</p>
+<ul class="simple">
+<li><p>A <code class="code docutils literal notranslate"><span class="pre">run()</span></code> function that defines the experiment code to execute.
+This is where the code for creating records and running them through stages as shown in the previous sections would go.</p></li>
+<li><p>One (or more) <code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> function(s) that return a list of arguments to
+apply to an experiment run.</p></li>
+</ul>
+<p>When these two functions are in place, curifactory takes the list of arguments
+computed from <code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> and passes it into the <code class="code docutils literal notranslate"><span class="pre">run()</span></code> function
+along with a fully initialized <code class="code docutils literal notranslate"><span class="pre">ArtifactManager</span></code>.</p>
+<div class="figure align-center">
+<img alt="_images/curifactory_run_mechanics.png" src="_images/curifactory_run_mechanics.png" />
+</div>
+<p>These mechanics provide a methodical way of creating curifactory-based runnables
+for a research project, and are what allows curifactory to inject its features into
+each experiment run (e.g. automatic logging, reporting, and a single
+CLI interface for interacting with the experiment runs.)</p>
+</div>
+<div class="section" id="the-experiment-script-file">
+<h3>The experiment script file<a class="headerlink" href="#the-experiment-script-file" title="Permalink to this headline"></a></h3>
+<p>So where do these functions go?</p>
+<p>At its core, curifactory’s usage is based around “experiment scripts”, which are
+python files in the experiment module path (part of curifactory’s configuration
+established with the <code class="code docutils literal notranslate"><span class="pre">curifactory</span> <span class="pre">init</span></code> command, by default this is a folder in
+the project root <code class="code docutils literal notranslate"><span class="pre">experiments/</span></code>, see <a class="reference internal" href="config.html#configuration-and-directory-structure"><span class="std std-ref">Configuration and directory structure</span></a>).</p>
+<p>Experiment scripts must implement the aforementioned <code class="code docutils literal notranslate"><span class="pre">run()</span></code> function, which takes
+a list of <code class="code docutils literal notranslate"><span class="pre">ExperimentParameters</span></code> subclass instances and an <code class="code docutils literal notranslate"><span class="pre">ArtifactManager</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">curifactory</span> <span class="k">as</span> <span class="nn">cf</span>
+
+<span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">param_sets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">cf</span><span class="o">.</span><span class="n">ExperimentParameters</span><span class="p">],</span> <span class="n">manager</span><span class="p">:</span> <span class="n">cf</span><span class="o">.</span><span class="n">ArtifactManager</span><span class="p">):</span>
+    <span class="c1"># 1. make records</span>
+    <span class="c1"># 2. run stages</span>
+    <span class="c1"># 3. ???</span>
+    <span class="c1"># 4. PROFIT!</span>
+</pre></div>
+</div>
+<p>Stage implementations can go anywhere in your codebase, but for our simple
+example (or perhaps for stages that are only ever relevant to a specific
+experiment) we can include the stages directly in our experiment file. An
+example experiment setup with some stages might look like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">curifactory</span> <span class="k">as</span> <span class="nn">cf</span>
+<span class="kn">from</span> <span class="nn">curifactory.caching</span> <span class="kn">import</span> <span class="n">PickleCacher</span><span class="p">,</span> <span class="n">JsonCacher</span>
+
+<span class="nd">@cf</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;training_data&quot;</span><span class="p">,</span> <span class="s2">&quot;testing_data&quot;</span><span class="p">],</span> <span class="n">cachers</span><span class="o">=</span><span class="p">[</span><span class="n">PickleCacher</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+    <span class="c1"># ...</span>
+
+<span class="nd">@cf</span><span class="o">.</span><span class="n">stage</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;training_data&quot;</span><span class="p">],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">],</span> <span class="n">cachers</span><span class="o">=</span><span class="p">[</span><span class="n">PickleCacher</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">train_model</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">training_data</span><span class="p">):</span>
+    <span class="c1"># ...</span>
+
+<span class="nd">@cf</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;scores&quot;</span><span class="p">],</span> <span class="n">cachers</span><span class="o">=</span><span class="p">[</span><span class="n">JsonCacher</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">test_models</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">records</span><span class="p">):</span>
+    <span class="c1"># ...</span>
+
+<span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">param_sets</span><span class="p">,</span> <span class="n">manager</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">param_set</span> <span class="ow">in</span> <span class="n">param_sets</span><span class="p">:</span>
+        <span class="n">record</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">param_set</span><span class="p">)</span>
+        <span class="n">train_model</span><span class="p">(</span><span class="n">load_data</span><span class="p">(</span><span class="n">record</span><span class="p">))</span>
+
+    <span class="n">test_models</span><span class="p">(</span><span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>We can add in the parameters class that the stages need, and then make a basic
+<code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> function to give us some parameter sets to compare a logistic
+regression model versus a random forest classifier.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">ClassifierMixin</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+
+<span class="kn">import</span> <span class="nn">curifactory</span> <span class="k">as</span> <span class="nn">cf</span>
+<span class="kn">from</span> <span class="nn">curifactory.caching</span> <span class="kn">import</span> <span class="n">PickleCacher</span><span class="p">,</span> <span class="n">JsonCacher</span>
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Params</span><span class="p">(</span><span class="n">cf</span><span class="o">.</span><span class="n">ExperimentParameters</span><span class="p">):</span>
+    <span class="n">balanced</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether class weights should be balanced or not.&quot;&quot;&quot;</span>
+    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The number of trees for a random forest.&quot;&quot;&quot;</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The random state seed for data splitting and model training.&quot;&quot;&quot;</span>
+    <span class="n">model_type</span><span class="p">:</span> <span class="n">ClassifierMixin</span> <span class="o">=</span> <span class="n">LogisticRegression</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The sklearn model to use.&quot;&quot;&quot;</span>
+
+<span class="k">def</span> <span class="nf">get_params</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;simple_lr&quot;</span><span class="p">,</span> <span class="n">balanced</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="n">LogisticRegression</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;simple_rf&quot;</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="n">RandomForestClassifier</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="p">]</span>
+
+<span class="c1"># ...</span>
+<span class="c1"># stages</span>
+<span class="c1"># ...</span>
+
+<span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">param_sets</span><span class="p">,</span> <span class="n">manager</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">param_set</span> <span class="ow">in</span> <span class="n">param_sets</span><span class="p">:</span>
+        <span class="n">record</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="n">param_set</span><span class="p">)</span>
+        <span class="n">train_model</span><span class="p">(</span><span class="n">load_data</span><span class="p">(</span><span class="n">record</span><span class="p">))</span>
+
+    <span class="n">test_models</span><span class="p">(</span><span class="n">cf</span><span class="o">.</span><span class="n">Record</span><span class="p">(</span><span class="n">manager</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The fully implemented example shown here can be found at <a class="reference internal" href="example.html#example-experiment"><span class="std std-ref">Example Experiment</span></a>, as well as in the curifactory codebase under
+<code class="code docutils literal notranslate"><span class="pre">examples/minimal/experiments/iris.py</span></code>.</p>
+</div>
+<div class="section" id="the-experiment-cli">
+<h3>The experiment CLI<a class="headerlink" href="#the-experiment-cli" title="Permalink to this headline"></a></h3>
+<p>Curifactory’s main tool is the <code class="code docutils literal notranslate"><span class="pre">experiment</span></code> CLI. This tool provides an
+easy way to interact with your experiment code and control different
+aspects of the experiment runs.</p>
+<p>The <code class="code docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">ls</span></code> subcommand will list out your experiment
+directory and parameter files (discussed later) and check for any basic errors.</p>
+<p>Running this in our project’s root directory (assuming the above example is in
+the experiment’s directory and named <code class="code docutils literal notranslate"><span class="pre">iris.py</span></code>) we should get:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>experiment<span class="w"> </span>ls
+EXPERIMENTS:
+<span class="w">    </span>iris
+
+PARAMS:
+<span class="w">    </span>iris
+</pre></div>
+</div>
+<p>Essentially, this gives us the names of files that respectively have a
+<code class="code docutils literal notranslate"><span class="pre">run()</span></code> function (under <code class="code docutils literal notranslate"><span class="pre">EXPERIMENTS</span></code>) and files that have a
+<code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> function (under <code class="code docutils literal notranslate"><span class="pre">PARAMS</span></code>).</p>
+<p>We can execute an experiment by running <code class="code docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">[EXPERIMENT_NAME]</span> <span class="pre">-p</span>
+<span class="pre">[PARAMS_NAME]</span></code></p>
+<p>In our case, the <code class="code docutils literal notranslate"><span class="pre">iris.py</span></code> file has both functions (and appears under both
+sections for <code class="code docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">ls</span></code>), so we can execute it with: (note you do not
+include the file extension, you’re providing it as a module name.)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>iris<span class="w"> </span>-p<span class="w"> </span>iris
+</pre></div>
+</div>
+<p>Curifactory has a shortcut for when an experiment file also has its own
+<code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> function, you can equivalently just run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>iris
+</pre></div>
+</div>
+<p>which curifactory will internally expand to <code class="code docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">[EXPERIMENT_NAME]</span> <span class="pre">-p</span>
+<span class="pre">[EXPERIMENT_NAME]</span></code></p>
+<p>The CLI has a large collection of flags to alter and control an experiment run,
+see the <a class="reference internal" href="cli_guide.html#cli-guide"><span class="std std-ref">CLI Guide</span></a> for more information.</p>
+</div>
+<div class="section" id="parameter-files">
+<h3>Parameter files<a class="headerlink" href="#parameter-files" title="Permalink to this headline"></a></h3>
+<p>As shown so far, for simplicity, experiments can have their own
+<code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> function. However, frequently you may want to define multiple
+different collections of parameter sets and selectively include them in an experiment, or
+define sets that could be shared across multiple experiment scripts. One option
+is to simply explicitly refer to a previous experiment file that has the
+<code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> you want, e.g. with <code class="code docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">iris_updated</span> <span class="pre">-p</span> <span class="pre">iris</span></code>.</p>
+<p>The other option is to create separate parameter files, or distinct files in the
+params module path, (by default <code class="code docutils literal notranslate"><span class="pre">params/</span></code> in the project root.) These
+files should each contain a <code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> function.</p>
+<p>Importantly, you can specify multiple <code class="code docutils literal notranslate"><span class="pre">-p</span></code> flags to the experiment CLI, like:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>iris<span class="w"> </span>-p<span class="w"> </span>params_file1<span class="w"> </span>-p<span class="w"> </span>params_file2<span class="w"> </span>-p<span class="w"> </span>iris
+</pre></div>
+</div>
+<p>This will call the <code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> of every requested parameters file (and/or experiment
+file) and combine all returned parameter sets into a single list that gets passed
+into the experiment’s <code class="code docutils literal notranslate"><span class="pre">run()</span></code>.</p>
+<div class="figure align-center" id="id6">
+<img alt="_images/curifactory_overview_simpler.png" src="_images/curifactory_overview_simpler.png" />
+<p class="caption"><span class="caption-text">Creating distinct parameters files allows for structuring shared parameter sets
+to apply across experiments</span><a class="headerlink" href="#id6" title="Permalink to this image"></a></p>
+</div>
+</div>
+<div class="section" id="organization-of-growing-projects">
+<h3>Organization of growing projects<a class="headerlink" href="#organization-of-growing-projects" title="Permalink to this headline"></a></h3>
+<p>The structure and organization of experiments, parameters, and stages are
+relatively flexible, intended to allow the researcher to organize these however
+best to suit the needs of the project they’re working on.</p>
+<p>The only organization <strong>constraints</strong> include:</p>
+<ul class="simple">
+<li><p>Formal experiment scripts with <code class="code docutils literal notranslate"><span class="pre">run()</span></code> functions <strong>must</strong> go in the experiment module folder. (<code class="code docutils literal notranslate"><span class="pre">experiments/</span></code> by default.)</p></li>
+<li><p>Formal argument set creation with <code class="code docutils literal notranslate"><span class="pre">get_params()</span></code> functions <strong>must</strong> either
+go in an experiment file or in python files in the params module folder.
+(<code class="code docutils literal notranslate"><span class="pre">params/</span></code> by default.)</p></li>
+</ul>
+<p>Lacking any additional constraints, some ideas for use include:</p>
+<ul class="simple">
+<li><p>Stages can either be directly in the research codebase wrapping research functions, or
+they can remain separated and just make the appropriate calls into your
+codebase, parameterized with relevant args.</p></li>
+<li><p>Keeping all parameters commonly used by all experiments can be kept in
+<code class="code docutils literal notranslate"><span class="pre">params/__init__.py</span></code>. If there are stages/params relevant only to a single
+experiment, these can be kept in the experiment file, and extracted out later
+if they become more generally useful. (A <code class="code docutils literal notranslate"><span class="pre">params.__init__.Params</span></code> class
+could be further subclassed in an experiment file to get the benefit of both.)</p></li>
+<li><p>Common stage sequences can be simplified and extracted into a helper file,
+e.g. by defining a function that takes a record, calls the stages, and returns
+the record from the last one:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">some_non_stage_helper_function</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">my_last_stage</span><span class="p">(</span><span class="n">my_middle_stage</span><span class="p">(</span><span class="n">my_first_stage</span><span class="p">(</span><span class="n">record</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>See the <a class="reference internal" href="tips.html#tips-and-tricks"><span class="std std-ref">Tips and tricks</span></a> for more ideas.</p>
+</div>
+</div>
+<div class="section" id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline"></a></h2>
+<p>Look through:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="components.html#components"><span class="std std-ref">Components</span></a> for a more in-depth understanding of the components and how they
+interact with each other.</p></li>
+<li><p><a class="reference internal" href="parameters.html#parameter-files-and-parameter-sets"><span class="std std-ref">Parameter files and parameter sets</span></a> for fancier things you can do with parameters.</p></li>
+<li><p><a class="reference internal" href="cache.html#cache"><span class="std std-ref">Cache</span></a> for how to make custom cachers.</p></li>
+<li><p><a class="reference internal" href="reports.html#reports"><span class="std std-ref">Reports</span></a> to get an idea for how reports work and how to use them, plus how
+to make custom reportables.</p></li>
+<li><p><a class="reference internal" href="cli_guide.html#cli-guide"><span class="std std-ref">CLI Guide</span></a> for how to use the <code class="code docutils literal notranslate"><span class="pre">experiment</span></code> CLI program and what you can
+do with it.</p></li>
+<li><p><a class="reference internal" href="tips.html#tips-and-tricks"><span class="std std-ref">Tips and tricks</span></a> for various “patterns” of use for Curifactory.</p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="components.html" class="btn btn-neutral float-right" title="Components" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>
