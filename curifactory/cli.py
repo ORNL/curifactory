@@ -131,6 +131,10 @@ def cmd_run(args):
     if args.no_log:
         log = False
 
+    report = True
+    if args.no_report:
+        report = False
+
     parallel = None
     if args.parallel is not None:
         parallel = int(args.parallel)
@@ -161,6 +165,7 @@ def cmd_run(args):
         parallel_mode=args.parallel_mode,
         lazy=args.lazy,
         ignore_lazy=args.ignore_lazy,
+        report=report,
         no_dag=args.no_dag,
         map_only=args.map_only,
         hashes_only=args.hashes_only,
@@ -332,6 +337,12 @@ Examples:
         dest="all_loggers",
         action="store_true",
         help="Include loggers from all non-cf libraries in logging output.",
+    )
+    outputs_group.add_argument(
+        "--no-report",
+        dest="no_report",
+        action="store_true",
+        help="Specify this flag to not generate an output run report.",
     )
 
     # ---- CACHING ----

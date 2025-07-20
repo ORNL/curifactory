@@ -51,6 +51,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     run_ts_override: datetime.datetime = None,
     lazy: bool = False,
     ignore_lazy: bool = False,
+    report: bool = True,
     no_dag: bool = False,
     map_only: bool = False,
     hashes_only: bool = False,
@@ -122,6 +123,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             handle pickle serialization correctly may cause errors.
         ignore_lazy (bool): Run the experiment disabling any lazy object caching/keeping everything in memory.
             This can save time when memory is less of an issue.
+        report (bool): Whether to generate an output run report or not.
         no_dag (bool): Prevent pre-execution mapping of experiment records and stages. Recommended if doing
             anything fancy with records like dynamically creating them based on results of previous records.
             Mapping is done by running the experiment but skipping all stage execution.
@@ -587,6 +589,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     mngr.run_timestamp,
                     lazy,
                     ignore_lazy,
+                    report,
                     no_dag,
                     map_only,
                     no_color,
@@ -765,7 +768,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                 f"{mngr.experiment_run_number}_{mngr.run_timestamp.strftime('%Y-%m-%d')}",
             )
 
-    if not dry and not parallel_mode:
+    if not dry and not parallel_mode and report:
         mngr.generate_report()
 
     # At the end, in case we're in a live context, turn off dag mode on the

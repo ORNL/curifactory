@@ -177,6 +177,32 @@ def test_all_relevant_reports_generated(configured_test_manager):
     )
 
 
+def test_no_report_generated_when_no_report_flag(configured_test_manager):
+    """When the `--no-report` flag is used, running the experiment shouldn't generate a report."""
+
+    configured_test_manager.store_full = True
+    run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing1", "thing2"],
+        mngr=configured_test_manager,
+        store_full=True,
+        report=False,
+    )
+
+    assert not os.path.exists(
+        f"{configured_test_manager.reports_path}/{configured_test_manager.get_reference_name()}/index.html"
+    )
+
+    assert not os.path.exists(
+        f"{configured_test_manager.reports_path}/_latest/index.html"
+    )
+
+    assert not os.path.exists(
+        f"{configured_test_manager.get_run_output_path()}/report/index.html"
+    )
+
+
 def test_log_copied_to_report(configured_test_manager):
     """A copy of the log should be included in the report folder."""
     configured_test_manager.store_full = True
