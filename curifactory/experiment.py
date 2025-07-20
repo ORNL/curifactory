@@ -674,7 +674,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                 for artifact in dag.artifacts:
                     if artifact.cacher is None:
                         continue
-                    paths.append(artifact.cacher.get_path())
+                    paths.extend(artifact.cacher.cache_paths)
                     paths.append(artifact.cacher.get_path("_metadata.json"))
                 for path in paths:
                     print(path)
