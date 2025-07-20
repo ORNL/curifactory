@@ -63,7 +63,6 @@ Features
     :maxdepth: 2
     :caption: API
 
-    args.rst
     caching.rst
     dag.rst
     docker.rst

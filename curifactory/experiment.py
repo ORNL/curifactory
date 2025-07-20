@@ -675,7 +675,9 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     if artifact.cacher is None:
                         continue
                     paths.extend(artifact.cacher.cache_paths)
-                    paths.append(artifact.cacher.get_path("_metadata.json"))
+                    metadata_path = artifact.cacher.get_path("_metadata.json")
+                    if metadata_path not in paths:
+                        paths.append(metadata_path)
                 for path in paths:
                     print(path)
                 return paths, mngr
