@@ -169,6 +169,7 @@ def cmd_run(args):
         no_dag=args.no_dag,
         map_only=args.map_only,
         hashes_only=args.hashes_only,
+        paths_only=args.paths_only,
         print_params=args.print_params,
         no_color=args.no_color,
         quiet=args.quiet,
@@ -446,6 +447,12 @@ Examples:
         dest="plain",
         action="store_true",
         help="Print normal logging rather than rich colored logs. This will output the exact same text printed into the file log.",
+    )
+    display_group.add_argument(
+        "--paths",
+        dest="paths_only",
+        action="store_true",
+        help="Specifying this _only_ prints out the cache paths of artifacts involved in the run string. Specifying this implies --dry.",
     )
 
     # ---- PARALLEL ----
