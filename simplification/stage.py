@@ -7,6 +7,7 @@ from typing import Callable, Union
 
 # import simplification
 import artifact
+from manager import Manager
 
 # import simplification.artifact
 
@@ -257,7 +258,10 @@ class Stage:
         return self.function.__name__
 
     def __call__(self):
-        print("Pre-execution phase for stage " + self.name)
+        # print("Pre-execution phase for stage " + self.name)
+        Manager.get_manager().logger.info(
+            f"Checking artifact cache status for stage {self.name}"
+        )
 
         passed_args = []
         passed_kwargs = {}
@@ -271,40 +275,28 @@ class Stage:
                     f"WARNING: Stage argument passed into {self.name}, is there a missing .outputs?"
                 )
 
-            print("\tType of arg", type(arg), isinstance(arg, artifact.Artifact))
             if isinstance(arg, artifact.Artifact):
-                if not arg.computed:
-                    print(
-                        "\t\t",
-                        f"{self.name}:",
-                        arg.name,
-                        " not computed! ,",
-                        type(arg),
-                        arg,
-                    )
-                    arg.compute()
-                    print(
-                        "\t\t\t",
-                        f"{self.name}, post {arg.compute.name}:",
-                        "Okay appending",
-                        arg.obj,
-                    )
-                passed_args.append(arg.obj)
+                # if not arg.computed:
+                #     arg.compute()
+                obj = arg.get()
+                passed_args.append(obj)
+                # passed_args.append(arg.obj)
             else:
                 passed_args.append(arg)
         for kwarg in self.kwargs:
             if isinstance(self.kwargs[kwarg], artifact.Artifact):
-                if not self.kwargs[kwarg].computed:
-                    print("\t\tNot computed!")
-                    self.kwargs[kwarg].compute()
-                passed_kwargs[kwarg] = self.kwargs[kwarg].obj
+                # if not self.kwargs[kwarg].computed:
+                #     self.kwargs[kwarg].compute()
+                obj = self.kwargs[kwarg].get()
+                passed_kwargs[kwarg] = obj
+                # passed_kwargs[kwarg] = self.kwargs[kwarg].obj
             else:
                 passed_kwargs[kwarg] = self.kwargs[kwarg]
 
         if self.pass_self:
             passed_args.insert(0, self)
 
-        print("Execution phase for stage " + self.name)
+        Manager.get_manager().logger.info(f"Executing stage {self.name}")
         function_outputs = self.function(*passed_args, **passed_kwargs)
 
         if type(self.outputs) is list:

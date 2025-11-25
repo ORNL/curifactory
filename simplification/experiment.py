@@ -3,8 +3,10 @@ import dataclasses
 import inspect
 from dataclasses import dataclass, field, make_dataclass
 from typing import Any
+from uuid import UUID
 
 import artifact
+import manager
 
 
 @dataclass
@@ -18,8 +20,8 @@ class Experiment:
     # TODO: (6/20/24) I think context and and context_name can be removed,
     # context is determined through frame inspection in the artifacts themselves
     # and I think that makes a lot more sense?
-    context: "Experiment" = field(default=None, init=False, repr=False)
-    context_name: str = field(default=None, init=False, repr=False)
+    # context: "Experiment" = field(default=None, init=False, repr=False)
+    # context_name: str = field(default=None, init=False, repr=False)
 
     # TODO: maybe outputs should be redefined to output since that can mean both
     # plural and singular (we auto-flatten in the @experiment dec)
@@ -40,6 +42,16 @@ class Experiment:
         #     definition_outputs = artifact.ArtifactList("outputs", definition_outputs)
         self.outputs = definition_outputs
         self.map()
+
+        # FILLED BY MANAGER ON RUN:
+        self.db_id: UUID = None
+        self.start_timestamp = None
+        self.end_timestamp = None
+        self.reference: str = None
+        self.run_number: int = None
+
+        if manager.Manager.get_manager() is not None:
+            manager.Manager.get_manager().experiments.append(self)
 
     @property
     def artifacts(self):
@@ -83,6 +95,9 @@ class Experiment:
         #     art.context_name = name
 
     def run(self):
+        manager.Manager.get_manager().logger.info(f"Running experiment {self.name}")
+        manager.Manager.get_manager().add_experiment_run(self)
+
         if isinstance(self.outputs, list):
             returns = []
             for art in self.outputs:
@@ -90,6 +105,9 @@ class Experiment:
                 returns.append(art.compute())
         else:
             returns = self.outputs.compute()
+
+        if manager.Manager.get_manager() is not None:
+            manager.Manager.get_manager().complete_experiment_run(self)
         return returns
 
     # TODO: (3/17/2024) override setattr and essentially make the fields frozen

@@ -157,6 +157,17 @@ class Artifact:
             string += f": {repr(self.obj)}"
         return string
 
+    def get(self):
+        if self.computed:
+            return self.obj
+        if self.cacher is not None:
+            if self.cacher.check():
+                self.obj = self.cacher.load()
+                # TODO: metadata stuff
+                return self.obj
+        self.compute()
+        return self.obj
+
     @property
     def context_name(self):
         current = "None"

@@ -3,6 +3,7 @@ import os
 import pickle
 
 from artifact import Artifact
+from manager import Manager
 
 
 class Cacheable:
@@ -14,9 +15,13 @@ class Cacheable:
     def get_path(self):
         if self.path_override is not None:
             return self.path_override
-        return f"{self.artifact.name}{self.extension}"
+        hash, _ = self.artifact.compute_hash()
+        return f"{hash}_{self.artifact.name}{self.extension}"
 
     def check(self):
+        Manager.get_manager().logger.debug(
+            f"Checking for cached {self.artifact.name} at '{self.get_path()}'"
+        )
         return os.path.exists(self.get_path())
 
     def save(self, obj):
