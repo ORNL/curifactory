@@ -31,11 +31,15 @@ TIMESTAMP_FORMAT = "%Y-%m-%d-T%H%M%S"
 
 
 class Manager:
-    def __init__(self, database_path: str = "data/store.db"):
+    def __init__(
+        self, database_path: str = "data/store.db", cache_path: str = "data/cache"
+    ):
         self.experiments = []
 
         self.database_path = database_path
-        self.run_table = "cf_runs"
+        self.run_table = "cf_run"  # TODO: not used yet
+
+        self.cache_path = cache_path
 
         self.logging_initialized: bool = False
 
@@ -53,7 +57,7 @@ class Manager:
             # to upgrade database if schema changes
             db.sql(
                 """
-                CREATE TABLE IF NOT EXISTS cf_runs (
+                CREATE TABLE IF NOT EXISTS cf_run (
                     id UUID,
                     reference VARCHAR,
                     experiment_name VARCHAR,
@@ -67,7 +71,68 @@ class Manager:
                     user VARCHAR,
                     notes VARCHAR
                 );
-            """
+                """
+                # TODO: execution point, which basically records the non-cli way
+                # it was run (e.g. it's getting all outputs, or specific
+                # artifact was requested etc.)
+            )
+
+            db.sql(
+                """
+                CREATE TABLE IF NOT EXISTS cf_stage (
+                    id UUID,
+                    func_name VARCHAR,
+                    start_time TIMESTAMP,
+                    end_time TIMESTAMP,
+                    params JSON,
+                    hash VARCHAR,
+                    hash_details JSON,
+                    func_module VARCHAR,
+                    docstring VARCHAR
+                );
+                """
+            )
+
+            db.sql(
+                """
+                CREATE TABLE IF NOT EXISTS cf_artifact (
+                    id UUID,
+                    stage_id UUID,
+                    name VARCHAR,
+                    hash VARHCAR,
+                    generated_time TIMESTAMP,
+                    cacher_type VARCHAR,
+                    reportable BOOL,
+                    extra_metadata JSON
+                );
+                """
+            )
+
+            db.sql(
+                """
+                CREATE TABLE IF NOT EXISTS cf_run_stage (
+                    run_id UUID,
+                    stage_id UUID
+                );
+                """
+            )
+
+            db.sql(
+                """
+                CREATE TABLE IF NOT EXISTS cf_stage_input (
+                    stage_id UUID
+                    artifact_id UUID
+                );
+                """
+            )
+
+            db.sql(
+                """
+                CREATE TABLE IF NOT EXISTS cf_run_artifact (
+                    run_id UUID,
+                    artifact_id UUID
+                );
+                """
             )
 
     # TODO: unclear if these should be associated with an experiment run instead
@@ -85,7 +150,7 @@ class Manager:
     def get_next_experiment_run_number(self, experiment) -> int:
         with self.db_connection() as db:
             num = db.sql(
-                "SELECT MAX(run_number) FROM cf_runs WHERE experiment_name = $experimentname",
+                "SELECT MAX(run_number) FROM cf_run WHERE experiment_name = $experimentname",
                 params=dict(experimentname=experiment.name),
             ).fetchone()[0]
             if num is None:
