@@ -5,8 +5,7 @@ from dataclasses import dataclass, field, make_dataclass
 from typing import Any
 from uuid import UUID
 
-import artifact
-import manager
+import curifactory.experimental as cf
 
 
 @dataclass
@@ -25,8 +24,8 @@ class Experiment:
 
     # TODO: maybe outputs should be redefined to output since that can mean both
     # plural and singular (we auto-flatten in the @experiment dec)
-    outputs: "artifact.ArtifactList" = field(
-        default_factory=lambda: artifact.ArtifactList("outputs", []),
+    outputs: "cf.artifact.ArtifactList" = field(
+        default_factory=lambda: cf.artifact.ArtifactList("outputs", []),
         init=False,
         repr=False,
     )
@@ -50,14 +49,14 @@ class Experiment:
         self.reference: str = None
         self.run_number: int = None
 
-        if manager.Manager.get_manager() is not None:
-            manager.Manager.get_manager().experiments.append(self)
+        if cf.manager.Manager.get_manager() is not None:
+            cf.manager.Manager.get_manager().experiments.append(self)
 
     @property
     def artifacts(self):
-        return artifact.ArtifactFilter(self.outputs.artifact_list())
+        return cf.artifact.ArtifactFilter(self.outputs.artifact_list())
 
-    def define(self) -> list["artifact.Artifact"]:
+    def define(self) -> list["cf.artifact.Artifact"]:
         pass
 
     # TODO: require new name to be passed?
@@ -95,8 +94,9 @@ class Experiment:
         #     art.context_name = name
 
     def run(self):
-        manager.Manager.get_manager().logger.info(f"Running experiment {self.name}")
-        manager.Manager.get_manager().add_experiment_run(self)
+        manager = cf.get_manager()
+        manager.logger.info(f"Running experiment {self.name}")
+        manager.record_experiment_run(self)
 
         if isinstance(self.outputs, list):
             returns = []
@@ -106,9 +106,12 @@ class Experiment:
         else:
             returns = self.outputs.compute()
 
-        if manager.Manager.get_manager() is not None:
-            manager.Manager.get_manager().complete_experiment_run(self)
+        manager.record_experiment_run_completion(self)
         return returns
+
+    def compute_hash(self):
+        hash_str, hash_debug = self.outputs.compute_hash()
+        return hash_str
 
     # TODO: (3/17/2024) override setattr and essentially make the fields frozen
     # - if you try to modify an experiment parameter, that won't necessarily
@@ -205,10 +208,9 @@ def experiment(function):
         # artifacts flow)
         outputs = function(**kwargs)
 
-        # search the outputs for any dictionaries, which we'll use to assign
-        # artifact attributes to the dataclass
-        # TODO: with artifactmanager stuff I don't know that this is necessary
-        experiment_outputs = []
+        # TODO: use an artifactfilter instead?
+        experiment_outputs = cf.artifact.ArtifactList("outputs")
+        # experiment_outputs = cf.artifact.ArtifactFilter(filter_string=f"{self.name}.outputs") # ???
         if type(outputs) is tuple:
             for output in outputs:
                 if isinstance(output, dict):
@@ -216,8 +218,12 @@ def experiment(function):
                         setattr(self, key, value)
                 else:
                     experiment_outputs.append(output)
+                    # experiment_outputs.artifacts.append(output)
+                    # experiment_outputs[output.name] = output
         else:
             experiment_outputs.append(outputs)
+            # experiment_outputs.artifacts.append(outputs)
+            # experiment_outputs[outputs.name] = outputs
 
         # flatten if single object
         if len(experiment_outputs) == 1:

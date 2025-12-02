@@ -6,9 +6,11 @@ import logging
 import os
 import threading
 from datetime import datetime
-from uuid import uuid4
+from pathlib import Path
+from uuid import UUID, uuid4
 
 import duckdb
+import pandas as pd
 
 
 class _ManagerContext(threading.local):
@@ -45,11 +47,22 @@ class Manager:
 
         self._logger = None
 
+        self.repr_functions: dict[type, callable] = {
+            duckdb.DuckDBPyRelation: lambda obj: f"(duckdb) {len(obj)} rows",
+            pd.DataFrame: lambda obj: f"(pandas) {len(obj)} rows",
+        }
+
+        self.ensure_dir_paths()
         self.ensure_store_tables()
 
     def find_experiments_from_file(self, file_path: str):
         with self:
             importlib.import_module(file_path)
+
+    def ensure_dir_paths(self):
+        database_dir = Path(self.database_path).parent
+        database_dir.mkdir(parents=True, exist_ok=True)
+        Path(self.cache_path).mkdir(parents=True, exist_ok=True)
 
     def ensure_store_tables(self):
         with self.db_connection() as db:
@@ -69,7 +82,8 @@ class Manager:
                     dirty BOOL,
                     hostname VARCHAR,
                     user VARCHAR,
-                    notes VARCHAR
+                    notes VARCHAR,
+                    hash VARCHAR
                 );
                 """
                 # TODO: execution point, which basically records the non-cli way
@@ -81,6 +95,7 @@ class Manager:
                 """
                 CREATE TABLE IF NOT EXISTS cf_stage (
                     id UUID,
+                    run_id UUID,
                     func_name VARCHAR,
                     start_time TIMESTAMP,
                     end_time TIMESTAMP,
@@ -98,8 +113,9 @@ class Manager:
                 CREATE TABLE IF NOT EXISTS cf_artifact (
                     id UUID,
                     stage_id UUID,
+                    run_id UUID,
                     name VARCHAR,
-                    hash VARHCAR,
+                    hash VARCHAR,
                     generated_time TIMESTAMP,
                     cacher_type VARCHAR,
                     reportable BOOL,
@@ -120,7 +136,7 @@ class Manager:
             db.sql(
                 """
                 CREATE TABLE IF NOT EXISTS cf_stage_input (
-                    stage_id UUID
+                    stage_id UUID,
                     artifact_id UUID
                 );
                 """
@@ -134,6 +150,10 @@ class Manager:
                 );
                 """
             )
+
+    def load_artifact_metadata_by_id(self, db_id: UUID, artifact: "Artifact") -> bool:
+        # returns False if didn't find
+        pass
 
     # TODO: unclear if these should be associated with an experiment run instead
     # of an experiment or manager class
@@ -157,8 +177,95 @@ class Manager:
                 num = 0
             return num + 1
 
+    def record_artifact(self, artifact):
+        artifact_id = uuid4()
+        gen_time = datetime.now()
+
+        artifact.db_id = artifact_id
+        artifact.generated_time = gen_time
+
+        run_id = artifact.context.db_id if artifact.context is not None else None
+
+        with self.db_connection() as db:
+            db.execute(
+                """
+                    INSERT INTO cf_artifact (
+                        id,
+                        stage_id,
+                        run_id,
+                        name,
+                        hash,
+                        generated_time,
+                        cacher_type
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                [
+                    artifact_id,
+                    artifact.compute.db_id,
+                    run_id,
+                    artifact.name,
+                    artifact.compute_hash()[0],
+                    gen_time,
+                    str(type(artifact.cacher)),
+                ],
+            )
+
+    def record_stage_artifact_input(self, stage, artifact):
+        with self.db_connection() as db:
+            db.execute(
+                """
+                    INSERT INTO cf_stage_input (
+                        stage_id,
+                        artifact_id
+                    )
+                    VALUES (?, ?)
+                """,
+                [stage.db_id, artifact.db_id],
+            )
+
+    def record_stage(self, stage):
+        stage_id = uuid4()
+        func_name = stage.name
+        hash, hash_debug = stage.compute_hash()
+        stage.db_id = stage_id
+
+        run_id = stage.context.db_id if stage.context is not None else None
+
+        with self.db_connection() as db:
+            db.execute(
+                """
+                    INSERT INTO cf_stage (
+                        id,
+                        run_id,
+                        func_name,
+                        hash,
+                        hash_details
+                    )
+                    VALUES (?, ?, ?, ?, ?)
+                """,
+                [stage_id, run_id, func_name, hash, hash_debug],
+            )
+
+    def record_stage_start(self, stage):
+        start_time = datetime.now()
+        with self.db_connection() as db:
+            db.sql(
+                "UPDATE cf_stage SET start_time = $starttime, WHERE ID = $id",
+                params=dict(starttime=start_time, id=stage.db_id),
+            )
+
+    def record_stage_completion(self, stage):
+        end_time = datetime.now()
+        with self.db_connection() as db:
+            db.sql(
+                "UPDATE cf_stage SET end_time = $endtime, WHERE ID = $id",
+                params=dict(endtime=end_time, id=stage.db_id),
+            )
+
     # TODO: is it worth having an experiment_run object?
-    def add_experiment_run(self, experiment):
+    # TODO: rename to record_experiment_run
+    def record_experiment_run(self, experiment):
         experiment_id = uuid4()  # TODO: should base on reference name?
         run_num = self.get_next_experiment_run_number(experiment)
 
@@ -167,17 +274,20 @@ class Manager:
         experiment.start_timestamp = datetime.now()
         experiment.reference = self.get_reference_name(experiment)
 
+        hash = experiment.compute_hash()
+
         with self.db_connection() as db:
             db.execute(
                 """
-                    INSERT INTO cf_runs (
+                    INSERT INTO cf_run (
                         id,
                         reference,
                         experiment_name,
                         run_number,
-                        start_time
+                        start_time,
+                        hash
                     )
-                    VALUES (?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?)
                 """,
                 [
                     experiment_id,
@@ -185,14 +295,15 @@ class Manager:
                     experiment.name,
                     experiment.run_number,
                     experiment.start_timestamp,
+                    hash,
                 ],
             )
 
-    def complete_experiment_run(self, experiment):
+    def record_experiment_run_completion(self, experiment):
         experiment.end_timestamp = datetime.now()
         with self.db_connection() as db:
             db.sql(
-                """UPDATE cf_runs SET end_time = $endtime, WHERE ID = $id""",
+                """UPDATE cf_run SET end_time = $endtime, WHERE ID = $id""",
                 params=dict(endtime=experiment.end_timestamp, id=experiment.db_id),
             )
 

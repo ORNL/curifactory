@@ -3,11 +3,11 @@ import hashlib
 import inspect
 from dataclasses import dataclass
 from functools import wraps
-from typing import Callable, Union
+from typing import Any, Callable, Union
+from uuid import UUID
 
 # import simplification
-import artifact
-from manager import Manager
+import curifactory.experimental as cf
 
 # import simplification.artifact
 
@@ -27,12 +27,14 @@ class Stage:
     args: list
     kwargs: dict
 
-    outputs: Union[list["artifact.Artifact"], "artifact.Artifact"]
+    outputs: Union[list["cf.artifact.Artifact"], "cf.artifact.Artifact"]
     hashing_functions: dict[str, callable] = None
     pass_self: bool = False
 
     # TODO: (6/28/2024) have a bool for whether this has instance has run yet or
     # not (might be necessary for a PreStage context manager)
+
+    db_id: UUID = None
 
     def __post_init__(self):
         artifacts = []
@@ -49,7 +51,7 @@ class Stage:
 
             # setattr(self, name, field(default=None))
             # TODO: there should probably be an artifact copy function
-            art = artifact.Artifact()
+            art = cf.artifact.Artifact()
             art.name = output.name
             art.cacher = output.cacher
 
@@ -65,6 +67,18 @@ class Stage:
             self.outputs = self.outputs[0]
 
         # self._assign_dependents()
+        self.context = self._find_context()
+        # TODO: previous context names similar to artifact?
+
+    def _find_context(self) -> "cf.experiment.Experiment":
+        # TODO: check if context is none first?
+        for frame in inspect.stack():
+            if "self" in frame.frame.f_locals.keys() and isinstance(
+                frame.frame.f_locals["self"], cf.experiment.Experiment
+            ):
+                # print("FOUND THE EXPERIMENT")
+                return frame.frame.f_locals["self"]
+        return None
 
     def __setattr__(self, name, value):
         super().__setattr__(name, value)
@@ -90,8 +104,8 @@ class Stage:
 
     def _inner_copy(
         self,
-        building_stages: dict["Stage", "Stage"] = None,
-        building_artifacts: dict["Artifact", "Artifact"] = None,
+        building_stages: dict["cf.stage.Stage", "cf.stage.Stage"] = None,
+        building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
     ) -> tuple["Stage", bool]:
         """Returns the created (or prev) stage and whether it was indeed created or not."""
         if building_stages is None:
@@ -104,14 +118,14 @@ class Stage:
 
         copied_args = []
         for arg in self.args:
-            if isinstance(arg, artifact.Artifact):
+            if isinstance(arg, cf.artifact.Artifact):
                 copied_args.append(arg._inner_copy(building_stages, building_artifacts))
             else:
                 copied_args.append(copy.deepcopy(arg))
         copied_kwargs = {}
         for kw in self.kwargs:
             arg = self.kwargs[kw]
-            if isinstance(arg, artifact.Artifact):
+            if isinstance(arg, cf.artifact.Artifact):
                 copied_kwargs[kw] = arg._inner_copy(building_stages, building_artifacts)
             else:
                 copied_kwargs[kw] = copy.deepcopy(arg)
@@ -157,7 +171,7 @@ class Stage:
         # )
         # return new_stage
 
-    def compute_hash(self) -> tuple[str, dict[str, str]]:
+    def compute_hash(self) -> tuple[str, dict[str, dict[str, Any]]]:
         parameter_names = list(inspect.signature(self.function).parameters.keys())
 
         # iterate through each parameter and get its hash value
@@ -172,7 +186,7 @@ class Stage:
             hash_debug, hash_value = self.hash_parameter(
                 param_name, self.get_parameter_value(param_index, param_name)
             )
-            debug[param_name] = (hash_debug, hash_value)
+            debug[param_name] = {"object": hash_debug, "hash_value": hash_value}
             hash_values[param_name] = hash_value
 
         hash_total = 0
@@ -209,7 +223,7 @@ class Stage:
             return ("SKIPPED: value is None", None)
 
         # 3. if the parameter is an artifact, use its hash
-        if isinstance(param_value, artifact.Artifact):
+        if isinstance(param_value, cf.artifact.Artifact):
             # TODO: artifact needs to track the hash_debug and re-include it here.
             param_value.compute_hash()
             return (
@@ -239,10 +253,10 @@ class Stage:
         # overwrite eachother in the tree dict. Will need to handle auto array
         # logic for ArtifactLists? Or make everything be a list of dicts instead
         for arg in self.args:
-            if isinstance(arg, artifact.Artifact):
+            if isinstance(arg, cf.artifact.Artifact):
                 tree[arg.name] = arg.compute._artifact_tree()
         for kwarg in self.kwargs:
-            if isinstance(self.kwargs[kwarg], artifact.Artifact):
+            if isinstance(self.kwargs[kwarg], cf.artifact.Artifact):
                 tree[arg.name] = arg.compute._artifact_tree()
 
         if len(tree.keys()) == 0:
@@ -257,14 +271,12 @@ class Stage:
     def name(self):
         return self.function.__name__
 
-    def __call__(self):
-        # print("Pre-execution phase for stage " + self.name)
-        Manager.get_manager().logger.info(
-            f"Checking artifact cache status for stage {self.name}"
-        )
-
+    def resolve_args(self) -> tuple[list, dict]:
+        """Handle any artifacts passed in as arguments."""
         passed_args = []
         passed_kwargs = {}
+
+        manager = cf.get_manager()
 
         # compute any inputs
         for arg in self.args:
@@ -275,20 +287,22 @@ class Stage:
                     f"WARNING: Stage argument passed into {self.name}, is there a missing .outputs?"
                 )
 
-            if isinstance(arg, artifact.Artifact):
+            if isinstance(arg, cf.artifact.Artifact):
                 # if not arg.computed:
                 #     arg.compute()
                 obj = arg.get()
                 passed_args.append(obj)
+                manager.record_stage_artifact_input(self, arg)
                 # passed_args.append(arg.obj)
             else:
                 passed_args.append(arg)
         for kwarg in self.kwargs:
-            if isinstance(self.kwargs[kwarg], artifact.Artifact):
+            if isinstance(self.kwargs[kwarg], cf.artifact.Artifact):
                 # if not self.kwargs[kwarg].computed:
                 #     self.kwargs[kwarg].compute()
                 obj = self.kwargs[kwarg].get()
                 passed_kwargs[kwarg] = obj
+                manager.record_stage_artifact_input(self, self.kwargs[kwarg])
                 # passed_kwargs[kwarg] = self.kwargs[kwarg].obj
             else:
                 passed_kwargs[kwarg] = self.kwargs[kwarg]
@@ -296,22 +310,40 @@ class Stage:
         if self.pass_self:
             passed_args.insert(0, self)
 
-        Manager.get_manager().logger.info(f"Executing stage {self.name}")
+        return passed_args, passed_kwargs
+
+    def __call__(self):
+        manager = cf.get_manager()
+        manager.record_stage(self)
+
+        passed_args, passed_kwargs = self.resolve_args()
+
+        manager.logger.info(f"Executing stage {self.name}")
+        manager.record_stage_start(self)
         function_outputs = self.function(*passed_args, **passed_kwargs)
 
         if type(self.outputs) is list:
             if len(self.outputs) < 1:
-                return
+                returns = None
             else:
                 for index, art in enumerate(self.outputs):
                     art.computed = True
                     art.obj = function_outputs[index]
-                return self.outputs
+                    manager.record_artifact(art)
+                    if art.cacher is not None:
+                        art.cacher.save(art.obj)
+                returns = self.outputs
         else:
-            art: "artifact.Artifact" = self.outputs
+            art: "cf.artifact.Artifact" = self.outputs
             art.computed = True
             art.obj = function_outputs
-            return art
+            manager.record_artifact(art)
+            if art.cacher is not None:
+                art.cacher.save(art.obj)
+            returns = art
+
+        manager.record_stage_completion(self)
+        return returns
 
     def __repr__(self):
         kws = [f"{key}={value!r}" for key, value in self.__dict__.items()]
@@ -319,7 +351,7 @@ class Stage:
 
 
 def stage(
-    outputs: list["artifact.Artifact"],
+    outputs: list["cf.artifact.Artifact"],
     hashing_functions: dict[str, callable] = None,
     pass_self: bool = False,
 ):

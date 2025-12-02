@@ -4,10 +4,13 @@ import copy
 import inspect
 import logging
 from functools import partial
+from uuid import UUID
 
-import experiment
-import stage
+import duckdb
+import pandas as pd
 from graphviz import Digraph
+
+import curifactory.experimental as cf
 
 
 def pointer_based_property_getter(self, name):
@@ -74,6 +77,10 @@ class Artifact:
     previous_context_names = pointer_based_property("previous_context_names")
     context = pointer_based_property("context")
 
+    db_id = pointer_based_property("db_id")
+    generated_time = pointer_based_property("generated_time")
+    reportable = pointer_based_property("reportable")
+
     def __init__(self, name=None, cacher=None):
         self.pointer = None
 
@@ -90,18 +97,22 @@ class Artifact:
         self._hash_str = None
         self._hash_debug = None
 
-        self._compute: stage.Stage = None
+        self._compute: cf.stage.Stage = None
 
         # previous context names means every time we copy an artifact into a
         # new context, we assign the
         self._previous_context_names: list[str] = []
-        self._context: experiment.Experiment = None
+        self._context: cf.experiment.Experiment = None
         # self.context: ArtifactManager = None
         # self.original_context:
         # self.context_name: str = None
 
         self.context = self._find_context()
         self._add_to_context()
+
+        self._db_id: UUID = None
+        self._generated_time = None
+        self._reportable: bool = False
 
         # the reason I'm hesitant to explicitly track dependents is that someone
         # could theoretically define a custom experiment dataclass and do weird
@@ -116,11 +127,11 @@ class Artifact:
     def __eq__(self, o):
         return self.internal_id == o.internal_id
 
-    def _find_context(self) -> experiment.Experiment:
+    def _find_context(self) -> "cf.experiment.Experiment":
         # TODO: check if context is none first?
         for frame in inspect.stack():
             if "self" in frame.frame.f_locals.keys() and isinstance(
-                frame.frame.f_locals["self"], experiment.Experiment
+                frame.frame.f_locals["self"], cf.experiment.Experiment
             ):
                 # print("FOUND THE EXPERIMENT")
                 return frame.frame.f_locals["self"]
@@ -153,8 +164,19 @@ class Artifact:
     def __repr__(self):
         # TODO: think through better set of things to show
         string = f"Artifact '{self.name}'"
-        if self.computed:
-            string += f": {repr(self.obj)}"
+        if self.obj is not None:
+            display_str = ": "
+
+            manager = cf.get_manager()
+            if type(self.obj) in manager.repr_functions:
+                display_str += manager.repr_functions[type(self.obj)](self.obj)
+                # if isinstance(self.obj, (duckdb.DuckDBPyRelation | pd.DataFrame)):
+                #     display_str += str(len(self.obj)) + " rows"
+            else:
+                display_str += repr(self.obj)
+            if len(display_str) >= 100:
+                display_str = display_str[100]
+            string += display_str
         return string
 
     def get(self):
@@ -166,6 +188,7 @@ class Artifact:
                 # TODO: metadata stuff
                 return self.obj
         self.compute()
+        # NOTE: stage handles running cachers
         return self.obj
 
     @property
@@ -242,8 +265,8 @@ class Artifact:
 
     def _inner_copy(
         self,
-        building_stages: dict[stage.Stage, stage.Stage] = None,
-        building_artifacts: dict["Artifact", "Artifact"] = None,
+        building_stages: dict["cf.stage.Stage", "cf.stage.Stage"] = None,
+        building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
     ):
         if building_stages is None:
             building_stages = {}
@@ -521,7 +544,7 @@ class ArtifactList(Artifact):  # , list):
         if artifacts is None:
             artifacts = []
         self.inner_artifact_list = artifacts
-        self.compute = stage.Stage(
+        self.compute = cf.stage.Stage(
             function=_aggregate_artifact_list,
             args=self.inner_artifact_list,
             kwargs={},
