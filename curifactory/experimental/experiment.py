@@ -30,6 +30,8 @@ class Experiment:
         repr=False,
     )
 
+    # source: str = None
+
     def __post_init__(self):
         # self.artifacts = artifact.ArtifactManager()
         definition_outputs = self.define()
@@ -101,21 +103,55 @@ class Experiment:
         #     art.context = self
         #     art.context_name = name
 
+    def _implicit_run(self):
+        """If an artifact from this experiment is manually retrieved and a compute
+        step is required, start an implicit run with that artifact as the target."""
+        manager = cf.get_manager()
+        manager.currently_recording = True
+        manager.logger.info(f"Running partial experiment {self.name}")
+        manager.record_experiment_run(self)
+        manager.current_experiment_run = self
+
+    def _end_implicit_run(self):
+        manager = cf.get_manager()
+        manager.current_experiment_run = None
+        manager.record_experiment_run_completion(self)
+
     def run(self):
         manager = cf.get_manager()
+        manager.current_experiment_run = self
+        manager.current_experiment_run_target = self.outputs
+
+        if self.outputs.cacher is not None and self.outputs.cacher.check(silent=True):
+            manager.currently_recording = False
+            manager.logger.info("Experiment outputs already found, re-loading...")
+
+            # find the previous run reference
+            metadata = self.outputs.cacher.load_metadata()
+            results = manager.search_for_artifact_generating_run(metadata["artifact_id"])
+            manager.logger.info(f"Collecting outputs from {results["reference"]}")
+
+            returns = self.outputs.get()
+            return self.outputs
+
+        manager.currently_recording = True
+
         manager.logger.info(f"Running experiment {self.name}")
         manager.record_experiment_run(self)
 
-        if isinstance(self.outputs, list):
-            returns = []
-            for art in self.outputs:
-                # TODO: obviously will need to change once artifact has get()
-                returns.append(art.compute())
-        else:
-            returns = self.outputs.compute()
+        returns = self.outputs.get()
+        # if isinstance(self.outputs, list):
+        #     returns = []
+        #     for art in self.outputs:
+        #         # TODO: obviously will need to change once artifact has get()
+        #         returns.append(art.compute())
+        # else:
+        #     returns = self.outputs.compute()
 
+        manager.current_experiment_run = None
         manager.record_experiment_run_completion(self)
-        return returns
+        # return returns
+        return self.outputs
 
     def compute_hash(self):
         hash_str, hash_debug = self.outputs.compute_hash()
@@ -254,16 +290,13 @@ def experiment(function):
     # return wrapper
 
     class ExperimentFactoryWrapper:
-        def __init__(
-            self, experiment_type_name, experiment_field_tuples, original_function
-        ):
+        def __init__(self, experiment_type_name, experiment_field_tuples, original_function):
             self.type_name = experiment_type_name
             self.field_tuples = experiment_field_tuples
             self.original_function = original_function
             self.__doc__ = original_function.__doc__
 
         def __call__(self, *args, **kwargs):
-            print(self.field_tuples)
             return experiment_dataclass(*args, **kwargs)
 
         @property
@@ -287,19 +320,15 @@ def experiment(function):
                         if parameter[1] is Any:
                             call_parts.append(f"{parameter[0]}")
                         else:
-                            call_parts.append(
-                                f"{parameter[0]}: {parameter[1].__name__}"
-                            )
+                            call_parts.append(f"{parameter[0]}: {parameter[1].__name__}")
                     elif len(parameter) == 3:
                         default_value = parameter[2].default_factory()
                         if isinstance(default_value, str):
-                            default_value = f'"{default_value}"'
+                            default_value = f"\"{default_value}\""
                         if parameter[1] is Any:
                             call_parts.append(f"{parameter[0]}={default_value}")
                         else:
-                            call_parts.append(
-                                f"{parameter[0]}: {parameter[1].__name__} = {default_value}"
-                            )
+                            call_parts.append(f"{parameter[0]}: {parameter[1].__name__} = {default_value}")
                 else:
                     call_parts.append(parameter)
             return f"Experiment {self.type_name}({', '.join(call_parts)})"

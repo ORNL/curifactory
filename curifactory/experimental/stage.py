@@ -271,7 +271,7 @@ class Stage:
     def name(self):
         return self.function.__name__
 
-    def resolve_args(self) -> tuple[list, dict]:
+    def resolve_args(self, record_resolution: bool = False) -> tuple[list, dict]:
         """Handle any artifacts passed in as arguments."""
         passed_args = []
         passed_kwargs = {}
@@ -292,7 +292,8 @@ class Stage:
                 #     arg.compute()
                 obj = arg.get()
                 passed_args.append(obj)
-                manager.record_stage_artifact_input(self, arg)
+                if record_resolution:
+                    manager.record_stage_artifact_input(self, arg)
                 # passed_args.append(arg.obj)
             else:
                 passed_args.append(arg)
@@ -302,7 +303,8 @@ class Stage:
                 #     self.kwargs[kwarg].compute()
                 obj = self.kwargs[kwarg].get()
                 passed_kwargs[kwarg] = obj
-                manager.record_stage_artifact_input(self, self.kwargs[kwarg])
+                if record_resolution:
+                    manager.record_stage_artifact_input(self, self.kwargs[kwarg])
                 # passed_kwargs[kwarg] = self.kwargs[kwarg].obj
             else:
                 passed_kwargs[kwarg] = self.kwargs[kwarg]
@@ -314,13 +316,23 @@ class Stage:
 
     def __call__(self):
         manager = cf.get_manager()
+
+        # if we have no active run but a stage needs to execute, that means we
+        # need to start an implicit run
+        implicit_run = False
+        if manager.current_experiment_run is None and self.context is not None:
+            implicit_run = True
+            self.context._implicit_run()
+
         manager.record_stage(self)
 
-        passed_args, passed_kwargs = self.resolve_args()
+        passed_args, passed_kwargs = self.resolve_args(record_resolution=True)
 
         manager.logger.info(f"Executing stage {self.name}")
         manager.record_stage_start(self)
+        manager.current_stage = self
         function_outputs = self.function(*passed_args, **passed_kwargs)
+        manager.current_stage = None
 
         if type(self.outputs) is list:
             if len(self.outputs) < 1:
@@ -343,6 +355,9 @@ class Stage:
             returns = art
 
         manager.record_stage_completion(self)
+
+        if implicit_run:
+            self.context._end_implicit_run()
         return returns
 
     def __repr__(self):
@@ -351,10 +366,12 @@ class Stage:
 
 
 def stage(
-    outputs: list["cf.artifact.Artifact"],
+    *outputs: list["cf.artifact.Artifact"],
     hashing_functions: dict[str, callable] = None,
     pass_self: bool = False,
 ):
+    outputs = list(outputs)  # technically python makes the * a tuple
+
     def decorator(function):
         @wraps(function)
         def wrapper(*args, **kwargs):

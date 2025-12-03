@@ -7,6 +7,7 @@ import os
 import threading
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 from uuid import UUID, uuid4
 
 import duckdb
@@ -34,13 +35,16 @@ TIMESTAMP_FORMAT = "%Y-%m-%d-T%H%M%S"
 
 class Manager:
     def __init__(
-        self, database_path: str = "data/store.db", cache_path: str = "data/cache"
+        self,
+        database_path: str = "data/store.db",
+        cache_path: str = "data/cache",
+        **additional_configuration,
     ):
         self.experiments = []
 
         # ---- configuration ----
         self.database_path = database_path
-        self.run_table = "cf_run"  # TODO: not used yet
+        # self.run_table = "cf_run"  # TODO: not used yet
 
         self.cache_path = cache_path
 
@@ -48,11 +52,14 @@ class Manager:
             duckdb.DuckDBPyRelation: lambda obj: f"(duckdb) {len(obj)} rows",
             pd.DataFrame: lambda obj: f"(pandas) {len(obj)} rows",
         }
+
+        self.additional_configuration: dict[str, Any] = additional_configuration
         # ---- /configuration ----
 
         self.current_experiment_run = None
         self.current_experiment_run_target = None
         self.current_stage = None
+        self.currently_recording: bool = False
 
         self.logging_initialized: bool = False
         self._logger = None
@@ -60,9 +67,47 @@ class Manager:
         self.ensure_dir_paths()
         self.ensure_store_tables()
 
+    @property
+    def config(self) -> dict[str, Any]:
+        return {
+            "database_path": self.database_path,
+            "cache_path": self.cache_path,
+            **self.additional_configuration,
+        }
+
     def find_experiments_from_file(self, file_path: str):
         with self:
             importlib.import_module(file_path)
+
+    # def check_for_existing_run_in_db(self, target_artifact):
+    #     pass
+
+    def search_for_db_artifact(self, artifact):
+        with self.db_connection() as db:
+            results = db.sql(
+                "SELECT * FROM cf_artifact WHERE name = $artifact_name AND hash = $artifact_hash",
+                params=dict(
+                    artifact_name=artifact.name,
+                    artifact_hash=artifact.compute_hash()[0],
+                ),
+            ).df()
+        return results
+
+    def search_for_artifact_generating_run(self, artifact_id):
+        with self.db_connection() as db:
+            results = (
+                db.sql(
+                    """
+                SELECT cf_run.* FROM cf_run
+                JOIN cf_artifact ON cf_run.id = cf_artifact.run_id
+                WHERE cf_artifact.id = $artifact_id
+                """,
+                    params=dict(artifact_id=artifact_id),
+                )
+                .df()
+                .iloc[0]
+            )
+        return results
 
     def ensure_dir_paths(self):
         database_dir = Path(self.database_path).parent
@@ -78,6 +123,7 @@ class Manager:
                 CREATE TABLE IF NOT EXISTS cf_run (
                     id UUID,
                     reference VARCHAR,
+                    experiment_class VARCHAR,
                     experiment_name VARCHAR,
                     run_number INTEGER,
                     start_time TIMESTAMP,
@@ -88,7 +134,9 @@ class Manager:
                     hostname VARCHAR,
                     user VARCHAR,
                     notes VARCHAR,
-                    hash VARCHAR
+                    hash VARCHAR,
+                    params JSON,
+                    target_id UUID
                 );
                 """
                 # TODO: execution point, which basically records the non-cli way
@@ -123,6 +171,7 @@ class Manager:
                     hash VARCHAR,
                     generated_time TIMESTAMP,
                     cacher_type VARCHAR,
+                    cacher_module VARCHAR,
                     reportable BOOL,
                     extra_metadata JSON
                 );
@@ -183,6 +232,9 @@ class Manager:
             return num + 1
 
     def record_artifact(self, artifact):
+        if not self.currently_recording:
+            return
+
         artifact_id = uuid4()
         gen_time = datetime.now()
 
@@ -190,6 +242,15 @@ class Manager:
         artifact.generated_time = gen_time
 
         run_id = artifact.context.db_id if artifact.context is not None else None
+
+        if artifact == self.current_experiment_run_target:
+            self.record_experiment_run_target(self.current_experiment_run, artifact)
+
+        cacher_type = None
+        cacher_module = None
+        if artifact.cacher is not None:
+            cacher_type = artifact.cacher.__class__.__name__
+            cacher_module = artifact.cacher.__class__.__module__
 
         with self.db_connection() as db:
             db.execute(
@@ -201,9 +262,10 @@ class Manager:
                         name,
                         hash,
                         generated_time,
-                        cacher_type
+                        cacher_type,
+                        cacher_module
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     artifact_id,
@@ -212,11 +274,15 @@ class Manager:
                     artifact.name,
                     artifact.compute_hash()[0],
                     gen_time,
-                    str(type(artifact.cacher)),
+                    cacher_type,
+                    cacher_module,
                 ],
             )
 
     def record_stage_artifact_input(self, stage, artifact):
+        if not self.currently_recording:
+            return
+
         with self.db_connection() as db:
             db.execute(
                 """
@@ -230,6 +296,9 @@ class Manager:
             )
 
     def record_stage(self, stage):
+        if not self.currently_recording:
+            return
+
         stage_id = uuid4()
         func_name = stage.name
         hash, hash_debug = stage.compute_hash()
@@ -253,6 +322,9 @@ class Manager:
             )
 
     def record_stage_start(self, stage):
+        if not self.currently_recording:
+            return
+
         start_time = datetime.now()
         with self.db_connection() as db:
             db.sql(
@@ -261,6 +333,9 @@ class Manager:
             )
 
     def record_stage_completion(self, stage):
+        if not self.currently_recording:
+            return
+
         end_time = datetime.now()
         with self.db_connection() as db:
             db.sql(
@@ -271,6 +346,9 @@ class Manager:
     # TODO: is it worth having an experiment_run object?
     # TODO: rename to record_experiment_run
     def record_experiment_run(self, experiment):
+        if not self.currently_recording:
+            return
+
         experiment_id = uuid4()  # TODO: should base on reference name?
         run_num = self.get_next_experiment_run_number(experiment)
 
@@ -287,24 +365,41 @@ class Manager:
                     INSERT INTO cf_run (
                         id,
                         reference,
+                        experiment_class,
                         experiment_name,
                         run_number,
                         start_time,
-                        hash
+                        hash,
+                        params
                     )
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     experiment_id,
                     experiment.reference,
+                    experiment.__class__.__name__,
                     experiment.name,
                     experiment.run_number,
                     experiment.start_timestamp,
                     hash,
+                    experiment.parameters,
                 ],
             )
 
+    def record_experiment_run_target(self, experiment, target):
+        if not self.currently_recording:
+            return
+
+        with self.db_connection() as db:
+            db.sql(
+                """UPDATE cf_run SET target_id = $target_id, WHERE ID = $id""",
+                params=dict(target_id=target.db_id, id=experiment.db_id),
+            )
+
     def record_experiment_run_completion(self, experiment):
+        if not self.currently_recording:
+            return
+
         experiment.end_timestamp = datetime.now()
         with self.db_connection() as db:
             db.sql(

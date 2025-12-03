@@ -77,10 +77,11 @@ class Cacheable:
             return str(Path(cache_path) / f"{hash}_{name}")
             # return str(Path(cache_path) / f"{hash}_{self.artifact.name}{self.extension}")
 
-    def check(self):
-        cf.manager.Manager.get_manager().logger.debug(
-            f"Checking for cached {self.artifact.name} at '{self.get_path()}'"
-        )
+    def check(self, silent: bool = False):
+        if not silent:
+            cf.manager.Manager.get_manager().logger.debug(
+                f"Checking for cached {self.artifact.name} at '{self.get_path()}'"
+            )
         return os.path.exists(self.get_path())
 
     def save_obj(self, obj):
@@ -135,6 +136,7 @@ class Cacheable:
         # CANC: try to load from db?
         # if not cf.manager.Manager.get_manager().load_artifact_metadata_by_id(metadata["artifact_id"], self.artifact):
         #     pass
+        return metadata
 
     def load_artifact(self, path: str) -> "cf.artifact.Artifact":
         # TODO:
@@ -209,7 +211,9 @@ class ParquetCacher(Cacheable):
         if self.use_db_arg == -1:
             return pd.read_parquet(self.get_path())
         else:
-            args, kwargs = self.artifact.compute.resolve_args()
+            args, kwargs = self.artifact.compute.resolve_args(record_resolution=False)
+            # NOTE: don't add artifacts to db because the stage _execution_
+            # already handles that
             if isinstance(self.use_db_arg, int):
                 db = args[self.use_db_arg]
             elif isinstance(self.use_db_arg, str):
@@ -227,7 +231,34 @@ class MetadataOnlyCacher(Cacheable):
     stage only mutated something in some way and has no specific object to retrieve."""
 
     def __init__(self, path_override: str = None):
-        super().__init__(path_override, "")
+        super().__init__(path_override)
+
+
+class AggregateArtifactCacher(Cacheable):
+    """Just meant to help avoid unwanted implicit _aggregate stages continually
+    being added to the database when nothing is _really_ running.
+
+    NOTE: Can't be used as an inline cacher? (depends on an initialized
+    ArtifactList artifact)
+    """
+
+    def __init__(self):
+        super().__init__()
+
+    def check(self, silent=True):
+        for artifact in self.artifact.inner_artifact_list:
+            if artifact.cacher is None:
+                return False
+            if not artifact.cacher.check(silent=True):
+                return False
+        return True
+
+    def load_obj(self):
+        objs = []
+        for artifact in self.artifact.inner_artifact_list:
+            obj = artifact.get()
+            objs.append(obj)
+        return objs
 
 
 # class DBTableCacher(Cacheable):

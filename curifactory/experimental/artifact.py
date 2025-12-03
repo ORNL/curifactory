@@ -81,6 +81,9 @@ class Artifact:
     generated_time = pointer_based_property("generated_time")
     reportable = pointer_based_property("reportable")
 
+    in_db = pointer_based_property("in_db")
+    in_cache = pointer_based_property("in_cache")
+
     def __init__(self, name=None, cacher=None):
         self.pointer = None
 
@@ -179,6 +182,9 @@ class Artifact:
             string += display_str
         return string
 
+    def get_from_db(self):
+        pass
+
     def get(self):
         if self.computed:
             return self.obj
@@ -187,6 +193,15 @@ class Artifact:
                 self.obj = self.cacher.load()
                 # TODO: metadata stuff
                 return self.obj
+
+        # TODO: if this artifact is requested and no current target, that means
+        # this is the target if a new run has to start
+        manager = cf.get_manager()
+        if manager.current_experiment_run_target is None:
+            manager.current_experiment_run_target = self
+        # (we handle associating the ID with the experiment run during
+        # record_artifact)
+
         self.compute()
         # NOTE: stage handles running cachers
         return self.obj
@@ -551,6 +566,7 @@ class ArtifactList(Artifact):  # , list):
             outputs=[Artifact(name=self.name)],
         )
         self.compute.outputs = self
+        self.cacher = cf.caching.AggregateArtifactCacher()
 
     def __repr__(self):
         return f"ArtifactList('{self.name}', {repr(self.inner_artifact_list)})"
