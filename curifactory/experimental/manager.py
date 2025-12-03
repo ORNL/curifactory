@@ -38,19 +38,24 @@ class Manager:
     ):
         self.experiments = []
 
+        # ---- configuration ----
         self.database_path = database_path
         self.run_table = "cf_run"  # TODO: not used yet
 
         self.cache_path = cache_path
 
-        self.logging_initialized: bool = False
-
-        self._logger = None
-
         self.repr_functions: dict[type, callable] = {
             duckdb.DuckDBPyRelation: lambda obj: f"(duckdb) {len(obj)} rows",
             pd.DataFrame: lambda obj: f"(pandas) {len(obj)} rows",
         }
+        # ---- /configuration ----
+
+        self.current_experiment_run = None
+        self.current_experiment_run_target = None
+        self.current_stage = None
+
+        self.logging_initialized: bool = False
+        self._logger = None
 
         self.ensure_dir_paths()
         self.ensure_store_tables()

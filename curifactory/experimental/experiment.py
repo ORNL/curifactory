@@ -56,6 +56,14 @@ class Experiment:
     def artifacts(self):
         return cf.artifact.ArtifactFilter(self.outputs.artifact_list())
 
+    @property
+    def parameters(self) -> dict[str, Any]:
+        params = {}
+        for parameter in dataclasses.fields(self):
+            if parameter.name not in ["name", "outputs"]:
+                params[parameter.name] = getattr(self, parameter.name)
+        return params
+
     def define(self) -> list["cf.artifact.Artifact"]:
         pass
 
@@ -237,7 +245,63 @@ def experiment(function):
         namespace={"define": define, "function": function},
     )
 
-    def wrapper(*args, **kwargs):
-        return experiment_dataclass(*args, **kwargs)
+    # def wrapper(*args, **kwargs):
+    #     return experiment_dataclass(*args, **kwargs)
+    #
+    # wrapper.parameters = field_tuples
+    # wrapper.__repr__ = lambda: f"{function.__name__}({','.join([name + ': ' + str(type_str) for name, type_str in field_tuples])})"
+    #
+    # return wrapper
 
-    return wrapper
+    class ExperimentFactoryWrapper:
+        def __init__(
+            self, experiment_type_name, experiment_field_tuples, original_function
+        ):
+            self.type_name = experiment_type_name
+            self.field_tuples = experiment_field_tuples
+            self.original_function = original_function
+            self.__doc__ = original_function.__doc__
+
+        def __call__(self, *args, **kwargs):
+            print(self.field_tuples)
+            return experiment_dataclass(*args, **kwargs)
+
+        @property
+        def parameters(self) -> dict[str, Any]:
+            params = {}
+            for parameter in self.field_tuples:
+                if isinstance(parameter, tuple):
+                    if len(parameter) == 3:
+                        params[parameter[0]] = parameter[2].default_factory()
+                    else:
+                        params[parameter[0]] = None
+                else:
+                    params[parameter] = None
+            return params
+
+        def __repr__(self):
+            call_parts = ["name: str"]
+            for parameter in self.field_tuples:
+                if isinstance(parameter, tuple):
+                    if len(parameter) == 2:
+                        if parameter[1] is Any:
+                            call_parts.append(f"{parameter[0]}")
+                        else:
+                            call_parts.append(
+                                f"{parameter[0]}: {parameter[1].__name__}"
+                            )
+                    elif len(parameter) == 3:
+                        default_value = parameter[2].default_factory()
+                        if isinstance(default_value, str):
+                            default_value = f'"{default_value}"'
+                        if parameter[1] is Any:
+                            call_parts.append(f"{parameter[0]}={default_value}")
+                        else:
+                            call_parts.append(
+                                f"{parameter[0]}: {parameter[1].__name__} = {default_value}"
+                            )
+                else:
+                    call_parts.append(parameter)
+            return f"Experiment {self.type_name}({', '.join(call_parts)})"
+
+    return ExperimentFactoryWrapper(function.__name__, field_tuples, function)
