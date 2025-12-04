@@ -171,14 +171,7 @@ class Artifact:
             display_str = ": "
 
             manager = cf.get_manager()
-            if type(self.obj) in manager.repr_functions:
-                display_str += manager.repr_functions[type(self.obj)](self.obj)
-                # if isinstance(self.obj, (duckdb.DuckDBPyRelation | pd.DataFrame)):
-                #     display_str += str(len(self.obj)) + " rows"
-            else:
-                display_str += repr(self.obj)
-            if len(display_str) >= 100:
-                display_str = display_str[100]
+            display_str += manager.get_artifact_obj_repr(self)
             string += display_str
         return string
 

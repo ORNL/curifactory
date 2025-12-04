@@ -173,7 +173,8 @@ class Manager:
                     cacher_type VARCHAR,
                     cacher_module VARCHAR,
                     reportable BOOL,
-                    extra_metadata JSON
+                    extra_metadata JSON,
+                    repr VARCHAR
                 );
                 """
             )
@@ -205,6 +206,12 @@ class Manager:
                 """
             )
 
+    # def get_current_stage_artifact_path(self, artifact_index = 0):
+    #     artifact = self.current_stage.outputs[artifact_index]
+    #     if artifact.cacher is None:
+    #         return None
+    #     return artifact.cacher.get_path(dry=True)
+
     def load_artifact_metadata_by_id(self, db_id: UUID, artifact: "Artifact") -> bool:
         # returns False if didn't find
         pass
@@ -230,6 +237,18 @@ class Manager:
             if num is None:
                 num = 0
             return num + 1
+
+    def get_artifact_obj_repr(self, artifact) -> str:
+        if artifact.obj is None:
+            return ""
+        display_str = ""
+        if type(artifact.obj) in self.repr_functions:
+            display_str = self.repr_functions[type(artifact.obj)](artifact.obj)
+        else:
+            display_str = repr(artifact.obj)
+        if len(display_str) >= 100:
+            return display_str[100]
+        return display_str
 
     def record_artifact(self, artifact):
         if not self.currently_recording:
@@ -263,9 +282,10 @@ class Manager:
                         hash,
                         generated_time,
                         cacher_type,
-                        cacher_module
+                        cacher_module,
+                        repr
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     artifact_id,
@@ -276,6 +296,7 @@ class Manager:
                     gen_time,
                     cacher_type,
                     cacher_module,
+                    self.get_artifact_obj_repr(artifact),
                 ],
             )
 

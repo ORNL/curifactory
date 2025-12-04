@@ -15,6 +15,21 @@ import curifactory.experimental as cf
 # class StageContext:
 
 
+class OutputArtifactPathResolve:
+    def __init__(self, output_artifact_index):
+        self.output_artifact_index = output_artifact_index
+
+    def resolve(self, stage):
+        # cf.get_manager().get_current_stage_artifact_path(self.output_artifact_index)
+        if isinstance(stage.outputs, cf.artifact.Artifact):
+            artifact = stage.outputs
+        else:
+            artifact = stage.outputs[self.output_artifact_index]
+        if artifact.cacher is None:
+            return None
+        return artifact.cacher.get_path(dry=True)
+
+
 @dataclass
 class Stage:
     """Essentially a fancy "partial" that assigns outputs to instance
@@ -271,6 +286,16 @@ class Stage:
     def name(self):
         return self.function.__name__
 
+    @property
+    def artifacts(self):
+        artifact_list = []
+        for arg in self._combined_args():
+            if isinstance(arg, cf.artifact.Artifact):
+                artifact_list.append(arg)
+        return cf.artifact.ArtifactFilter(artifact_list)  # TODO: need a filter_string?
+
+    # TODO: this really maybe only makes sense to be called from within the
+    # stage __call__...
     def resolve_args(self, record_resolution: bool = False) -> tuple[list, dict]:
         """Handle any artifacts passed in as arguments."""
         passed_args = []
@@ -295,6 +320,8 @@ class Stage:
                 if record_resolution:
                     manager.record_stage_artifact_input(self, arg)
                 # passed_args.append(arg.obj)
+            elif isinstance(arg, OutputArtifactPathResolve):
+                passed_args.append(arg.resolve(self))
             else:
                 passed_args.append(arg)
         for kwarg in self.kwargs:
@@ -306,6 +333,8 @@ class Stage:
                 if record_resolution:
                     manager.record_stage_artifact_input(self, self.kwargs[kwarg])
                 # passed_kwargs[kwarg] = self.kwargs[kwarg].obj
+            elif isinstance(self.kwargs[kwarg], OutputArtifactPathResolve):
+                passed_args.append(self.kwargs[kwarg].resolve(self))
             else:
                 passed_kwargs[kwarg] = self.kwargs[kwarg]
 

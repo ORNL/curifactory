@@ -25,6 +25,25 @@ class Cacheable:
         the string path it was saved at. Similarly, when load is called,
         the path gets returned."""
 
+        self.cache_paths: list = []
+
+    def _resolve_path_template(self, path: str) -> str:
+        """Intended for when path_override is specified, this returns the path with
+        formatting applied/resolved.
+
+        Note that this does _not_ handle suffixing, suffix resolution needs to occur wherever
+        this is used.
+
+        Possible keyword replacement fields:
+        * `{hash}` - the hash of the record.
+        * `{cache}` - the path to the manager's cache directory (does not include final '/')
+        * `{name}` - the name of this output object.
+        * `{artifact_filename}` - the normal filename for this cacher (doesn't include dir path etc.)
+        * `{[STAGE_ARG_NAME]}` - any argument name from the stage itself
+        * `{stage_arg_[INDEX]}`
+        """
+        pass
+
     def _resolve_suffix(
         self, path: str, suffix: str, add_extension: bool = True
     ) -> str:
@@ -45,7 +64,9 @@ class Cacheable:
 
         return suffix
 
-    def get_path(self, suffix=None) -> str:
+    def get_path(self, suffix=None, dry=False) -> str:
+        """When dry is false don't add the resulting path to the cacher's list
+        of tracked paths, (e.g. if this is just being used in a print statement.)"""
         if self.path_override is not None:
             path = self.path_override
             # TODO: templating?
@@ -68,21 +89,25 @@ class Cacheable:
 
             suffix = self._resolve_suffix(path, suffix, False)
             path = path + suffix
+            if not dry and path not in self.cache_paths:
+                self.cache_paths.append(path)
             return path
         else:
             suffix = self._resolve_suffix(self.artifact.name, suffix)
             name = self.artifact.name + suffix
             hash, _ = self.artifact.compute_hash()
             cache_path = cf.manager.Manager.get_manager().cache_path
-            return str(Path(cache_path) / f"{hash}_{name}")
-            # return str(Path(cache_path) / f"{hash}_{self.artifact.name}{self.extension}")
+            full_path = str(Path(cache_path) / f"{hash}_{name}")
+            if not dry and full_path not in self.cache_paths:
+                self.cache_paths.append(full_path)
+            return full_path
 
     def check(self, silent: bool = False):
         if not silent:
             cf.manager.Manager.get_manager().logger.debug(
-                f"Checking for cached {self.artifact.name} at '{self.get_path()}'"
+                f"Checking for cached {self.artifact.name} at '{self.get_path(dry=True)}'"
             )
-        return os.path.exists(self.get_path())
+        return os.path.exists(self.get_path(dry=True))
 
     def save_obj(self, obj):
         pass
@@ -98,7 +123,7 @@ class Cacheable:
             cacher_extra_metadata=self.extra_metadata,
             artifact_id=self.artifact.db_id,
             artifact_hash=self.artifact.hash_str,
-            paths=self.load_paths(),
+            paths=self.cache_paths,
             # stage_id=self.artifact.compute.db_id,
             # stage_params=self.artifact.compute.db_id,
         )
@@ -107,7 +132,7 @@ class Cacheable:
 
     def save(self, obj):
         cf.manager.Manager.get_manager().logger.debug(
-            f"Saving {self.artifact.name} at '{self.get_path()}'..."
+            f"Saving {self.artifact.name} at '{self.get_path(dry=True)}'..."
         )
         self.save_obj(obj)
         self.save_metadata()
@@ -128,11 +153,16 @@ class Cacheable:
 
     def load_metadata(self):
         metadata_path = self.get_path("_metadata.json")
+
+        if not Path(metadata_path).exists():
+            return {}
+
         with open(metadata_path) as infile:
             metadata = json.load(infile)
 
         self.extra_metadata = metadata["cacher_extra_metadata"]
         self.artifact.db_id = metadata["artifact_id"]
+        self.cache_paths = metadata["paths"]
         # CANC: try to load from db?
         # if not cf.manager.Manager.get_manager().load_artifact_metadata_by_id(metadata["artifact_id"], self.artifact):
         #     pass
@@ -141,6 +171,26 @@ class Cacheable:
     def load_artifact(self, path: str) -> "cf.artifact.Artifact":
         # TODO:
         pass
+
+    def clear(self):
+        """Remove self from the cache."""
+        cf.get_manager().logger.debug(f"Removing {self.artifact.name} from cache")
+        self.load_metadata()
+        self.clear_obj()
+        self.clear_metadata()
+
+    def clear_obj(self):
+        paths = self.cache_paths
+        # if isinstance(paths, str):
+        #     cf.get_manager().logger.debug(f"\tClearing {paths}")
+        #     Path(paths).unlink(missing_ok=True)
+        # if isinstance(paths, list):
+        for path in paths:
+            cf.get_manager().logger.debug(f"\tClearing {path}")
+            Path(path).unlink(missing_ok=True)
+
+    def clear_metadata(self):
+        Path(self.get_path("_metadata.json")).unlink(missing_ok=True)
 
 
 class JsonCacher(Cacheable):
@@ -225,6 +275,71 @@ class ParquetCacher(Cacheable):
             return db.from_parquet(self.get_path())
 
 
+class DBTableCacher(Cacheable):
+    # NOTE: returns _the entire table that gets saved into_
+    def __init__(
+        self,
+        path_override: str = None,
+        use_db_arg: int | str = -1,
+        table_name: str = None,
+    ):
+        super().__init__(path_override, "")
+        self.use_db_arg = use_db_arg
+        self.table_name = table_name
+
+    def get_db(self):
+        if self.path_override is not None:
+            # TODO: load db
+            pass
+        else:
+            args, kwargs = self.artifact.compute.resolve_args(record_resolution=False)
+            # NOTE: don't add artifacts to db because the stage _execution_
+            # already handles that
+            if isinstance(self.use_db_arg, int):
+                db = args[self.use_db_arg]
+            elif isinstance(self.use_db_arg, str):
+                db = kwargs[self.use_db_arg]
+            else:
+                raise TypeError(
+                    "use_db_arg must either be an args index or kwargs kw string name"
+                )
+            return db
+
+    def get_table_name(self):
+        if self.table_name is None:
+            return self.artifact.name
+        return self.table_name
+
+    # TODO: probably need better upsert logic
+    # TODO: should use db in a context manager if not use_db_arg?
+    def save_obj(self, relation_object: duckdb.DuckDBPyRelation):
+        db = self.get_db()
+        try:
+            db.sql(
+                f"CREATE TABLE {self.get_table_name()} AS SELECT * FROM relation_object"
+            )
+            self.extra_metadata["result"] = "created"
+        except:
+            db.sql(
+                f"INSERT INTO {self.get_table_name()} AS SELECT * FROM relation_object"
+            )
+            self.extra_metadata["result"] = "updated"
+            cf.get_manager().logger.debug(
+                f"Inserting relation to pre-existing table {self.get_table_name()}"
+            )
+        self.artifact.obj = db.sql(f"SELECT * FROM {self.get_table_name()}")
+
+    def load_obj(self):
+        db = self.get_db()
+        return db.sql(f"SELECT * FROM {self.get_table_name()}")
+
+    def check(self, silent=True):
+        if not Path(self.get_path("_metadata.json", dry=True)).exists():
+            return False
+        # TODO: should we also check for the table?
+        return True
+
+
 class MetadataOnlyCacher(Cacheable):
     """Only writes out a metadata file, can be used for checking that a
     stage was completed/based on parameters. The underlying assumption is that the
@@ -232,6 +347,9 @@ class MetadataOnlyCacher(Cacheable):
 
     def __init__(self, path_override: str = None):
         super().__init__(path_override)
+
+    # TODO: doesn't this only need to check metadata file instead/ think this
+    # needs to implement check
 
 
 class AggregateArtifactCacher(Cacheable):
@@ -246,6 +364,8 @@ class AggregateArtifactCacher(Cacheable):
         super().__init__()
 
     def check(self, silent=True):
+        if not Path(self.get_path("_metadata.json", dry=True)).exists():
+            return False
         for artifact in self.artifact.inner_artifact_list:
             if artifact.cacher is None:
                 return False
@@ -259,6 +379,71 @@ class AggregateArtifactCacher(Cacheable):
             obj = artifact.get()
             objs.append(obj)
         return objs
+
+
+class PathRef(Cacheable):
+    """Special type of cacher that doesn't directly save or load anything, it just tracks a file path
+    for reference.
+
+    This is primarily useful for stages that never keep a particular object in memory and just want to
+    directly pass around paths. The ``PathRef`` cacher allows still short-circuiting if the referenced
+    path already exists, rather than needing to do it manually in the stage.
+
+    Note that when using a ``PathRef`` cacher you still need to return a value from the stage for the
+    cacher to "save". This cacher expects that return value to be the path that was written to, and
+    internally runs an ``assert returned_path == self.get_path()`` to double check that the stage wrote
+    to the correct place. This also means that the value stored "in memory" is just the path, and that
+    path string is what gets gets "loaded".
+
+    This cacher is distinct from the ``FileReferenceCacher`` in that the path of this cacher _is the
+    referenced path_, rather than saving a file that contains the referenced path. (In the case of the
+    latter, a new record/hash etc that refers to the same target filepath would still trigger stage
+    execution and still requires the stage to do it's own check of if the original file already exists
+    before saving.
+
+    Example:
+
+        .. code-block:: python
+
+            @stage([], ["large_dataset_path"], [PathRef("./data/raw/big_data_{params.dataset}.csv")])
+            def make_big_data(record):
+                # you can use record's ``stage_cachers`` to get the expected path
+                output_path = record.stage_cachers[0].get_path()
+                ...
+                # make big data without keeping it in memory
+                ...
+                return output_path
+
+        .. code-block:: python
+
+            @stage(["large_dataset_path"], ["model_path"], [PathRef])
+            def make_big_data(record, large_dataset_path):
+                # the other way you can get a path that should be correct
+                # is through record's ``get_path()``. The assert inside
+                # PathRef's save will help us double check that it's correct.
+                output_path = record.get_path(obj_name="model_path")
+                ...
+                # train model using large_dataset_path, the string path we need.
+                ...
+                return output_path
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def save(self, obj: str):
+        """This is effectively a no-op, this cacher is just a reference to its own path.
+        ``obj`` is expected to be the same, and we assert that to help alert the user if
+        something got mis-aligned and the path they wrote to wasn't this cacher's path.
+        """
+        internal_path = self.get_path()
+        assert (
+            internal_path == obj
+        ), f"Stage returned unexpected path to PathRef cacher for artifact '{self.name}':\n\tExpected: '{internal_path}'\n\tReturned: '{obj}'"
+        return internal_path
+
+    def load(self) -> str:
+        return self.get_path()
 
 
 # class DBTableCacher(Cacheable):
