@@ -179,25 +179,29 @@ class Artifact:
         pass
 
     def get(self):
-        if self.computed:
-            return self.obj
-        if self.cacher is not None:
-            if self.cacher.check():
-                self.obj = self.cacher.load()
-                # TODO: metadata stuff
+        try:
+            if self.computed:
                 return self.obj
+            if self.cacher is not None:
+                if self.cacher.check():
+                    self.obj = self.cacher.load()
+                    # TODO: metadata stuff
+                    return self.obj
 
-        # TODO: if this artifact is requested and no current target, that means
-        # this is the target if a new run has to start
-        manager = cf.get_manager()
-        if manager.current_experiment_run_target is None:
-            manager.current_experiment_run_target = self
-        # (we handle associating the ID with the experiment run during
-        # record_artifact)
+            # TODO: if this artifact is requested and no current target, that means
+            # this is the target if a new run has to start
+            manager = cf.get_manager()
+            if manager.current_experiment_run_target is None:
+                manager.current_experiment_run_target = self
+            # (we handle associating the ID with the experiment run during
+            # record_artifact)
 
-        self.compute()
-        # NOTE: stage handles running cachers
-        return self.obj
+            self.compute()
+            # NOTE: stage handles running cachers
+            return self.obj
+        except Exception as e:
+            e.add_note(f"Was trying to retrieve artifact {self.name}")
+            raise
 
     @property
     def context_name(self):

@@ -211,12 +211,13 @@ def experiment(function):
         elif annotation == inspect._empty:
             # a parameter with a default but no type
             # `my_function(some_param='yeah')`
+            copied_default = copy.deepcopy(default)
             field_tuples.append(
                 (
                     key,
                     Any,
                     field(
-                        default_factory=lambda: copy.deepcopy(default),
+                        default_factory=lambda new_val=copied_default: new_val,
                         init=True,
                         repr=True,
                     ),
@@ -229,12 +230,13 @@ def experiment(function):
         else:
             # a parameter with type and default
             # `my_function(some_param: int=5)`
+            copied_default = copy.deepcopy(default)
             field_tuples.append(
                 (
                     key,
                     annotation,
                     field(
-                        default_factory=lambda: copy.deepcopy(default),
+                        default_factory=lambda new_val=copied_default: new_val,
                         init=True,
                         repr=True,
                     ),

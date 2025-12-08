@@ -446,57 +446,66 @@ class Stage:
         return passed_args, passed_kwargs
 
     def __call__(self):
-        manager = cf.get_manager()
+        try:
+            manager = cf.get_manager()
 
-        # if we have no active run but a stage needs to execute, that means we
-        # need to start an implicit run
-        implicit_run = False
-        if manager.current_experiment_run is None and self.context is not None:
-            implicit_run = True
-            self.context._implicit_run()
+            # if we have no active run but a stage needs to execute, that means we
+            # need to start an implicit run
+            implicit_run = False
+            if manager.current_experiment_run is None and self.context is not None:
+                implicit_run = True
+                self.context._implicit_run()
 
-        # make sure any dependencies have run. # TODO: not sure on order of this
-        for dependency in self.dependencies:
-            if not dependency.computed:
-                dependency()
+            # make sure any dependencies have run. # TODO: not sure on order of this
+            for dependency in self.dependencies:
+                if isinstance(dependency.outputs, list):
+                    for output in dependency.outputs:
+                        output.get()
+                elif isinstance(dependency.outputs, cf.artifact.Artifact):
+                    dependency.outputs.get()
+                elif not dependency.computed:
+                    dependency()
 
-        manager.record_stage(self)
+            manager.record_stage(self)
 
-        passed_args, passed_kwargs = self.resolve_args(record_resolution=True)
+            passed_args, passed_kwargs = self.resolve_args(record_resolution=True)
 
-        manager.logger.info(f"Executing stage {self.name}")
-        manager.record_stage_start(self)
-        manager.current_stage = self
-        function_outputs = self.function(*passed_args, **passed_kwargs)
-        manager.current_stage = None
+            manager.logger.info(f"Executing stage {self.name}")
+            manager.record_stage_start(self)
+            manager.current_stage = self
+            function_outputs = self.function(*passed_args, **passed_kwargs)
+            manager.current_stage = None
 
-        if type(self.outputs) is list:
-            if len(self.outputs) < 1:
-                returns = None
+            if type(self.outputs) is list:
+                if len(self.outputs) < 1:
+                    returns = None
+                else:
+                    for index, art in enumerate(self.outputs):
+                        art.computed = True
+                        art.obj = function_outputs[index]
+                        manager.record_artifact(art)
+                        if art.cacher is not None:
+                            art.cacher.save(art.obj)
+                    returns = self.outputs
             else:
-                for index, art in enumerate(self.outputs):
-                    art.computed = True
-                    art.obj = function_outputs[index]
-                    manager.record_artifact(art)
-                    if art.cacher is not None:
-                        art.cacher.save(art.obj)
-                returns = self.outputs
-        else:
-            art: "cf.artifact.Artifact" = self.outputs
-            art.computed = True
-            art.obj = function_outputs
-            manager.record_artifact(art)
-            if art.cacher is not None:
-                art.cacher.save(art.obj)
-            returns = art
+                art: "cf.artifact.Artifact" = self.outputs
+                art.computed = True
+                art.obj = function_outputs
+                manager.record_artifact(art)
+                if art.cacher is not None:
+                    art.cacher.save(art.obj)
+                returns = art
 
-        manager.record_stage_completion(self)
+            manager.record_stage_completion(self)
 
-        if implicit_run:
-            self.context._end_implicit_run()
+            if implicit_run:
+                self.context._end_implicit_run()
 
-        self.computed = True
-        return returns
+            self.computed = True
+            return returns
+        except Exception as e:
+            e.add_note(f"Was trying to run stage {self.name}")
+            raise
 
     def __repr__(self):
         kws = [f"{key}={value!r}" for key, value in self.__dict__.items()]
@@ -522,3 +531,26 @@ def stage(
         return wrapper
 
     return decorator
+
+
+def run(output_names: str | list[str], *inputs):
+    outputs = []
+    if isinstance(output_names, str):
+        outputs.append(cf.artifact.Artifact(output_names))
+    else:
+        for name in output_names:
+            outputs.append(cf.artifact.Artifact(name))
+
+    function = inputs[-1]
+    stage_obj = Stage(function, list(inputs[:-1]), {}, outputs)
+    return stage_obj.outputs
+
+
+# def single_output(function):
+#     """Mini compute step wrapping a single non-cached output. Meant to make it easier to define one-line operations"""
+#     @wraps(function)
+#     def wrapper(*args, **kwargs):
+#         outputs = [cf.artifact.Artifact()]
+#         stage_obj = Stage(
+#             function, list(args), kwargs, outputs, hashing_functions, pass_self
+#         )

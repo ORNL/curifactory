@@ -249,6 +249,9 @@ class ParquetCacher(Cacheable):
         | dict[str, list]
         | list[dict[str | Any]],
     ):
+        # if self.use_db_arg != -1:
+        #     """If told to use db, convert to relation"""
+        #     obj =
         if isinstance(obj, duckdb.DuckDBPyRelation):
             # NOTE: this is necessary because unless db conn string info is
             # provided somehow, we have no db object with which to load the
