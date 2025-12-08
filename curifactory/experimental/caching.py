@@ -341,7 +341,7 @@ class DBTableCacher(Cacheable):
             self.extra_metadata["result"] = "created"
         except:
             db.sql(
-                f"INSERT OR REPLACE INTO {self.get_table_name()} AS SELECT * FROM relation_object"
+                f"INSERT OR REPLACE INTO {self.get_table_name()} (SELECT * FROM relation_object)"
             )
             self.extra_metadata["result"] = "updated"
             cf.get_manager().logger.debug(
@@ -368,6 +368,11 @@ class MetadataOnlyCacher(Cacheable):
 
     def __init__(self, path_override: str = None):
         super().__init__(path_override)
+
+    def check(self, silent=False):
+        if not Path(self.get_path("_metadata.json", dry=True)).exists():
+            return False
+        return True
 
     # TODO: doesn't this only need to check metadata file instead/ think this
     # needs to implement check

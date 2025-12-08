@@ -299,7 +299,9 @@ def experiment(function):
             self.__doc__ = original_function.__doc__
 
         def __call__(self, *args, **kwargs):
-            return experiment_dataclass(*args, **kwargs)
+            parameterized_experiment = experiment_dataclass(*args, **kwargs)
+            parameterized_experiment.__doc__ = self.__doc__
+            return parameterized_experiment
 
         @property
         def parameters(self) -> dict[str, Any]:

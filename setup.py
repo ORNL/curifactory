@@ -47,6 +47,7 @@ setup(
         "console_scripts": [
             "experiment=curifactory.cli:main",
             "curifactory=curifactory.project:main",
+            "cf=curifactory.experimental.cli:main",
         ]
     },
     install_requires=[
