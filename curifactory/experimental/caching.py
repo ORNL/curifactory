@@ -19,7 +19,7 @@ class Cacheable:
         self.path_override = path_override
         self.extension = extension
         self.artifact: cf.artifact.Artifact = None
-        self.extra_metadata: dict = None
+        self.extra_metadata: dict = {}
         self.paths_only: bool = paths_only
         """When True, after the object is saved it is replaced with
         the string path it was saved at. Similarly, when load is called,
@@ -27,7 +27,7 @@ class Cacheable:
 
         self.cache_paths: list = []
 
-    def _resolve_path_template(self, path: str) -> str:
+    def resolve_template_string(self, path: str) -> str:
         """Intended for when path_override is specified, this returns the path with
         formatting applied/resolved.
 
@@ -35,14 +35,24 @@ class Cacheable:
         this is used.
 
         Possible keyword replacement fields:
-        * `{hash}` - the hash of the record.
-        * `{cache}` - the path to the manager's cache directory (does not include final '/')
-        * `{name}` - the name of this output object.
-        * `{artifact_filename}` - the normal filename for this cacher (doesn't include dir path etc.)
+        * `{hash}` - the hash of the stage.
+        * `{stage_name}` - the name of the stage that produces this artifact
         * `{[STAGE_ARG_NAME]}` - any argument name from the stage itself
-        * `{stage_arg_[INDEX]}`
+        * `{artifact_name}` - the name of this output object.
+        * `{artifact_filename}` - the normal filename for this cacher (doesn't include dir path etc.)
         """
-        pass
+        # * `{cache}` - the path to the manager's cache directory (does not include final '/')
+        # * `{stage_arg_[INDEX]}`
+        # TODO: some of this doesn't work if artifact is None
+        format_dict = cf.utils.FailsafeDict()
+        if self.artifact is not None:
+            format_dict = cf.utils.FailsafeDict(
+                artifact_name=self.artifact.name,
+                artifact_filename=f"{self.artifact.compute_hash()[0]}_{self._resolve_suffix(self.artifact.name, None)}",
+            )
+            path = self.artifact.compute.resolve_template_string(path)
+        path = path.format(**format_dict)
+        return path
 
     def _resolve_suffix(
         self, path: str, suffix: str, add_extension: bool = True
@@ -69,7 +79,8 @@ class Cacheable:
         of tracked paths, (e.g. if this is just being used in a print statement.)"""
         if self.path_override is not None:
             path = self.path_override
-            # TODO: templating?
+
+            path = self.resolve_template_string(path)
 
             # if the path_override has the extension in it already, remove it to handle
             # suffix addition consistently with non-path_override case
@@ -124,7 +135,7 @@ class Cacheable:
             artifact_id=self.artifact.db_id,
             artifact_hash=self.artifact.hash_str,
             paths=self.cache_paths,
-            # stage_id=self.artifact.compute.db_id,
+            stage_id=self.artifact.compute.db_id,
             # stage_params=self.artifact.compute.db_id,
         )
         with open(metadata_path, "w") as outfile:
@@ -282,12 +293,18 @@ class DBTableCacher(Cacheable):
         path_override: str = None,
         use_db_arg: int | str = -1,
         table_name: str = None,
+        db: duckdb.DuckDBPyConnection = None,
     ):
+        # TODO: would be nice if use_db_arg expected template string same as
+        # table_name?
         super().__init__(path_override, "")
         self.use_db_arg = use_db_arg
         self.table_name = table_name
+        self.db = db
 
     def get_db(self):
+        if self.db is not None:
+            return self.db
         if self.path_override is not None:
             # TODO: load db
             pass
@@ -308,7 +325,7 @@ class DBTableCacher(Cacheable):
     def get_table_name(self):
         if self.table_name is None:
             return self.artifact.name
-        return self.table_name
+        return self.resolve_template_string(self.table_name)
 
     # TODO: probably need better upsert logic
     # TODO: should use db in a context manager if not use_db_arg?
@@ -321,13 +338,14 @@ class DBTableCacher(Cacheable):
             self.extra_metadata["result"] = "created"
         except:
             db.sql(
-                f"INSERT INTO {self.get_table_name()} AS SELECT * FROM relation_object"
+                f"INSERT OR REPLACE INTO {self.get_table_name()} AS SELECT * FROM relation_object"
             )
             self.extra_metadata["result"] = "updated"
             cf.get_manager().logger.debug(
                 f"Inserting relation to pre-existing table {self.get_table_name()}"
             )
-        self.artifact.obj = db.sql(f"SELECT * FROM {self.get_table_name()}")
+        if self.artifact is not None:
+            self.artifact.obj = db.sql(f"SELECT * FROM {self.get_table_name()}")
 
     def load_obj(self):
         db = self.get_db()
@@ -444,6 +462,82 @@ class PathRef(Cacheable):
 
     def load(self) -> str:
         return self.get_path()
+
+
+class FileReferenceCacher(Cacheable):
+    """Saves a file path or list of file paths generated from a stage as a json file.
+    The ``check`` function will check existence of all file paths.
+
+    This is useful for instances where there may be a large number of files stored or
+    generated to disk, as it would be unwieldy to return them all (or infeasible to keep them
+    in memory) directly from the stage. When this cacher is checked for pre-existing,
+    it tries to load the json file storing the filenames, and then checks for the existence of
+    each path in that json file. If all of them exist, it will short-circuit computation.
+
+    Using this cacher does mean the user is in charge of loading/saving the file paths correctly,
+    but in some cases that may be desirable.
+
+    This can also be used for storing a reference to a single file outside the normal cache.
+
+    When combined with the ``get_dir`` call on the record, you can create a cached directory of
+    files similarly to a regular cacher and simply keep a reference to them as part of the actual
+    cacher process.
+
+    Example:
+
+        .. code-block:: python
+
+            @stage(inputs=None, outputs=["many_text_files"], cachers=[FileReferenceCacher])
+            def output_text_files(record):
+                file_path = record.get_dir("my_files")
+                my_file_list = [os.path.join(file_path, f"my_file_{num}") for num in range(20)]
+
+                for file in my_file_list:
+                    with open(file, 'w') as outfile:
+                        outfile.write("test")
+
+                return my_file_list
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, extension=".json", **kwargs)
+
+    def check(self, silent: bool = False) -> bool:
+        # check the file list file exists
+        if not super().check(silent):
+            return False
+
+        # load the file list and check each file
+        # NOTE: we don't need to re-check args overwrite because that
+        # would already have applied in the super check
+        with open(self.get_path()) as infile:
+            files = json.load(infile)
+
+        if isinstance(files, list):
+            for file in files:
+                cf.get_manager().logger.debug("Checking from file list: '%s'" % file)
+                if not os.path.exists(file):
+                    return False
+        else:
+            if not os.path.exists(files):
+                return False
+
+        return True
+
+    def load_obj(self) -> list[str] | str:
+        with open(self.get_path()) as infile:
+            files = json.load(infile)
+        return files
+
+    # TODO: ??
+    # def load_paths(self):
+    #     return
+
+    def save_obj(self, files: list[str] | str) -> str:
+        path = self.get_path()
+        with open(path, "w") as outfile:
+            json.dump(files, outfile, indent=4)
+        return path
 
 
 # class DBTableCacher(Cacheable):

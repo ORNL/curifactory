@@ -1,4 +1,11 @@
-from curifactory.experimental import artifact, caching, experiment, manager, stage
+from curifactory.experimental import (
+    artifact,
+    caching,
+    experiment,
+    manager,
+    stage,
+    utils,
+)
 
 
 def get_manager():
@@ -14,3 +21,23 @@ def __getattr__(name):
     if name == "config":
         return get_manager().config
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+
+@stage.stage(
+    artifact.Artifact("{prior_artifact.name}", caching.FileReferenceCacher()),
+    pass_self=True,
+)
+def convert_artifact_to_path(self, prior_artifact):
+    # TODO: ability to remove obj from memory
+    return self.artifacts[0].get_path()
+
+
+@stage.stage(
+    artifact.Artifact("path_collection", caching.FileReferenceCacher()), pass_self=True
+)
+def get_artifact_paths(self, *artifacts):
+    artifact_list = self.artifacts
+    path_list = []
+    for art in artifact_list:
+        path_list.append(art.cacher.get_path())
+    return path_list

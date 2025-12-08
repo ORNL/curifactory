@@ -1,7 +1,8 @@
 import copy
 import hashlib
 import inspect
-from dataclasses import dataclass
+import threading
+from dataclasses import dataclass, field
 from functools import wraps
 from typing import Any, Callable, Union
 from uuid import UUID
@@ -13,6 +14,18 @@ import curifactory.experimental as cf
 
 
 # class StageContext:
+
+
+class _StageContext(threading.local):
+    def __init__(self):
+        self.current_stage_dependencies: list[Stage] = []
+
+    @property
+    def stage_dependencies(self):
+        return self.current_stage_dependencies
+
+
+STAGE_CONTEXT = _StageContext()
 
 
 class OutputArtifactPathResolve:
@@ -51,7 +64,30 @@ class Stage:
 
     db_id: UUID = None
 
+    dependencies: list["Stage"] = field(default_factory=list)
+    """Explicit stage dependencies that don't have outputs used in this stage
+    but are still required to run first. (Either set explicitly or use
+    within a context manager)"""
+
+    computed: bool = False
+    """Mostly only used to help ensure output-less dependencies don't run more
+    than once."""
+
     def __post_init__(self):
+        # create a dictionary with the names of all the function arguments and
+        # where they can be found index-wise
+        # TODO: this isn't going to work if a stage is loaded from db and no
+        # underlying function, may need to save this somewhere.
+        self.parameter_positions = {}
+        self.parameter_defaults = {}
+        parameters = inspect.signature(self.function).parameters
+        for i, key in enumerate(parameters.keys()):
+            self.parameter_positions[key] = i
+            if parameters[key].default != inspect.Parameter.empty:
+                self.parameter_defaults[key] = parameters[key].default
+            else:
+                self.parameter_defaults[key] = None
+
         artifacts = []
         if not isinstance(self.outputs, list):
             # turn it into a list for now just for consistent handling, will be
@@ -67,6 +103,7 @@ class Stage:
             # setattr(self, name, field(default=None))
             # TODO: there should probably be an artifact copy function
             art = cf.artifact.Artifact()
+            output.name = self.resolve_template_string(output.name)
             art.name = output.name
             art.cacher = output.cacher
 
@@ -85,6 +122,11 @@ class Stage:
         self.context = self._find_context()
         # TODO: previous context names similar to artifact?
 
+        # figure out any dependencies from context managers
+        if len(STAGE_CONTEXT.stage_dependencies) > 0:
+            for dependency in STAGE_CONTEXT.stage_dependencies:
+                self.dependencies.append(dependency)
+
     def _find_context(self) -> "cf.experiment.Experiment":
         # TODO: check if context is none first?
         for frame in inspect.stack():
@@ -99,6 +141,12 @@ class Stage:
         super().__setattr__(name, value)
         # if name == "args" or name == "kwargs":
         #     self._assign_dependents()
+
+    def __enter__(self):
+        STAGE_CONTEXT.stage_dependencies.append(self)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        STAGE_CONTEXT.stage_dependencies.remove(self)
 
     # def _assign_dependents(self):
     #     """Go through args and kwargs and for any artifacts, add this stage
@@ -154,6 +202,14 @@ class Stage:
             self.pass_self,
         )
         building_stages[id(self)] = new_stage
+
+        # handle copying any stage dependencies
+        for dependency in self.dependencies:
+            if id(dependency) not in building_stages:
+                new_dependency = dependency._inner_copy(building_stages)
+                building_stages[id(dependency)] = new_dependency
+
+            new_stage.dependencies.append(building_stages[id(dependency)])
         return new_stage  # , True
 
     def copy(self):
@@ -252,6 +308,52 @@ class Stage:
 
         # 5. otherwise just use the default representation
         return (f"repr({param_name})", repr(param_value))
+
+    def resolve_template_string(self, str_to_format: str) -> str:
+        """
+        * {hash}
+        * {stage_name}
+        * {[PARAMETER_NAME]}
+        * {[PARAMETER_NAME].name} - the name of the PARAMETER artifact (if it is in fact an artifact)
+        """
+        format_dict = cf.utils.FailsafeDict(
+            hash=self.compute_hash(), stage_name=self.name
+        )
+        # for i in range(len(self.parameter_positions)):
+        #     arg = None
+        #     if i >= len(self.args):
+        #         # find the kwarg name
+        #         for kwarg, index in self.parameter_positions.items():
+        #             if index == i:
+        #                 if kwarg in self.kwargs:
+        #                     arg = self.kwargs[kwarg]
+        #                 else:
+        #                     # TODO: need to also look at handling default parameter values
+        #                     arg = None
+        #     else:
+        #         arg = self.args[i]
+        #     format_dict[f"arg_{i}"] = str(arg)
+        #
+        for parameter in self.parameter_positions:
+            val = self.get_parameter_value_by_name(parameter)
+            format_dict[parameter] = str(val)
+
+            if isinstance(val, cf.artifact.Artifact):
+                format_dict[f"{parameter}.name"] = val.name
+
+        return str_to_format.format(**format_dict)
+        # return Template(str_to_format).safe_substitute(**format_dict)
+
+    def get_parameter_value_by_name(self, parameter_name: str):
+        if parameter_name in self.kwargs:
+            return self.kwargs[parameter_name]
+        i = self.parameter_positions[parameter_name]
+        if i < len(self.args):
+            return self.args[i]
+        return self.parameter_defaults[parameter_name]
+
+    # def get_parameter_value_by_index(self, index: int):
+    #     pass
 
     def _combined_args(self) -> list:
         """Put the kwargs into a list, this is mostly just to make it easier to scan
@@ -353,6 +455,11 @@ class Stage:
             implicit_run = True
             self.context._implicit_run()
 
+        # make sure any dependencies have run. # TODO: not sure on order of this
+        for dependency in self.dependencies:
+            if not dependency.computed:
+                dependency()
+
         manager.record_stage(self)
 
         passed_args, passed_kwargs = self.resolve_args(record_resolution=True)
@@ -387,6 +494,8 @@ class Stage:
 
         if implicit_run:
             self.context._end_implicit_run()
+
+        self.computed = True
         return returns
 
     def __repr__(self):
