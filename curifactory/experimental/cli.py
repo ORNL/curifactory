@@ -36,20 +36,19 @@ def main():
 
     parsed, unknown = parser.parse_known_args()
 
-    # if parsed.show_help:
-    #     print("Help was requested!")
-    #
-    #     if parsed.command == "run":
-    #         run_parser.print_help()
-    #     elif parsed.command is None:
-    #         parser.print_help()
-    #
-    # print(parsed.command)
-    # print(parsed)
-    #
+    # initial help check
+    if parsed.show_help:
+        if parsed.command is None:
+            parser.print_help()
+            return
+        if parsed.command == "run":
+            if parsed.experiment is None:
+                run_parser.print_help()
+                return
 
     if parsed.command == "run":
         # see if only a module was provided
+        found_experiments = {}
         try:
             module = importlib.import_module(parsed.experiment)
             experiment = None
@@ -57,9 +56,25 @@ def main():
             module = importlib.import_module(
                 ".".join(parsed.experiment.split(".")[:-1])
             )
-            experiment = getattr(module, parsed.experiment.split(".")[-1])
+            try:
+                experiment = getattr(module, parsed.experiment.split(".")[-1])
+            except AttributeError:
+                experiment = None
+
+        for attr in dir(module):
+            if isinstance(getattr(module, attr), cf.experiment.Experiment):
+                found_experiments[attr] = getattr(module, attr)
+
+                # print(f"Found: {attr}")
+                # print(f"Looking for {module}")
+                # for exp, param_list in cf.get_manager().parameterized_experiments.items():
+                #     pass
         # print(module)
         # print(experiment)
+
+        # if experiment is None:
+        #     print(cf.get_manager().experiments)
+        #     print(cf.get_manager().parameterized_experiments)
 
         if experiment is not None:
             # print(type(experiment))
@@ -79,11 +94,12 @@ def main():
                     continue
                 names.append(field.name)
                 # print(field.name, field.type, field.default_factory())
+                # experiment_parameter_group.add_argument(f"--{field.name}", type=field.type, dest=field.name, help=f"Default: {field.default_factory()}")
                 experiment_parameter_group.add_argument(
                     f"--{field.name}",
                     type=field.type,
                     dest=field.name,
-                    help=f"Default: {field.default_factory()}",
+                    help=f"Default: {getattr(experiment, field.name)}",
                 )
 
             parsed_better, _ = parser.parse_known_args()
@@ -99,10 +115,22 @@ def main():
 
         if parsed.show_help:
             run_parser.print_help()
+            if experiment is None:
+                print(f"\nExperiments in {module.__name__}:")
+                for exp in cf.get_manager().experiments:
+                    print(f"\t{exp.__name__}")
+                    for parameterized in cf.get_manager().parameterized_experiments[
+                        exp
+                    ]:
+                        if parameterized in found_experiments.values():
+                            print(
+                                f"\t\t{list(found_experiments.keys())[list(found_experiments.values()).index(parameterized)]} ({parameterized.name})"
+                            )
             return
 
         if experiment is not None:
             experiment.run()
+            print(experiment.compute_hash())
 
             # run_parser.print_help()
 

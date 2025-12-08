@@ -51,8 +51,9 @@ class Experiment:
         self.reference: str = None
         self.run_number: int = None
 
-        if cf.manager.Manager.get_manager() is not None:
-            cf.manager.Manager.get_manager().experiments.append(self)
+        cf.get_manager().parameterized_experiments[self.__class__].append(self)
+        # if cf.manager.Manager.get_manager() is not None:
+            # cf.manager.Manager.get_manager().experiments.append(self)
 
     @property
     def artifacts(self):
@@ -155,7 +156,7 @@ class Experiment:
 
     def compute_hash(self):
         hash_str, hash_debug = self.outputs.compute_hash()
-        return hash_str
+        return hash_str, hash_debug
 
     # TODO: (3/17/2024) override setattr and essentially make the fields frozen
     # - if you try to modify an experiment parameter, that won't necessarily
@@ -297,6 +298,8 @@ def experiment(function):
             self.field_tuples = experiment_field_tuples
             self.original_function = original_function
             self.__doc__ = original_function.__doc__
+            cf.get_manager().experiments.append(experiment_dataclass)
+            cf.get_manager().parameterized_experiments[experiment_dataclass] = []
 
         def __call__(self, *args, **kwargs):
             parameterized_experiment = experiment_dataclass(*args, **kwargs)

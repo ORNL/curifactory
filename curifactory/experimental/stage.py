@@ -260,6 +260,14 @@ class Stage:
             debug[param_name] = {"object": hash_debug, "hash_value": hash_value}
             hash_values[param_name] = hash_value
 
+        # add any stage dependencies
+        for stage_dependency in self.dependencies:
+            hash_debug, hash_value = self.hash_parameter(
+                stage_dependency.name, stage_dependency
+            )
+            debug[stage_dependency.name] = hash_debug
+            hash_values[stage_dependency.name] = hash_value
+
         hash_total = 0
         for key, value in hash_values.items():
             if value is None:
@@ -302,11 +310,16 @@ class Stage:
                 param_value.hash_str,
             )
 
-        # 4. use the function name if it's a callable, rather than a pointer address
+        # 4. if the parameter is a stage (e.g. a stage dependency) use its hash
+        if isinstance(param_value, cf.stage.Stage):
+            hash_str, hash_debug = param_value.compute_hash()
+            return (f"stage {param_value.name}.hash - '{hash_debug}'", hash_str)
+
+        # 5. use the function name if it's a callable, rather than a pointer address
         if isinstance(param_value, Callable):
             return (f"{param_name}.__qualname__", param_value.__qualname__)
 
-        # 5. otherwise just use the default representation
+        # 6. otherwise just use the default representation
         return (f"repr({param_name})", repr(param_value))
 
     def resolve_template_string(self, str_to_format: str) -> str:

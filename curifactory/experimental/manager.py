@@ -41,6 +41,7 @@ class Manager:
         **additional_configuration,
     ):
         self.experiments = []
+        self.parameterized_experiments = {}
 
         # ---- configuration ----
         self.database_path = database_path
@@ -378,7 +379,7 @@ class Manager:
         experiment.start_timestamp = datetime.now()
         experiment.reference = self.get_reference_name(experiment)
 
-        hash = experiment.compute_hash()
+        hash, _ = experiment.compute_hash()
 
         with self.db_connection() as db:
             db.execute(
