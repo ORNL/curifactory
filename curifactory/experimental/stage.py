@@ -105,7 +105,11 @@ class Stage:
             art = cf.artifact.Artifact()
             output.name = self.resolve_template_string(output.name)
             art.name = output.name
-            art.cacher = output.cacher
+            # NOTE: remember that objects defined in the decorator are
+            # singletons, so the cacher needs to be "created again" to ensure
+            # that every instance of the stage/artifact has a _different_ cacher
+            # (otherwise all cacher(s) will refer to the same artifact)
+            art.cacher = copy.deepcopy(output.cacher)
 
             art.compute = self
             if output.name is not None:

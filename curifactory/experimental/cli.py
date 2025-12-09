@@ -9,11 +9,19 @@ import os
 import sys
 from dataclasses import fields
 
+import argcomplete
+
 import curifactory.experimental as cf
 
 
+def completer_experiment(**kwargs) -> list[str]:
+    manager = cf.get_manager()
+    prefix = kwargs["prefix"]
+    manager.import_experiments_from_module(prefix)
+    return manager.experiment_keys_matching(prefix)
+
+
 def main():
-    sys.path.append(os.getcwd())
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument(
         "-h",
@@ -26,7 +34,7 @@ def main():
     subparsers = parser.add_subparsers(help="Subcommand help", dest="command")
 
     run_parser = subparsers.add_parser("run", help="Run help", add_help=False)
-    run_parser.add_argument("experiment")
+    run_parser.add_argument("experiment").completer = completer_experiment
     run_parser.add_argument(
         "-h",
         "--help",
@@ -35,6 +43,8 @@ def main():
         help="Show this help message",
     )
 
+    argcomplete.autocomplete(parser, always_complete_options=False)
+    argcomplete.autocomplete(run_parser, always_complete_options=False)
     parsed, unknown = parser.parse_known_args()
 
     # initial help check
@@ -48,54 +58,25 @@ def main():
                 return
 
     if parsed.command == "run":
-        # see if only a module was provided
-        found_experiments = {}
-        try:
-            module = importlib.import_module(parsed.experiment)
-            experiment = None
-        except ModuleNotFoundError:
-            module = importlib.import_module(
-                ".".join(parsed.experiment.split(".")[:-1])
-            )
-            try:
-                experiment = getattr(module, parsed.experiment.split(".")[-1])
-            except AttributeError:
-                experiment = None
+        experiment = None
 
-        for attr in dir(module):
-            if isinstance(getattr(module, attr), cf.experiment.Experiment):
-                found_experiments[attr] = getattr(module, attr)
+        manager = cf.get_manager()
+        remainder = manager.import_experiments_from_module(parsed.experiment)
 
-                # print(f"Found: {attr}")
-                # print(f"Looking for {module}")
-                # for exp, param_list in cf.get_manager().parameterized_experiments.items():
-                #     pass
-        # print(module)
-        # print(experiment)
-
-        # if experiment is None:
-        #     print(cf.get_manager().experiments)
-        #     print(cf.get_manager().parameterized_experiments)
+        if remainder in manager.experiment_ref_names:
+            experiment = manager.experiment_ref_names[remainder]
 
         if experiment is not None:
-            # print(type(experiment))
-            if type(experiment).__name__ == "ExperimentFactoryWrapper":
-                experiment = experiment(f"{experiment.type_name}_default")
-            # experiment.run()
-
-            # print(experiment.parameters)
-            # print(fields(experiment))
             experiment_parameter_group = run_parser.add_argument_group(
                 f"{experiment.name} parameters", experiment.__doc__
             )
 
+            # add arguments for the experiment to the parser
             names = []
             for field in fields(experiment):
                 if field.name in ["name", "outputs"]:
                     continue
                 names.append(field.name)
-                # print(field.name, field.type, field.default_factory())
-                # experiment_parameter_group.add_argument(f"--{field.name}", type=field.type, dest=field.name, help=f"Default: {field.default_factory()}")
                 experiment_parameter_group.add_argument(
                     f"--{field.name}",
                     type=field.type,
@@ -117,34 +98,26 @@ def main():
         if parsed.show_help:
             run_parser.print_help()
             if experiment is None:
-                print(f"\nExperiments in {module.__name__}:")
-                for exp in cf.get_manager().experiments:
-                    print(f"\t{exp.__name__}")
-                    for parameterized in cf.get_manager().parameterized_experiments[
-                        exp
-                    ]:
-                        if parameterized in found_experiments.values():
-                            print(
-                                f"\t\t{list(found_experiments.keys())[list(found_experiments.values()).index(parameterized)]} ({parameterized.name})"
-                            )
+                print(f"\nExperiment references matching '{parsed.experiment}':")
+                for exp in manager.experiment_keys_matching(parsed.experiment):
+                    print("\t", exp, f" ({manager.experiment_ref_names[exp].name})")
+                # for key in manager.experiment_ref_names.keys():
+                #     print(key)
+                # print(f"\nExperiments in {module.__name__}:")
+                # for exp in cf.get_manager().experiments:
+                #     print(f"\t{exp.__name__}")
+                #     for parameterized in cf.get_manager().parameterized_experiments[
+                #         exp
+                #     ]:
+                #         if parameterized in found_experiments.values():
+                #             print(
+                #                 f"\t\t{list(found_experiments.keys())[list(found_experiments.values()).index(parameterized)]} ({parameterized.name})"
+                #             )
             return
 
         if experiment is not None:
+            print(experiment)
             experiment.run()
-            # print(experiment.compute_hash()[1])
-            # print(json.dumps(experiment.compute_hash()[1], indent=4))
-
-            # run_parser.print_help()
-
-        # experiment_module = ".".join(parsed.experiment.split(".")[:-1])
-        # if experiment_module == "":
-        #     experiment_module = parsed.experiment
-        # print(parsed.experiment)
-        # print(os.getcwd())
-        # module = importlib.import_module(experiment_module)
-        # print(module)
-        # next_thing = parsed.experiment.split(".")[-1]
-        # print(getattr(module, next_thing))
 
 
 if __name__ == "__main__":

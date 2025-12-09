@@ -4,6 +4,7 @@ import importlib
 import json
 import logging
 import os
+import sys
 import threading
 from datetime import datetime
 from pathlib import Path
@@ -12,6 +13,8 @@ from uuid import UUID, uuid4
 
 import duckdb
 import pandas as pd
+
+import curifactory.experimental as cf
 
 
 class _ManagerContext(threading.local):
@@ -41,7 +44,13 @@ class Manager:
         **additional_configuration,
     ):
         self.experiments = []
+        """List of experiment dataclasses."""
         self.parameterized_experiments = {}
+        """Dictionary of initialized (parameterized) experiments keyed by dataclass type"""
+        self.experiment_ref_names = {}
+        """Dictionary of possible names/references to use to refer to specific experiments."""
+        self.imported_module_names = []
+        """List of module strings that have been successfully imported and parsed for experiments."""
 
         # ---- configuration ----
         self.database_path = database_path
@@ -65,8 +74,12 @@ class Manager:
         self.logging_initialized: bool = False
         self._logger = None
 
+        self._sys_paths_added: bool = False
+        self.project_root: str = None
+
         self.ensure_dir_paths()
         self.ensure_store_tables()
+        self.ensure_sys_path()
 
     @property
     def config(self) -> dict[str, Any]:
@@ -76,9 +89,72 @@ class Manager:
             **self.additional_configuration,
         }
 
-    def find_experiments_from_file(self, file_path: str):
-        with self:
-            importlib.import_module(file_path)
+    def experiment_keys_matching(self, prefix: str) -> list[str]:
+        found = []
+        for key in self.experiment_ref_names.keys():
+            if key.startswith(prefix):
+                found.append(key)
+        return found
+
+    def import_experiments_from_module(self, module_str: str):
+        # try to load the module
+        module = self.quietly_import_module(module_str)
+        remainder = None
+        while module is None:
+            if remainder is None:
+                remainder = module_str.split(".")[-1]
+            else:
+                remainder = f"{module_str.split(".")[-1]}.{remainder}"
+
+            if "." not in module_str:
+                # TODO: error? or no?
+                return remainder
+            # keep going "up" a . to try to find a valid module
+            module_str = ".".join(module_str.split(".")[:-1])
+            module = self.quietly_import_module(module_str)
+
+        self.imported_module_names.append(module_str)
+
+        # parse through all the things in the module looking for experiments and
+        # experiment classes
+        for attr in dir(module):
+            value = getattr(module, attr)
+            if isinstance(value, cf.experiment.Experiment):
+                self.add_experiment_to_ref_names(module_str, attr, value)
+            # check for experiment types
+            elif type(value).__name__ == "ExperimentFactoryWrapper":
+                experiment = value(f"{value.type_name}_default")
+                self.add_experiment_to_ref_names(module_str, value.type_name, experiment)
+
+        # return the piece of the module_str that wasn't the module
+        return remainder
+
+    def add_experiment_to_ref_names(self, module_str: str, attr_name: str, experiment):
+        """Add the experiment to the ref names dictionary under all logical names."""
+        module_pieces = module_str.split(".")
+
+        # TODO: handle if name already exists
+        for i in range(len(module_pieces) + 1):
+            if i == 0:
+                self.experiment_ref_names[attr_name] = experiment
+                self.experiment_ref_names[experiment.name] = experiment
+                continue
+            building_module_str = ".".join(module_pieces[-i:])
+            self.experiment_ref_names[f"{building_module_str}.{attr_name}"] = experiment
+            self.experiment_ref_names[f"{building_module_str}.{experiment.name}"] = experiment
+
+
+    def quietly_import_module(self, module_str: str):
+        module = None
+        try:
+            module = importlib.import_module(module_str)
+        except ModuleNotFoundError:
+            pass
+        return module
+
+    # def find_experiments_from_file(self, file_path: str):
+    #     with self:
+    #         importlib.import_module(file_path)
 
     # def check_for_existing_run_in_db(self, target_artifact):
     #     pass
@@ -109,6 +185,25 @@ class Manager:
                 .iloc[0]
             )
         return results
+
+    def ensure_sys_path(self):
+        if self._sys_paths_added:
+            return
+
+        # TODO: find root
+        if self.project_root is None:
+            search_depth = 3
+            prefix = "./"
+            while not os.path.exists(f"{prefix}{CONFIGURATION_FILE}") and search_depth > 0:
+                prefix += "../"
+                search_depth -= 1
+            if os.path.exists(f"{prefix}{CONFIGURATION_FILE}"):
+                self.project_root = str(Path(prefix).resolve())
+
+        if self.project_root is not None:
+            sys.path.append(self.project_root)
+        sys.path.append(os.getcwd())
+        self._sys_paths_added = True
 
     def ensure_dir_paths(self):
         database_dir = Path(self.database_path).parent
@@ -483,11 +578,12 @@ class Manager:
             prefix += "../"
             search_depth -= 1
 
+        config = {}
+
         if os.path.exists(f"{prefix}{CONFIGURATION_FILE}"):
             with open(f"{prefix}{CONFIGURATION_FILE}") as infile:
                 config = json.load(infile)
-        else:
-            config = {"database_path": "data/store.db"}
+
         return Manager.from_config(config)
 
     @staticmethod
