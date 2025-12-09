@@ -249,14 +249,36 @@ class Stage:
         debug = {}
         hash_values = {}
         for param_index, param_name in enumerate(parameter_names):
-            if self.pass_self and param_index == 0:
+            # if self.pass_self and param_index == 0:
+            #     continue
+            # if self.pass_self:
+            #     param_index -= 1
+            parameter_value = self.get_parameter_value(param_index, param_name)
+            # TODO: get_parameter_value actually won't handle self since it's
+            # not explicitly in the _user_passed_ args.
+            if isinstance(parameter_value, Stage) or param_name == "self":
+                # ignore if self is passed
+                # NOTE: I'm doing this instead of an explicit pass_self check in
+                # case other tools externally manipulate stages and hide self
+                # pass.
                 continue
-            if self.pass_self:
-                param_index -= 1
 
-            hash_debug, hash_value = self.hash_parameter(
-                param_name, self.get_parameter_value(param_index, param_name)
-            )
+            # check for a *args type parameter
+            if (
+                inspect.signature(self.function).parameters[param_name].kind
+                == inspect.Parameter.VAR_POSITIONAL
+            ):
+                inner_parameters = self.args[param_index:]
+                hash_debug = []
+                hash_value = []
+                for param in inner_parameters:
+                    inner_debug, inner_value = self.hash_parameter(param_name, param)
+                    hash_debug.append(inner_debug)
+                    hash_value.append(inner_value)
+            else:
+                hash_debug, hash_value = self.hash_parameter(
+                    param_name, parameter_value
+                )
             debug[param_name] = {"object": hash_debug, "hash_value": hash_value}
             hash_values[param_name] = hash_value
 
@@ -306,7 +328,8 @@ class Stage:
             # TODO: artifact needs to track the hash_debug and re-include it here.
             param_value.compute_hash()
             return (
-                f"artifact {param_value.name}.hash - '{param_value.hash_debug}'",
+                # f"artifact {param_value.name}.hash - '{param_value.hash_debug}'",
+                {"artifact": param_value.name, "hash": param_value.hash_debug},
                 param_value.hash_str,
             )
 

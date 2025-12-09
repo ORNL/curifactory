@@ -4,6 +4,7 @@
 
 import argparse
 import importlib
+import json
 import os
 import sys
 from dataclasses import fields
@@ -130,7 +131,8 @@ def main():
 
         if experiment is not None:
             experiment.run()
-            print(experiment.compute_hash())
+            # print(experiment.compute_hash()[1])
+            # print(json.dumps(experiment.compute_hash()[1], indent=4))
 
             # run_parser.print_help()
 
