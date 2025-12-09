@@ -31,9 +31,12 @@ def main():
         help="Show this help message",
     )
 
-    subparsers = parser.add_subparsers(help="Subcommand help", dest="command")
+    subparsers = parser.add_subparsers(help="Commands:", dest="command")
 
-    run_parser = subparsers.add_parser("run", help="Run help", add_help=False)
+    ls_parser = subparsers.add_parser("ls", help="List experiments")
+    ls_parser.add_argument("thing_to_list", nargs="?")
+
+    run_parser = subparsers.add_parser("run", help="Run an experiment", add_help=False)
     run_parser.add_argument("experiment").completer = completer_experiment
     run_parser.add_argument(
         "-h",
@@ -63,8 +66,11 @@ def main():
         manager = cf.get_manager()
         remainder = manager.import_experiments_from_module(parsed.experiment)
 
-        if remainder in manager.experiment_ref_names:
-            experiment = manager.experiment_ref_names[remainder]
+        search_parts = manager.divide_reference_parts(parsed.experiment)
+        print(search_parts)
+
+        if search_parts["experiment"] in manager.experiment_ref_names:
+            experiment = manager.experiment_ref_names[search_parts["experiment"]]
 
         if experiment is not None:
             experiment_parameter_group = run_parser.add_argument_group(
@@ -117,7 +123,54 @@ def main():
 
         if experiment is not None:
             print(experiment)
-            experiment.run()
+            manager.init_root_logging()
+
+            if search_parts["artifact_filter"] is None:
+                experiment.run()
+            else:
+                for artifact in experiment.artifacts.filter(
+                    search_parts["artifact_filter"]
+                ):
+                    artifact.get()
+                    print(artifact.cacher.load_paths())
+
+    elif parsed.command == "ls":
+        manager = cf.get_manager()
+        if parsed.thing_to_list is None:
+            experiment_list = list(manager.experiment_ref_names.keys())
+        else:
+            experiment_list = manager.experiment_keys_matching(parsed.thing_to_list)
+
+        if len(experiment_list) == 0:
+            search_parts = manager.divide_reference_parts(parsed.thing_to_list)
+            experiment = manager.experiment_ref_names[search_parts["experiment"]]
+            artifacts = experiment.artifacts.filter(search_parts["artifact_filter"])
+            print(f"Artifacts matching {parsed.thing_to_list}:")
+            for artifact in artifacts:
+                print(
+                    artifact.name.ljust(20),
+                    f" (stage: {artifact.compute.name})".ljust(40),
+                    f"(context: {artifact.context.name})".ljust(40),
+                )
+        elif parsed.thing_to_list in manager.experiment_ref_names:
+            # an exact experiment was listed, list artifacts
+            print(f"Artifacts in {parsed.thing_to_list}:")
+            for artifact in manager.experiment_ref_names[
+                parsed.thing_to_list
+            ].artifacts:
+                print(
+                    artifact.name.ljust(20),
+                    f" (stage: {artifact.compute.name})".ljust(40),
+                    f"(context: {artifact.context.name})".ljust(40),
+                )
+        else:
+            # otherwise list all matching experiments
+            if parsed.thing_to_list is None:
+                print("Experiments:")
+            else:
+                print(f"Experiments matching '{parsed.thing_to_list}':")
+            for exp in experiment_list:
+                print(exp, f" ({manager.experiment_ref_names[exp].name})")
 
 
 if __name__ == "__main__":

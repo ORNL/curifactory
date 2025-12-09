@@ -13,6 +13,8 @@ from uuid import UUID, uuid4
 
 import duckdb
 import pandas as pd
+from rich import get_console, reconfigure
+from rich.logging import RichHandler
 
 import curifactory.experimental as cf
 
@@ -41,6 +43,7 @@ class Manager:
         self,
         database_path: str = "data/store.db",
         cache_path: str = "data/cache",
+        default_experiment_modules: list[str] = None,
         **additional_configuration,
     ):
         self.experiments = []
@@ -63,6 +66,8 @@ class Manager:
             pd.DataFrame: lambda obj: f"(pandas) {len(obj)} rows",
         }
 
+        self.default_experiment_modules: list[str] = default_experiment_modules
+
         self.additional_configuration: dict[str, Any] = additional_configuration
         # ---- /configuration ----
 
@@ -81,6 +86,8 @@ class Manager:
         self.ensure_store_tables()
         self.ensure_sys_path()
 
+        self.load_default_experiment_imports()
+
     @property
     def config(self) -> dict[str, Any]:
         return {
@@ -95,6 +102,11 @@ class Manager:
             if key.startswith(prefix):
                 found.append(key)
         return found
+
+    def load_default_experiment_imports(self):
+        if self.default_experiment_modules is not None:
+            for module in self.default_experiment_modules:
+                self.import_experiments_from_module(module)
 
     def import_experiments_from_module(self, module_str: str):
         # try to load the module
@@ -142,6 +154,36 @@ class Manager:
             building_module_str = ".".join(module_pieces[-i:])
             self.experiment_ref_names[f"{building_module_str}.{attr_name}"] = experiment
             self.experiment_ref_names[f"{building_module_str}.{experiment.name}"] = experiment
+
+    def divide_reference_parts(self, ref_str: str) -> dict[str, str]:
+        parts = {"module": None, "experiment": None, "artifact_filter": None}
+
+        for module_name in self.imported_module_names:
+            if ref_str.startswith(module_name):
+                parts["module"] = module_name
+                ref_str = ref_str[len(module_name):]
+                if ref_str.startswith("."):
+                    ref_str = ref_str[1:]
+                break
+
+        for name in self.experiment_ref_names:
+            if ref_str.startswith(name):
+                parts["experiment"] = self.experiment_ref_names[name].name
+                ref_str = ref_str[len(name):]
+                if ref_str.startswith("."):
+                    ref_str = ref_str[1:]
+                break
+        if parts["experiment"] is None:
+            parts["experiment"] = ref_str
+            return parts
+
+        if ref_str == "":
+            parts["artifact_filter"] = None
+        else:
+            parts["artifact_filter"] = ref_str
+        return parts
+
+
 
 
     def quietly_import_module(self, module_str: str):
@@ -536,8 +578,25 @@ class Manager:
         return self._logger
 
     def init_root_logging(self):
+        """The CLI sets this."""
         root_logger = logging.getLogger()
         root_logger.setLevel(logging.INFO)
+
+        rich_log_formatter = logging.Formatter("%(prefix)s%(message)s")
+        console_handler = RichHandler(
+            console=get_console(),
+            show_time=True,
+            show_level=True,
+            show_path=True,
+            rich_tracebacks=True,
+            tracebacks_show_locals=True,
+            log_time_format="%X",
+        )
+
+        console_handler.setFormatter(rich_log_formatter)
+        root_logger.addHandler(console_handler)
+
+        cf.utils.set_logging_prefix("")
 
     def init_cf_logging(self):
         cf_logger = logging.getLogger("curifactory")
@@ -545,7 +604,7 @@ class Manager:
         cf_logger.setLevel(logging.DEBUG)
         # NOTE: see https://docs.python.org/3/howto/logging.html#library-config
         # probably don't add a handler by default?
-        cf_logger.addHandler(logging.StreamHandler())
+        # cf_logger.addHandler(logging.StreamHandler())
         self._logger = cf_logger
 
     def init_logging(self):

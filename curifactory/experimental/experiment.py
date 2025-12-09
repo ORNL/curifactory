@@ -51,9 +51,7 @@ class Experiment:
         self.reference: str = None
         self.run_number: int = None
 
-        cf.get_manager().parameterized_experiments[self.__class__].append(self)
-        # if cf.manager.Manager.get_manager() is not None:
-            # cf.manager.Manager.get_manager().experiments.append(self)
+        # cf.get_manager().parameterized_experiments[self.__class__].append(self)
 
     @property
     def artifacts(self):

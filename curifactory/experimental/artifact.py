@@ -494,6 +494,16 @@ class ArtifactFilter:
     # TODO: if the starting_artifacts is a single artifact, just call filter on
     def filter(self, search_str: str) -> "ArtifactFilter":
         results = []
+
+        while "." in search_str:
+            next_str = search_str.split(".")[0]
+            remaining = ".".join(search_str.split(".")[1:])
+            next_step = self.filter(next_str).filter(remaining)
+            return next_step
+
+        # TODO: check for index?
+        # if search_str.prefix
+
         for artifact in self.artifacts:
             if (
                 artifact.name == search_str
