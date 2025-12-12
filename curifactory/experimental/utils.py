@@ -1,3 +1,4 @@
+import argparse
 import logging
 
 
@@ -39,3 +40,11 @@ class PrefixedLogFactory:
         record = self.original_factory(*args, **kwargs)
         record.prefix = self.prefix
         return record
+
+
+class AppendReplaceAction(argparse.Action):
+    """If specified we want to _replace_ the default, but keep appending as a list?"""
+
+    # does 'store' already do this?
+    def __call__(self, parser, namespace, values, option_string=None):
+        pass

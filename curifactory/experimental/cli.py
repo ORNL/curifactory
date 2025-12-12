@@ -7,7 +7,7 @@ import importlib
 import json
 import os
 import sys
-from dataclasses import fields
+from dataclasses import MISSING, fields
 
 import argcomplete
 
@@ -15,10 +15,11 @@ import curifactory.experimental as cf
 
 
 def completer_experiment(**kwargs) -> list[str]:
-    manager = cf.get_manager()
-    prefix = kwargs["prefix"]
-    manager.import_experiments_from_module(prefix)
-    return manager.experiment_keys_matching(prefix)
+    # manager = cf.get_manager()
+    # prefix = kwargs["prefix"]
+    # manager.import_experiments_from_module(prefix)
+    # return manager.experiment_keys_matching(prefix)
+    return []
 
 
 def main():
@@ -64,18 +65,35 @@ def main():
         experiment = None
 
         manager = cf.get_manager()
+        manager.load_default_experiment_imports()
         remainder = manager.import_experiments_from_module(parsed.experiment)
 
         search_parts = manager.divide_reference_parts(parsed.experiment)
         print(search_parts)
 
+        exp_classes_by_name = {}
+        for exp_class in manager.experiments:
+            exp_classes_by_name[exp_class.__name__] = exp_class
+
         if search_parts["experiment"] in manager.experiment_ref_names:
             experiment = manager.experiment_ref_names[search_parts["experiment"]]
+            base_class = False
+        elif search_parts["experiment"] in exp_classes_by_name:
+            experiment = exp_classes_by_name[search_parts["experiment"]]
+            base_class = True
 
         if experiment is not None:
+            name = experiment.name if not base_class else experiment.__name__
             experiment_parameter_group = run_parser.add_argument_group(
-                f"{experiment.name} parameters", experiment.__doc__
+                f"{name} parameters", experiment.__doc__
             )
+
+            # # TODO: https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser.add_argument
+            def list_converter(string):
+                print("I was called with", string)
+                if string in manager.experiment_ref_names:
+                    return manager.experiment_ref_names[string]
+                return string
 
             # add arguments for the experiment to the parser
             names = []
@@ -83,11 +101,30 @@ def main():
                 if field.name in ["name", "outputs"]:
                     continue
                 names.append(field.name)
+
+                default = None
+                if not base_class:
+                    default = getattr(experiment, field.name)
+                elif field.default_factory != MISSING:
+                    default = field.default_factory()
+
+                action = "store"
+                print(field.name, field.type, field.type.__name__)
+                if field.type.__name__ == "list":
+                    # https://stackoverflow.com/questions/47077329/python-get-type-of-typing-list
+                    print("LIST!")
+                    action = "append"
+
+                cleaned_type = field.type
+                if field.type.__name__ == "list":
+                    cleaned_type = list_converter
+
                 experiment_parameter_group.add_argument(
                     f"--{field.name}",
-                    type=field.type,
+                    type=cleaned_type,
                     dest=field.name,
-                    help=f"Default: {getattr(experiment, field.name)}",
+                    action=action,
+                    help=f"Default: {default}",
                 )
 
             parsed_better, _ = parser.parse_known_args()
@@ -98,7 +135,12 @@ def main():
                     new_args[name] = vars(parsed_better)[name]
 
             if len(new_args) > 0:
-                experiment = experiment.modify(**new_args)
+                if base_class:
+                    print(new_args)
+                    experiment = experiment(experiment.__name__, **new_args)
+                else:
+                    experiment = experiment.modify(**new_args)
+
             # print(experiment)
 
         if parsed.show_help:
@@ -136,6 +178,7 @@ def main():
 
     elif parsed.command == "ls":
         manager = cf.get_manager()
+        manager.load_default_experiment_imports()
         if parsed.thing_to_list is None:
             experiment_list = list(manager.experiment_ref_names.keys())
         else:
@@ -171,6 +214,10 @@ def main():
                 print(f"Experiments matching '{parsed.thing_to_list}':")
             for exp in experiment_list:
                 print(exp, f" ({manager.experiment_ref_names[exp].name})")
+
+            print("---")
+            for exp_class in manager.experiments:
+                print(exp_class.__name__)
 
 
 if __name__ == "__main__":

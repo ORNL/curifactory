@@ -86,7 +86,8 @@ class Manager:
         self.ensure_store_tables()
         self.ensure_sys_path()
 
-        self.load_default_experiment_imports()
+        self._default_imports = False
+        # self.load_default_experiment_imports()
 
     @property
     def config(self) -> dict[str, Any]:
@@ -104,9 +105,12 @@ class Manager:
         return found
 
     def load_default_experiment_imports(self):
+        if self._default_imports:
+            return
         if self.default_experiment_modules is not None:
             for module in self.default_experiment_modules:
                 self.import_experiments_from_module(module)
+        self._default_imports = True
 
     def import_experiments_from_module(self, module_str: str):
         # try to load the module
@@ -135,8 +139,15 @@ class Manager:
                 self.add_experiment_to_ref_names(module_str, attr, value)
             # check for experiment types
             elif type(value).__name__ == "ExperimentFactoryWrapper":
-                experiment = value(f"{value.type_name}_default")
-                self.add_experiment_to_ref_names(module_str, value.type_name, experiment)
+                # check if making a default is possible
+                can_make_default = True
+                for field in value.field_tuples:
+                    if not isinstance(field, tuple) or len(field) < 3:
+                        # no default specified
+                        can_make_default = False
+                if can_make_default:
+                    experiment = value(f"{value.type_name}_default")
+                    self.add_experiment_to_ref_names(module_str, value.type_name, experiment)
 
         # return the piece of the module_str that wasn't the module
         return remainder
@@ -518,6 +529,11 @@ class Manager:
 
         hash, _ = experiment.compute_hash()
 
+        cleaned_parameters = experiment.parameters
+        for parameter in experiment.parameters:
+            if isinstance(experiment.parameter, cf.experiment.Experiment):
+                experiment.parameters[parameter] =
+
         with self.db_connection() as db:
             db.execute(
                 """
@@ -541,7 +557,7 @@ class Manager:
                     experiment.run_number,
                     experiment.start_timestamp,
                     hash,
-                    experiment.parameters,
+                    cleaned_parameters,
                 ],
             )
 

@@ -291,16 +291,19 @@ def experiment(function):
     # return wrapper
 
     class ExperimentFactoryWrapper:
-        def __init__(self, experiment_type_name, experiment_field_tuples, original_function):
+        def __init__(self, experiment_type_name, experiment_field_tuples, original_function, exp_dataclass):
             self.type_name = experiment_type_name
+            # TODO: is type_name necessary? Just change to name
             self.field_tuples = experiment_field_tuples
             self.original_function = original_function
             self.__doc__ = original_function.__doc__
-            cf.get_manager().experiments.append(experiment_dataclass)
+            self.exp_dataclass = exp_dataclass
+            cf.get_manager().experiments.append(self.exp_dataclass)
             cf.get_manager().parameterized_experiments[experiment_dataclass] = []
 
         def __call__(self, *args, **kwargs):
-            parameterized_experiment = experiment_dataclass(*args, **kwargs)
+            # parameterized_experiment = experiment_dataclass(*args, **kwargs)
+            parameterized_experiment = self.exp_dataclass(*args, **kwargs)
             parameterized_experiment.__doc__ = self.__doc__
             return parameterized_experiment
 
@@ -338,4 +341,4 @@ def experiment(function):
                     call_parts.append(parameter)
             return f"Experiment {self.type_name}({', '.join(call_parts)})"
 
-    return ExperimentFactoryWrapper(function.__name__, field_tuples, function)
+    return ExperimentFactoryWrapper(function.__name__, field_tuples, function, experiment_dataclass)

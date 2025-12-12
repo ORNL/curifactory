@@ -340,7 +340,8 @@ class Stage:
         # 4. if the parameter is a stage (e.g. a stage dependency) use its hash
         if isinstance(param_value, cf.stage.Stage):
             hash_str, hash_debug = param_value.compute_hash()
-            return (f"stage {param_value.name}.hash - '{hash_debug}'", hash_str)
+            # return (f"stage {param_value.name}.hash - '{hash_debug}'", hash_str)
+            return ({"stage": param_value.name, "hash": hash_debug}, hash_str)
 
         # 5. use the function name if it's a callable, rather than a pointer address
         if isinstance(param_value, Callable):

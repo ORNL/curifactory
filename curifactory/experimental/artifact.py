@@ -343,6 +343,10 @@ class Artifact:
         for arg in self.compute._combined_args():
             if isinstance(arg, Artifact):
                 artifact_dependencies.append(arg)
+        for stage in self.compute.dependencies:
+            for arg in stage._combined_args():
+                if isinstance(arg, Artifact):
+                    artifact_dependencies.append(arg)
         return artifact_dependencies
 
     def artifact_list(self, building_list: list = None):
@@ -350,18 +354,24 @@ class Artifact:
             building_list = []
         building_list.append(self)
 
-        for arg in self.compute._combined_args():
-            if isinstance(arg, Artifact) and arg not in building_list:
-                building_list = arg.artifact_list(building_list)
-                # building_list.append(arg)
-            # if isinstance(arg, ArtifactList):
-            #     for list_artifact in arg.artifacts:
-            #         print(list_artifact)
-            #         building_list = list_artifact.artifact_list(building_list)
+        # TODO: TODO: TODO: this should be based on .dependencies...right?
+        for artifact in self.dependencies():
+            if artifact not in building_list:
+                building_list = artifact.artifact_list(building_list)
+            # if isinstance(arg, Artifact) and arg not in building_list:
+        # for arg in self.compute._combined_args():
+        #     if isinstance(arg, Artifact) and arg not in building_list:
+        #         building_list = arg.artifact_list(building_list)
+        # building_list.append(arg)
+        # if isinstance(arg, ArtifactList):
+        #     for list_artifact in arg.artifacts:
+        #         print(list_artifact)
+        #         building_list = list_artifact.artifact_list(building_list)
 
         return building_list
 
     def artifact_list_debug(self):
+        # TODO: outdated, mimic artifact_list above
         artifacts = self.artifact_list()
         for artifact in artifacts:
             artifact.compute_hash()
