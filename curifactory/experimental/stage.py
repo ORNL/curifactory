@@ -517,6 +517,8 @@ class Stage:
             function_outputs = self.function(*passed_args, **passed_kwargs)
             manager.current_stage = None
 
+            # TODO: special handling for overwrite for cacher?
+            # (e.g. run clear first?)
             if type(self.outputs) is list:
                 if len(self.outputs) < 1:
                     returns = None

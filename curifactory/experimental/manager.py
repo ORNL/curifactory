@@ -97,6 +97,40 @@ class Manager:
             **self.additional_configuration,
         }
 
+    def resolve_reference(self, ref_str: str):
+        # possible types:
+        # * module
+        # * module list?
+        # * experiment class
+        # * experiment class list
+        # * experiment instance
+        # * experiment instance list
+        # * mixed experiment class/instance list?
+        # * artifact
+        # * artifact list
+        # * stage
+        # * cacher_path --> artifact
+        # * experiment reference name (db)
+
+        resolutions = {}
+        # TODO: have an "exact_match" key which is a list of the other keys in
+        # which there is an exact (and not just partial/filter) match
+
+        # TODO: check for path (if contains '/'?)
+
+        reference_parts = self.divide_reference_parts(ref_str)
+        if reference_parts["module"] is not None:
+            if "module" not in resolutions:
+                resolutions["module"] = []
+            resolutions["module"].append(reference_parts["module"])
+
+        if reference_parts["experiment_instance"] is not None:
+            if "experiment_instance" not in resolutions:
+
+                resolutions["experiment_instance"] = []
+
+        return resolutions
+
     def experiment_keys_matching(self, prefix: str) -> list[str]:
         found = []
         for key in self.experiment_ref_names.keys():
@@ -168,6 +202,8 @@ class Manager:
 
     def divide_reference_parts(self, ref_str: str) -> dict[str, str]:
         parts = {"module": None, "experiment": None, "artifact_filter": None}
+
+        # TODO: check for  historical experiment name
 
         for module_name in self.imported_module_names:
             if ref_str.startswith(module_name):

@@ -84,6 +84,8 @@ class Artifact:
     in_db = pointer_based_property("in_db")
     in_cache = pointer_based_property("in_cache")
 
+    overwrite = pointer_based_property("overwrite")
+
     def __init__(self, name=None, cacher=None):
         self.pointer = None
 
@@ -116,6 +118,8 @@ class Artifact:
         self._db_id: UUID = None
         self._generated_time = None
         self._reportable: bool = False
+
+        self._overwrite: bool = False
 
         # the reason I'm hesitant to explicitly track dependents is that someone
         # could theoretically define a custom experiment dataclass and do weird
@@ -178,23 +182,36 @@ class Artifact:
     def get_from_db(self):
         pass
 
+    def determine_overwrite(self) -> bool:
+        """If any artifacts upstream from this one have overwrite specified,
+        this artifact needs to be overwritten as well."""
+        for artifact in self.artifact_list():
+            if artifact.overwrite:
+                return True
+        return False
+
     def get(self):
         try:
+            # Note that computed is set by the _stage_
             if self.computed:
                 return self.obj
-            if self.cacher is not None:
+            overwrite = self.determine_overwrite()
+            if self.cacher is not None and not overwrite:
                 if self.cacher.check():
                     self.obj = self.cacher.load()
                     # TODO: metadata stuff
                     return self.obj
 
-            # TODO: if this artifact is requested and no current target, that means
+            # if this artifact is requested and no current target, that means
             # this is the target if a new run has to start
             manager = cf.get_manager()
             if manager.current_experiment_run_target is None:
                 manager.current_experiment_run_target = self
             # (we handle associating the ID with the experiment run during
             # record_artifact)
+
+            if overwrite:
+                manager.logger.info(f"Will overwrite artifact {self.name}")
 
             self.compute()
             # NOTE: stage handles running cachers
@@ -350,6 +367,7 @@ class Artifact:
         return artifact_dependencies
 
     def artifact_list(self, building_list: list = None):
+        """Recursively builds a list of _all_ artifacts prior to this one."""
         if building_list is None:
             building_list = []
         building_list.append(self)

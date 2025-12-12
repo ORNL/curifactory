@@ -46,6 +46,14 @@ def main():
         dest="show_help",
         help="Show this help message",
     )
+    run_parser.add_argument(
+        "--ow",
+        "--overwrite",
+        action="append",
+        dest="overwrite",
+        help="Overwrite specific artifacts during run.",
+    )
+    run_parser.add_argument("--overwrite-all")
 
     argcomplete.autocomplete(parser, always_complete_options=False)
     argcomplete.autocomplete(run_parser, always_complete_options=False)
