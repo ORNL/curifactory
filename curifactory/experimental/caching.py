@@ -118,7 +118,10 @@ class Cacheable:
             cf.manager.Manager.get_manager().logger.debug(
                 f"Checking for cached {self.artifact.name} at '{self.get_path(dry=True)}'"
             )
-        return os.path.exists(self.get_path(dry=True))
+        exists = os.path.exists(self.get_path(dry=True))
+        if exists and not silent:
+            cf.get_manager().logger.debug(f"Found {self.get_path(dry=True)}")
+        return exists
 
     def save_obj(self, obj):
         pass
@@ -157,6 +160,9 @@ class Cacheable:
         return self.get_path()
 
     def load(self):
+        cf.get_manager().logger.debug(
+            f"Reloading {self.artifact.name} from '{self.get_path(dry=True)}'..."
+        )
         self.load_metadata()
         if self.paths_only:
             return self.load_paths()

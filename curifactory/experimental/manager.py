@@ -530,9 +530,12 @@ class Manager:
         hash, _ = experiment.compute_hash()
 
         cleaned_parameters = experiment.parameters
-        for parameter in experiment.parameters:
-            if isinstance(experiment.parameter, cf.experiment.Experiment):
-                experiment.parameters[parameter] =
+        cleaned_parameters_str = json.dumps(cleaned_parameters, default=repr)
+        cleaned_parameters = json.loads(cleaned_parameters_str)
+
+        # for parameter in experiment.parameters:
+        #     if isinstance(experiment.parameter, cf.experiment.Experiment):
+        #         experiment.parameters[parameter] =
 
         with self.db_connection() as db:
             db.execute(
