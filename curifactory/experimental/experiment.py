@@ -35,9 +35,7 @@ class Experiment:
     def __post_init__(self):
         # self.artifacts = artifact.ArtifactManager()
         cf.get_manager()._experiment_defining_stack.append(self)
-        print("About to define ", self.name)
         definition_outputs = self.define()
-        print("Done defining ", self.name)
         cf.get_manager()._experiment_defining_stack.pop()
 
         # TODO: I don't actually think outputs needs to be an artifact list
@@ -57,6 +55,9 @@ class Experiment:
         self.run_number: int = None
 
         # cf.get_manager().parameterized_experiments[self.__class__].append(self)
+
+        self.consolidate_shared_artifacts()
+
 
     @property
     def artifacts(self):

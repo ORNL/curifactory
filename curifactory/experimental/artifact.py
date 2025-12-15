@@ -647,6 +647,53 @@ class ArtifactList(Artifact):  # , list):
         self.inner_artifact_list.append(value)
         # self.compute._assign_dependents()
 
+
+    def _inner_copy(
+        self,
+        building_stages: dict["cf.stage.Stage", "cf.stage.Stage"] = None,
+        building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
+    ):
+        if building_stages is None:
+            building_stages = {}
+        if building_artifacts is None:
+            building_artifacts = {}
+
+        if self.internal_id in building_artifacts.keys():
+            return building_artifacts[self.internal_id]
+
+        artifact = ArtifactList(self.name, self.inner_artifact_list)
+        building_artifacts[self.internal_id] = artifact
+        artifact.cacher = copy.deepcopy(self.cacher)
+        artifact.hash_str = self.hash_str
+        artifact.hash_debug = self.hash_debug
+        if self.compute is not None:
+            artifact.compute = self.compute._inner_copy(
+                building_stages, building_artifacts
+            )
+            if not isinstance(artifact.compute.outputs, list):
+                artifact.compute.outputs = artifact
+            else:
+                # if it's a list, this artifact was only one of multiple
+                # outputs, so search through and replace just the one with the
+                # same name
+                for index, output in enumerate(artifact.compute.outputs):
+                    # print("Changing multioutputs for stage", artifact.compute.name
+                    if output.name == self.name:
+                        artifact.compute.outputs[index] = artifact
+        artifact.previous_context_names = [*self.previous_context_names]
+        if (
+            self.context is not None
+            and self.context.name not in artifact.previous_context_names
+            and (
+                artifact.context is not None
+                and artifact.context.name != self.context.name
+            )
+        ):
+            # print("Adding", self.context.name)
+            # print(artifact.context_name)
+            artifact.previous_context_names.append(self.context.name)
+        return artifact
+
     # TODO: define iterator?
 
 

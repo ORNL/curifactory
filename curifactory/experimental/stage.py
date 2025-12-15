@@ -540,6 +540,7 @@ class Stage:
                             art.cacher.save(art.obj)
                     returns = self.outputs
             else:
+                print("STORING LAMBDA OUT ON OBJ", id(self.outputs))
                 art: "cf.artifact.Artifact" = self.outputs
                 art.computed = True
                 art.obj = function_outputs
@@ -595,6 +596,7 @@ def run(output_names: str | list[str], *inputs):
 
     function = inputs[-1]
     stage_obj = Stage(function, list(inputs[:-1]), {}, outputs)
+    print("lambda stage outputs id", id(stage_obj.outputs))
     return stage_obj.outputs
 
 
