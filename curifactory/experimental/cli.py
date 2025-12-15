@@ -58,6 +58,7 @@ def main():
     argcomplete.autocomplete(parser, always_complete_options=False)
     argcomplete.autocomplete(run_parser, always_complete_options=False)
     parsed, unknown = parser.parse_known_args()
+    print(parsed)
 
     # initial help check
     if parsed.show_help:
@@ -76,19 +77,33 @@ def main():
         manager.load_default_experiment_imports()
         remainder = manager.import_experiments_from_module(parsed.experiment)
 
-        search_parts = manager.divide_reference_parts(parsed.experiment)
-        print(search_parts)
+        search = parsed.experiment
+        resolved = manager.resolve_reference(search)
 
-        exp_classes_by_name = {}
-        for exp_class in manager.experiments:
-            exp_classes_by_name[exp_class.__name__] = exp_class
-
-        if search_parts["experiment"] in manager.experiment_ref_names:
-            experiment = manager.experiment_ref_names[search_parts["experiment"]]
+        if "experiment_instance" in resolved:
+            experiment = resolved["experiment_instance"]
             base_class = False
-        elif search_parts["experiment"] in exp_classes_by_name:
-            experiment = exp_classes_by_name[search_parts["experiment"]]
+        elif "experiment_class" in resolved:
+            experiment = resolved["experiment_class"]
             base_class = True
+
+
+
+
+        #
+        # search_parts = manager.divide_reference_parts(parsed.experiment)
+        # print(search_parts)
+        #
+        # exp_classes_by_name = {}
+        # for exp_class in manager.experiments:
+        #     exp_classes_by_name[exp_class.__name__] = exp_class
+        #
+        # if search_parts["experiment"] in manager.experiment_ref_names:
+        #     experiment = manager.experiment_ref_names[search_parts["experiment"]]
+        #     base_class = False
+        # elif search_parts["experiment"] in exp_classes_by_name:
+        #     experiment = exp_classes_by_name[search_parts["experiment"]]
+        #     base_class = True
 
         if experiment is not None:
             name = experiment.name if not base_class else experiment.__name__
@@ -154,9 +169,17 @@ def main():
         if parsed.show_help:
             run_parser.print_help()
             if experiment is None:
-                print(f"\nExperiment references matching '{parsed.experiment}':")
-                for exp in manager.experiment_keys_matching(parsed.experiment):
-                    print("\t", exp, f" ({manager.experiment_ref_names[exp].name})")
+                print(f"Experiments matching '{search}':")
+                for exp_key, exp_val in resolved["experiment_instance_list"].items():
+                    print(f"{exp_key} ({exp_val.name})")
+                print("---")
+                print(f"Experiment classes matching '{search}':")
+                for exp_class in resolved["experiment_class_list"]:
+                    print(exp_class.__name__)
+
+                # print(f"\nExperiment references matching '{parsed.experiment}':")
+                # for exp in manager.experiment_keys_matching(parsed.experiment):
+                #     print("\t", exp, f" ({manager.experiment_ref_names[exp].name})")
                 # for key in manager.experiment_ref_names.keys():
                 #     print(key)
                 # print(f"\nExperiments in {module.__name__}:")
@@ -175,57 +198,120 @@ def main():
             print(experiment)
             manager.init_root_logging()
 
-            if search_parts["artifact_filter"] is None:
+            # handle overwrites
+            if parsed.overwrite is not None:
+                for overwrite_req in parsed.overwrite:
+                    art_resolved = manager.resolve_reference(overwrite_req)
+                    if "artifact" not in art_resolved and "artifact_list" not in art_resolved:
+                        print(f"COULD NOT FIND {overwrite_req}.")
+                        exit()
+                    else:
+                        if "artifact" in art_resolved:
+                            art_resolved["artifact"].overwrite = True
+                            manager.logger.debug(f"Setting overwrite on art_{art_resolved['artifact'].name}")
+                        else:
+                            for artifact in art_resolved["artifact_list"]:
+                                manager.logger.debug(f"Setting overwrite on art_{artifact.name}")
+                                artifact.ovewrite = True
+
+            if "artifact" not in resolved and "artifact_list" not in resolved:
                 experiment.run()
+            # if search_parts["artifact_filter"] is None:
             else:
-                for artifact in experiment.artifacts.filter(
-                    search_parts["artifact_filter"]
-                ):
-                    artifact.get()
-                    print(artifact.cacher.load_paths())
+                if "artifact" in resolved:
+                    manager.logger.debug(f"Attempting to get Artifact '{resolved["artifact"].name}'")
+                    resolved["artifact"].get()
+                elif "artifact_list" in resolved:
+                    manager.logger.debug(f"Attempting to get Artifacts {[artifact.name for artifact in resolved['artifact_list']]}")
+                    for artifact in resolved["artifact_list"]:
+                        artifact.get()
+                # for artifact in experiment.artifacts.filter(
+                #     search_parts["artifact_filter"]
+                # ):
+                #     artifact.get()
+                #     print(artifact.cacher.load_paths())
 
     elif parsed.command == "ls":
         manager = cf.get_manager()
         manager.load_default_experiment_imports()
-        if parsed.thing_to_list is None:
-            experiment_list = list(manager.experiment_ref_names.keys())
-        else:
-            experiment_list = manager.experiment_keys_matching(parsed.thing_to_list)
 
-        if len(experiment_list) == 0:
-            search_parts = manager.divide_reference_parts(parsed.thing_to_list)
-            experiment = manager.experiment_ref_names[search_parts["experiment"]]
-            artifacts = experiment.artifacts.filter(search_parts["artifact_filter"])
-            print(f"Artifacts matching {parsed.thing_to_list}:")
-            for artifact in artifacts:
+        search = parsed.thing_to_list
+        if search is None:
+            search = ""
+
+        resolved = manager.resolve_reference(search)
+        if "artifact_list" in resolved:
+            print(f"Artifacts matching {search}:")
+            for artifact in resolved["artifact_list"]:
                 print(
                     artifact.name.ljust(20),
                     f" (stage: {artifact.compute.name})".ljust(40),
                     f"(context: {artifact.context.name})".ljust(40),
                 )
-        elif parsed.thing_to_list in manager.experiment_ref_names:
-            # an exact experiment was listed, list artifacts
-            print(f"Artifacts in {parsed.thing_to_list}:")
-            for artifact in manager.experiment_ref_names[
-                parsed.thing_to_list
-            ].artifacts:
+        elif "experiment_instance" in resolved:
+            print(f"Artifacts in {search}:")
+            for artifact in resolved["experiment_instance"].artifacts:
                 print(
                     artifact.name.ljust(20),
                     f" (stage: {artifact.compute.name})".ljust(40),
                     f"(context: {artifact.context.name})".ljust(40),
                 )
         else:
-            # otherwise list all matching experiments
-            if parsed.thing_to_list is None:
+            if search == "":
                 print("Experiments:")
             else:
-                print(f"Experiments matching '{parsed.thing_to_list}':")
-            for exp in experiment_list:
-                print(exp, f" ({manager.experiment_ref_names[exp].name})")
+                print(f"Experiments matching '{search}':")
+            for exp_key, exp_val in resolved["experiment_instance_list"].items():
+                print(f"{exp_key} ({exp_val.name})")
 
             print("---")
-            for exp_class in manager.experiments:
+            if search == "":
+                print("Experiment classes:")
+            else:
+                print(f"Experiment classes matching '{search}':")
+            for exp_class in resolved["experiment_class_list"]:
                 print(exp_class.__name__)
+
+
+        # if parsed.thing_to_list is None:
+        #     experiment_list = list(manager.experiment_ref_names.keys())
+        # else:
+        #     experiment_list = manager.experiment_keys_matching(parsed.thing_to_list)
+        #
+        # if len(experiment_list) == 0:
+        #     search_parts = manager.divide_reference_parts(parsed.thing_to_list)
+        #     experiment = manager.experiment_ref_names[search_parts["experiment"]]
+        #     artifacts = experiment.artifacts.filter(search_parts["artifact_filter"])
+        #     print(f"Artifacts matching {parsed.thing_to_list}:")
+        #     for artifact in artifacts:
+        #         print(
+        #             artifact.name.ljust(20),
+        #             f" (stage: {artifact.compute.name})".ljust(40),
+        #             f"(context: {artifact.context.name})".ljust(40),
+        #         )
+        # elif parsed.thing_to_list in manager.experiment_ref_names:
+        #     # an exact experiment was listed, list artifacts
+        #     print(f"Artifacts in {parsed.thing_to_list}:")
+        #     for artifact in manager.experiment_ref_names[
+        #         parsed.thing_to_list
+        #     ].artifacts:
+        #         print(
+        #             artifact.name.ljust(20),
+        #             f" (stage: {artifact.compute.name})".ljust(40),
+        #             f"(context: {artifact.context.name})".ljust(40),
+        #         )
+        # else:
+        #     # otherwise list all matching experiments
+        #     if parsed.thing_to_list is None:
+        #         print("Experiments:")
+        #     else:
+        #         print(f"Experiments matching '{parsed.thing_to_list}':")
+        #     for exp in experiment_list:
+        #         print(exp, f" ({manager.experiment_ref_names[exp].name})")
+        #
+        #     print("---")
+        #     for exp_class in manager.experiments:
+        #         print(exp_class.__name__)
 
 
 if __name__ == "__main__":

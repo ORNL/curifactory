@@ -298,7 +298,7 @@ def experiment(function):
             self.original_function = original_function
             self.__doc__ = original_function.__doc__
             self.exp_dataclass = exp_dataclass
-            cf.get_manager().experiments.append(self.exp_dataclass)
+            cf.get_manager().experiments[self.exp_dataclass.__name__] = self.exp_dataclass
             cf.get_manager().parameterized_experiments[experiment_dataclass] = []
 
         def __call__(self, *args, **kwargs):

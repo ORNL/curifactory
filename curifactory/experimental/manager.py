@@ -46,8 +46,8 @@ class Manager:
         default_experiment_modules: list[str] = None,
         **additional_configuration,
     ):
-        self.experiments = []
-        """List of experiment dataclasses."""
+        self.experiments = {}
+        """dictionary of experiment dataclasses keyed by dataclass name."""
         self.parameterized_experiments = {}
         """Dictionary of initialized (parameterized) experiments keyed by dataclass type"""
         self.experiment_ref_names = {}
@@ -94,6 +94,7 @@ class Manager:
         return {
             "database_path": self.database_path,
             "cache_path": self.cache_path,
+            "default_experiment_modules": self.default_experiment_modules,
             **self.additional_configuration,
         }
 
@@ -119,15 +120,41 @@ class Manager:
         # TODO: check for path (if contains '/'?)
 
         reference_parts = self.divide_reference_parts(ref_str)
+        print(reference_parts)
         if reference_parts["module"] is not None:
             if "module" not in resolutions:
                 resolutions["module"] = []
             resolutions["module"].append(reference_parts["module"])
 
-        if reference_parts["experiment_instance"] is not None:
-            if "experiment_instance" not in resolutions:
+        if reference_parts["experiment"] is not None:
+            if reference_parts["experiment"] in self.experiment_ref_names:
+                resolutions["experiment_instance"] = self.experiment_ref_names[reference_parts["experiment"]]
+            if reference_parts["experiment"] in self.experiments:
+                resolutions["experiment_class"] = self.experiments[reference_parts["experiment"]]
 
-                resolutions["experiment_instance"] = []
+            resolutions["experiment_instance_list"] = {
+                name: self.experiment_ref_names[name] for name in self.experiment_ref_names.keys() if name.startswith(reference_parts["experiment"])
+            }
+            # TODO: class list should also be based on module if experiment is ""
+            resolutions["experiment_class_list"] = [
+                self.experiments[name] for name in self.experiments.keys() if name.startswith(reference_parts["experiment"])
+            ]
+
+        if "experiment_instance" in resolutions:
+            # check for artifacts
+            if reference_parts["artifact_filter"] is not None:
+                resolutions["artifact_list"] = resolutions["experiment_instance"].artifacts.filter(reference_parts["artifact_filter"])
+                if len(resolutions["artifact_list"]) == 1:
+                    resolutions["artifact"] = resolutions["artifact_list"][0]
+
+
+            # resolutions["experiment_instance_list"] = [
+            #     self.experiment_ref_names[name] for name in
+            #     self.experiment_keys_matching(reference_parts["experiment"])
+            # ]
+        # if reference_parts["artifact_filter"] is not None:
+        #
+        #     if "artifact" not in resolutions:
 
         return resolutions
 
