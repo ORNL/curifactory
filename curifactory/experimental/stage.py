@@ -7,6 +7,8 @@ from functools import wraps
 from typing import Any, Callable, Union
 from uuid import UUID
 
+from graphviz import Digraph
+
 # import simplification
 import curifactory.experimental as cf
 
@@ -429,6 +431,35 @@ class Stage:
         if len(tree.keys()) == 0:
             return None
         return tree
+
+    def _visualize(self, dot=None):
+        if dot is None:
+            dot = Digraph()
+            dot._edges = []
+
+        self._inner_visualize(dot)
+        return dot
+
+    def _inner_visualize(self, g):
+        self._node(g)
+
+        for dependency in self.artifacts:
+            # don't add duplicate edges (can happen when visualizing from a
+            # filter)
+            if (str(dependency.internal_id), str(id(self))) not in g._edges:
+                g.edge(str(dependency.internal_id), str(id(self)))
+                g._edges.append((str(dependency.internal_id), str(id(self))))
+            g = dependency._visualize(g)
+
+        return g
+
+    def _node(self, dot):
+        dot.node(
+            name=str(id(self)),
+            label=self.name,
+            fontsize="8.0",
+            height=".25",
+        )
 
     def _stage_list():
         # TODO

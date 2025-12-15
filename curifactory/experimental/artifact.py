@@ -483,13 +483,25 @@ class Artifact:
         self.compute_hash()
         if self.name is not None:
             str_name = str(
-                self.name + "\n" + self.context_name + "\n" + self.hash_str[:6]
+                self.name
+                + "\n"
+                + self.hash_str[:6]
+                # self.name + "\n" + self.context_name + "\n" + self.hash_str[:6]
             )
         else:
-            str_name = str("NONE\n" + self.context_name + "\n" + self.hash_str[:6])
+            # str_name = str("NONE\n" + self.context_name + "\n" + self.hash_str[:6])
+            str_name = str("NONE\n" + self.hash_str[:6])
+
+        context_names = ",".join(self.previous_context_names)
+
         dot.node(
             name=str(self.internal_id),
             label=str_name,
+            shape="box",
+            fontsize="8.0",
+            height=".25",
+            # xlabel=self.context_name,
+            xlabel=context_names,
         )
 
     def _visualize(self, dot=None):
@@ -503,13 +515,18 @@ class Artifact:
     def _inner_visualize(self, g):
         self._node(g)
 
-        for dependency in self.dependencies():
-            # don't add duplicate edges (can happen when visualizing from a
-            # filter)
-            if (str(dependency.internal_id), str(self.internal_id)) not in g._edges:
-                g.edge(str(dependency.internal_id), str(self.internal_id))
-                g._edges.append((str(dependency.internal_id), str(self.internal_id)))
-            g = dependency._visualize(g)
+        self.compute._visualize(g)
+        if (str(id(self.compute)), str(self.internal_id)) not in g._edges:
+            g.edge(str(id(self.compute)), str(self.internal_id))
+            g._edges.append((str(id(self.compute)), str(self.internal_id)))
+
+        # for dependency in self.dependencies():
+        #     # don't add duplicate edges (can happen when visualizing from a
+        #     # filter)
+        #     if (str(dependency.internal_id), str(self.internal_id)) not in g._edges:
+        #         g.edge(str(dependency.internal_id), str(self.internal_id))
+        #         g._edges.append((str(dependency.internal_id), str(self.internal_id)))
+        #     g = dependency._visualize(g)
 
         return g
 
@@ -646,7 +663,6 @@ class ArtifactList(Artifact):  # , list):
     def append(self, value):
         self.inner_artifact_list.append(value)
         # self.compute._assign_dependents()
-
 
     def _inner_copy(
         self,
