@@ -135,14 +135,21 @@ class Artifact:
         return self.internal_id == o.internal_id
 
     def _find_context(self) -> "cf.experiment.Experiment":
-        # TODO: check if context is none first?
-        for frame in inspect.stack():
-            if "self" in frame.frame.f_locals.keys() and isinstance(
-                frame.frame.f_locals["self"], cf.experiment.Experiment
-            ):
-                # print("FOUND THE EXPERIMENT")
-                return frame.frame.f_locals["self"]
+        # print("Seeking context for artifact ", self.name, cf.get_manager()._experiment_defining_stack)
+        if len(cf.get_manager()._experiment_defining_stack) > 0:
+            # self.context = cf.get_manager()._experiment_defining_stack[-1]
+            return cf.get_manager()._experiment_defining_stack[-1]
+            # print("Context: ", self.context.name)
         return None
+        # TODO: check if context is none first?
+        # for frame in inspect.stack():
+        #     if "self" in frame.frame.f_locals.keys() and isinstance(
+        #         frame.frame.f_locals["self"], cf.experiment.Experiment
+        #     ):
+        #         # print("FOUND THE EXPERIMENT")
+        #         return frame.frame.f_locals["self"]
+        # return None
+        #
 
     # TODO: if experiment.artifacts is just filter of outputs, we may not
     # actually need this at all
@@ -159,6 +166,16 @@ class Artifact:
             return ""
         self.hash_str, self.hash_debug = self.compute.compute_hash()
         return self.hash_str, self.hash_debug
+
+    def check_shared_artifact(self, other_artifact):
+        """Two artifacts are considered equivalent (can be shared) if their hash and name is the same"""
+        # TODO: is it a problem to use hash_str directly instead of compute_hash?
+        if (
+            self.name == other_artifact.name
+            and self.hash_str == other_artifact.hash_str
+        ):
+            return True
+        return False
 
     def __setattr__(self, name: str, value):
         # pass a reference for this artifact to the cacher so it can access info
@@ -327,7 +344,17 @@ class Artifact:
                         artifact.compute.outputs[index] = artifact
         artifact.previous_context_names = [*self.previous_context_names]
 
-        if self.context is not None:
+        # print(self.context.name)
+        if (
+            self.context is not None
+            and self.context.name not in artifact.previous_context_names
+            and (
+                artifact.context is not None
+                and artifact.context.name != self.context.name
+            )
+        ):
+            # print("Adding", self.context.name)
+            # print(artifact.context_name)
             artifact.previous_context_names.append(self.context.name)
         return artifact
 

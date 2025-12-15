@@ -46,6 +46,9 @@ class Manager:
         default_experiment_modules: list[str] = None,
         **additional_configuration,
     ):
+        self._experiment_defining_stack = []
+        """Use this to capture context of stages etc."""
+
         self.experiments = {}
         """dictionary of experiment dataclasses keyed by dataclass name."""
         self.parameterized_experiments = {}

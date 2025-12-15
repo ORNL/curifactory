@@ -78,10 +78,17 @@ class Stage:
         # where they can be found index-wise
         # TODO: this isn't going to work if a stage is loaded from db and no
         # underlying function, may need to save this somewhere.
+        # self._parameters = {}
+        """This contains the signature inspection parameter info. Retaining this because
+        repeated calls to inspect (e.g. in compute_hash) add up processing time quite a bit.
+        """
+        self.parameter_kinds = {}
         self.parameter_positions = {}
         self.parameter_defaults = {}
         parameters = inspect.signature(self.function).parameters
         for i, key in enumerate(parameters.keys()):
+            # self._parameters[key] = {"default": parameters[key].default, "kind": parameters[key].kind}
+            self.parameter_kinds[key] = parameters[key].kind
             self.parameter_positions[key] = i
             if parameters[key].default != inspect.Parameter.empty:
                 self.parameter_defaults[key] = parameters[key].default
@@ -132,14 +139,19 @@ class Stage:
                 self.dependencies.append(dependency)
 
     def _find_context(self) -> "cf.experiment.Experiment":
-        # TODO: check if context is none first?
-        for frame in inspect.stack():
-            if "self" in frame.frame.f_locals.keys() and isinstance(
-                frame.frame.f_locals["self"], cf.experiment.Experiment
-            ):
-                # print("FOUND THE EXPERIMENT")
-                return frame.frame.f_locals["self"]
+        if len(cf.get_manager()._experiment_defining_stack) > 0:
+            # self.context = cf.get_manager()._experiment_defining_stack[-1]
+            return cf.get_manager()._experiment_defining_stack[-1]
         return None
+
+        # TODO: check if context is none first?
+        # for frame in inspect.stack():
+        #     if "self" in frame.frame.f_locals.keys() and isinstance(
+        #         frame.frame.f_locals["self"], cf.experiment.Experiment
+        #     ):
+        #         # print("FOUND THE EXPERIMENT")
+        #         return frame.frame.f_locals["self"]
+        # return None
 
     def __setattr__(self, name, value):
         super().__setattr__(name, value)
@@ -247,7 +259,7 @@ class Stage:
         # return new_stage
 
     def compute_hash(self) -> tuple[str, dict[str, dict[str, Any]]]:
-        parameter_names = list(inspect.signature(self.function).parameters.keys())
+        parameter_names = list(self.parameter_kinds.keys())
 
         # iterate through each parameter and get its hash value
         debug = {}
@@ -268,10 +280,7 @@ class Stage:
                 continue
 
             # check for a *args type parameter
-            if (
-                inspect.signature(self.function).parameters[param_name].kind
-                == inspect.Parameter.VAR_POSITIONAL
-            ):
+            if self.parameter_kinds[param_name] == inspect.Parameter.VAR_POSITIONAL:
                 inner_parameters = self.args[param_index:]
                 hash_debug = []
                 hash_value = []
@@ -309,7 +318,7 @@ class Stage:
         if param_name in self.kwargs:
             return self.kwargs[param_name]
         # otherwise get the default
-        return inspect.signature(self.function).parameters[param_name].default
+        return self.parameter_defaults[param_name]
 
     def hash_parameter(self, param_name, param_value) -> tuple[str, any]:
         # 1. see if user has specified how to handle the hash representation

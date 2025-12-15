@@ -34,7 +34,12 @@ class Experiment:
 
     def __post_init__(self):
         # self.artifacts = artifact.ArtifactManager()
+        cf.get_manager()._experiment_defining_stack.append(self)
+        print("About to define ", self.name)
         definition_outputs = self.define()
+        print("Done defining ", self.name)
+        cf.get_manager()._experiment_defining_stack.pop()
+
         # TODO: I don't actually think outputs needs to be an artifact list
         # TODO TODO we need to determine if there's more than one output, in
         # which case yes make it an ArtifactList, but self.output should always
@@ -155,6 +160,45 @@ class Experiment:
     def compute_hash(self):
         hash_str, hash_debug = self.outputs.compute_hash()
         return hash_str, hash_debug
+
+    def consolidate_shared_artifacts(self):
+        """Checks if any involved artifacts are in any way shared/can be explicitly pointed to, one from the other."""
+        # TODO: if any artifact contexts are different here, warn?
+        replaced = []
+        for artifact1 in self.artifacts:
+            for artifact2 in self.artifacts:
+                if artifact1 == artifact2:  # or artifact2 in replaced:
+                    continue
+                if artifact1.check_shared_artifact(artifact2):
+                    # artifact2.previous_context_names.append(artifact2.
+                    #artifact1.previous_context_names.append(artifact2.context.name)
+                    for context_name in artifact2.previous_context_names + [artifact2.context.name]:
+                        if context_name not in artifact1.previous_context_names and context_name != artifact1.context.name:
+                            artifact1.previous_context_names.append(context_name)
+                    artifact2.replace(artifact1)
+                    # shared = artifact1.copy()
+                    # # artifact2.replace(artifact1.copy())
+                    # artifact1.replace(shared)
+                    # artifact2.replace(shared)
+                    # replaced.append(artifact1)
+                    replaced.append(artifact2)
+
+    def _inner_copy(
+        self,
+        building_stages: dict["cf.stage.Stage", "cf.stage.Stage"] = None,
+        building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
+    ):
+        new_experiment = self.modify()
+        # if building_stages is None:
+        #     building_stages = {}
+        # if building_artifacts is None:
+        #     building_artifacts = {}
+        #
+        # new_experiment.outputs = new_experiment.outputs.copy()
+        return new_experiment
+
+    def copy(self):
+        return self._inner_copy(None, None)
 
     # TODO: (3/17/2024) override setattr and essentially make the fields frozen
     # - if you try to modify an experiment parameter, that won't necessarily
