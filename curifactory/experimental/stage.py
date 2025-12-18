@@ -189,12 +189,14 @@ class Stage:
         building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
     ) -> tuple["Stage", bool]:
         """Returns the created (or prev) stage and whether it was indeed created or not."""
+        print(f"Copy of stage {self.name} requested")
         if building_stages is None:
             building_stages = {}
         if building_artifacts is None:
             building_artifacts = {}
 
         if id(self) in building_stages.keys():
+            print("Already had a copy")
             return building_stages[id(self)]  # , False
 
         copied_args = []
@@ -211,6 +213,7 @@ class Stage:
             else:
                 copied_kwargs[kw] = copy.deepcopy(arg)
 
+        # print("copying stage ", self.name, " outputs: ", id(self.outputs))
         new_stage = Stage(
             self.function,
             copied_args,
@@ -221,13 +224,32 @@ class Stage:
         )
         building_stages[id(self)] = new_stage
 
+        # print("COPIED stage ", self.name, " outputs: ", id(new_stage.outputs))
+
+        # (already handled in artifact's inner copy)
+        # CANC: 2025-12-18 - not clear if this is correct but the copy of a
+        # stage.run is getting de-synced outputs, and in this instance we don't
+        # actually want new copies of the outputs? (because in theory those
+        # should have already been made from farther into the dag?)
+        # new_outputs = []
+        # if isinstance(self.outputs, list):
+        #     for output in self.outputs:
+        #         new_output = output._inner_copy(building_stages, building_artifacts)
+        #         new_outputs.append(new_output)
+        # else:
+        #     new_outputs = self.outputs._inner_copy(building_stages, building_artifacts)
+        # new_stage.outputs = new_outputs
+
         # handle copying any stage dependencies
         for dependency in self.dependencies:
             if id(dependency) not in building_stages:
-                new_dependency = dependency._inner_copy(building_stages)
+                new_dependency = dependency._inner_copy(
+                    building_stages, building_artifacts
+                )
                 building_stages[id(dependency)] = new_dependency
 
             new_stage.dependencies.append(building_stages[id(dependency)])
+        print(f"Finished copy of stage {self.name}")
         return new_stage  # , True
 
     def copy(self):
@@ -432,23 +454,19 @@ class Stage:
             return None
         return tree
 
-    def visualize(self, dot=None):
-        if dot is None:
-            dot = cf.utils.init_graphviz_graph()
+    def visualize(self, g=None, **kwargs):
+        if g is None:
+            g = cf.utils.init_graphviz_graph()
 
-        self._inner_visualize(dot)
-        return dot
-
-    def _inner_visualize(self, g):
         self._node(g)
 
         for dependency in self.artifacts:
             # don't add duplicate edges (can happen when visualizing from a
             # filter)
             if (str(dependency.internal_id), str(id(self))) not in g._edges:
-                g.edge(str(dependency.internal_id), str(id(self)))
+                self._edge_from_artifact(g, dependency, **kwargs)
                 g._edges.append((str(dependency.internal_id), str(id(self))))
-            g = dependency.visualize(g)
+            g = dependency.visualize(g, **kwargs)
 
         # add arrows directly from any explicit previous stage dependencies to
         # this one
@@ -456,9 +474,28 @@ class Stage:
             if (str(id(stage)), str(id(self))) not in g._edges:
                 g.edge(str(id(stage)), str(id(self)))
                 g._edges.append((str(id(stage)), str(id(self))))
-            g = stage.visualize(g)
+            g = stage.visualize(g, **kwargs)
 
         return g
+
+    def _edge_from_artifact(self, g, artifact, **kwargs):
+        if "color" in kwargs and kwargs["color"] == "cache":
+            cache_status = artifact.cacher is not None and artifact.cacher.check(
+                silent=True
+            )
+            if cache_status:
+                color = "#33AA33"
+            else:
+                color = "#AA3333"
+            if artifact.cacher is None:
+                color = "#555555"
+            g.edge(
+                str(artifact.internal_id),
+                str(id(self)),
+                color=color,
+            )
+        else:
+            g.edge(str(artifact.internal_id), str(id(self)))
 
     def _node(self, dot):
         dot.node(
@@ -563,6 +600,7 @@ class Stage:
             manager.logger.info(f"Executing stage {self.name}")
             manager.record_stage_start(self)
             manager.current_stage = self
+            print("EXECUTING STAGE ", id(self))
             function_outputs = self.function(*passed_args, **passed_kwargs)
             manager.current_stage = None
 
@@ -634,7 +672,8 @@ def run(output_names: str | list[str], *inputs):
             outputs.append(cf.artifact.Artifact(name))
 
     function = inputs[-1]
-    stage_obj = Stage(function, list(inputs[:-1]), {}, outputs)
+    stage_obj = Stage(function, list(inputs[:-1]), {}, [*outputs])
+    print("from within run", id(stage_obj.outputs))
     return stage_obj.outputs
 
 

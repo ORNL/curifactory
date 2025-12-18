@@ -56,8 +56,15 @@ class Pipeline:
 
         # cf.get_manager().parameterized_pipelines[self.__class__].append(self)
 
+        self.pre_consolidation_checks = self.verify()
         self.consolidate_shared_artifacts()
+        self.post_consolidation_checks = self.verify()
 
+    def verify(self):
+        checks = {}
+        for artifact in self.artifacts:
+            checks[f"{artifact.contextualized_name}_{id(artifact)}"] = artifact.verify()
+        return checks
 
     @property
     def artifacts(self):
@@ -122,8 +129,8 @@ class Pipeline:
         manager.current_pipeline_run = None
         manager.record_pipeline_run_completion(self)
 
-    def visualize(self, dot=None):
-        return self.outputs.visualize(dot)
+    def visualize(self, dot=None, **kwargs):
+        return self.outputs.visualize(dot, **kwargs)
 
     def run(self):
         manager = cf.get_manager()

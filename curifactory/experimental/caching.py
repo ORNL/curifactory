@@ -166,7 +166,11 @@ class Cacheable:
         self.load_metadata()
         if self.paths_only:
             return self.load_paths()
-        return self.load_obj()
+        obj = self.load_obj()
+        if self.artifact is not None:
+            cf.get_manager().logger.debug("setting object on artifact")
+            self.artifact.obj = obj
+        return obj
 
     def load_metadata(self):
         metadata_path = self.get_path("_metadata.json")
@@ -292,6 +296,7 @@ class ParquetCacher(Cacheable):
                 raise TypeError(
                     "use_db_arg must either be an args index or kwargs kw string name"
                 )
+            print("CACHER: ", db)
             return db.from_parquet(self.get_path())
 
 

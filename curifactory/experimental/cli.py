@@ -36,6 +36,7 @@ def main():
 
     ls_parser = subparsers.add_parser("ls", help="List pipelines")
     ls_parser.add_argument("thing_to_list", nargs="?")
+    ls_parser.add_argument("-r", "--runs", dest="list_runs", action="store_true", help="List previous pipeline run names in database")
 
     run_parser = subparsers.add_parser("run", help="Run an pipeline", add_help=False)
     run_parser.add_argument("pipeline").completer = completer_pipeline
@@ -233,7 +234,9 @@ def main():
 
     elif parsed.command == "ls":
         manager = cf.get_manager()
-        manager.load_default_pipeline_imports()
+
+        if not parsed.list_runs:
+            manager.load_default_pipeline_imports()
 
         search = parsed.thing_to_list
         if search is None:

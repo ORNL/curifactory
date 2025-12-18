@@ -208,16 +208,22 @@ class Artifact:
         return False
 
     def get(self):
+        cf.get_manager().logger.debug(
+            f"Looking for artifact {self.contextualized_name} - {self.compute_hash()[0]}"
+        )
         try:
             # Note that computed is set by the _stage_
-            if self.computed:
+            if self.computed or self.obj is not None:
+                cf.get_manager().logger.debug(f"\tAlready computed!")
                 return self.obj
             overwrite = self.determine_overwrite()
             if self.cacher is not None and not overwrite:
+                cf.get_manager().logger.debug(f"\tChecking cacher")
                 if self.cacher.check():
                     self.obj = self.cacher.load()
                     # TODO: metadata stuff
                     return self.obj
+                cf.get_manager().logger.debug(f"\tNot found in cache")
 
             # if this artifact is requested and no current target, that means
             # this is the target if a new run has to start
@@ -230,6 +236,9 @@ class Artifact:
             if overwrite:
                 manager.logger.info(f"Will overwrite artifact {self.name}")
 
+            manager.logger.debug(
+                f"\tPassing off to compute stage - {self.compute.name}"
+            )
             self.compute()
             # NOTE: stage handles running cachers
             return self.obj
@@ -243,8 +252,12 @@ class Artifact:
         if self.context is not None:
             current = self.context.name
         if len(self.previous_context_names) > 0:
-            current += f" ({','.join(self.previous_context_names)})"
+            current += f"({','.join(self.previous_context_names)})"
         return current
+
+    @property
+    def contextualized_name(self):
+        return f"{self.context_name}.{self.name}"
 
     @property
     def artifacts(self):
@@ -314,12 +327,14 @@ class Artifact:
         building_stages: dict["cf.stage.Stage", "cf.stage.Stage"] = None,
         building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
     ):
+        print(f"Copy of artifact {self.contextualized_name} requested")
         if building_stages is None:
             building_stages = {}
         if building_artifacts is None:
             building_artifacts = {}
 
         if self.internal_id in building_artifacts.keys():
+            print("Already had a copy")
             return building_artifacts[self.internal_id]
 
         artifact = Artifact(self.name)
@@ -356,6 +371,10 @@ class Artifact:
             # print("Adding", self.context.name)
             # print(artifact.context_name)
             artifact.previous_context_names.append(self.context.name)
+
+        print(
+            f"Finished copy of artifact {self.contextualized_name} - {artifact.verify()}"
+        )
         return artifact
 
     def copy(self):
@@ -377,6 +396,11 @@ class Artifact:
         # if self.context is not None:
         #     artifact.previous_context_names.append(self.context.name)
         # return artifact
+
+    def verify(self):
+        if isinstance(self.compute.outputs, list):
+            return self in self.compute.outputs
+        return self == self.compute.outputs
 
     def artifact_tree(self):
         return self.compute._artifact_tree()
@@ -479,7 +503,7 @@ class Artifact:
         # return combined.outputs[0]
         return ArtifactList(name, artifacts)
 
-    def _node(self, dot):
+    def _node(self, dot, **kwargs):
         self.compute_hash()
         if self.name is not None:
             str_name = str(
@@ -494,6 +518,18 @@ class Artifact:
 
         context_names = ",".join(self.previous_context_names)
 
+        style = None
+        fillcolor = None
+        if "color" in kwargs and kwargs["color"] == "cache":
+            cache_status = self.cacher is not None and self.cacher.check(silent=True)
+            style = "filled"
+            if cache_status:
+                fillcolor = "#AAFFAA"
+            else:
+                fillcolor = "#FFAAAA"
+            if self.cacher is None:
+                fillcolor = "#EEEEEE"
+
         dot.node(
             name=str(self.internal_id),
             label=str_name,
@@ -502,30 +538,20 @@ class Artifact:
             height=".25",
             # xlabel=self.context_name,
             xlabel=context_names,
+            style=style,
+            fillcolor=fillcolor,
         )
 
-    def visualize(self, dot=None):
-        if dot is None:
-            dot = cf.utils.init_graphviz_graph()
+    def visualize(self, g=None, **kwargs):
+        if g is None:
+            g = cf.utils.init_graphviz_graph()
 
-        self._inner_visualize(dot)
-        return dot
+        self._node(g, **kwargs)
 
-    def _inner_visualize(self, g):
-        self._node(g)
-
-        self.compute.visualize(g)
+        self.compute.visualize(g, **kwargs)
         if (str(id(self.compute)), str(self.internal_id)) not in g._edges:
             g.edge(str(id(self.compute)), str(self.internal_id))
             g._edges.append((str(id(self.compute)), str(self.internal_id)))
-
-        # for dependency in self.dependencies():
-        #     # don't add duplicate edges (can happen when visualizing from a
-        #     # filter)
-        #     if (str(dependency.internal_id), str(self.internal_id)) not in g._edges:
-        #         g.edge(str(dependency.internal_id), str(self.internal_id))
-        #         g._edges.append((str(dependency.internal_id), str(self.internal_id)))
-        #     g = dependency._visualize(g)
 
         return g
 
@@ -668,33 +694,34 @@ class ArtifactList(Artifact):  # , list):
         building_stages: dict["cf.stage.Stage", "cf.stage.Stage"] = None,
         building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
     ):
+        print(f"Copy of artifact list {self.contextualized_name} requested")
         if building_stages is None:
             building_stages = {}
         if building_artifacts is None:
             building_artifacts = {}
 
         if self.internal_id in building_artifacts.keys():
+            print("Already had a copy")
             return building_artifacts[self.internal_id]
 
-        artifact = ArtifactList(self.name, self.inner_artifact_list)
-        building_artifacts[self.internal_id] = artifact
-        artifact.cacher = copy.deepcopy(self.cacher)
-        artifact.hash_str = self.hash_str
-        artifact.hash_debug = self.hash_debug
-        if self.compute is not None:
-            artifact.compute = self.compute._inner_copy(
+        new_artifact_list = []
+        for old_inner_artifact in self.inner_artifact_list:
+            new_inner_artifact = old_inner_artifact._inner_copy(
                 building_stages, building_artifacts
             )
-            if not isinstance(artifact.compute.outputs, list):
-                artifact.compute.outputs = artifact
-            else:
-                # if it's a list, this artifact was only one of multiple
-                # outputs, so search through and replace just the one with the
-                # same name
-                for index, output in enumerate(artifact.compute.outputs):
-                    # print("Changing multioutputs for stage", artifact.compute.name
-                    if output.name == self.name:
-                        artifact.compute.outputs[index] = artifact
+            new_artifact_list.append(new_inner_artifact)
+            # artifact.append(new_inner_artifact)
+        artifact = ArtifactList(
+            self.name, new_artifact_list
+        )  # , self.inner_artifact_list)
+        building_artifacts[self.internal_id] = artifact
+        # artifact.cacher = copy.deepcopy(self.cacher)
+        artifact.hash_str = self.hash_str
+        artifact.hash_debug = self.hash_debug
+        # if self.compute is not None:
+        #     artifact.compute = self.compute._inner_copy(
+        #         building_stages, building_artifacts
+        #     )
         artifact.previous_context_names = [*self.previous_context_names]
         if (
             self.context is not None
@@ -707,6 +734,9 @@ class ArtifactList(Artifact):  # , list):
             # print("Adding", self.context.name)
             # print(artifact.context_name)
             artifact.previous_context_names.append(self.context.name)
+        print(
+            f"Finished copy of artifact list {self.contextualized_name} - {artifact.verify()}"
+        )
         return artifact
 
     # TODO: define iterator?
