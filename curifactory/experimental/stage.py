@@ -51,7 +51,7 @@ class Stage:
     attributes typed as Artifacts."""
 
     # TODO: we probably also need to track larger context = pass in the
-    # experiment to the stage
+    # pipeline to the stage
 
     function: callable
     args: list
@@ -127,7 +127,7 @@ class Stage:
         self.outputs = artifacts
 
         # unclear if this is the way to go to handle more tuple like returns
-        # from experiment definitions when assigning stage outputs
+        # from pipeline definitions when assigning stage outputs
         if len(self.outputs) == 1:
             self.outputs = self.outputs[0]
 
@@ -140,10 +140,10 @@ class Stage:
             for dependency in STAGE_CONTEXT.stage_dependencies:
                 self.dependencies.append(dependency)
 
-    def _find_context(self) -> "cf.experiment.Experiment":
-        if len(cf.get_manager()._experiment_defining_stack) > 0:
-            # self.context = cf.get_manager()._experiment_defining_stack[-1]
-            return cf.get_manager()._experiment_defining_stack[-1]
+    def _find_context(self) -> "cf.pipeline.Pipeline":
+        if len(cf.get_manager()._pipeline_defining_stack) > 0:
+            # self.context = cf.get_manager()._pipeline_defining_stack[-1]
+            return cf.get_manager()._pipeline_defining_stack[-1]
         return None
 
         # TODO: check if context is none first?
@@ -542,7 +542,7 @@ class Stage:
             # if we have no active run but a stage needs to execute, that means we
             # need to start an implicit run
             implicit_run = False
-            if manager.current_experiment_run is None and self.context is not None:
+            if manager.current_pipeline_run is None and self.context is not None:
                 implicit_run = True
                 self.context._implicit_run()
 
@@ -580,7 +580,6 @@ class Stage:
                             art.cacher.save(art.obj)
                     returns = self.outputs
             else:
-                print("STORING LAMBDA OUT ON OBJ", id(self.outputs))
                 art: "cf.artifact.Artifact" = self.outputs
                 art.computed = True
                 art.obj = function_outputs
@@ -636,7 +635,6 @@ def run(output_names: str | list[str], *inputs):
 
     function = inputs[-1]
     stage_obj = Stage(function, list(inputs[:-1]), {}, outputs)
-    print("lambda stage outputs id", id(stage_obj.outputs))
     return stage_obj.outputs
 
 

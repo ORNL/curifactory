@@ -9,7 +9,7 @@ import curifactory.experimental as cf
 
 
 @dataclass
-class Experiment:
+class Pipeline:
     name: str
     # artifacts: "artifact.ArtifactManager" = field(default_factory=lambda: artifact.ArtifactManager(), init=False, repr=False)
     # artifacts: "artifact.ArtifactFilter" = field(default_factory=lambda: artifact.ArtifactFilter(), init=False, repr=False)
@@ -34,9 +34,9 @@ class Experiment:
 
     def __post_init__(self):
         # self.artifacts = artifact.ArtifactManager()
-        cf.get_manager()._experiment_defining_stack.append(self)
+        cf.get_manager()._pipeline_defining_stack.append(self)
         definition_outputs = self.define()
-        cf.get_manager()._experiment_defining_stack.pop()
+        cf.get_manager()._pipeline_defining_stack.pop()
 
         # TODO: I don't actually think outputs needs to be an artifact list
         # TODO TODO we need to determine if there's more than one output, in
@@ -54,7 +54,7 @@ class Experiment:
         self.reference: str = None
         self.run_number: int = None
 
-        # cf.get_manager().parameterized_experiments[self.__class__].append(self)
+        # cf.get_manager().parameterized_pipelines[self.__class__].append(self)
 
         self.consolidate_shared_artifacts()
 
@@ -109,30 +109,30 @@ class Experiment:
         #     art.context_name = name
 
     def _implicit_run(self):
-        """If an artifact from this experiment is manually retrieved and a compute
+        """If an artifact from this pipeline is manually retrieved and a compute
         step is required, start an implicit run with that artifact as the target."""
         manager = cf.get_manager()
         manager.currently_recording = True
-        manager.logger.info(f"Running partial experiment {self.name}")
-        manager.record_experiment_run(self)
-        manager.current_experiment_run = self
+        manager.logger.info(f"Running partial pipeline {self.name}")
+        manager.record_pipeline_run(self)
+        manager.current_pipeline_run = self
 
     def _end_implicit_run(self):
         manager = cf.get_manager()
-        manager.current_experiment_run = None
-        manager.record_experiment_run_completion(self)
+        manager.current_pipeline_run = None
+        manager.record_pipeline_run_completion(self)
 
     def visualize(self, dot=None):
         return self.outputs.visualize(dot)
 
     def run(self):
         manager = cf.get_manager()
-        manager.current_experiment_run = self
-        manager.current_experiment_run_target = self.outputs
+        manager.current_pipeline_run = self
+        manager.current_pipeline_run_target = self.outputs
 
         if self.outputs.cacher is not None and self.outputs.cacher.check(silent=True):
             manager.currently_recording = False
-            manager.logger.info("Experiment outputs already found, re-loading...")
+            manager.logger.info("Pipeline outputs already found, re-loading...")
 
             # find the previous run reference
             metadata = self.outputs.cacher.load_metadata()
@@ -144,8 +144,8 @@ class Experiment:
 
         manager.currently_recording = True
 
-        manager.logger.info(f"Running experiment {self.name}")
-        manager.record_experiment_run(self)
+        manager.logger.info(f"Running pipeline {self.name}")
+        manager.record_pipeline_run(self)
 
         returns = self.outputs.get()
         # if isinstance(self.outputs, list):
@@ -156,8 +156,8 @@ class Experiment:
         # else:
         #     returns = self.outputs.compute()
 
-        manager.current_experiment_run = None
-        manager.record_experiment_run_completion(self)
+        manager.current_pipeline_run = None
+        manager.record_pipeline_run_completion(self)
         # return returns
         return self.outputs
 
@@ -192,20 +192,20 @@ class Experiment:
         building_stages: dict["cf.stage.Stage", "cf.stage.Stage"] = None,
         building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
     ):
-        new_experiment = self.modify()
+        new_pipeline = self.modify()
         # if building_stages is None:
         #     building_stages = {}
         # if building_artifacts is None:
         #     building_artifacts = {}
         #
-        # new_experiment.outputs = new_experiment.outputs.copy()
-        return new_experiment
+        # new_pipeline.outputs = new_pipeline.outputs.copy()
+        return new_pipeline
 
     def copy(self):
         return self._inner_copy(None, None)
 
     # TODO: (3/17/2024) override setattr and essentially make the fields frozen
-    # - if you try to modify an experiment parameter, that won't necessarily
+    # - if you try to modify an pipeline parameter, that won't necessarily
     # auto apply to the stages it's used in because we have no direct way of
     # knowing which stages it was used in.
 
@@ -213,19 +213,19 @@ class Experiment:
     #     # TODO: this has a lot of potential flaws,
     #     # 1. I don't think we actually need a filter_name here, we should (in
     #     # theory?) be able to get the full attribute access list maybe? I guess
-    #     # we can't get _this_ experiment's parents, so I suppose this works as
+    #     # we can't get _this_ pipeline's parents, so I suppose this works as
     #     # long as we understand that context should really only be used for this
     #     # exact thing, it's not a stable concept? (alternatively, it can be made
-    #     # more concrete during an actual experiment run())
+    #     # more concrete during an actual pipeline run())
     #     # 2. This won't handle lists of artifacts I don't think?
     #     # IDEA: this should probably be handled by a map() call instead that
-    #     # searches for any sub objects of type Artifact/Experiment
+    #     # searches for any sub objects of type Artifact/pipeline
     #     if isinstance(value, artifact.Artifact):
     #         print(f"Setting context name of {value.name} to {name}")
     #         value.context = self
     #         value.context_name = name
     #         artifact.Artifacts.artifacts[value.filter_name()] = value
-    #     if isinstance(value, Experiment) and name != "context":
+    #     if isinstance(value, pipeline) and name != "context":
     #         print(f"Setting context name of {value.name} to {name}")
     #         value.context = self
     #         value.context_name = name
@@ -233,7 +233,7 @@ class Experiment:
     #         for item in dir(value):
     #             value_attr = getattr(value, item)
     #             if isinstance(value_attr, artifact.Artifact):
-    #                 print(f"Setting sub-experiment context name for {item}")
+    #                 print(f"Setting sub-pipeline context name for {item}")
     #                 artifact.Artifacts.artifacts[value_attr.filter_name()] = value_attr
     #
     #     super().__setattr__(name, value)
@@ -245,7 +245,7 @@ class Experiment:
     #     return self.name
 
 
-def experiment(function):
+def pipeline(function):
     # make the fields based on the function signature
     field_tuples = []
     parameters = inspect.signature(function).parameters
@@ -297,63 +297,63 @@ def experiment(function):
             for param_name in list(parameters.keys())
         }
 
-        # call the function that this experiment is wrapping (defines the
+        # call the function that this pipeline is wrapping (defines the
         # artifacts flow)
         outputs = function(**kwargs)
 
         # TODO: use an artifactfilter instead?
-        experiment_outputs = cf.artifact.ArtifactList("outputs")
-        # experiment_outputs = cf.artifact.ArtifactFilter(filter_string=f"{self.name}.outputs") # ???
+        pipeline_outputs = cf.artifact.ArtifactList("outputs")
+        # pipeline_outputs = cf.artifact.ArtifactFilter(filter_string=f"{self.name}.outputs") # ???
         if type(outputs) is tuple:
             for output in outputs:
                 if isinstance(output, dict):
                     for key, value in output.items():
                         setattr(self, key, value)
                 else:
-                    experiment_outputs.append(output)
-                    # experiment_outputs.artifacts.append(output)
-                    # experiment_outputs[output.name] = output
+                    pipeline_outputs.append(output)
+                    # pipeline_outputs.artifacts.append(output)
+                    # pipeline_outputs[output.name] = output
         else:
-            experiment_outputs.append(outputs)
-            # experiment_outputs.artifacts.append(outputs)
-            # experiment_outputs[outputs.name] = outputs
+            pipeline_outputs.append(outputs)
+            # pipeline_outputs.artifacts.append(outputs)
+            # pipeline_outputs[outputs.name] = outputs
 
         # flatten if single object
-        if len(experiment_outputs) == 1:
-            experiment_outputs = experiment_outputs[0]
-        return experiment_outputs
+        if len(pipeline_outputs) == 1:
+            pipeline_outputs = pipeline_outputs[0]
+        return pipeline_outputs
 
-    experiment_dataclass = make_dataclass(
+    pipeline_dataclass = make_dataclass(
         function.__name__,
         field_tuples,
-        bases=(Experiment,),
+        bases=(Pipeline,),
         namespace={"define": define, "function": function},
     )
 
     # def wrapper(*args, **kwargs):
-    #     return experiment_dataclass(*args, **kwargs)
+    #     return pipeline_dataclass(*args, **kwargs)
     #
     # wrapper.parameters = field_tuples
     # wrapper.__repr__ = lambda: f"{function.__name__}({','.join([name + ': ' + str(type_str) for name, type_str in field_tuples])})"
     #
     # return wrapper
 
-    class ExperimentFactoryWrapper:
-        def __init__(self, experiment_type_name, experiment_field_tuples, original_function, exp_dataclass):
-            self.type_name = experiment_type_name
+    class PipelineFactoryWrapper:
+        def __init__(self, pipeline_type_name, pipeline_field_tuples, original_function, pipe_dataclass):
+            self.type_name = pipeline_type_name
             # TODO: is type_name necessary? Just change to name
-            self.field_tuples = experiment_field_tuples
+            self.field_tuples = pipeline_field_tuples
             self.original_function = original_function
             self.__doc__ = original_function.__doc__
-            self.exp_dataclass = exp_dataclass
-            cf.get_manager().experiments[self.exp_dataclass.__name__] = self.exp_dataclass
-            cf.get_manager().parameterized_experiments[experiment_dataclass] = []
+            self.pipe_dataclass = pipe_dataclass
+            cf.get_manager().pipelines[self.pipe_dataclass.__name__] = self.pipe_dataclass
+            cf.get_manager().parameterized_pipelines[pipeline_dataclass] = []
 
         def __call__(self, *args, **kwargs):
-            # parameterized_experiment = experiment_dataclass(*args, **kwargs)
-            parameterized_experiment = self.exp_dataclass(*args, **kwargs)
-            parameterized_experiment.__doc__ = self.__doc__
-            return parameterized_experiment
+            # parameterized_pipeline = pipeline_dataclass(*args, **kwargs)
+            parameterized_pipeline = self.pipe_dataclass(*args, **kwargs)
+            parameterized_pipeline.__doc__ = self.__doc__
+            return parameterized_pipeline
 
         @property
         def parameters(self) -> dict[str, Any]:
@@ -387,6 +387,6 @@ def experiment(function):
                             call_parts.append(f"{parameter[0]}: {parameter[1].__name__} = {default_value}")
                 else:
                     call_parts.append(parameter)
-            return f"Experiment {self.type_name}({', '.join(call_parts)})"
+            return f"Pipeline {self.type_name}({', '.join(call_parts)})"
 
-    return ExperimentFactoryWrapper(function.__name__, field_tuples, function, experiment_dataclass)
+    return PipelineFactoryWrapper(function.__name__, field_tuples, function, pipeline_dataclass)

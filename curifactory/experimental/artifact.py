@@ -107,7 +107,7 @@ class Artifact:
         # previous context names means every time we copy an artifact into a
         # new context, we assign the
         self._previous_context_names: list[str] = []
-        self._context: cf.experiment.Experiment = None
+        self._context: cf.pipeline.Pipeline = None
         # self.context: ArtifactManager = None
         # self.original_context:
         # self.context_name: str = None
@@ -122,7 +122,7 @@ class Artifact:
         self._overwrite: bool = False
 
         # the reason I'm hesitant to explicitly track dependents is that someone
-        # could theoretically define a custom experiment dataclass and do weird
+        # could theoretically define a custom pipeline dataclass and do weird
         # things like set one of the artifacts as a class variable, which
         # wouldn't be caught? Quite frankly that's such a ridiculous use case
         # though, that I don't think that's realistically going to be an issue.
@@ -134,11 +134,11 @@ class Artifact:
     def __eq__(self, o):
         return self.internal_id == o.internal_id
 
-    def _find_context(self) -> "cf.experiment.Experiment":
-        # print("Seeking context for artifact ", self.name, cf.get_manager()._experiment_defining_stack)
-        if len(cf.get_manager()._experiment_defining_stack) > 0:
-            # self.context = cf.get_manager()._experiment_defining_stack[-1]
-            return cf.get_manager()._experiment_defining_stack[-1]
+    def _find_context(self) -> "cf.pipeline.Pipeline":
+        # print("Seeking context for artifact ", self.name, cf.get_manager()._pipeline_defining_stack)
+        if len(cf.get_manager()._pipeline_defining_stack) > 0:
+            # self.context = cf.get_manager()._pipeline_defining_stack[-1]
+            return cf.get_manager()._pipeline_defining_stack[-1]
             # print("Context: ", self.context.name)
         return None
         # TODO: check if context is none first?
@@ -151,10 +151,10 @@ class Artifact:
         # return None
         #
 
-    # TODO: if experiment.artifacts is just filter of outputs, we may not
+    # TODO: if pipeline.artifacts is just filter of outputs, we may not
     # actually need this at all
     def _add_to_context(self):
-        """Add this artifact to the context experiment's artifact manager."""
+        """Add this artifact to the context pipeline's artifact manager."""
         # if self.context is None:
         #     Artifacts.artifacts.append(self)
         # else:
@@ -222,9 +222,9 @@ class Artifact:
             # if this artifact is requested and no current target, that means
             # this is the target if a new run has to start
             manager = cf.get_manager()
-            if manager.current_experiment_run_target is None:
-                manager.current_experiment_run_target = self
-            # (we handle associating the ID with the experiment run during
+            if manager.current_pipeline_run_target is None:
+                manager.current_pipeline_run_target = self
+            # (we handle associating the ID with the pipeline run during
             # record_artifact)
 
             if overwrite:

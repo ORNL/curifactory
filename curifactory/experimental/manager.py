@@ -1,4 +1,4 @@
-"""Experiment and artifact manager"""
+"""Pipeline and artifact manager"""
 
 import importlib
 import json
@@ -35,7 +35,7 @@ MANAGER_CONTEXT = _ManagerContext()
 CONFIGURATION_FILE = "curifactory_config.json"
 """The expected configuration filename."""
 TIMESTAMP_FORMAT = "%Y-%m-%d-T%H%M%S"
-"""The datetime format string used for timestamps in experiment run reference names."""
+"""The datetime format string used for timestamps in pipeline run reference names."""
 
 
 class Manager:
@@ -43,20 +43,20 @@ class Manager:
         self,
         database_path: str = "data/store.db",
         cache_path: str = "data/cache",
-        default_experiment_modules: list[str] = None,
+        default_pipeline_modules: list[str] = None,
         **additional_configuration,
     ):
-        self._experiment_defining_stack = []
+        self._pipeline_defining_stack = []
         """Use this to capture context of stages etc."""
 
-        self.experiments = {}
-        """dictionary of experiment dataclasses keyed by dataclass name."""
-        self.parameterized_experiments = {}
-        """Dictionary of initialized (parameterized) experiments keyed by dataclass type"""
-        self.experiment_ref_names = {}
-        """Dictionary of possible names/references to use to refer to specific experiments."""
+        self.pipelines = {}
+        """dictionary of pipeline dataclasses keyed by dataclass name."""
+        self.parameterized_pipelines = {}
+        """Dictionary of initialized (parameterized) pipelines keyed by dataclass type"""
+        self.pipeline_ref_names = {}
+        """Dictionary of possible names/references to use to refer to specific pipelines."""
         self.imported_module_names = []
-        """List of module strings that have been successfully imported and parsed for experiments."""
+        """List of module strings that have been successfully imported and parsed for pipelines."""
 
         # ---- configuration ----
         self.database_path = database_path
@@ -69,13 +69,13 @@ class Manager:
             pd.DataFrame: lambda obj: f"(pandas) {len(obj)} rows",
         }
 
-        self.default_experiment_modules: list[str] = default_experiment_modules
+        self.default_pipeline_modules: list[str] = default_pipeline_modules
 
         self.additional_configuration: dict[str, Any] = additional_configuration
         # ---- /configuration ----
 
-        self.current_experiment_run = None
-        self.current_experiment_run_target = None
+        self.current_pipeline_run = None
+        self.current_pipeline_run_target = None
         self.current_stage = None
         self.currently_recording: bool = False
 
@@ -90,14 +90,14 @@ class Manager:
         self.ensure_sys_path()
 
         self._default_imports = False
-        # self.load_default_experiment_imports()
+        # self.load_default_pipeline_imports()
 
     @property
     def config(self) -> dict[str, Any]:
         return {
             "database_path": self.database_path,
             "cache_path": self.cache_path,
-            "default_experiment_modules": self.default_experiment_modules,
+            "default_pipeline_modules": self.default_pipeline_modules,
             **self.additional_configuration,
         }
 
@@ -105,16 +105,16 @@ class Manager:
         # possible types:
         # * module
         # * module list?
-        # * experiment class
-        # * experiment class list
-        # * experiment instance
-        # * experiment instance list
-        # * mixed experiment class/instance list?
+        # * pipeline class
+        # * pipeline class list
+        # * pipeline instance
+        # * pipeline instance list
+        # * mixed pipeline class/instance list?
         # * artifact
         # * artifact list
         # * stage
         # * cacher_path --> artifact
-        # * experiment reference name (db)
+        # * pipeline reference name (db)
 
         resolutions = {}
         # TODO: have an "exact_match" key which is a list of the other keys in
@@ -129,31 +129,31 @@ class Manager:
                 resolutions["module"] = []
             resolutions["module"].append(reference_parts["module"])
 
-        if reference_parts["experiment"] is not None:
-            if reference_parts["experiment"] in self.experiment_ref_names:
-                resolutions["experiment_instance"] = self.experiment_ref_names[reference_parts["experiment"]]
-            if reference_parts["experiment"] in self.experiments:
-                resolutions["experiment_class"] = self.experiments[reference_parts["experiment"]]
+        if reference_parts["pipeline"] is not None:
+            if reference_parts["pipeline"] in self.pipeline_ref_names:
+                resolutions["pipeline_instance"] = self.pipeline_ref_names[reference_parts["pipeline"]]
+            if reference_parts["pipeline"] in self.pipelines:
+                resolutions["pipeline_class"] = self.pipelines[reference_parts["pipeline"]]
 
-            resolutions["experiment_instance_list"] = {
-                name: self.experiment_ref_names[name] for name in self.experiment_ref_names.keys() if name.startswith(reference_parts["experiment"])
+            resolutions["pipeline_instance_list"] = {
+                name: self.pipeline_ref_names[name] for name in self.pipeline_ref_names.keys() if name.startswith(reference_parts["pipeline"])
             }
-            # TODO: class list should also be based on module if experiment is ""
-            resolutions["experiment_class_list"] = [
-                self.experiments[name] for name in self.experiments.keys() if name.startswith(reference_parts["experiment"])
+            # TODO: class list should also be based on module if pipeline is ""
+            resolutions["pipeline_class_list"] = [
+                self.pipelines[name] for name in self.pipelines.keys() if name.startswith(reference_parts["pipeline"])
             ]
 
-        if "experiment_instance" in resolutions:
+        if "pipeline_instance" in resolutions:
             # check for artifacts
             if reference_parts["artifact_filter"] is not None:
-                resolutions["artifact_list"] = resolutions["experiment_instance"].artifacts.filter(reference_parts["artifact_filter"])
+                resolutions["artifact_list"] = resolutions["pipeline_instance"].artifacts.filter(reference_parts["artifact_filter"])
                 if len(resolutions["artifact_list"]) == 1:
                     resolutions["artifact"] = resolutions["artifact_list"][0]
 
 
-            # resolutions["experiment_instance_list"] = [
-            #     self.experiment_ref_names[name] for name in
-            #     self.experiment_keys_matching(reference_parts["experiment"])
+            # resolutions["pipeline_instance_list"] = [
+            #     self.pipeline_ref_names[name] for name in
+            #     self.pipeline_keys_matching(reference_parts["pipeline"])
             # ]
         # if reference_parts["artifact_filter"] is not None:
         #
@@ -161,22 +161,22 @@ class Manager:
 
         return resolutions
 
-    def experiment_keys_matching(self, prefix: str) -> list[str]:
+    def pipeline_keys_matching(self, prefix: str) -> list[str]:
         found = []
-        for key in self.experiment_ref_names.keys():
+        for key in self.pipeline_ref_names.keys():
             if key.startswith(prefix):
                 found.append(key)
         return found
 
-    def load_default_experiment_imports(self):
+    def load_default_pipeline_imports(self):
         if self._default_imports:
             return
-        if self.default_experiment_modules is not None:
-            for module in self.default_experiment_modules:
-                self.import_experiments_from_module(module)
+        if self.default_pipeline_modules is not None:
+            for module in self.default_pipeline_modules:
+                self.import_pipelines_from_module(module)
         self._default_imports = True
 
-    def import_experiments_from_module(self, module_str: str):
+    def import_pipelines_from_module(self, module_str: str):
         # try to load the module
         module = self.quietly_import_module(module_str)
         remainder = None
@@ -195,14 +195,14 @@ class Manager:
 
         self.imported_module_names.append(module_str)
 
-        # parse through all the things in the module looking for experiments and
-        # experiment classes
+        # parse through all the things in the module looking for pipelines and
+        # pipeline classes
         for attr in dir(module):
             value = getattr(module, attr)
-            if isinstance(value, cf.experiment.Experiment):
-                self.add_experiment_to_ref_names(module_str, attr, value)
-            # check for experiment types
-            elif type(value).__name__ == "ExperimentFactoryWrapper":
+            if isinstance(value, cf.pipeline.Pipeline):
+                self.add_pipeline_to_ref_names(module_str, attr, value)
+            # check for pipeline types
+            elif type(value).__name__ == "PipelineFactoryWrapper":
                 # check if making a default is possible
                 can_make_default = True
                 for field in value.field_tuples:
@@ -210,30 +210,30 @@ class Manager:
                         # no default specified
                         can_make_default = False
                 if can_make_default:
-                    experiment = value(f"{value.type_name}_default")
-                    self.add_experiment_to_ref_names(module_str, value.type_name, experiment)
+                    pipeline = value(f"{value.type_name}_default")
+                    self.add_pipeline_to_ref_names(module_str, value.type_name, pipeline)
 
         # return the piece of the module_str that wasn't the module
         return remainder
 
-    def add_experiment_to_ref_names(self, module_str: str, attr_name: str, experiment):
-        """Add the experiment to the ref names dictionary under all logical names."""
+    def add_pipeline_to_ref_names(self, module_str: str, attr_name: str, pipeline):
+        """Add the pipeline to the ref names dictionary under all logical names."""
         module_pieces = module_str.split(".")
 
         # TODO: handle if name already exists
         for i in range(len(module_pieces) + 1):
             if i == 0:
-                self.experiment_ref_names[attr_name] = experiment
-                self.experiment_ref_names[experiment.name] = experiment
+                self.pipeline_ref_names[attr_name] = pipeline
+                self.pipeline_ref_names[pipeline.name] = pipeline
                 continue
             building_module_str = ".".join(module_pieces[-i:])
-            self.experiment_ref_names[f"{building_module_str}.{attr_name}"] = experiment
-            self.experiment_ref_names[f"{building_module_str}.{experiment.name}"] = experiment
+            self.pipeline_ref_names[f"{building_module_str}.{attr_name}"] = pipeline
+            self.pipeline_ref_names[f"{building_module_str}.{pipeline.name}"] = pipeline
 
     def divide_reference_parts(self, ref_str: str) -> dict[str, str]:
-        parts = {"module": None, "experiment": None, "artifact_filter": None}
+        parts = {"module": None, "pipeline": None, "artifact_filter": None}
 
-        # TODO: check for  historical experiment name
+        # TODO: check for  historical pipeline name
 
         for module_name in self.imported_module_names:
             if ref_str.startswith(module_name):
@@ -243,15 +243,15 @@ class Manager:
                     ref_str = ref_str[1:]
                 break
 
-        for name in self.experiment_ref_names:
+        for name in self.pipeline_ref_names:
             if ref_str.startswith(name):
-                parts["experiment"] = self.experiment_ref_names[name].name
+                parts["pipeline"] = self.pipeline_ref_names[name].name
                 ref_str = ref_str[len(name):]
                 if ref_str.startswith("."):
                     ref_str = ref_str[1:]
                 break
-        if parts["experiment"] is None:
-            parts["experiment"] = ref_str
+        if parts["pipeline"] is None:
+            parts["pipeline"] = ref_str
             return parts
 
         if ref_str == "":
@@ -271,7 +271,7 @@ class Manager:
             pass
         return module
 
-    # def find_experiments_from_file(self, file_path: str):
+    # def find_pipelines_from_file(self, file_path: str):
     #     with self:
     #         importlib.import_module(file_path)
 
@@ -338,8 +338,8 @@ class Manager:
                 CREATE TABLE IF NOT EXISTS cf_run (
                     id UUID,
                     reference VARCHAR,
-                    experiment_class VARCHAR,
-                    experiment_name VARCHAR,
+                    pipeline_class VARCHAR,
+                    pipeline_name VARCHAR,
                     run_number INTEGER,
                     start_time TIMESTAMP,
                     end_time TIMESTAMP,
@@ -431,23 +431,23 @@ class Manager:
         # returns False if didn't find
         pass
 
-    # TODO: unclear if these should be associated with an experiment run instead
-    # of an experiment or manager class
-    def get_str_timestamp(self, experiment) -> str:
+    # TODO: unclear if these should be associated with an pipeline run instead
+    # of an pipeline or manager class
+    def get_str_timestamp(self, pipeline) -> str:
         """Convert the manager's run timestamp into a string representation."""
-        return experiment.start_timestamp.strftime(TIMESTAMP_FORMAT)
+        return pipeline.start_timestamp.strftime(TIMESTAMP_FORMAT)
 
-    def get_reference_name(self, experiment) -> str:
-        """Get the reference name of this run in the experiment registry.
+    def get_reference_name(self, pipeline) -> str:
+        """Get the reference name of this run in the pipeline registry.
 
-        The format for this name is ``[experiment_name]_[run_number]_[timestamp]``."""
-        return f"{experiment.name}_{experiment.run_number}_{self.get_str_timestamp(experiment)}"
+        The format for this name is ``[pipeline_name]_[run_number]_[timestamp]``."""
+        return f"{pipeline.name}_{pipeline.run_number}_{self.get_str_timestamp(pipeline)}"
 
-    def get_next_experiment_run_number(self, experiment) -> int:
+    def get_next_pipeline_run_number(self, pipeline) -> int:
         with self.db_connection() as db:
             num = db.sql(
-                "SELECT MAX(run_number) FROM cf_run WHERE experiment_name = $experimentname",
-                params=dict(experimentname=experiment.name),
+                "SELECT MAX(run_number) FROM cf_run WHERE pipeline_name = $pipelinename",
+                params=dict(pipelinename=pipeline.name),
             ).fetchone()[0]
             if num is None:
                 num = 0
@@ -477,8 +477,8 @@ class Manager:
 
         run_id = artifact.context.db_id if artifact.context is not None else None
 
-        if artifact == self.current_experiment_run_target:
-            self.record_experiment_run_target(self.current_experiment_run, artifact)
+        if artifact == self.current_pipeline_run_target:
+            self.record_pipeline_run_target(self.current_pipeline_run, artifact)
 
         cacher_type = None
         cacher_module = None
@@ -579,29 +579,29 @@ class Manager:
                 params=dict(endtime=end_time, id=stage.db_id),
             )
 
-    # TODO: is it worth having an experiment_run object?
-    # TODO: rename to record_experiment_run
-    def record_experiment_run(self, experiment):
+    # TODO: is it worth having an pipeline_run object?
+    # TODO: rename to record_pipeline_run
+    def record_pipeline_run(self, pipeline):
         if not self.currently_recording:
             return
 
-        experiment_id = uuid4()  # TODO: should base on reference name?
-        run_num = self.get_next_experiment_run_number(experiment)
+        pipeline_id = uuid4()  # TODO: should base on reference name?
+        run_num = self.get_next_pipeline_run_number(pipeline)
 
-        experiment.db_id = experiment_id
-        experiment.run_number = run_num
-        experiment.start_timestamp = datetime.now()
-        experiment.reference = self.get_reference_name(experiment)
+        pipeline.db_id = pipeline_id
+        pipeline.run_number = run_num
+        pipeline.start_timestamp = datetime.now()
+        pipeline.reference = self.get_reference_name(pipeline)
 
-        hash, _ = experiment.compute_hash()
+        hash, _ = pipeline.compute_hash()
 
-        cleaned_parameters = experiment.parameters
+        cleaned_parameters = pipeline.parameters
         cleaned_parameters_str = json.dumps(cleaned_parameters, default=repr)
         cleaned_parameters = json.loads(cleaned_parameters_str)
 
-        # for parameter in experiment.parameters:
-        #     if isinstance(experiment.parameter, cf.experiment.Experiment):
-        #         experiment.parameters[parameter] =
+        # for parameter in pipeline.parameters:
+        #     if isinstance(pipeline.parameter, cf.pipeline.Experiment):
+        #         pipeline.parameters[parameter] =
 
         with self.db_connection() as db:
             db.execute(
@@ -609,8 +609,8 @@ class Manager:
                     INSERT INTO cf_run (
                         id,
                         reference,
-                        experiment_class,
-                        experiment_name,
+                        pipeline_class,
+                        pipeline_name,
                         run_number,
                         start_time,
                         hash,
@@ -619,36 +619,36 @@ class Manager:
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
-                    experiment_id,
-                    experiment.reference,
-                    experiment.__class__.__name__,
-                    experiment.name,
-                    experiment.run_number,
-                    experiment.start_timestamp,
+                    pipeline_id,
+                    pipeline.reference,
+                    pipeline.__class__.__name__,
+                    pipeline.name,
+                    pipeline.run_number,
+                    pipeline.start_timestamp,
                     hash,
                     cleaned_parameters,
                 ],
             )
 
-    def record_experiment_run_target(self, experiment, target):
+    def record_pipeline_run_target(self, pipeline, target):
         if not self.currently_recording:
             return
 
         with self.db_connection() as db:
             db.sql(
                 """UPDATE cf_run SET target_id = $target_id, WHERE ID = $id""",
-                params=dict(target_id=target.db_id, id=experiment.db_id),
+                params=dict(target_id=target.db_id, id=pipeline.db_id),
             )
 
-    def record_experiment_run_completion(self, experiment):
+    def record_pipeline_run_completion(self, pipeline):
         if not self.currently_recording:
             return
 
-        experiment.end_timestamp = datetime.now()
+        pipeline.end_timestamp = datetime.now()
         with self.db_connection() as db:
             db.sql(
                 """UPDATE cf_run SET end_time = $endtime, WHERE ID = $id""",
-                params=dict(endtime=experiment.end_timestamp, id=experiment.db_id),
+                params=dict(endtime=pipeline.end_timestamp, id=pipeline.db_id),
             )
 
     def db_connection(self):

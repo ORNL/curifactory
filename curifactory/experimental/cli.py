@@ -14,11 +14,11 @@ import argcomplete
 import curifactory.experimental as cf
 
 
-def completer_experiment(**kwargs) -> list[str]:
+def completer_pipeline(**kwargs) -> list[str]:
     # manager = cf.get_manager()
     # prefix = kwargs["prefix"]
-    # manager.import_experiments_from_module(prefix)
-    # return manager.experiment_keys_matching(prefix)
+    # manager.import_pipelines_from_module(prefix)
+    # return manager.pipeline_keys_matching(prefix)
     return []
 
 
@@ -34,11 +34,11 @@ def main():
 
     subparsers = parser.add_subparsers(help="Commands:", dest="command")
 
-    ls_parser = subparsers.add_parser("ls", help="List experiments")
+    ls_parser = subparsers.add_parser("ls", help="List pipelines")
     ls_parser.add_argument("thing_to_list", nargs="?")
 
-    run_parser = subparsers.add_parser("run", help="Run an experiment", add_help=False)
-    run_parser.add_argument("experiment").completer = completer_experiment
+    run_parser = subparsers.add_parser("run", help="Run an pipeline", add_help=False)
+    run_parser.add_argument("pipeline").completer = completer_pipeline
     run_parser.add_argument(
         "-h",
         "--help",
@@ -66,25 +66,25 @@ def main():
             parser.print_help()
             return
         if parsed.command == "run":
-            if parsed.experiment is None:
+            if parsed.pipeline is None:
                 run_parser.print_help()
                 return
 
     if parsed.command == "run":
-        experiment = None
+        pipeline = None
 
         manager = cf.get_manager()
-        manager.load_default_experiment_imports()
-        remainder = manager.import_experiments_from_module(parsed.experiment)
+        manager.load_default_pipeline_imports()
+        remainder = manager.import_pipelines_from_module(parsed.pipeline)
 
-        search = parsed.experiment
+        search = parsed.pipeline
         resolved = manager.resolve_reference(search)
 
-        if "experiment_instance" in resolved:
-            experiment = resolved["experiment_instance"]
+        if "pipeline_instance" in resolved:
+            pipeline = resolved["pipeline_instance"]
             base_class = False
-        elif "experiment_class" in resolved:
-            experiment = resolved["experiment_class"]
+        elif "pipeline_class" in resolved:
+            pipeline = resolved["pipeline_class"]
             base_class = True
 
 
@@ -105,29 +105,29 @@ def main():
         #     experiment = exp_classes_by_name[search_parts["experiment"]]
         #     base_class = True
 
-        if experiment is not None:
-            name = experiment.name if not base_class else experiment.__name__
-            experiment_parameter_group = run_parser.add_argument_group(
-                f"{name} parameters", experiment.__doc__
+        if pipeline is not None:
+            name = pipeline.name if not base_class else pipeline.__name__
+            pipeline_parameter_group = run_parser.add_argument_group(
+                f"{name} parameters", pipeline.__doc__
             )
 
             # # TODO: https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser.add_argument
             def list_converter(string):
                 print("I was called with", string)
-                if string in manager.experiment_ref_names:
-                    return manager.experiment_ref_names[string]
+                if string in manager.pipeline_ref_names:
+                    return manager.pipeline_ref_names[string]
                 return string
 
-            # add arguments for the experiment to the parser
+            # add arguments for the pipeline to the parser
             names = []
-            for field in fields(experiment):
+            for field in fields(pipeline):
                 if field.name in ["name", "outputs"]:
                     continue
                 names.append(field.name)
 
                 default = None
                 if not base_class:
-                    default = getattr(experiment, field.name)
+                    default = getattr(pipeline, field.name)
                 elif field.default_factory != MISSING:
                     default = field.default_factory()
 
@@ -142,7 +142,7 @@ def main():
                 if field.type.__name__ == "list":
                     cleaned_type = list_converter
 
-                experiment_parameter_group.add_argument(
+                pipeline_parameter_group.add_argument(
                     f"--{field.name}",
                     type=cleaned_type,
                     dest=field.name,
@@ -160,21 +160,21 @@ def main():
             if len(new_args) > 0:
                 if base_class:
                     print(new_args)
-                    experiment = experiment(experiment.__name__, **new_args)
+                    pipeline = pipeline(pipeline.__name__, **new_args)
                 else:
-                    experiment = experiment.modify(**new_args)
+                    pipeline = pipeline.modify(**new_args)
 
-            # print(experiment)
+            # print(pipeline)
 
         if parsed.show_help:
             run_parser.print_help()
-            if experiment is None:
-                print(f"Experiments matching '{search}':")
-                for exp_key, exp_val in resolved["experiment_instance_list"].items():
+            if pipeline is None:
+                print(f"Pipelines matching '{search}':")
+                for exp_key, exp_val in resolved["pipeline_instance_list"].items():
                     print(f"{exp_key} ({exp_val.name})")
                 print("---")
-                print(f"Experiment classes matching '{search}':")
-                for exp_class in resolved["experiment_class_list"]:
+                print(f"Pipeline classes matching '{search}':")
+                for exp_class in resolved["pipeline_class_list"]:
                     print(exp_class.__name__)
 
                 # print(f"\nExperiment references matching '{parsed.experiment}':")
@@ -194,8 +194,8 @@ def main():
                 #             )
             return
 
-        if experiment is not None:
-            print(experiment)
+        if pipeline is not None:
+            print(pipeline)
             manager.init_root_logging()
 
             # handle overwrites
@@ -215,7 +215,7 @@ def main():
                                 artifact.ovewrite = True
 
             if "artifact" not in resolved and "artifact_list" not in resolved:
-                experiment.run()
+                pipeline.run()
             # if search_parts["artifact_filter"] is None:
             else:
                 if "artifact" in resolved:
@@ -225,7 +225,7 @@ def main():
                     manager.logger.debug(f"Attempting to get Artifacts {[artifact.name for artifact in resolved['artifact_list']]}")
                     for artifact in resolved["artifact_list"]:
                         artifact.get()
-                # for artifact in experiment.artifacts.filter(
+                # for artifact in pipeline.artifacts.filter(
                 #     search_parts["artifact_filter"]
                 # ):
                 #     artifact.get()
@@ -233,7 +233,7 @@ def main():
 
     elif parsed.command == "ls":
         manager = cf.get_manager()
-        manager.load_default_experiment_imports()
+        manager.load_default_pipeline_imports()
 
         search = parsed.thing_to_list
         if search is None:
@@ -248,9 +248,9 @@ def main():
                     f" (stage: {artifact.compute.name})".ljust(40),
                     f"(context: {artifact.context.name})".ljust(40),
                 )
-        elif "experiment_instance" in resolved:
+        elif "pipeline_instance" in resolved:
             print(f"Artifacts in {search}:")
-            for artifact in resolved["experiment_instance"].artifacts:
+            for artifact in resolved["pipeline_instance"].artifacts:
                 print(
                     artifact.name.ljust(20),
                     f" (stage: {artifact.compute.name})".ljust(40),
@@ -258,18 +258,18 @@ def main():
                 )
         else:
             if search == "":
-                print("Experiments:")
+                print("Pipelines:")
             else:
-                print(f"Experiments matching '{search}':")
-            for exp_key, exp_val in resolved["experiment_instance_list"].items():
+                print(f"Pipelines matching '{search}':")
+            for exp_key, exp_val in resolved["pipeline_instance_list"].items():
                 print(f"{exp_key} ({exp_val.name})")
 
             print("---")
             if search == "":
-                print("Experiment classes:")
+                print("Pipeline classes:")
             else:
-                print(f"Experiment classes matching '{search}':")
-            for exp_class in resolved["experiment_class_list"]:
+                print(f"Pipeline classes matching '{search}':")
+            for exp_class in resolved["pipeline_class_list"]:
                 print(exp_class.__name__)
 
 

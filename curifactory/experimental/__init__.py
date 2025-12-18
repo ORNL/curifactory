@@ -1,11 +1,4 @@
-from curifactory.experimental import (
-    artifact,
-    caching,
-    experiment,
-    manager,
-    stage,
-    utils,
-)
+from curifactory.experimental import artifact, caching, manager, pipeline, stage, utils
 
 
 def get_manager():
