@@ -432,10 +432,9 @@ class Stage:
             return None
         return tree
 
-    def _visualize(self, dot=None):
+    def visualize(self, dot=None):
         if dot is None:
-            dot = Digraph()
-            dot._edges = []
+            dot = cf.utils.init_graphviz_graph()
 
         self._inner_visualize(dot)
         return dot
@@ -449,7 +448,15 @@ class Stage:
             if (str(dependency.internal_id), str(id(self))) not in g._edges:
                 g.edge(str(dependency.internal_id), str(id(self)))
                 g._edges.append((str(dependency.internal_id), str(id(self))))
-            g = dependency._visualize(g)
+            g = dependency.visualize(g)
+
+        # add arrows directly from any explicit previous stage dependencies to
+        # this one
+        for stage in self.dependencies:
+            if (str(id(stage)), str(id(self))) not in g._edges:
+                g.edge(str(id(stage)), str(id(self)))
+                g._edges.append((str(id(stage)), str(id(self))))
+            g = stage.visualize(g)
 
         return g
 
@@ -459,6 +466,8 @@ class Stage:
             label=self.name,
             fontsize="8.0",
             height=".25",
+            fillcolor="#BBBBBB",
+            style="filled",
         )
 
     def _stage_list():

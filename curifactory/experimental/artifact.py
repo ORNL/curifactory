@@ -504,10 +504,9 @@ class Artifact:
             xlabel=context_names,
         )
 
-    def _visualize(self, dot=None):
+    def visualize(self, dot=None):
         if dot is None:
-            dot = Digraph()
-            dot._edges = []
+            dot = cf.utils.init_graphviz_graph()
 
         self._inner_visualize(dot)
         return dot
@@ -515,7 +514,7 @@ class Artifact:
     def _inner_visualize(self, g):
         self._node(g)
 
-        self.compute._visualize(g)
+        self.compute.visualize(g)
         if (str(id(self.compute)), str(self.internal_id)) not in g._edges:
             g.edge(str(id(self.compute)), str(self.internal_id))
             g._edges.append((str(id(self.compute)), str(self.internal_id)))

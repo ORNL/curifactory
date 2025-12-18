@@ -122,6 +122,9 @@ class Experiment:
         manager.current_experiment_run = None
         manager.record_experiment_run_completion(self)
 
+    def visualize(self, dot=None):
+        return self.outputs.visualize(dot)
+
     def run(self):
         manager = cf.get_manager()
         manager.current_experiment_run = self

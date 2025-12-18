@@ -1,6 +1,8 @@
 import argparse
 import logging
 
+from graphviz import Digraph
+
 
 # https://stackoverflow.com/questions/28094590/ignore-str-formatfoo-if-key-doesnt-exist-in-foo
 class FailsafeDict(dict):
@@ -48,3 +50,11 @@ class AppendReplaceAction(argparse.Action):
     # does 'store' already do this?
     def __call__(self, parser, namespace, values, option_string=None):
         pass
+
+
+def init_graphviz_graph():
+    dot = Digraph(
+        graph_attr={"nodesep": ".05", "ranksep": ".09"}, edge_attr={"arrowsize": "0.5"}
+    )
+    dot._edges = []
+    return dot
