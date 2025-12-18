@@ -132,10 +132,29 @@ class Pipeline:
     def visualize(self, dot=None, **kwargs):
         return self.outputs.visualize(dot, **kwargs)
 
+    def log_verification_checks(self):
+        all_good = True
+        for entry, verified in self.pre_consolidation_checks.items():
+            if not verified:
+                all_good = False
+        cf.get_manager().logger.info(f"Pre-consolidation checks: {'good' if all_good else 'bad'}")
+        if not all_good:
+            cf.get_manager().logger.warn(f"Pre-consolidation checks failed:\n {self.pre_consolidation_checks}")
+
+        all_good = True
+        for entry, verified in self.post_consolidation_checks.items():
+            if not verified:
+                all_good = False
+        cf.get_manager().logger.info(f"Post-consolidation checks: {'good' if all_good else 'bad'}")
+        if not all_good:
+            cf.get_manager().logger.warn(f"Post-consolidation checks failed:\n {self.post_consolidation_checks}")
+
     def run(self):
         manager = cf.get_manager()
         manager.current_pipeline_run = self
         manager.current_pipeline_run_target = self.outputs
+
+        self.log_verification_checks()
 
         if self.outputs.cacher is not None and self.outputs.cacher.check(silent=True):
             manager.currently_recording = False

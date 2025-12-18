@@ -2,6 +2,7 @@
 # https://stackoverflow.com/questions/14950964/overriding-default-argparse-h-behaviour
 # https://stackoverflow.com/questions/4042452/display-help-message-with-python-argparse-when-script-is-called-without-any-argu
 
+import logging
 import argparse
 import importlib
 import json
@@ -55,6 +56,7 @@ def main():
         help="Overwrite specific artifacts during run.",
     )
     run_parser.add_argument("--overwrite-all")
+    run_parser.add_argument("--debug", action="store_true", dest="debug")
 
     argcomplete.autocomplete(parser, always_complete_options=False)
     argcomplete.autocomplete(run_parser, always_complete_options=False)
@@ -198,6 +200,11 @@ def main():
         if pipeline is not None:
             print(pipeline)
             manager.init_root_logging()
+            if parsed.debug:
+                print("Yep it's debug")
+                # logging.getLogger("curifactory").setLevel(logging.DEBUG)
+                manager.logger.setLevel(logging.DEBUG)
+                # logging.getLogger().setLevel(logging.DEBUG)
 
             # handle overwrites
             if parsed.overwrite is not None:

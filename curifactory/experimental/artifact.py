@@ -327,14 +327,12 @@ class Artifact:
         building_stages: dict["cf.stage.Stage", "cf.stage.Stage"] = None,
         building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
     ):
-        print(f"Copy of artifact {self.contextualized_name} requested")
         if building_stages is None:
             building_stages = {}
         if building_artifacts is None:
             building_artifacts = {}
 
         if self.internal_id in building_artifacts.keys():
-            print("Already had a copy")
             return building_artifacts[self.internal_id]
 
         artifact = Artifact(self.name)
@@ -372,9 +370,6 @@ class Artifact:
             # print(artifact.context_name)
             artifact.previous_context_names.append(self.context.name)
 
-        print(
-            f"Finished copy of artifact {self.contextualized_name} - {artifact.verify()}"
-        )
         return artifact
 
     def copy(self):
@@ -694,14 +689,12 @@ class ArtifactList(Artifact):  # , list):
         building_stages: dict["cf.stage.Stage", "cf.stage.Stage"] = None,
         building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
     ):
-        print(f"Copy of artifact list {self.contextualized_name} requested")
         if building_stages is None:
             building_stages = {}
         if building_artifacts is None:
             building_artifacts = {}
 
         if self.internal_id in building_artifacts.keys():
-            print("Already had a copy")
             return building_artifacts[self.internal_id]
 
         new_artifact_list = []
@@ -731,12 +724,8 @@ class ArtifactList(Artifact):  # , list):
                 and artifact.context.name != self.context.name
             )
         ):
-            # print("Adding", self.context.name)
             # print(artifact.context_name)
             artifact.previous_context_names.append(self.context.name)
-        print(
-            f"Finished copy of artifact list {self.contextualized_name} - {artifact.verify()}"
-        )
         return artifact
 
     # TODO: define iterator?

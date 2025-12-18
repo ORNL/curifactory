@@ -676,6 +676,7 @@ class Manager:
             rich_tracebacks=True,
             tracebacks_show_locals=True,
             log_time_format="%X",
+            keywords=["-----", "=====", "....."],
         )
 
         console_handler.setFormatter(rich_log_formatter)
@@ -686,7 +687,7 @@ class Manager:
     def init_cf_logging(self):
         cf_logger = logging.getLogger("curifactory")
         # cf_logger.setLevel(logging.INFO)
-        cf_logger.setLevel(logging.DEBUG)
+        # cf_logger.setLevel(logging.DEBUG)
         # NOTE: see https://docs.python.org/3/howto/logging.html#library-config
         # probably don't add a handler by default?
         # cf_logger.addHandler(logging.StreamHandler())

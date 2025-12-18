@@ -58,3 +58,64 @@ def init_graphviz_graph():
     )
     dot._edges = []
     return dot
+
+
+def human_readable_mem_usage(byte_count: int) -> str:
+    """Takes the given byte count and returns a nicely formatted string that includes the suffix (K/M/GB).
+
+    Args:
+        byte_count (int): The number of bytes to convert into KB/MB/GB.
+    """
+
+    negative = False
+    if byte_count < 0:
+        negative = True
+        byte_count *= -1
+
+    suffix = "B"
+    if byte_count > 10**9:
+        suffix = "GB"
+        byte_count /= 10**9
+    elif byte_count > 10**6:
+        suffix = "MB"
+        byte_count /= 10**6
+    elif byte_count > 10**3:
+        suffix = "KB"
+        byte_count /= 10**3
+
+    if negative:
+        return f"-{byte_count:.2f}{suffix}"
+    return f"{byte_count:.2f}{suffix}"
+
+
+def human_readable_time(seconds: float) -> str:
+    """Takes the given time in seconds and returns a nicely formatted string that includes the suffix.
+
+    Args:
+        seconds (float): The time in seconds to convert.
+    """
+
+    converted = seconds
+    suffix = "s"
+
+    # .1 = 100ms
+    # .1ms = 100us = .0001
+    # .1us = 100ns = .0000001
+
+    if seconds > 60 * 60:
+        suffix = "h"
+        converted /= 60 * 60
+    elif seconds > 60:
+        suffix = "m"
+        converted /= 60
+    elif seconds < 0.0000001:
+        suffix = "ns"
+        converted *= 10**9
+    elif seconds < 0.0001:
+        suffix = "us"
+        converted *= 10**6
+    elif seconds < 0.1:
+        suffix = "ms"
+        converted *= 10**3
+
+    return f"{converted:.2f}{suffix}"

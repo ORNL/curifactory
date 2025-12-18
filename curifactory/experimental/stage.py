@@ -1,4 +1,5 @@
 import copy
+import os
 import hashlib
 import inspect
 import threading
@@ -6,6 +7,13 @@ from dataclasses import dataclass, field
 from functools import wraps
 from typing import Any, Callable, Union
 from uuid import UUID
+
+import psutil
+import time
+
+# NOTE: resource only exists on unix systems
+if os.name != "nt":
+    import resource
 
 from graphviz import Digraph
 
@@ -189,14 +197,12 @@ class Stage:
         building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
     ) -> tuple["Stage", bool]:
         """Returns the created (or prev) stage and whether it was indeed created or not."""
-        print(f"Copy of stage {self.name} requested")
         if building_stages is None:
             building_stages = {}
         if building_artifacts is None:
             building_artifacts = {}
 
         if id(self) in building_stages.keys():
-            print("Already had a copy")
             return building_stages[id(self)]  # , False
 
         copied_args = []
@@ -213,7 +219,6 @@ class Stage:
             else:
                 copied_kwargs[kw] = copy.deepcopy(arg)
 
-        # print("copying stage ", self.name, " outputs: ", id(self.outputs))
         new_stage = Stage(
             self.function,
             copied_args,
@@ -249,38 +254,10 @@ class Stage:
                 building_stages[id(dependency)] = new_dependency
 
             new_stage.dependencies.append(building_stages[id(dependency)])
-        print(f"Finished copy of stage {self.name}")
         return new_stage  # , True
 
     def copy(self):
         return self._inner_copy(None, None)
-        # TODO: I don't think this will preserve collapsed artifacts.
-        # new_stage = Stage(self.function,
-        # TODO: this also might create duplicate stages for stages that output
-        # multiple artifacts?
-        # copied_args = []
-        # for arg in self.args:
-        #     if isinstance(arg, artifact.Artifact):
-        #         copied_args.append(arg.copy())
-        #     else:
-        #         copied_args.append(copy.deepcopy(arg))
-        # copied_kwargs = {}
-        # for kw in self.kwargs:
-        #     arg = self.kwargs[kw]
-        #     if isinstance(arg, artifact.Artifact):
-        #         copied_kwargs[kw] = arg.copy()
-        #     else:
-        #         copied_kwargs[kw] = copy.deepcopy(arg)
-        #
-        # new_stage = Stage(
-        #     self.function,
-        #     copied_args,
-        #     copied_kwargs,
-        #     self.outputs,
-        #     self.hashing_functions,
-        #     self.pass_self,
-        # )
-        # return new_stage
 
     def compute_hash(self) -> tuple[str, dict[str, dict[str, Any]]]:
         parameter_names = list(self.parameter_kinds.keys())
@@ -585,6 +562,9 @@ class Stage:
 
             # make sure any dependencies have run. # TODO: not sure on order of this
             for dependency in self.dependencies:
+                manager.logger.info(
+                    f"Ensuring {self.name} stage dependency of {dependency.name}"
+                )
                 if isinstance(dependency.outputs, list):
                     for output in dependency.outputs:
                         output.get()
@@ -595,14 +575,50 @@ class Stage:
 
             manager.record_stage(self)
 
+            manager.logger.info(
+                f"..... Beginning resolution for stage {self.name} ....."
+            )
             passed_args, passed_kwargs = self.resolve_args(record_resolution=True)
 
-            manager.logger.info(f"Executing stage {self.name}")
+            manager.logger.info(f"----- Executing stage {self.name} -----")
             manager.record_stage_start(self)
             manager.current_stage = self
-            print("EXECUTING STAGE ", id(self))
+
+            pre_mem_usage = psutil.Process().memory_info().rss
+            pre_footprint = 0
+            if os.name != "nt":
+                pre_footprint = (
+                    resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
+                )
+
+            exec_time_start = time.perf_counter()
             function_outputs = self.function(*passed_args, **passed_kwargs)
+            exec_time_end = time.perf_counter()
+            exec_time = exec_time_end - exec_time_start
             manager.current_stage = None
+
+            post_mem_usage = psutil.Process().memory_info().rss
+            post_footprint = 0
+            if os.name != "nt":
+                post_footprint = (
+                    resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
+                )
+
+            # check if caching is about to happen
+            caching_necessary = False
+            if type(self.outputs) is list:
+                for artifact in self.outputs:
+                    if artifact.cacher is not None:
+                        caching_necessary = True
+            else:
+                if self.outputs.cacher is not None:
+                    caching_necessary = True
+            if caching_necessary:
+                manager.logger.info("Execution completed, caching outputs...")
+            else:
+                manager.logger.info("Execution completed")
+
+            post_cache_time_start = time.perf_counter()
 
             # TODO: special handling for overwrite for cacher?
             # (e.g. run clear first?)
@@ -626,7 +642,24 @@ class Stage:
                     art.cacher.save(art.obj)
                 returns = art
 
+            if caching_necessary:
+                manager.logger.info("Caching completed")
+                post_cache_time_end = time.perf_counter()
+                cache_time = post_cache_time_end - post_cache_time_start
+                manager.logger.info(
+                    "Timing - execution: %s  caching: %s"
+                    % (
+                        cf.utils.human_readable_time(exec_time),
+                        cf.utils.human_readable_time(cache_time),
+                    )
+                )
+            else:
+                manager.logger.info(
+                    "Timing - execution: %s" % (cf.utils.human_readable_time(exec_time))
+                )
+
             manager.record_stage_completion(self)
+            manager.logger.info(f"===== Completed stage {self.name} =====")
 
             if implicit_run:
                 self.context._end_implicit_run()
@@ -673,7 +706,6 @@ def run(output_names: str | list[str], *inputs):
 
     function = inputs[-1]
     stage_obj = Stage(function, list(inputs[:-1]), {}, [*outputs])
-    print("from within run", id(stage_obj.outputs))
     return stage_obj.outputs
 
 

@@ -296,7 +296,6 @@ class ParquetCacher(Cacheable):
                 raise TypeError(
                     "use_db_arg must either be an args index or kwargs kw string name"
                 )
-            print("CACHER: ", db)
             return db.from_parquet(self.get_path())
 
 
