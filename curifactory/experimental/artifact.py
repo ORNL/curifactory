@@ -134,6 +134,7 @@ class Artifact:
     def __eq__(self, o):
         return self.internal_id == o.internal_id
 
+    # TODO: do we actually need to add every context on the stack?
     def _find_context(self) -> "cf.pipeline.Pipeline":
         # print("Seeking context for artifact ", self.name, cf.get_manager()._pipeline_defining_stack)
         if len(cf.get_manager()._pipeline_defining_stack) > 0:
@@ -223,7 +224,7 @@ class Artifact:
                     self.obj = self.cacher.load()
                     # TODO: metadata stuff
                     return self.obj
-                cf.get_manager().logger.debug(f"\tNot found in cache")
+                cf.get_manager().logger.debug("\tNot found in cache")
 
             # if this artifact is requested and no current target, that means
             # this is the target if a new run has to start
@@ -250,14 +251,24 @@ class Artifact:
     def context_name(self):
         current = "None"
         if self.context is not None:
-            current = self.context.name
-        if len(self.previous_context_names) > 0:
-            current += f"({','.join(self.previous_context_names)})"
+            current = f"({','.join([self.context.name] + self.previous_context_names)})"
+        #     current = self.context.name
+        # if len(self.previous_context_names) > 0:
+        #     current += f"({','.join(self.previous_context_names)})"
         return current
 
     @property
     def contextualized_name(self):
         return f"{self.context_name}.{self.name}"
+
+    def context_names_minus(self, minus: str):
+        context_names = []
+        if self.context is not None:
+            context_names.append(self.context.name)
+        context_names.extend(self.previous_context_names)
+        if minus in context_names:
+            context_names.remove(minus)
+        return context_names
 
     @property
     def artifacts(self):
@@ -511,7 +522,12 @@ class Artifact:
             # str_name = str("NONE\n" + self.context_name + "\n" + self.hash_str[:6])
             str_name = str("NONE\n" + self.hash_str[:6])
 
-        context_names = ",".join(self.previous_context_names)
+        # context_names = ",".join(self.previous_context_names)
+        context_names = self.context_name
+        if "leave_out_context" in kwargs:
+            context_names = ",".join(
+                self.context_names_minus(kwargs["leave_out_context"])
+            )
 
         style = None
         fillcolor = None

@@ -2,10 +2,10 @@
 # https://stackoverflow.com/questions/14950964/overriding-default-argparse-h-behaviour
 # https://stackoverflow.com/questions/4042452/display-help-message-with-python-argparse-when-script-is-called-without-any-argu
 
-import logging
 import argparse
 import importlib
 import json
+import logging
 import os
 import sys
 from dataclasses import MISSING, fields
@@ -57,6 +57,9 @@ def main():
     )
     run_parser.add_argument("--overwrite-all")
     run_parser.add_argument("--debug", action="store_true", dest="debug")
+
+    diag_parser = subparsers.add_parser("diagram", help="Render pipeline diagram")
+    diag_parser.add_argument("pipeline")
 
     argcomplete.autocomplete(parser, always_complete_options=False)
     argcomplete.autocomplete(run_parser, always_complete_options=False)
@@ -117,8 +120,14 @@ def main():
             # # TODO: https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser.add_argument
             def list_converter(string):
                 print("I was called with", string)
-                if string in manager.pipeline_ref_names:
-                    return manager.pipeline_ref_names[string]
+                resolved = manager.resolve_reference(string)
+                print(resolved)
+                if "pipeline_instance" in resolved:
+                    print("FOUND!")
+                    return resolved["pipeline_instance"]
+
+                # if string in manager.pipeline_ref_names:
+                #     return manager.pipeline_ref_names[string]
                 return string
 
             # add arguments for the pipeline to the parser
@@ -223,6 +232,7 @@ def main():
                                 artifact.ovewrite = True
 
             if "artifact" not in resolved and "artifact_list" not in resolved:
+                print(pipeline)
                 pipeline.run()
             # if search_parts["artifact_filter"] is None:
             else:
@@ -239,6 +249,23 @@ def main():
                 #     artifact.get()
                 #     print(artifact.cacher.load_paths())
 
+    elif parsed.command == "diagram":
+        manager = cf.get_manager()
+        manager.load_default_pipeline_imports()
+
+        search = parsed.pipeline
+        resolved = manager.resolve_reference(search)
+
+        pipeline = None
+        if "pipeline_instance" in resolved:
+            pipeline = resolved["pipeline_instance"]
+
+        if pipeline is not None:
+            dot = pipeline.visualize()
+            # print(dot.pipe(format="kitty"))
+            import subprocess
+            subprocess.run(["/usr/bin/kitty", "icat"], input=dot.pipe(format="kitty"))
+
     elif parsed.command == "ls":
         manager = cf.get_manager()
 
@@ -249,6 +276,12 @@ def main():
         if search is None:
             search = ""
 
+        if parsed.list_runs:
+            resolved = manager.resolve_reference(search, types=["runs"])
+            for entry in resolved["reference_names"]:
+                print(entry)
+            exit()
+
         resolved = manager.resolve_reference(search)
         if "artifact_list" in resolved:
             print(f"Artifacts matching {search}:")
@@ -256,7 +289,7 @@ def main():
                 print(
                     artifact.name.ljust(20),
                     f" (stage: {artifact.compute.name})".ljust(40),
-                    f"(context: {artifact.context.name})".ljust(40),
+                    f"(context: {artifact.context_name})".ljust(40),
                 )
         elif "pipeline_instance" in resolved:
             print(f"Artifacts in {search}:")
@@ -264,7 +297,7 @@ def main():
                 print(
                     artifact.name.ljust(20),
                     f" (stage: {artifact.compute.name})".ljust(40),
-                    f"(context: {artifact.context.name})".ljust(40),
+                    f"(context: {artifact.context_name})".ljust(40),
                 )
         else:
             if search == "":

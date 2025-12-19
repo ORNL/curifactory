@@ -101,7 +101,7 @@ class Manager:
             **self.additional_configuration,
         }
 
-    def resolve_reference(self, ref_str: str):
+    def resolve_reference(self, ref_str: str, types: list[str] = None):
         # possible types:
         # * module
         # * module list?
@@ -122,33 +122,41 @@ class Manager:
 
         # TODO: check for path (if contains '/'?)
 
-        reference_parts = self.divide_reference_parts(ref_str)
-        print(reference_parts)
-        if reference_parts["module"] is not None:
-            if "module" not in resolutions:
-                resolutions["module"] = []
-            resolutions["module"].append(reference_parts["module"])
+        if types is None or "module" in types or "pipeline" in types or "pipeline_instance" in types or "pipeline_instance_list" in types or "pipeline_class" in types or "pipeline_class_list" in types:
+            reference_parts = self.divide_reference_parts(ref_str)
+            print(reference_parts)
+            if reference_parts["module"] is not None:
+                if "module" not in resolutions:
+                    resolutions["module"] = []
+                resolutions["module"].append(reference_parts["module"])
 
-        if reference_parts["pipeline"] is not None:
-            if reference_parts["pipeline"] in self.pipeline_ref_names:
-                resolutions["pipeline_instance"] = self.pipeline_ref_names[reference_parts["pipeline"]]
-            if reference_parts["pipeline"] in self.pipelines:
-                resolutions["pipeline_class"] = self.pipelines[reference_parts["pipeline"]]
+            if reference_parts["pipeline"] is not None:
+                if reference_parts["pipeline"] in self.pipeline_ref_names:
+                    resolutions["pipeline_instance"] = self.pipeline_ref_names[reference_parts["pipeline"]]
+                if reference_parts["pipeline"] in self.pipelines:
+                    resolutions["pipeline_class"] = self.pipelines[reference_parts["pipeline"]]
 
-            resolutions["pipeline_instance_list"] = {
-                name: self.pipeline_ref_names[name] for name in self.pipeline_ref_names.keys() if name.startswith(reference_parts["pipeline"])
-            }
-            # TODO: class list should also be based on module if pipeline is ""
-            resolutions["pipeline_class_list"] = [
-                self.pipelines[name] for name in self.pipelines.keys() if name.startswith(reference_parts["pipeline"])
-            ]
+                resolutions["pipeline_instance_list"] = {
+                    name: self.pipeline_ref_names[name] for name in self.pipeline_ref_names.keys() if name.startswith(reference_parts["pipeline"])
+                }
+                # TODO: class list should also be based on module if pipeline is ""
+                resolutions["pipeline_class_list"] = [
+                    self.pipelines[name] for name in self.pipelines.keys() if name.startswith(reference_parts["pipeline"])
+                ]
 
-        if "pipeline_instance" in resolutions:
-            # check for artifacts
-            if reference_parts["artifact_filter"] is not None:
-                resolutions["artifact_list"] = resolutions["pipeline_instance"].artifacts.filter(reference_parts["artifact_filter"])
-                if len(resolutions["artifact_list"]) == 1:
-                    resolutions["artifact"] = resolutions["artifact_list"][0]
+            if "pipeline_instance" in resolutions:
+                # check for artifacts
+                if reference_parts["artifact_filter"] is not None:
+                    resolutions["artifact_list"] = resolutions["pipeline_instance"].artifacts.filter(reference_parts["artifact_filter"])
+                    if len(resolutions["artifact_list"]) == 1:
+                        resolutions["artifact"] = resolutions["artifact_list"][0]
+
+        if types is None or "runs" in types:
+            with self.db_connection() as db:
+                # TODO: prob shouldn't be checking reference itself??
+                references_df = db.sql(f"SELECT * FROM cf_run WHERE starts_with(reference, '{ref_str}')").df()
+
+            resolutions["reference_names"] = references_df.reference.values.tolist()
 
 
             # resolutions["pipeline_instance_list"] = [

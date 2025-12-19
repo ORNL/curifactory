@@ -33,8 +33,9 @@ class Pipeline:
     # source: str = None
 
     def __post_init__(self):
-        # self.artifacts = artifact.ArtifactManager()
+
         cf.get_manager()._pipeline_defining_stack.append(self)
+        self.ensure_context_copies()
         definition_outputs = self.define()
         cf.get_manager()._pipeline_defining_stack.pop()
 
@@ -65,6 +66,23 @@ class Pipeline:
         for artifact in self.artifacts:
             checks[f"{artifact.contextualized_name}_{id(artifact)}"] = artifact.verify()
         return checks
+
+    def ensure_context_copies(self):
+        """An experiment definition, when taking other pipelines or artifacts as parameters,
+        shouldn't mutate or alter where those pipelines/artifacts come from - so anything passed
+        in gets automatically copied instead."""
+
+        for name, value in self.parameters.items():
+            if isinstance(value, (Pipeline, cf.artifact.Artifact)):
+                setattr(self, name, value.copy())
+            elif isinstance(value, list):
+                for index, item in enumerate(value):
+                    if isinstance(item, (Pipeline, cf.artifact.Artifact)):
+                        value[index] = item.copy()
+            elif isinstance(value, dict):
+                for key, value_j in value.items():
+                    if isinstance(value_j, (Pipeline, cf.artifact.Artifact)):
+                        value[key] = value_j.copy()
 
     @property
     def artifacts(self):
@@ -130,7 +148,7 @@ class Pipeline:
         manager.record_pipeline_run_completion(self)
 
     def visualize(self, dot=None, **kwargs):
-        return self.outputs.visualize(dot, **kwargs)
+        return self.outputs.visualize(dot, leave_out_context=self.name, **kwargs)
 
     def log_verification_checks(self):
         all_good = True
