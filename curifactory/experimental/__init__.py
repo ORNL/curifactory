@@ -1,6 +1,13 @@
 from curifactory.experimental import artifact, caching, manager, pipeline, stage, utils
 
 
+# artifact/stage mapping statuses
+COMPUTE = 0
+NO_COMPUTE = 1
+CACHE = 2
+OVERWRITE = 3
+
+
 def get_manager():
     return manager.Manager.get_manager()
 

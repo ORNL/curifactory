@@ -105,7 +105,7 @@ class Pipeline:
 
     def map(self):
         """Assumes define() has already run."""
-        return
+        return self.outputs.map()
 
         # TODO: do any necessary collapsing of sufficiently equivalent artifacts
 

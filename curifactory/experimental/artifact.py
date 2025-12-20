@@ -86,6 +86,8 @@ class Artifact:
 
     overwrite = pointer_based_property("overwrite")
 
+    map_status = pointer_based_property("map_status")
+
     def __init__(self, name=None, cacher=None):
         self.pointer = None
 
@@ -120,6 +122,8 @@ class Artifact:
         self._reportable: bool = False
 
         self._overwrite: bool = False
+
+        self._map_status: int = None
 
         # the reason I'm hesitant to explicitly track dependents is that someone
         # could theoretically define a custom pipeline dataclass and do weird
@@ -207,6 +211,36 @@ class Artifact:
             if artifact.overwrite:
                 return True
         return False
+
+    def map(self, mapped: dict = None, need: bool = True):
+        if mapped is None:
+            mapped = {"artifacts": [], "stages": []}
+
+        if self not in mapped["artifacts"]:
+            mapped["artifacts"].insert(0, self)
+
+            if self.determine_overwrite():
+                self.map_status = cf.OVERWRITE
+            else:
+                # check if in cache
+                if self.cacher is not None:
+                    if self.cacher.check(silent=True):
+                        self.map_status = cf.CACHE
+                elif need:
+                    self.map_status = cf.COMPUTE
+                else:
+                    self.map_status = cf.NO_COMPUTE
+        else:
+            # already in mapped
+            if need and self.map_status not in [cf.COMPUTE, cf.CACHE, cf.OVERWRITE]:
+                self.map_status = cf.COMPUTE
+
+        if self.map_status in [cf.COMPUTE, cf.OVERWRITE]:
+            mapped = self.compute.map(mapped, need=True)
+        else:
+            mapped = self.compute.map(mapped, need=False)
+
+        return mapped
 
     def get(self):
         cf.get_manager().logger.debug(
