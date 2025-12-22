@@ -323,6 +323,9 @@ class Artifact:
                 f"\tPassing off to compute stage - {self.compute.name}"
             )
             self.compute()
+            manager.logger.debug(
+                f"\tReturning from compute stage {self.compute.name} to artifact {self.contextualized_name}"
+            )
             # NOTE: stage handles running cachers
             return self.obj
         except Exception as e:

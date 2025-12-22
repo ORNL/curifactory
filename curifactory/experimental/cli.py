@@ -9,9 +9,9 @@ import logging
 import os
 import sys
 from dataclasses import MISSING, fields
+from rich.console import Console
 
 import argcomplete
-from rich.console import Console
 
 import curifactory.experimental as cf
 
@@ -57,10 +57,31 @@ def main():
         help="Overwrite specific artifacts during run.",
     )
     run_parser.add_argument("--overwrite-all")
+    run_parser.add_argument(
+        "-r",
+        "--replace",
+        action="append",
+        dest="replace",
+        help="Replace specific artifacts with other artifacts.",
+    )
     run_parser.add_argument("--debug", action="store_true", dest="debug")
 
     map_parser = subparsers.add_parser("map", help="Map out what needs to execute and what doesn't.")
     map_parser.add_argument("pipeline")
+    map_parser.add_argument(
+        "--ow",
+        "--overwrite",
+        action="append",
+        dest="overwrite",
+        help="Overwrite specific artifacts during run.",
+    )
+    map_parser.add_argument(
+        "-r",
+        "--replace",
+        action="append",
+        dest="replace",
+        help="Replace specific artifacts with other artifacts.",
+    )
 
     diag_parser = subparsers.add_parser("diagram", help="Render pipeline diagram")
     diag_parser.add_argument("pipeline")
@@ -199,6 +220,31 @@ def main():
                 manager.logger.setLevel(logging.DEBUG)
                 # logging.getLogger().setLevel(logging.DEBUG)
 
+            # handle replacements
+            if parsed.replace is not None:
+                for replace_req in parsed.replace:
+                    if "=" not in replace_req:
+                        raise SyntaxError("Please use '-r source_artifact=dest_artifact'")
+                    parts = replace_req.split("=")
+                    source = parts[0]
+                    dest = parts[1]
+                    source_resolved = manager.resolve_reference(source)
+                    if "artifact" not in source_resolved:
+                        print(f"Couldn't find an artifact for {source}")
+                        exit()
+                    source = source_resolved["artifact"]
+                    dest_resolved = manager.resolve_reference(dest)
+                    if "artifact" not in dest_resolved:
+                        print(f"Couldn't find an artifact for {dest}")
+                        exit()
+                    dest = dest_resolved["artifact"]
+
+                    manager.logger.debug(f"Replacing {source.contextualized_name} with {dest.contextualized_name}")
+                    # source.replace(dest.copy())  # not actually sure why this breaks
+                    source.replace(dest)
+                pipeline.consolidate_shared_artifacts()
+
+
             # handle overwrites
             if parsed.overwrite is not None:
                 for overwrite_req in parsed.overwrite:
@@ -262,6 +308,48 @@ def main():
             pipeline = resolved["pipeline_instance"]
 
         if pipeline is not None:
+
+            # handle replacements
+            if parsed.replace is not None:
+                for replace_req in parsed.replace:
+                    if "=" not in replace_req:
+                        raise SyntaxError("Please use '-r source_artifact=dest_artifact'")
+                    parts = replace_req.split("=")
+                    source = parts[0]
+                    dest = parts[1]
+                    source_resolved = manager.resolve_reference(source)
+                    if "artifact" not in source_resolved:
+                        print(f"Couldn't find an artifact for {source}")
+                        exit()
+                    source = source_resolved["artifact"]
+                    dest_resolved = manager.resolve_reference(dest)
+                    if "artifact" not in dest_resolved:
+                        print(f"Couldn't find an artifact for {dest}")
+                        exit()
+                    dest = dest_resolved["artifact"]
+
+                    manager.logger.debug(f"Replacing {source.contextualized_name} with {dest.contextualized_name}")
+                    # source.replace(dest.copy())  # not actually sure why this breaks
+                    source.replace(dest)
+                pipeline.consolidate_shared_artifacts()
+
+
+            # handle overwrites
+            if parsed.overwrite is not None:
+                for overwrite_req in parsed.overwrite:
+                    art_resolved = manager.resolve_reference(overwrite_req)
+                    if "artifact" not in art_resolved and "artifact_list" not in art_resolved:
+                        print(f"COULD NOT FIND {overwrite_req}.")
+                        exit()
+                    else:
+                        if "artifact" in art_resolved:
+                            art_resolved["artifact"].overwrite = True
+                            manager.logger.debug(f"Setting overwrite on art_{art_resolved['artifact'].name}")
+                        else:
+                            for artifact in art_resolved["artifact_list"]:
+                                manager.logger.debug(f"Setting overwrite on art_{artifact.name}")
+                                artifact.ovewrite = True
+
             if "artifact" not in resolved and "artifact_list" not in resolved:
                 mapped = pipeline.map()
             elif "artifact" in resolved:

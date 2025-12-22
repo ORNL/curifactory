@@ -124,7 +124,6 @@ class Manager:
 
         if types is None or "module" in types or "pipeline" in types or "pipeline_instance" in types or "pipeline_instance_list" in types or "pipeline_class" in types or "pipeline_class_list" in types:
             reference_parts = self.divide_reference_parts(ref_str)
-            print(reference_parts)
             if reference_parts["module"] is not None:
                 if "module" not in resolutions:
                     resolutions["module"] = []

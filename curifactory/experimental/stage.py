@@ -581,6 +581,36 @@ class Stage:
                 artifact_list.append(arg)
         return cf.artifact.ArtifactFilter(artifact_list)  # TODO: need a filter_string?
 
+    def resolve_arg(
+        self,
+        record_resolution: bool = False,
+        arg_index: int = None,
+        arg_name: str = None,
+    ):
+        obj = None
+        arg = None
+
+        if arg_index is not None:
+            arg = self._combined_args()[arg_index]
+        elif arg_name is not None:
+            arg = self.kwargs[arg_name]
+
+        if isinstance(arg, Stage):
+            cf.get_manager().logger.warn(
+                f"WARNING: Stage argument passed into {self.name}, is there a missing .outputs?"
+            )
+
+        if isinstance(arg, cf.artifact.Artifact):
+            obj = arg.get()
+            if record_resolution:
+                cf.get_manager().record_stage_artifact_input(self, arg)
+        elif isinstance(arg, OutputArtifactPathResolve):
+            obj = arg.resolve(self)
+        else:
+            obj = arg
+
+        return obj
+
     # TODO: this really maybe only makes sense to be called from within the
     # stage __call__...
     def resolve_args(self, record_resolution: bool = False) -> tuple[list, dict]:
@@ -590,41 +620,46 @@ class Stage:
 
         manager = cf.get_manager()
 
-        # compute any inputs
-        for arg in self.args:
-            # if a stage was passed in instead of an artifact, quite possible
-            # user forgot a .outputs, so warn
-            if isinstance(arg, Stage):
-                print(
-                    f"WARNING: Stage argument passed into {self.name}, is there a missing .outputs?"
-                )
-
-            if isinstance(arg, cf.artifact.Artifact):
-                # if not arg.computed:
-                #     arg.compute()
-                obj = arg.get()
-                passed_args.append(obj)
-                if record_resolution:
-                    manager.record_stage_artifact_input(self, arg)
-                # passed_args.append(arg.obj)
-            elif isinstance(arg, OutputArtifactPathResolve):
-                passed_args.append(arg.resolve(self))
-            else:
-                passed_args.append(arg)
+        for i, arg in enumerate(self.args):
+            passed_args.append(self.resolve_arg(record_resolution, arg_index=i))
         for kwarg in self.kwargs:
-            if isinstance(self.kwargs[kwarg], cf.artifact.Artifact):
-                # if not self.kwargs[kwarg].computed:
-                #     self.kwargs[kwarg].compute()
-                obj = self.kwargs[kwarg].get()
-                passed_kwargs[kwarg] = obj
-                if record_resolution:
-                    manager.record_stage_artifact_input(self, self.kwargs[kwarg])
-                # passed_kwargs[kwarg] = self.kwargs[kwarg].obj
-            elif isinstance(self.kwargs[kwarg], OutputArtifactPathResolve):
-                passed_args.append(self.kwargs[kwarg].resolve(self))
-            else:
-                passed_kwargs[kwarg] = self.kwargs[kwarg]
+            passed_kwargs.append(self.resolve_arg(record_resolution, arg_name=kwarg))
 
+        # compute any inputs
+        # for arg in self.args:
+        #     # if a stage was passed in instead of an artifact, quite possible
+        #     # user forgot a .outputs, so warn
+        #     if isinstance(arg, Stage):
+        #         print(
+        #             f"WARNING: Stage argument passed into {self.name}, is there a missing .outputs?"
+        #         )
+        #
+        #     if isinstance(arg, cf.artifact.Artifact):
+        #         # if not arg.computed:
+        #         #     arg.compute()
+        #         obj = arg.get()
+        #         passed_args.append(obj)
+        #         if record_resolution:
+        #             manager.record_stage_artifact_input(self, arg)
+        #         # passed_args.append(arg.obj)
+        #     elif isinstance(arg, OutputArtifactPathResolve):
+        #         passed_args.append(arg.resolve(self))
+        #     else:
+        #         passed_args.append(arg)
+        # for kwarg in self.kwargs:
+        #     if isinstance(self.kwargs[kwarg], cf.artifact.Artifact):
+        #         # if not self.kwargs[kwarg].computed:
+        #         #     self.kwargs[kwarg].compute()
+        #         obj = self.kwargs[kwarg].get()
+        #         passed_kwargs[kwarg] = obj
+        #         if record_resolution:
+        #             manager.record_stage_artifact_input(self, self.kwargs[kwarg])
+        #         # passed_kwargs[kwarg] = self.kwargs[kwarg].obj
+        #     elif isinstance(self.kwargs[kwarg], OutputArtifactPathResolve):
+        #         passed_args.append(self.kwargs[kwarg].resolve(self))
+        #     else:
+        #         passed_kwargs[kwarg] = self.kwargs[kwarg]
+        #
         if self.pass_self:
             passed_args.insert(0, self)
 

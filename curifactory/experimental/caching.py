@@ -170,6 +170,7 @@ class Cacheable:
         if self.artifact is not None:
             cf.get_manager().logger.debug("setting object on artifact")
             self.artifact.obj = obj
+        cf.get_manager().logger.debug(f"Completed loading {self.artifact.name}")
         return obj
 
     def load_metadata(self):
@@ -285,17 +286,15 @@ class ParquetCacher(Cacheable):
         if self.use_db_arg == -1:
             return pd.read_parquet(self.get_path())
         else:
-            args, kwargs = self.artifact.compute.resolve_args(record_resolution=False)
-            # NOTE: don't add artifacts to db because the stage _execution_
-            # already handles that
             if isinstance(self.use_db_arg, int):
-                db = args[self.use_db_arg]
+                db = self.artifact.compute.resolve_arg(False, arg_index=self.use_db_arg)
             elif isinstance(self.use_db_arg, str):
-                db = kwargs[self.use_db_arg]
+                db = self.artifact.compute.resolve_arg(False, arg_name=self.use_db_arg)
             else:
                 raise TypeError(
                     "use_db_arg must either be an args index or kwargs kw string name"
                 )
+
             return db.from_parquet(self.get_path())
 
 
@@ -322,13 +321,10 @@ class DBTableCacher(Cacheable):
             # TODO: load db
             pass
         else:
-            args, kwargs = self.artifact.compute.resolve_args(record_resolution=False)
-            # NOTE: don't add artifacts to db because the stage _execution_
-            # already handles that
             if isinstance(self.use_db_arg, int):
-                db = args[self.use_db_arg]
+                db = self.artifact.compute.resolve_arg(False, arg_index=self.use_db_arg)
             elif isinstance(self.use_db_arg, str):
-                db = kwargs[self.use_db_arg]
+                db = self.artifact.compute.resolve_arg(False, arg_name=self.use_db_arg)
             else:
                 raise TypeError(
                     "use_db_arg must either be an args index or kwargs kw string name"
@@ -405,7 +401,8 @@ class AggregateArtifactCacher(Cacheable):
         for artifact in self.artifact.inner_artifact_list:
             if artifact.cacher is None:
                 return False
-            if not artifact.cacher.check(silent=True):
+            # if not artifact.cacher.check(silent=True):
+            if not artifact.cacher.check():
                 return False
         return True
 
