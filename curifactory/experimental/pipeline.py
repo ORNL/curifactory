@@ -46,7 +46,7 @@ class Pipeline:
         # if not isinstance(definition_outputs, artifact.ArtifactList) and :
         #     definition_outputs = artifact.ArtifactList("outputs", definition_outputs)
         self.outputs = definition_outputs
-        self.map()
+        # self.map()
 
         # FILLED BY MANAGER ON RUN:
         self.db_id: UUID = None

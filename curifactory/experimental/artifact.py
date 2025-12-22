@@ -85,7 +85,7 @@ class Artifact:
     in_cache = pointer_based_property("in_cache")
 
     overwrite = pointer_based_property("overwrite")
-
+    cache_status = pointer_based_property("cache_status")
     map_status = pointer_based_property("map_status")
 
     def __init__(self, name=None, cacher=None):
@@ -136,6 +136,10 @@ class Artifact:
         # self.dependents: list[stage.Stage] = []
 
     def __eq__(self, o):
+        if o is None:
+            return False
+        if not isinstance(o, Artifact):
+            return False
         return self.internal_id == o.internal_id
 
     # TODO: do we actually need to add every context on the stack?
@@ -212,33 +216,77 @@ class Artifact:
                 return True
         return False
 
-    def map(self, mapped: dict = None, need: bool = True):
+    # def check_cache(self):
+    #     if self.cacher is not None:
+    #         if self.cacher.check(silent=True):
+    #             return True
+    #     return False
+
+    def reset_map(self):
+        self.map_status = None
+        self.cache_status = None
+        self.compute.reset_map()
+
+    def map(self, mapped: dict = None, need: bool = True, source=None):
         if mapped is None:
-            mapped = {"artifacts": [], "stages": []}
+            self.reset_map()
+            mapped = {"artifacts": [], "stages": [], "map": {}}
+
+        if source is not None:
+            map_name = f"{source.name} -> {self.name}"
+        else:
+            map_name = f"-> {self.name}"
+        if self.name not in mapped["map"]:
+            mapped["map"][self.name] = {}
+        if map_name not in mapped["map"][self.name]:
+            mapped["map"][self.name][map_name] = []
 
         if self not in mapped["artifacts"]:
             mapped["artifacts"].insert(0, self)
 
-            if self.determine_overwrite():
-                self.map_status = cf.OVERWRITE
+            # determine cache status
+            if self.cacher is None:
+                self.cache_status = cf.NO_CACHER
             else:
-                # check if in cache
-                if self.cacher is not None:
-                    if self.cacher.check(silent=True):
-                        self.map_status = cf.CACHE
-                elif need:
-                    self.map_status = cf.COMPUTE
+                if self.cacher.check(silent=True):
+                    self.cache_status = cf.IN_CACHE
                 else:
-                    self.map_status = cf.NO_COMPUTE
-        else:
-            # already in mapped
-            if need and self.map_status not in [cf.COMPUTE, cf.CACHE, cf.OVERWRITE]:
-                self.map_status = cf.COMPUTE
+                    self.cache_status = cf.NOT_IN_CACHE
 
-        if self.map_status in [cf.COMPUTE, cf.OVERWRITE]:
-            mapped = self.compute.map(mapped, need=True)
+        # case priority:
+        # 1. overwrite (force compute)
+        # 2. in cache, so use it (the stage map will override this if something
+        #   else required the compute to run)
+        # 3. Not in cache and we need it so compute it
+        # 4. Not needed!
+
+        if self.determine_overwrite():
+            self.map_status = cf.OVERWRITE
+            mapped["map"][self.name][map_name].append(cf.OVERWRITE)
         else:
-            mapped = self.compute.map(mapped, need=False)
+            if need and self.cache_status == cf.IN_CACHE:
+                self.map_status = cf.USE_CACHE
+                mapped["map"][self.name][map_name].append(cf.USE_CACHE)
+            elif need:
+                self.map_status = cf.COMPUTE
+                mapped["map"][self.name][map_name].append(cf.COMPUTE)
+            elif self.map_status is None:
+                # we throw in the none check because we don't want to override
+                # anything already set (if we run map on an artifact again)
+                self.map_status = cf.SKIP
+                mapped["map"][self.name][map_name].append(cf.SKIP)
+
+        # if this mapping was requested from the compute (likely due to another
+        # output of that stage), don't get stuck in a recurisve loop, just
+        # return
+        if self.compute == source:
+            return mapped
+
+        # recurse down into the stage map
+        if self.map_status in [cf.COMPUTE, cf.OVERWRITE]:
+            mapped = self.compute.map(mapped, need=True, source=self)
+        else:
+            mapped = self.compute.map(mapped, need=False, source=self)
 
         return mapped
 

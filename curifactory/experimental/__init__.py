@@ -1,11 +1,32 @@
 from curifactory.experimental import artifact, caching, manager, pipeline, stage, utils
 
+# cache statuses
+IN_CACHE = 1
+NOT_IN_CACHE = 2
+NO_CACHER = 3
 
 # artifact/stage mapping statuses
-COMPUTE = 0
-NO_COMPUTE = 1
-CACHE = 2
-OVERWRITE = 3
+COMPUTE = 4
+SKIP = 5
+USE_CACHE = 6
+OVERWRITE = 7
+
+
+def status(val: int) -> str:
+    if val == COMPUTE:
+        return "COMPUTE"
+    elif val == SKIP:
+        return "SKIP"
+    elif val == IN_CACHE:
+        return "IN_CACHE"
+    elif val == NOT_IN_CACHE:
+        return "NOT_IN_CACHE"
+    elif val == NO_CACHER:
+        return "NO_CACHER"
+    elif val == USE_CACHE:
+        return "USE_CACHE"
+    elif val == OVERWRITE:
+        return "OVERWRITE"
 
 
 def get_manager():

@@ -58,6 +58,9 @@ def main():
     run_parser.add_argument("--overwrite-all")
     run_parser.add_argument("--debug", action="store_true", dest="debug")
 
+    map_parser = subparsers.add_parser("map", help="Map out what needs to execute and what doesn't.")
+    map_parser.add_argument("pipeline")
+
     diag_parser = subparsers.add_parser("diagram", help="Render pipeline diagram")
     diag_parser.add_argument("pipeline")
 
@@ -93,24 +96,6 @@ def main():
             pipeline = resolved["pipeline_class"]
             base_class = True
 
-
-
-
-        #
-        # search_parts = manager.divide_reference_parts(parsed.experiment)
-        # print(search_parts)
-        #
-        # exp_classes_by_name = {}
-        # for exp_class in manager.experiments:
-        #     exp_classes_by_name[exp_class.__name__] = exp_class
-        #
-        # if search_parts["experiment"] in manager.experiment_ref_names:
-        #     experiment = manager.experiment_ref_names[search_parts["experiment"]]
-        #     base_class = False
-        # elif search_parts["experiment"] in exp_classes_by_name:
-        #     experiment = exp_classes_by_name[search_parts["experiment"]]
-        #     base_class = True
-
         if pipeline is not None:
             name = pipeline.name if not base_class else pipeline.__name__
             pipeline_parameter_group = run_parser.add_argument_group(
@@ -126,8 +111,6 @@ def main():
                     print("FOUND!")
                     return resolved["pipeline_instance"]
 
-                # if string in manager.pipeline_ref_names:
-                #     return manager.pipeline_ref_names[string]
                 return string
 
             # add arguments for the pipeline to the parser
@@ -265,6 +248,52 @@ def main():
             # print(dot.pipe(format="kitty"))
             import subprocess
             subprocess.run(["/usr/bin/kitty", "icat"], input=dot.pipe(format="kitty"))
+
+    elif parsed.command == "map":
+        manager = cf.get_manager()
+        manager.load_default_pipeline_imports()
+
+        search = parsed.pipeline
+        resolved = manager.resolve_reference(search)
+        print(resolved)
+
+        pipeline = None
+        if "pipeline_instance" in resolved:
+            pipeline = resolved["pipeline_instance"]
+
+        if pipeline is not None:
+            if "artifact" not in resolved and "artifact_list" not in resolved:
+                mapped = pipeline.map()
+            elif "artifact" in resolved:
+                mapped = resolved["artifact"].map()
+            elif "artifact_list" in resolved:
+                mapped = None
+                for artifact in resolved["artifact_list"]:
+                    mapped = artifact.map(mapped)
+
+        artifact_counts = {"to_compute": 0, "in_cache": 0, "skipped": 0}
+        stage_counts = {"to_compute": 0, "skipped": 0}
+        print("ARTIFACTS:")
+        for artifact in mapped["artifacts"]:
+            print(artifact.contextualized_name, cf.status(artifact.map_status), cf.status(artifact.cache_status))
+            if artifact.map_status in [cf.COMPUTE, cf.OVERWRITE]:
+                artifact_counts["to_compute"] += 1
+            elif artifact.map_status == cf.USE_CACHE:
+                artifact_counts["in_cache"] += 1
+            elif artifact.map_status == cf.SKIP:
+                artifact_counts["skipped"] += 1
+
+        print("STAGES:")
+        for stage in mapped["stages"]:
+            print(f"{stage.context.name}.{stage.name}", cf.status(stage.map_status))
+            if stage.map_status == cf.COMPUTE:
+                stage_counts["to_compute"] += 1
+            elif stage.map_status == cf.SKIP:
+                stage_counts["skipped"] += 1
+
+        print("-----")
+        print(artifact_counts)
+        print(stage_counts)
 
     elif parsed.command == "ls":
         manager = cf.get_manager()

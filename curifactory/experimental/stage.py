@@ -1,15 +1,15 @@
 import copy
-import os
 import hashlib
 import inspect
+import os
 import threading
+import time
 from dataclasses import dataclass, field
 from functools import wraps
 from typing import Any, Callable, Union
 from uuid import UUID
 
 import psutil
-import time
 
 # NOTE: resource only exists on unix systems
 if os.name != "nt":
@@ -490,63 +490,78 @@ class Stage:
         # TODO
         pass
 
-    def map(self, mapped: dict = None, need: bool = True):
+    def reset_map(self):
+        self.map_status = None
+        if isinstance(self.outputs, (list, cf.artifact.ArtifactList)):
+            for artifact in self.outputs:
+                artifact.map_status = None
+        else:
+            self.outputs.map_status = None
+
+        for artifact in self.artifacts:
+            artifact.reset_map()
+
+        for dependency in self.dependencies:
+            dependency.reset_map()
+
+    def get_output_list(self):
+        """Make it easier to act on outputs without always having to first chekc if it's a list or not."""
+        # if isinstance(self.outputs, (list, cf.artifact.ArtifactList)):
+        if isinstance(self.outputs, list):
+            return self.outputs
+        return [self.outputs]
+
+    def map(self, mapped: dict = None, need: bool = True, source=None):
         if mapped is None:
-            mapped = {
-                "artifacts": [],
-                "stages": []
-            }
+            self.reset_map()
+            mapped = {"artifacts": [], "stages": [], "map": {}}
+        if source is not None:
+            map_name = f"{source.name} -> {self.name}"
+        else:
+            map_name = f"-> {self.name}"
+        if self.name not in mapped["map"]:
+            mapped["map"][self.name] = {}
+        if map_name not in mapped["map"][self.name]:
+            mapped["map"][self.name][map_name] = []
 
         if need:
             self.map_status = cf.COMPUTE
-            # for each output, add to artifacts if not existent and change status to
-            # compute (unless already there and set to overwrite)
-            if isinstance(self.outputs, (list, cf.artifact.ArtifactList)):
-                for artifact in self.outputs:
-                    if artifact not in mapped["artifacts"]:
-                        # wasn't there, so it's coming from this and must be
-                        # set to compute
-                        mapped["artifacts"].insert(0, artifact)
+            mapped["map"][self.name][map_name].append(cf.COMPUTE)
+
+            for artifact in self.get_output_list():
+                if artifact != source:
+                    mapped = artifact.map(mapped, need=True, source=self)
+                    # override status
+                    if artifact.map_status != cf.OVERWRITE:
                         artifact.map_status = cf.COMPUTE
-                    else:
-                        # it was already there, only change status if it's
-                        # cache or no_compute
-                        if artifact.map_status in [cf.NO_COMPUTE, cf.CACHE]:
-                            artifact.map_status = cf.COMPUTE
-            else:
-                if self.outputs not in mapped["artifacts"]:
-                    mapped["artifacts"].insert(0, self.outputs)
-                    self.outputs.map_status = cf.COMPUTE
-                else:
-                    if self.outputs.map_status in [cf.NO_COMPUTE, cf.CACHE]:
-                        self.outputs.map_status = cf.COMPUTE
+                        mapped["map"][artifact.name][f"{self.name} -> {artifact.name}"][
+                            -1
+                        ] = cf.COMPUTE
 
         if self not in mapped["stages"]:
             mapped["stages"].insert(0, self)
 
             if not need:
-                self.map_status = cf.NO_COMPUTE
-                # for each output, add to artifacts if not existant and any _added
-                # artifacts_ set to no_compute
-                if isinstance(self.outputs, (list, cf.artifact.ArtifactList)):
-                    for artifact in self.outputs:
-                        if artifact not in mapped["artifacts"]:
-                            mapped["artifacts"].insert(0, artifact)
-                            artifact.map_status = cf.NO_COMPUTE
-                else:
-                    if self.outputs not in mapped["artifacts"]:
-                        mapped["artifacts"].insert(0, self.outputs)
-                        self.outputs.map_status = cf.NO_COMPUTE
+                self.map_status = cf.SKIP
+                mapped["map"][self.name][map_name].append(cf.SKIP)
+                # this is only in here in the insertion part because needing
+                # compute takes precedence over not (if we'd already determined
+                # elsewhere this needs to run, we don't override that)
+                for artifact in self.get_output_list():
+                    if artifact != source:
+                        mapped = artifact.map(mapped, need=False, source=self)
         else:
-            # TODO: already there but we need again so re-order/
-            # move to front?
-            mapped["stages"].insert(0, mapped["stages"].pop(mapped["stages"].index(self)))
+            # we want stages list to correspond loosely to execution order, so
+            # if we need a stage earlier on, make sure to move it back to front.
+            mapped["stages"].insert(
+                0, mapped["stages"].pop(mapped["stages"].index(self))
+            )
 
         for artifact in self.artifacts:
-            mapped = artifact.map(mapped, need)
+            mapped = artifact.map(mapped, need, source=self)
 
         for dependency in self.dependencies:
-            mapped = dependency.map(mapped, need)
+            mapped = dependency.map(mapped, need, source=self)
 
         return mapped
 
