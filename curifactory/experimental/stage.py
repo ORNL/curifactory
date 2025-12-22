@@ -514,7 +514,11 @@ class Stage:
     def map(self, mapped: dict = None, need: bool = True, source=None):
         if mapped is None:
             self.reset_map()
-            mapped = {"artifacts": [], "stages": [], "map": {}}
+            mapped = {
+                "artifacts": [],
+                "stages": [],
+                "map": {},
+            }
         if source is not None:
             map_name = f"{source.name} -> {self.name}"
         else:

@@ -11,6 +11,7 @@ import sys
 from dataclasses import MISSING, fields
 
 import argcomplete
+from rich.console import Console
 
 import curifactory.experimental as cf
 
@@ -255,7 +256,6 @@ def main():
 
         search = parsed.pipeline
         resolved = manager.resolve_reference(search)
-        print(resolved)
 
         pipeline = None
         if "pipeline_instance" in resolved:
@@ -271,31 +271,73 @@ def main():
                 for artifact in resolved["artifact_list"]:
                     mapped = artifact.map(mapped)
 
-        artifact_counts = {"to_compute": 0, "in_cache": 0, "skipped": 0}
+        artifact_counts = {"to_compute": 0, "use_cache": 0, "skipped": 0, "found_in_cache": 0}
         stage_counts = {"to_compute": 0, "skipped": 0}
-        print("ARTIFACTS:")
         for artifact in mapped["artifacts"]:
-            print(artifact.contextualized_name, cf.status(artifact.map_status), cf.status(artifact.cache_status))
             if artifact.map_status in [cf.COMPUTE, cf.OVERWRITE]:
                 artifact_counts["to_compute"] += 1
             elif artifact.map_status == cf.USE_CACHE:
-                artifact_counts["in_cache"] += 1
+                artifact_counts["use_cache"] += 1
             elif artifact.map_status == cf.SKIP:
                 artifact_counts["skipped"] += 1
+            if artifact.cache_status == cf.IN_CACHE:
+                artifact_counts["found_in_cache"] += 1
 
-        print("STAGES:")
         for stage in mapped["stages"]:
-            print(f"{stage.context.name}.{stage.name}", cf.status(stage.map_status))
             if stage.map_status == cf.COMPUTE:
                 stage_counts["to_compute"] += 1
             elif stage.map_status == cf.SKIP:
                 stage_counts["skipped"] += 1
 
-        print("-----")
-        print(artifact_counts)
-        print(stage_counts)
+        console = Console()
+        map_str = ""
+        # TODO: this is unfortunately kind of slow.
+        for stage in mapped["stages"]:
+            stage_color = ""
+            stage_str = f"---- Stage {stage.context.name}.{stage.name} ".ljust(55)
+            stage_str += cf.status(stage.map_status).ljust(10)
+            if stage.map_status == cf.SKIP:
+                stage_color = "[grey35]"
+            else:
+                stage_color = "[bright_yellow]"
 
-    elif parsed.command == "ls":
+            map_str += f"{stage_color}{stage_str}[/]\n"
+
+            for artifact in mapped["artifacts"]:
+                if artifact.compute == stage:
+                    if artifact.map_status == cf.USE_CACHE:
+                        color = "magenta"
+                    elif artifact.map_status == cf.SKIP:
+                        color = "grey35"
+                    elif artifact.map_status == cf.OVERWRITE:
+                        color = "bright_red"
+                    elif artifact.map_status == cf.COMPUTE:
+                        color = "bright_yellow"
+
+                    if artifact.cache_status == cf.IN_CACHE:
+                        cache_str = "[bright_green bold](IN CACHE)[/]"
+                    elif artifact.cache_status == cf.NOT_IN_CACHE:
+                        cache_str = "[red](not in cache)[/]"
+                    elif artifact.cache_status == cf.NO_CACHER:
+                        cache_str = "[grey35](no cacher)[/]"
+
+                    artifact_str = f"     {artifact.contextualized_name}".ljust(55)
+                    artifact_str += f"{cf.status(artifact.map_status)}".ljust(10)
+                    # artifact_str += cache_str
+
+                    map_str += f"[{color}]{artifact_str}[/{color}]{cache_str}\n"
+
+                    # console.print(f"\t[{color}]{artifact.contextualized_name} ---- {cf.status(artifact.map_status)}[/{color}]\t{cache_str}")
+            map_str += "\n"
+
+        artifact_total = artifact_counts["to_compute"] + artifact_counts["use_cache"] + artifact_counts["skipped"]
+        stage_total = stage_counts["to_compute"] + stage_counts["skipped"]
+        map_str += f"Artifacts to compute: [bold]{artifact_counts["to_compute"]}[/]/{artifact_total} ({artifact_counts["found_in_cache"]} in cache)\n"
+        map_str += f"Stages to compute: [bold]{stage_counts["to_compute"]}[/]/{stage_total}"
+
+        console.print(map_str)
+
+    elif parsed.oommand == "ls":
         manager = cf.get_manager()
 
         if not parsed.list_runs:
