@@ -683,7 +683,7 @@ class Manager:
             rich_tracebacks=True,
             tracebacks_show_locals=True,
             log_time_format="%X",
-            keywords=["-----", "=====", "....."],
+            keywords=["-----", "=====", ".....", "#####"],
         )
 
         console_handler.setFormatter(rich_log_formatter)

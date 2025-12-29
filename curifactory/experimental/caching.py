@@ -336,9 +336,7 @@ class DBTableCacher(Cacheable):
             return self.artifact.name
         return self.resolve_template_string(self.table_name)
 
-    # TODO: probably need better upsert logic
-    # TODO: should use db in a context manager if not use_db_arg?
-    def save_obj(self, relation_object: duckdb.DuckDBPyRelation):
+    def upsert_relation(self, relation_object: duckdb.DuckDBPyRelation):
         db = self.get_db()
         try:
             db.sql(
@@ -353,6 +351,12 @@ class DBTableCacher(Cacheable):
             cf.get_manager().logger.debug(
                 f"Inserting relation to pre-existing table {self.get_table_name()}"
             )
+
+    # TODO: probably need better upsert logic
+    # TODO: should use db in a context manager if not use_db_arg?
+    def save_obj(self, relation_object: duckdb.DuckDBPyRelation):
+        db = self.get_db()
+        self.upsert_relation(relation_object)
         if self.artifact is not None:
             self.artifact.obj = db.sql(f"SELECT * FROM {self.get_table_name()}")
 
@@ -365,6 +369,61 @@ class DBTableCacher(Cacheable):
             return False
         # TODO: should we also check for the table?
         return True
+
+
+# TODO: terrible name, figure out better one (maybe call this one dbtablecacher
+# and the base NonTrackingDBTableCacher)
+class TrackingDBTableCacher(DBTableCacher):
+    def __init__(
+        self,
+        path_override: str = None,
+        use_db_arg: int | str = -1,
+        table_name: str = None,
+        db: duckdb.DuckDBPyConnection = None,
+        id_cols: dict[str, str] = None,  # have to include type unfortunately
+    ):
+        super().__init__(path_override, use_db_arg, table_name, db)
+        self.id_cols = id_cols
+        if id_cols is None:
+            raise Exception("TrackingDBTableCacher must be provided with a set of columns to uniquely ID each row.")
+
+    def save_obj(self, relation_object: duckdb.DuckDBPyRelation):
+        db = self.get_db()
+        db.sql(f"CREATE TABLE IF NOT EXISTS _cftrack_{self.get_table_name()} ({",".join([id_col + " " + self.id_cols[id_col] for id_col in self.id_cols])}, metadata_id UUID)")
+        # db.sql("CREATE TABLE IF NOT EXISTS _cf_metadata (id UUID, table_name VARCHAR)")
+
+        # TODO: clear previous if exists
+
+        # insert the relation into normal table
+        self.upsert_relation(relation_object)
+
+        # add a metadata row
+        stage_id = self.artifact.compute.db_id
+        # db.execute("INSERT INTO _cf_metadata VALUES (?, ?)", [stage_id, self.get_table_name()])
+
+        # Add a row for each row in relation_object
+        tracking_rows = db.sql(f"SELECT {",".join([id_col for id_col in self.id_cols])}, '{stage_id}'::UUID as metadata_id from relation_object")
+        db.sql(f"INSERT INTO _cftrack_{self.get_table_name()} (SELECT * FROM tracking_rows)")
+
+    def condition_equals(self, prefix):
+        condition = " AND ".join([f"{self.get_table_name()}.{id_col} = {prefix}{self.get_table_name()}.{id_col}" for id_col in self.id_cols])
+        return condition
+
+    def join_condition(self):
+        condition = self.condition_equals("_cftrack_{self.get_table_name()}")
+        # condition = " AND ".join([f"{self.get_table_name()}.{id_col} = _cftrack_{self.get_table_name()}.{id_col}" for id_col in self.id_cols])
+        condition += f" WHERE _cftrack_{self.get_table_name()}.metadata_id = '{self.artifact.compute.db_id}'"
+        return condition
+
+    # TODO: clear function
+    def clear_obj(self):
+        db = self.get_db()
+        db.sql(f"DELETE FROM {self.get_table_name()} USING ({self.get_table_name()} INNER JOIN _cftrack_{self.get_table_name()} ON {self.join_condition()}) AS delete_ref WHERE {self.condition_equals("delete_ref")}")
+        db.sql(f"DELETE FROM _cftrack_{self.get_table_name()} WHERE metadata_id = '{self.artifact.compute.db_id}'")
+
+    def load_obj(self):
+        db = self.get_db()
+        return db.sql(f"SELECT {self.get_table_name()}.* FROM {self.get_table_name()} INNER JOIN _cftrack_{self.get_table_name()} ON {self.join_condition()}")
 
 
 class MetadataOnlyCacher(Cacheable):

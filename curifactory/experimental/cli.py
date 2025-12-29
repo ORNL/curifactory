@@ -9,9 +9,9 @@ import logging
 import os
 import sys
 from dataclasses import MISSING, fields
-from rich.console import Console
 
 import argcomplete
+from rich.console import Console
 
 import curifactory.experimental as cf
 
@@ -425,7 +425,7 @@ def main():
 
         console.print(map_str)
 
-    elif parsed.oommand == "ls":
+    elif parsed.command == "ls":
         manager = cf.get_manager()
 
         if not parsed.list_runs:

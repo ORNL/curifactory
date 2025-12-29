@@ -176,6 +176,12 @@ class Stage:
     def __exit__(self, exc_type, exc_value, traceback):
         STAGE_CONTEXT.stage_dependencies.remove(self)
 
+    @property
+    def contextualized_name(self):
+        if self.context is not None:
+            return f"{self.context.name}.{self.name}"
+        return self.name
+
     # def _assign_dependents(self):
     #     """Go through args and kwargs and for any artifacts, add this stage
     #     to their dependents."""
@@ -623,7 +629,7 @@ class Stage:
         for i, arg in enumerate(self.args):
             passed_args.append(self.resolve_arg(record_resolution, arg_index=i))
         for kwarg in self.kwargs:
-            passed_kwargs.append(self.resolve_arg(record_resolution, arg_name=kwarg))
+            passed_kwargs[kwarg] = self.resolve_arg(record_resolution, arg_name=kwarg)
 
         # compute any inputs
         # for arg in self.args:
@@ -692,11 +698,13 @@ class Stage:
             manager.record_stage(self)
 
             manager.logger.info(
-                f"..... Beginning resolution for stage {self.name} ....."
+                f"..... Beginning resolution for stage {self.contextualized_name} ....."
             )
             passed_args, passed_kwargs = self.resolve_args(record_resolution=True)
 
-            manager.logger.info(f"----- Executing stage {self.name} -----")
+            manager.logger.info(
+                f"===== Executing stage {self.contextualized_name} ====="
+            )
             manager.record_stage_start(self)
             manager.current_stage = self
 
@@ -775,7 +783,9 @@ class Stage:
                 )
 
             manager.record_stage_completion(self)
-            manager.logger.info(f"===== Completed stage {self.name} =====")
+            manager.logger.info(
+                f"##### Completed stage {self.contextualized_name} #####"
+            )
 
             if implicit_run:
                 self.context._end_implicit_run()
@@ -783,7 +793,7 @@ class Stage:
             self.computed = True
             return returns
         except Exception as e:
-            e.add_note(f"Was trying to run stage {self.name}")
+            e.add_note(f"Was trying to run stage {self.contextualized_name}")
             raise
 
     def __repr__(self):
