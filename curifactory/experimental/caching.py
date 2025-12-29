@@ -392,7 +392,7 @@ class TrackingDBTableCacher(DBTableCacher):
         db.sql(f"CREATE TABLE IF NOT EXISTS _cftrack_{self.get_table_name()} ({",".join([id_col + " " + self.id_cols[id_col] for id_col in self.id_cols])}, metadata_id UUID)")
         # db.sql("CREATE TABLE IF NOT EXISTS _cf_metadata (id UUID, table_name VARCHAR)")
 
-        # TODO: clear previous if exists
+        self.clear_obj()
 
         # insert the relation into normal table
         self.upsert_relation(relation_object)
@@ -410,7 +410,7 @@ class TrackingDBTableCacher(DBTableCacher):
         return condition
 
     def join_condition(self):
-        condition = self.condition_equals("_cftrack_{self.get_table_name()}")
+        condition = self.condition_equals(f"_cftrack_")
         # condition = " AND ".join([f"{self.get_table_name()}.{id_col} = _cftrack_{self.get_table_name()}.{id_col}" for id_col in self.id_cols])
         condition += f" WHERE _cftrack_{self.get_table_name()}.metadata_id = '{self.artifact.compute.db_id}'"
         return condition
@@ -418,12 +418,23 @@ class TrackingDBTableCacher(DBTableCacher):
     # TODO: clear function
     def clear_obj(self):
         db = self.get_db()
-        db.sql(f"DELETE FROM {self.get_table_name()} USING ({self.get_table_name()} INNER JOIN _cftrack_{self.get_table_name()} ON {self.join_condition()}) AS delete_ref WHERE {self.condition_equals("delete_ref")}")
+        try:
+            deletion_query = f"DELETE FROM {self.get_table_name()} USING ({self.get_table_name()} INNER JOIN _cftrack_{self.get_table_name()} ON {self.join_condition()}) AS delete_ref WHERE {self.condition_equals('delete_ref')}"
+            db.sql(deletion_query)
+        except Exception as e:
+            e.add_note(f"Was running query: {deletion_query}")
+            raise
+
         db.sql(f"DELETE FROM _cftrack_{self.get_table_name()} WHERE metadata_id = '{self.artifact.compute.db_id}'")
 
     def load_obj(self):
         db = self.get_db()
-        return db.sql(f"SELECT {self.get_table_name()}.* FROM {self.get_table_name()} INNER JOIN _cftrack_{self.get_table_name()} ON {self.join_condition()}")
+        selection_query = f"SELECT {self.get_table_name()}.* FROM {self.get_table_name()} INNER JOIN _cftrack_{self.get_table_name()} ON {self.join_condition()}"
+        try:
+            return db.sql(selection_query)
+        except Exception as e:
+            e.add_note(f"Was running selection query: {selection_query}")
+            raise
 
 
 class MetadataOnlyCacher(Cacheable):
