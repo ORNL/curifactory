@@ -4,6 +4,7 @@ import inspect
 from dataclasses import dataclass, field, make_dataclass
 from typing import Any
 from uuid import UUID
+from jinja2 import Template
 
 import curifactory.experimental as cf
 
@@ -96,6 +97,28 @@ class Pipeline:
                 params[parameter.name] = getattr(self, parameter.name)
         return params
 
+    @property
+    def reportables(self):
+        reportables_list = []
+        handled_stages = []
+        for artifact in self.artifacts:
+            if artifact.compute not in handled_stages and len(artifact.compute.reportables.obj) > 0:
+                reportables_list.extend(artifact.compute.reportables.obj)
+                handled_stages.append(artifact.compute)
+
+        return reportables_list
+
+    def report(self, template="default.html") -> str:
+        manager = cf.get_manager()
+        # TODO: prob have a property for this or something in mnaager rather
+        # than asking it to load _here_
+        if manager.jinja_environment is None:
+            manager.load_jinja_env()
+
+        template = manager.jinja_environment.get_template(template)
+        output = template.render(reportables=self.reportables, pipeline_name=self.name, reference_name=self.reference)
+        return output
+
     def define(self) -> list["cf.artifact.Artifact"]:
         pass
 
@@ -174,7 +197,14 @@ class Pipeline:
 
         self.log_verification_checks()
 
-        if self.outputs.cacher is not None and self.outputs.cacher.check(silent=True):
+        # check for overwrites
+        overwrites_found = False
+        for artifact in self.artifacts:
+            if artifact.overwrite:
+                overwrites_found = True
+                break
+
+        if self.outputs.cacher is not None and self.outputs.cacher.check(silent=True) and not overwrites_found:
             manager.currently_recording = False
             manager.logger.info("Pipeline outputs already found, re-loading...")
 

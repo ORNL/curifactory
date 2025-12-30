@@ -141,6 +141,7 @@ class Cacheable:
             stage_id=self.artifact.compute.db_id,
             # stage_params=self.artifact.compute.db_id,
         )
+        self.metadata = metadata
         with open(metadata_path, "w") as outfile:
             json.dump(metadata, outfile, indent=2, default=str)
 
@@ -397,35 +398,46 @@ class TrackingDBTableCacher(DBTableCacher):
         # insert the relation into normal table
         self.upsert_relation(relation_object)
 
+        # ensure primary keys
+        if self.extra_metadata["result"] == "created":
+            db.sql(f"ALTER TABLE {self.get_table_name()} ADD PRIMARY KEY ({','.join([id_col for id_col in self.id_cols])})")
+
         # add a metadata row
         stage_id = self.artifact.compute.db_id
         # db.execute("INSERT INTO _cf_metadata VALUES (?, ?)", [stage_id, self.get_table_name()])
 
         # Add a row for each row in relation_object
-        tracking_rows = db.sql(f"SELECT {",".join([id_col for id_col in self.id_cols])}, '{stage_id}'::UUID as metadata_id from relation_object")
+        tracking_rows = db.sql(f"SELECT {",".join([id_col for id_col in self.id_cols])}, '{stage_id}' as metadata_id from relation_object")
         db.sql(f"INSERT INTO _cftrack_{self.get_table_name()} (SELECT * FROM tracking_rows)")
 
-    def condition_equals(self, prefix):
-        condition = " AND ".join([f"{self.get_table_name()}.{id_col} = {prefix}{self.get_table_name()}.{id_col}" for id_col in self.id_cols])
+    def equals_condition(self, prefix):
+        condition = " AND ".join([f"{self.get_table_name()}.{id_col} = {prefix}.{id_col}" for id_col in self.id_cols])
         return condition
 
     def join_condition(self):
-        condition = self.condition_equals(f"_cftrack_")
+        metadata = self.load_metadata()
+        stage_id = metadata["stage_id"]
+        condition = self.equals_condition(f"_cftrack_{self.get_table_name()}")
         # condition = " AND ".join([f"{self.get_table_name()}.{id_col} = _cftrack_{self.get_table_name()}.{id_col}" for id_col in self.id_cols])
-        condition += f" WHERE _cftrack_{self.get_table_name()}.metadata_id = '{self.artifact.compute.db_id}'"
+        condition += f" AND _cftrack_{self.get_table_name()}.metadata_id = '{stage_id}'"
         return condition
 
     # TODO: clear function
     def clear_obj(self):
+        metadata = self.load_metadata()
+        if len(metadata) == 0:
+            return
+        stage_id = metadata["stage_id"]
+
         db = self.get_db()
         try:
-            deletion_query = f"DELETE FROM {self.get_table_name()} USING ({self.get_table_name()} INNER JOIN _cftrack_{self.get_table_name()} ON {self.join_condition()}) AS delete_ref WHERE {self.condition_equals('delete_ref')}"
+            deletion_query = f"DELETE FROM {self.get_table_name()} USING ({self.get_table_name()} INNER JOIN _cftrack_{self.get_table_name()} ON {self.join_condition()}) AS delete_ref WHERE {self.equals_condition('delete_ref')}"
             db.sql(deletion_query)
         except Exception as e:
             e.add_note(f"Was running query: {deletion_query}")
             raise
 
-        db.sql(f"DELETE FROM _cftrack_{self.get_table_name()} WHERE metadata_id = '{self.artifact.compute.db_id}'")
+        db.sql(f"DELETE FROM _cftrack_{self.get_table_name()} WHERE metadata_id = '{stage_id}'")
 
     def load_obj(self):
         db = self.get_db()
@@ -623,6 +635,29 @@ class FileReferenceCacher(Cacheable):
         with open(path, "w") as outfile:
             json.dump(files, outfile, indent=4)
         return path
+
+
+class ReportablesCacher(FileReferenceCacher):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.extension = None
+
+    def save_obj(self, reportables_list: list["cf.reporting.Reportable"]):
+        paths = []
+        for i, reportable in enumerate(reportables_list):
+            name = reportable.name if reportable.name is not None else str(i)
+            path = self.get_path(f"_{name}.pkl")
+            PickleCacher(path).save_obj(reportable)
+            paths.append(path)
+        super().save_obj(paths)
+
+    def load_obj(self) -> list["cf.reporting.Reportable"]:
+        reportables = []
+        paths = super().load_obj()
+        for path in paths:
+            reportables.append(PickleCacher(path).load_obj())
+            reportables[-1].artifact = self.artifact
+        return reportables
 
 
 # class DBTableCacher(Cacheable):

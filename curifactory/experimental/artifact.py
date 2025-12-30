@@ -836,3 +836,10 @@ class ArtifactList(Artifact):  # , list):
 # @stage.stage([Artifact("combined")])
 def _aggregate_artifact_list(*input_artifacts):
     return [*input_artifacts]
+
+
+class StageReportables(Artifact):
+    def __init__(self):
+        super().__init__(name="reportables", cacher=cf.caching.ReportablesCacher())
+        # apparently a cacher used in the init doesn't trigger the set_attr??
+        self.cacher.artifact = self

@@ -39,6 +39,7 @@ def main():
     ls_parser = subparsers.add_parser("ls", help="List pipelines")
     ls_parser.add_argument("thing_to_list", nargs="?")
     ls_parser.add_argument("-r", "--runs", dest="list_runs", action="store_true", help="List previous pipeline run names in database")
+    ls_parser.add_argument("--paths", dest="list_paths", action="store_true", help="List artifact paths")
 
     run_parser = subparsers.add_parser("run", help="Run an pipeline", add_help=False)
     run_parser.add_argument("pipeline").completer = completer_pipeline
@@ -56,7 +57,7 @@ def main():
         dest="overwrite",
         help="Overwrite specific artifacts during run.",
     )
-    run_parser.add_argument("--overwrite-all")
+    run_parser.add_argument("--overwrite-all", dest="overwrite_all", action="store_true")
     run_parser.add_argument(
         "-r",
         "--replace",
@@ -64,7 +65,7 @@ def main():
         dest="replace",
         help="Replace specific artifacts with other artifacts.",
     )
-    run_parser.add_argument("--debug", action="store_true", dest="debug")
+    run_parser.add_argument("--debug", "--verbose", action="store_true", dest="debug")
 
     map_parser = subparsers.add_parser("map", help="Map out what needs to execute and what doesn't.")
     map_parser.add_argument("pipeline")
@@ -75,6 +76,7 @@ def main():
         dest="overwrite",
         help="Overwrite specific artifacts during run.",
     )
+    map_parser.add_argument("--overwrite-all", dest="overwrite_all", action="store_true")
     map_parser.add_argument(
         "-r",
         "--replace",
@@ -260,6 +262,10 @@ def main():
                             for artifact in art_resolved["artifact_list"]:
                                 manager.logger.debug(f"Setting overwrite on art_{artifact.name}")
                                 artifact.ovewrite = True
+            if parsed.overwrite_all:
+                manager.logger.info("Setting overwrite on all artifacts")
+                for artifact in pipeline.artifacts:
+                    artifact.overwrite = True
 
             if "artifact" not in resolved and "artifact_list" not in resolved:
                 print(pipeline)
@@ -350,6 +356,11 @@ def main():
                                 manager.logger.debug(f"Setting overwrite on art_{artifact.name}")
                                 artifact.ovewrite = True
 
+            if parsed.overwrite_all:
+                manager.logger.debug("Setting overwrite on all artifacts")
+                for artifact in pipeline.artifacts:
+                    artifact.overwrite = True
+
             if "artifact" not in resolved and "artifact_list" not in resolved:
                 mapped = pipeline.map()
             elif "artifact" in resolved:
@@ -439,6 +450,13 @@ def main():
             resolved = manager.resolve_reference(search, types=["runs"])
             for entry in resolved["reference_names"]:
                 print(entry)
+            exit()
+
+        if parsed.list_paths:
+            resolved = manager.resolve_reference(search)
+            for artifact in resolved["artifact_list"]:
+                if artifact.cacher is not None:
+                    print(artifact.cacher.load_paths())
             exit()
 
         resolved = manager.resolve_reference(search)

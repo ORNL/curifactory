@@ -1,4 +1,12 @@
-from curifactory.experimental import artifact, caching, manager, pipeline, stage, utils
+from curifactory.experimental import (
+    artifact,
+    caching,
+    manager,
+    pipeline,
+    stage,
+    utils,
+    reporting,
+)
 
 # cache statuses
 IN_CACHE = 1
@@ -27,6 +35,13 @@ def status(val: int) -> str:
         return "USE_CACHE"
     elif val == OVERWRITE:
         return "OVERWRITE"
+
+
+def report(reportable: reporting.Reportable):
+    current_manager = get_manager()
+    # TODO: maybe adding a reportable is a function on the stage?
+    current_manager.current_stage.reportables_list.append(reportable)
+    # reportable.stage = current_manager.current_stage
 
 
 def get_manager():

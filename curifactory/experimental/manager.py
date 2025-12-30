@@ -15,6 +15,7 @@ import duckdb
 import pandas as pd
 from rich import get_console, reconfigure
 from rich.logging import RichHandler
+from jinja2 import Template, Environment, ChoiceLoader, DictLoader
 
 import curifactory.experimental as cf
 
@@ -69,6 +70,46 @@ class Manager:
             pd.DataFrame: lambda obj: f"(pandas) {len(obj)} rows",
         }
 
+        self.jinja_templates = {
+            "default.html": """
+            <html>
+                <head>
+                    <style>
+                    {% include "style.css" %}
+                    </style>
+                </head>
+                <body>
+                    <h1>{{ reference_name }}</h1>
+                    <h3>{{ pipeline_name }}</h3>
+
+                    <h2>Reportables</h2>
+                    {% for reportable in reportables %}
+                        {% include "reportable.html" %}
+                    {% endfor %}
+                </body>
+            </html>
+            """,
+
+            "style.css": """
+                .reportable {
+                    border: 1px solid gray;
+                    display: inline-block;
+                    vertical-align: top;
+                    padding: 5px;
+                    padding-top: 0px;
+                    padding-bottom: 0px;
+                }
+            """,
+
+            "reportable.html": """
+                <div class='reportable'>
+                    <a name='{{ reportable.name }}'></a>
+                    <h3>{{ reportable.name }}</h3>
+                    {{ reportable.html }}
+                </div> <!-- /reportable -->
+            """,
+        }
+
         self.default_pipeline_modules: list[str] = default_pipeline_modules
 
         self.additional_configuration: dict[str, Any] = additional_configuration
@@ -85,12 +126,15 @@ class Manager:
         self._sys_paths_added: bool = False
         self.project_root: str = None
 
+        self.jinja_environment = None
+
         self.ensure_dir_paths()
         self.ensure_store_tables()
         self.ensure_sys_path()
 
         self._default_imports = False
         # self.load_default_pipeline_imports()
+
 
     @property
     def config(self) -> dict[str, Any]:
@@ -100,6 +144,17 @@ class Manager:
             "default_pipeline_modules": self.default_pipeline_modules,
             **self.additional_configuration,
         }
+
+    def load_jinja_env(self):
+        self.jinja_environment = Environment(
+            loader=ChoiceLoader(
+                [
+                    DictLoader(self.jinja_templates)
+                    # FileSystemLoader ...
+                ]
+            ),
+            autoescape=False
+        )
 
     def resolve_reference(self, ref_str: str, types: list[str] = None):
         # possible types:
@@ -542,10 +597,14 @@ class Manager:
         if not self.currently_recording:
             return
 
+        self.logger.debug(f"Recording stage {stage.contextualized_name}")
+
         stage_id = uuid4()
         func_name = stage.name
         hash, hash_debug = stage.compute_hash()
         stage.db_id = stage_id
+
+        self.logger.debug(f"(id: {stage.db_id})")
 
         run_id = stage.context.db_id if stage.context is not None else None
 

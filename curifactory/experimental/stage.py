@@ -150,6 +150,10 @@ class Stage:
 
         self.map_status: int = None
 
+        self.reportables_list: list[cf.reporting.Reportable] = []
+        self._reportables: cf.artifact.StageReportables = None
+        self._reportables_ready: bool = False
+
     def _find_context(self) -> "cf.pipeline.Pipeline":
         if len(cf.get_manager()._pipeline_defining_stack) > 0:
             # self.context = cf.get_manager()._pipeline_defining_stack[-1]
@@ -182,6 +186,19 @@ class Stage:
             return f"{self.context.name}.{self.name}"
         return self.name
 
+    @property
+    def reportables(self):
+        if self._reportables is None:
+            self._reportables = cf.artifact.StageReportables()
+            self._reportables.compute = self
+            self._reportables.obj = self.reportables_list
+        if not self._reportables_ready:
+            if self._reportables.cacher.check(silent=True):
+                self._reportables.obj = self._reportables.cacher.load()
+                self.reportables_list = self._reportables.obj
+                self._reportables_ready = True
+        return self._reportables
+
     # def _assign_dependents(self):
     #     """Go through args and kwargs and for any artifacts, add this stage
     #     to their dependents."""
@@ -201,6 +218,7 @@ class Stage:
 
     def _inner_copy(
         self,
+        # TODO: types below are wrong
         building_stages: dict["cf.stage.Stage", "cf.stage.Stage"] = None,
         building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
     ) -> tuple["Stage", bool]:
@@ -227,6 +245,10 @@ class Stage:
             else:
                 copied_kwargs[kw] = copy.deepcopy(arg)
 
+        # TODO: shouldn't outputs be copied as well rather than just inputs?
+        # Otherwise risk problem of "unused" outputs not getting copied
+        # correctly
+
         new_stage = Stage(
             self.function,
             copied_args,
@@ -236,6 +258,12 @@ class Stage:
             self.pass_self,
         )
         building_stages[id(self)] = new_stage
+
+        # copy reportables artifact if relevant
+        if len(self.reportables_list) > 0:
+            if self._reportables is not None:
+                new_stage._reportables = self._reportables._inner_copy(building_stages, building_artifacts)
+                # TODO: set reportables_loaded as well?
 
         # print("COPIED stage ", self.name, " outputs: ", id(new_stage.outputs))
 
@@ -535,18 +563,25 @@ class Stage:
             mapped["map"][self.name][map_name] = []
 
         if need:
-            self.map_status = cf.COMPUTE
-            mapped["map"][self.name][map_name].append(cf.COMPUTE)
-
-            for artifact in self.get_output_list():
-                if artifact != source:
+            # handle differently if this is a stage dependency?
+            if isinstance(source, Stage) and len(self.get_output_list()) > 0:
+                # assume the artifacts will take care of this
+                for artifact in self.get_output_list():
                     mapped = artifact.map(mapped, need=True, source=self)
-                    # override status
-                    if artifact.map_status != cf.OVERWRITE:
-                        artifact.map_status = cf.COMPUTE
-                        mapped["map"][artifact.name][f"{self.name} -> {artifact.name}"][
-                            -1
-                        ] = cf.COMPUTE
+                need = False
+            else:
+                self.map_status = cf.COMPUTE
+                mapped["map"][self.name][map_name].append(cf.COMPUTE)
+
+                for artifact in self.get_output_list():
+                    if artifact != source:
+                        mapped = artifact.map(mapped, need=True, source=self)
+                        # override status
+                        if artifact.map_status != cf.OVERWRITE:
+                            artifact.map_status = cf.COMPUTE
+                            mapped["map"][artifact.name][f"{self.name} -> {artifact.name}"][
+                                -1
+                            ] = cf.COMPUTE
 
         if self not in mapped["stages"]:
             mapped["stages"].insert(0, self)
@@ -765,6 +800,15 @@ class Stage:
                 if art.cacher is not None:
                     art.cacher.save(art.obj)
                 returns = art
+
+            # save any reportables if necessary
+            if len(self.reportables_list) > 0:
+                manager.logger.info("Caching reportables...")
+                self._reportables_ready = True  # because we've already run compute
+                reportables_artifact = self.reportables
+                reportables_artifact.computed = True
+                manager.record_artifact(reportables_artifact)
+                reportables_artifact.cacher.save(reportables_artifact.obj)
 
             if caching_necessary:
                 manager.logger.info("Caching completed")
