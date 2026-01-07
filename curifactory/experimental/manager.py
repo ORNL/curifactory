@@ -13,9 +13,9 @@ from uuid import UUID, uuid4
 
 import duckdb
 import pandas as pd
+from jinja2 import ChoiceLoader, DictLoader, Environment, Template
 from rich import get_console, reconfigure
 from rich.logging import RichHandler
-from jinja2 import Template, Environment, ChoiceLoader, DictLoader
 
 import curifactory.experimental as cf
 
@@ -469,7 +469,10 @@ class Manager:
                 """
                 CREATE TABLE IF NOT EXISTS cf_stage_input (
                     stage_id UUID,
-                    artifact_id UUID
+                    artifact_id UUID,
+                    arg_index INTEGER,
+                    arg_name VARCHAR,
+                    stage_dependency_id UUID,
                 );
                 """
             )
@@ -577,7 +580,7 @@ class Manager:
                 ],
             )
 
-    def record_stage_artifact_input(self, stage, artifact):
+    def record_stage_artifact_input(self, stage, artifact, arg_index, arg_name):
         if not self.currently_recording:
             return
 
@@ -586,12 +589,31 @@ class Manager:
                 """
                     INSERT INTO cf_stage_input (
                         stage_id,
-                        artifact_id
+                        artifact_id,
+                        arg_index,
+                        arg_name
+                    )
+                    VALUES (?, ?, ?, ?)
+                """,
+                [stage.db_id, artifact.db_id, arg_index, arg_name],
+            )
+
+    def record_stage_dependency(self, stage, dependency_stage):
+        if not self.currently_recording:
+            return
+
+        with self.db_connection() as db:
+            db.execute(
+                """
+                    INSERT INTO cf_stage_input (
+                        stage_id,
+                        stage_dependency_id
                     )
                     VALUES (?, ?)
                 """,
-                [stage.db_id, artifact.db_id],
+                [stage.db_id, dependency_stage.db_id],
             )
+
 
     def record_stage(self, stage):
         if not self.currently_recording:

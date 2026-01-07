@@ -26,6 +26,15 @@ import curifactory.experimental as cf
 # class StageContext:
 
 
+class FunctionStub:
+    def __init__(self, name):
+        self.name = name
+
+    def __getattr__(self, attr_name):
+        if attr_name == "__name__":
+            return self.name
+
+
 class _StageContext(threading.local):
     def __init__(self):
         self.current_stage_dependencies: list[Stage] = []
@@ -83,6 +92,10 @@ class Stage:
     """Mostly only used to help ensure output-less dependencies don't run more
     than once."""
 
+    from_ref: bool = False
+    """Indicates that it was populate by reference rather than by code - underlying
+    function may not exist or be accessible if True"""
+
     def __post_init__(self):
         # create a dictionary with the names of all the function arguments and
         # where they can be found index-wise
@@ -95,15 +108,17 @@ class Stage:
         self.parameter_kinds = {}
         self.parameter_positions = {}
         self.parameter_defaults = {}
-        parameters = inspect.signature(self.function).parameters
-        for i, key in enumerate(parameters.keys()):
-            # self._parameters[key] = {"default": parameters[key].default, "kind": parameters[key].kind}
-            self.parameter_kinds[key] = parameters[key].kind
-            self.parameter_positions[key] = i
-            if parameters[key].default != inspect.Parameter.empty:
-                self.parameter_defaults[key] = parameters[key].default
-            else:
-                self.parameter_defaults[key] = None
+
+        if not isinstance(self.function, FunctionStub):
+            parameters = inspect.signature(self.function).parameters
+            for i, key in enumerate(parameters.keys()):
+                # self._parameters[key] = {"default": parameters[key].default, "kind": parameters[key].kind}
+                self.parameter_kinds[key] = parameters[key].kind
+                self.parameter_positions[key] = i
+                if parameters[key].default != inspect.Parameter.empty:
+                    self.parameter_defaults[key] = parameters[key].default
+                else:
+                    self.parameter_defaults[key] = None
 
         artifacts = []
         if not isinstance(self.outputs, list):
@@ -262,7 +277,9 @@ class Stage:
         # copy reportables artifact if relevant
         if len(self.reportables_list) > 0:
             if self._reportables is not None:
-                new_stage._reportables = self._reportables._inner_copy(building_stages, building_artifacts)
+                new_stage._reportables = self._reportables._inner_copy(
+                    building_stages, building_artifacts
+                )
                 # TODO: set reportables_loaded as well?
 
         # print("COPIED stage ", self.name, " outputs: ", id(new_stage.outputs))
@@ -579,9 +596,9 @@ class Stage:
                         # override status
                         if artifact.map_status != cf.OVERWRITE:
                             artifact.map_status = cf.COMPUTE
-                            mapped["map"][artifact.name][f"{self.name} -> {artifact.name}"][
-                                -1
-                            ] = cf.COMPUTE
+                            mapped["map"][artifact.name][
+                                f"{self.name} -> {artifact.name}"
+                            ][-1] = cf.COMPUTE
 
         if self not in mapped["stages"]:
             mapped["stages"].insert(0, self)
@@ -644,7 +661,9 @@ class Stage:
         if isinstance(arg, cf.artifact.Artifact):
             obj = arg.get()
             if record_resolution:
-                cf.get_manager().record_stage_artifact_input(self, arg)
+                cf.get_manager().record_stage_artifact_input(
+                    self, arg, arg_index, arg_name
+                )
         elif isinstance(arg, OutputArtifactPathResolve):
             obj = arg.resolve(self)
         else:
@@ -731,6 +750,11 @@ class Stage:
                     dependency()
 
             manager.record_stage(self)
+
+            for dependency in self.dependencies:
+                # NOTE: have to record these here rather than when they're run,
+                # otherwise we don't have a db id yet
+                manager.record_stage_dependency(self, dependency)
 
             manager.logger.info(
                 f"..... Beginning resolution for stage {self.contextualized_name} ....."
