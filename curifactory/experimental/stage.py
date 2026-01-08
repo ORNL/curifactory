@@ -96,6 +96,9 @@ class Stage:
     """Indicates that it was populate by reference rather than by code - underlying
     function may not exist or be accessible if True"""
 
+    hash_str: str = None
+    hash_debug: dict[str, dict[str, Any]] = None
+
     def __post_init__(self):
         # create a dictionary with the names of all the function arguments and
         # where they can be found index-wise
@@ -313,6 +316,9 @@ class Stage:
         return self._inner_copy(None, None)
 
     def compute_hash(self) -> tuple[str, dict[str, dict[str, Any]]]:
+        if self.from_ref:
+            return self.hash_str, self.hash_debug
+
         parameter_names = list(self.parameter_kinds.keys())
 
         # iterate through each parameter and get its hash value
@@ -364,7 +370,11 @@ class Stage:
 
             hash_hex = hashlib.md5(f"{key}{value}".encode()).hexdigest()
             hash_total += int(hash_hex, 16)
-        return f"{hash_total:x}", debug
+
+        hash_str = f"{hash_total:x}"
+        self.hash_str = hash_str
+        self.hash_debug = debug
+        return hash_str, debug
 
     def get_parameter_value(self, param_index, param_name):
         if param_index < len(self.args):

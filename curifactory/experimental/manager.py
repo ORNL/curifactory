@@ -449,9 +449,11 @@ class Manager:
                     generated_time TIMESTAMP,
                     cacher_type VARCHAR,
                     cacher_module VARCHAR,
+                    cacher_params JSON,
                     reportable BOOL,
                     extra_metadata JSON,
-                    repr VARCHAR
+                    repr VARCHAR,
+                    is_list BOOL
                 );
                 """
             )
@@ -472,7 +474,7 @@ class Manager:
                     artifact_id UUID,
                     arg_index INTEGER,
                     arg_name VARCHAR,
-                    stage_dependency_id UUID,
+                    stage_dependency_id UUID
                 );
                 """
             )
@@ -547,9 +549,11 @@ class Manager:
 
         cacher_type = None
         cacher_module = None
+        cacher_params = None
         if artifact.cacher is not None:
             cacher_type = artifact.cacher.__class__.__name__
             cacher_module = artifact.cacher.__class__.__module__
+            cacher_params = artifact.cacher.get_params()
 
         with self.db_connection() as db:
             db.execute(
@@ -563,9 +567,11 @@ class Manager:
                         generated_time,
                         cacher_type,
                         cacher_module,
-                        repr
+                        cacher_params,
+                        repr,
+                        is_list
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     artifact_id,
@@ -576,7 +582,9 @@ class Manager:
                     gen_time,
                     cacher_type,
                     cacher_module,
+                    cacher_params,
                     self.get_artifact_obj_repr(artifact),
+                    isinstance(artifact, cf.artifact.ArtifactList)
                 ],
             )
 
@@ -630,6 +638,8 @@ class Manager:
 
         run_id = stage.context.db_id if stage.context is not None else None
 
+        func_module = stage.function.__module__
+
         with self.db_connection() as db:
             db.execute(
                 """
@@ -637,12 +647,13 @@ class Manager:
                         id,
                         run_id,
                         func_name,
+                        func_module,
                         hash,
                         hash_details
                     )
-                    VALUES (?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                [stage_id, run_id, func_name, hash, hash_debug],
+                [stage_id, run_id, func_name, func_module, hash, hash_debug],
             )
 
     def record_stage_start(self, stage):

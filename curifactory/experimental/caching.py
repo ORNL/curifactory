@@ -1,3 +1,4 @@
+import importlib
 import json
 import os
 import pickle
@@ -13,6 +14,8 @@ from curifactory.experimental.manager import Manager
 
 
 class Cacheable:
+    params = ["path_override", "extension", "paths_only"]
+
     def __init__(
         self, path_override: str = None, extension: str = "", paths_only: bool = False
     ):
@@ -113,6 +116,12 @@ class Cacheable:
                 self.cache_paths.append(full_path)
             return full_path
 
+    def get_params(self) -> dict[str, Any]:
+        params_dict = {}
+        for param in self.params:
+            params_dict[param] = getattr(self, param)
+        return params_dict
+
     def check(self, silent: bool = False):
         if not silent:
             cf.manager.Manager.get_manager().logger.debug(
@@ -135,6 +144,7 @@ class Cacheable:
             # cf_version=
             cacher_type=str(type(self)),
             cacher_extra_metadata=self.extra_metadata,
+            cacher_params=self.get_params(),
             artifact_id=self.artifact.db_id,
             artifact_hash=self.artifact.hash_str,
             paths=self.cache_paths,
@@ -215,8 +225,18 @@ class Cacheable:
     def clear_metadata(self):
         Path(self.get_path("_metadata.json")).unlink(missing_ok=True)
 
+    @staticmethod
+    def get_from_db_metadata(cacher_module: str, cacher_type: str, cacher_params: dict[str, Any]):
+        cf.get_manager().logger.debug(f"Instantiating cacher from module '{cacher_module}' of type '{cacher_type}' with params {cacher_params}")
+        module = importlib.import_module(cacher_module)
+        cacher_class = getattr(module, cacher_type)
+        print(type(cacher_params), cacher_params)
+        return cacher_class(**cacher_params)
+
 
 class JsonCacher(Cacheable):
+    params = ["path_override"]
+
     def __init__(self, path_override: str = None):
         super().__init__(path_override, ".json")
 
@@ -231,6 +251,8 @@ class JsonCacher(Cacheable):
 
 
 class PickleCacher(Cacheable):
+    params = ["path_override"]
+
     def __init__(self, path_override: str = None):
         super().__init__(path_override, ".pkl")
 
@@ -245,6 +267,8 @@ class PickleCacher(Cacheable):
 
 
 class ParquetCacher(Cacheable):
+    params = ["path_override", "paths_only", "use_db_arg"]
+
     def __init__(
         self,
         path_override: str = None,
@@ -300,6 +324,8 @@ class ParquetCacher(Cacheable):
 
 
 class DBTableCacher(Cacheable):
+    params = ["path_override", "use_db_arg", "table_name"]
+
     # NOTE: returns _the entire table that gets saved into_
     def __init__(
         self,
@@ -375,6 +401,8 @@ class DBTableCacher(Cacheable):
 # TODO: terrible name, figure out better one (maybe call this one dbtablecacher
 # and the base NonTrackingDBTableCacher)
 class TrackingDBTableCacher(DBTableCacher):
+    params = ["path_override", "use_db_arg", "table_name", "id_cols"]
+
     def __init__(
         self,
         path_override: str = None,
@@ -408,6 +436,8 @@ class TrackingDBTableCacher(DBTableCacher):
 
         # Add a row for each row in relation_object
         tracking_rows = db.sql(f"SELECT {",".join([id_col for id_col in self.id_cols])}, '{stage_id}' as metadata_id from relation_object")
+        print("CACHER")
+        print(tracking_rows)
         db.sql(f"INSERT INTO _cftrack_{self.get_table_name()} (SELECT * FROM tracking_rows)")
 
     def equals_condition(self, prefix):
@@ -442,6 +472,7 @@ class TrackingDBTableCacher(DBTableCacher):
     def load_obj(self):
         db = self.get_db()
         selection_query = f"SELECT {self.get_table_name()}.* FROM {self.get_table_name()} INNER JOIN _cftrack_{self.get_table_name()} ON {self.join_condition()}"
+        print(selection_query)
         try:
             return db.sql(selection_query)
         except Exception as e:
@@ -453,6 +484,7 @@ class MetadataOnlyCacher(Cacheable):
     """Only writes out a metadata file, can be used for checking that a
     stage was completed/based on parameters. The underlying assumption is that the
     stage only mutated something in some way and has no specific object to retrieve."""
+    params = ["path_override"]
 
     def __init__(self, path_override: str = None):
         super().__init__(path_override)
@@ -473,6 +505,7 @@ class AggregateArtifactCacher(Cacheable):
     NOTE: Can't be used as an inline cacher? (depends on an initialized
     ArtifactList artifact)
     """
+    params = []
 
     def __init__(self):
         super().__init__()
@@ -595,6 +628,7 @@ class FileReferenceCacher(Cacheable):
 
                 return my_file_list
     """
+    params = ["path_override"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, extension=".json", **kwargs)
