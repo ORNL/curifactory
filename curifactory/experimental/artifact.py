@@ -2,6 +2,7 @@
 # from simplification.stage import Stage
 import copy
 import inspect
+import json
 import logging
 from functools import partial
 from uuid import UUID
@@ -470,23 +471,61 @@ class Artifact:
 
     def copy(self):
         return self._inner_copy(None, None)
-        # artifact = Artifact(self.name)
-        # artifact.cacher = copy.deepcopy(self.cacher)
-        # artifact.obj = self.obj
-        # artifact.hash_str = self.hash_str
-        # artifact.hash_debug = self.hash_debug
-        # if self.compute is not None:
-        #     artifact.compute = self.compute.copy()  # TODO: still wrong I think
-        #     artifact.compute.outputs = self
-        # artifact.previous_context_names = [*self.previous_context_names]
-        # # TODO: ... so we need a new compute though, because the output artifact
-        # # will now be wrong.
-        #
-        # # TODO: put current context name into previous contexts, then replace
-        # # context?
-        # if self.context is not None:
-        #     artifact.previous_context_names.append(self.context.name)
-        # return artifact
+
+    @staticmethod
+    def load_from_uuid(
+        uuid, building_stages: dict = None, building_artifacts: dict = None
+    ):
+        """Recurisvely load the full DAG prior to this artifact and then return this artifact."""
+        if building_stages is None:
+            building_stages = {}
+        if building_artifacts is None:
+            building_artifacts = {}
+
+        if uuid in building_artifacts:
+            return building_artifacts[uuid]
+
+        with cf.get_manager().db_connection() as db:
+            artifact_row = (
+                db.sql(f"select * from cf_artifact where id = '{uuid}'").df().iloc[0]
+            )
+
+        prepopulated_stage = None
+        if artifact_row.is_list:
+            artifact = cf.artifact.ArtifactList(name=artifact_row["name"])
+            prepopulated_stage = artifact.compute
+        else:
+            artifact = cf.artifact.Artifact(name=artifact_row["name"])
+            artifact.hash_str = artifact_row.hash
+        artifact.db_id = uuid
+
+        if artifact_row.cacher_type is not None:
+            cacher_params = (
+                json.loads(artifact_row.cacher_params)
+                if artifact_row.cacher_params is not None
+                else {}
+            )
+            cacher = cf.caching.Cacheable.get_from_db_metadata(
+                artifact_row.cacher_module, artifact_row.cacher_type, cacher_params
+            )
+            artifact.cacher = cacher
+
+        stage = cf.stage.Stage.load_from_uuid(
+            artifact_row.stage_id,
+            building_stages,
+            building_artifacts,
+            prepopulated_stage=prepopulated_stage,
+        )
+
+        if artifact_row.is_list:
+            artifact.inner_artifact_list = stage.args
+        else:
+            stage.outputs.append(artifact)
+            artifact.compute = stage
+
+        building_artifacts[uuid] = artifact
+
+        return artifact
 
     def verify(self):
         if isinstance(self.compute.outputs, list):

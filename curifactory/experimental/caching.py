@@ -1,5 +1,5 @@
-import importlib
 import json
+import importlib
 import os
 import pickle
 from pathlib import Path
@@ -436,8 +436,6 @@ class TrackingDBTableCacher(DBTableCacher):
 
         # Add a row for each row in relation_object
         tracking_rows = db.sql(f"SELECT {",".join([id_col for id_col in self.id_cols])}, '{stage_id}' as metadata_id from relation_object")
-        print("CACHER")
-        print(tracking_rows)
         db.sql(f"INSERT INTO _cftrack_{self.get_table_name()} (SELECT * FROM tracking_rows)")
 
     def equals_condition(self, prefix):
@@ -472,7 +470,6 @@ class TrackingDBTableCacher(DBTableCacher):
     def load_obj(self):
         db = self.get_db()
         selection_query = f"SELECT {self.get_table_name()}.* FROM {self.get_table_name()} INNER JOIN _cftrack_{self.get_table_name()} ON {self.join_condition()}"
-        print(selection_query)
         try:
             return db.sql(selection_query)
         except Exception as e:

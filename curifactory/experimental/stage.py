@@ -1,4 +1,5 @@
 import copy
+import pandas as pd
 import hashlib
 import inspect
 import os
@@ -285,22 +286,6 @@ class Stage:
                 )
                 # TODO: set reportables_loaded as well?
 
-        # print("COPIED stage ", self.name, " outputs: ", id(new_stage.outputs))
-
-        # (already handled in artifact's inner copy)
-        # CANC: 2025-12-18 - not clear if this is correct but the copy of a
-        # stage.run is getting de-synced outputs, and in this instance we don't
-        # actually want new copies of the outputs? (because in theory those
-        # should have already been made from farther into the dag?)
-        # new_outputs = []
-        # if isinstance(self.outputs, list):
-        #     for output in self.outputs:
-        #         new_output = output._inner_copy(building_stages, building_artifacts)
-        #         new_outputs.append(new_output)
-        # else:
-        #     new_outputs = self.outputs._inner_copy(building_stages, building_artifacts)
-        # new_stage.outputs = new_outputs
-
         # handle copying any stage dependencies
         for dependency in self.dependencies:
             if id(dependency) not in building_stages:
@@ -314,6 +299,61 @@ class Stage:
 
     def copy(self):
         return self._inner_copy(None, None)
+
+    @staticmethod
+    def load_from_uuid(
+        uuid,
+        building_stages: dict = None,
+        building_artifacts: dict = None,
+        prepopulated_stage=None,
+    ):
+        """Recurisvely load all input artifacts and their dependencies and then return the stage they feed into. Note that function stubs are used by default."""
+        if building_stages is None:
+            building_stages = {}
+        if building_artifacts is None:
+            building_artifacts = {}
+
+        if uuid in building_stages:
+            return building_stages[uuid]
+
+        with cf.get_manager().db_connection() as db:
+            stage_row = (
+                db.sql(f"select * from cf_stage where id = '{uuid}'").df().iloc[0]
+            )
+            stage_input_rows = db.sql(
+                f"select * from cf_stage_input where stage_id = '{uuid}'"
+            ).df()
+
+        if prepopulated_stage is not None:
+            stage = prepopulated_stage
+        else:
+            stage = cf.stage.Stage(
+                cf.stage.FunctionStub(stage_row.func_name), [], {}, outputs=[]
+            )
+            stage.from_ref = True
+            stage.hash_str = stage_row.hash
+            stage.hash_debug = stage_row.hash_details
+        stage.db_id = uuid
+
+        building_stages[uuid] = stage
+
+        stage_inputs = []
+        for index, row in stage_input_rows.iterrows():
+            if not pd.isna(row["artifact_id"]):
+                stage_inputs.append(
+                    cf.artifact.Artifact.load_from_uuid(
+                        row["artifact_id"], building_stages, building_artifacts
+                    )
+                )
+            elif not pd.isna(row["stage_dependency_id"]):
+                stage.dependencies.append(
+                    Stage.load_from_uuid(
+                        row["stage_dependency_id"], building_stages, building_artifacts
+                    )
+                )
+
+        stage.args = stage_inputs
+        return stage
 
     def compute_hash(self) -> tuple[str, dict[str, dict[str, Any]]]:
         if self.from_ref:

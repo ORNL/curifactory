@@ -278,6 +278,43 @@ class Pipeline:
     def copy(self):
         return self._inner_copy(None, None)
 
+    @staticmethod
+    def load_from_refname(refname: str):
+        with cf.get_manager().db_connection() as db:
+            pipeline_row = db.sql(f"select * from cf_run where reference = '{refname}'").df().iloc[0]
+            target_artifact_row = db.sql(f"select * from cf_artifact where id = '{pipeline_row.target_id}'").df().iloc[0]
+        # pipeline = Pipeline(pipeline_row.name)
+        pipeline = Pipeline(pipeline_row.reference)
+        pipeline.db_id = pipeline_row.id
+        pipeline.start_timestamp = pipeline_row.start_time
+        pipeline.end_timestamp = pipeline_row.end_time
+        pipeline.reference = pipeline_row.reference
+        pipeline.run_number = pipeline_row.run_number
+
+        cf.get_manager()._pipeline_defining_stack.append(pipeline)
+        target_artifact = cf.artifact.Artifact.load_From_uuid(target_artifact_row.id)
+        outputs = target_artifact
+        cf.get_manager()._pipeline_defining_stack.pop()
+        if not isinstance(target_artifact, cf.artifact.ArtifactList):
+            pipeline_outputs = cf.artifact.ArtifactList("outputs")
+
+            if type(outputs) is tuple:
+                for output in outputs:
+                    if isinstance(output, dict):
+                        for key, value in output.items():
+                            setattr(pipeline, key, value)
+                    else:
+                        pipeline_outputs.append(output)
+            else:
+                pipeline_outputs.append(outputs)
+
+            # flatten if single object
+            if len(pipeline_outputs) == 1:
+                pipeline_outputs = pipeline_outputs[0]
+        pipeline.outputs = pipeline_outputs
+
+        return pipeline
+
     # TODO: (3/17/2024) override setattr and essentially make the fields frozen
     # - if you try to modify an pipeline parameter, that won't necessarily
     # auto apply to the stages it's used in because we have no direct way of
@@ -464,3 +501,41 @@ def pipeline(function):
             return f"Pipeline {self.type_name}({', '.join(call_parts)})"
 
     return PipelineFactoryWrapper(function.__name__, field_tuples, function, pipeline_dataclass)
+
+
+@dataclass
+class PipelineFromRef(Pipeline):
+    def __post_init__(self):
+
+        with cf.get_manager().db_connection() as db:
+            pipeline_row = db.sql(f"select * from cf_run where reference = '{self.name}'").df().iloc[0]
+            self.target_artifact_row = db.sql(f"select * from cf_artifact where id = '{pipeline_row.target_id}'").df().iloc[0]
+
+        super().__post_init__()
+
+        self.db_id = pipeline_row.id
+        self.start_timestamp = pipeline_row.start_time
+        self.end_timestamp = pipeline_row.end_time
+        self.reference = pipeline_row.reference
+        self.run_number = pipeline_row.run_number
+
+    def define(self):
+        target_artifact = cf.artifact.Artifact.load_from_uuid(self.target_artifact_row.id)
+        outputs = target_artifact
+
+        pipeline_outputs = cf.artifact.ArtifactList("outputs")
+
+        if type(outputs) is tuple:
+            for output in outputs:
+                if isinstance(output, dict):
+                    for key, value in output.items():
+                        setattr(pipeline, key, value)
+                else:
+                    pipeline_outputs.append(output)
+        else:
+            pipeline_outputs.append(outputs)
+
+        # flatten if single object
+        if len(pipeline_outputs) == 1:
+            pipeline_outputs = pipeline_outputs[0]
+        return pipeline_outputs
