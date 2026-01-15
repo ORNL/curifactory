@@ -179,6 +179,7 @@ class Manager:
 
         if types is None or "module" in types or "pipeline" in types or "pipeline_instance" in types or "pipeline_instance_list" in types or "pipeline_class" in types or "pipeline_class_list" in types:
             reference_parts = self.divide_reference_parts(ref_str)
+            print("ref parts", reference_parts)
             if reference_parts["module"] is not None:
                 if "module" not in resolutions:
                     resolutions["module"] = []
@@ -211,6 +212,14 @@ class Manager:
                 references_df = db.sql(f"SELECT * FROM cf_run WHERE starts_with(reference, '{ref_str}')").df()
 
             resolutions["reference_names"] = references_df.reference.values.tolist()
+            if len(resolutions["reference_names"]) == 1:
+                resolutions["reference_instance"] = cf.pipeline.PipelineFromRef(resolutions["reference_names"][0])
+
+            if "pipeline_instance" not in resolutions and "reference_instance" in resolutions:
+                if reference_parts["artifact_filter"] is not None:
+                    resolutions["artifact_list"] = resolutions["reference_instance"].artifacts.filter(reference_parts["artifact_filter"])
+                    if len(resolutions["artifact_list"]) == 1:
+                        resolutions["artifact"] = resolutions["artifact_list"][0]
 
 
             # resolutions["pipeline_instance_list"] = [
@@ -306,7 +315,7 @@ class Manager:
                 break
 
         for name in self.pipeline_ref_names:
-            if ref_str.startswith(name):
+            if ref_str.startswith(name) and (len(ref_str) == len(name) or ref_str[len(name):len(name)+1] == "."):
                 parts["pipeline"] = self.pipeline_ref_names[name].name
                 ref_str = ref_str[len(name):]
                 if ref_str.startswith("."):

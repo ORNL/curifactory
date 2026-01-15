@@ -1,5 +1,4 @@
 import copy
-import pandas as pd
 import hashlib
 import inspect
 import os
@@ -10,6 +9,7 @@ from functools import wraps
 from typing import Any, Callable, Union
 from uuid import UUID
 
+import pandas as pd
 import psutil
 
 # NOTE: resource only exists on unix systems
@@ -28,8 +28,12 @@ import curifactory.experimental as cf
 
 
 class FunctionStub:
-    def __init__(self, name):
+    def __init__(self, name, func_module=None):
         self.name = name
+        self.func_module = func_module
+
+    def __call__(self, **kwargs):
+        raise
 
     def __getattr__(self, attr_name):
         if attr_name == "__name__":

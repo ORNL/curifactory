@@ -116,6 +116,9 @@ def main():
         if "pipeline_instance" in resolved:
             pipeline = resolved["pipeline_instance"]
             base_class = False
+        elif "reference_instance" in resolved:
+            pipeline = resolved["reference_instance"]
+            base_class = False
         elif "pipeline_class" in resolved:
             pipeline = resolved["pipeline_class"]
             base_class = True
@@ -312,6 +315,8 @@ def main():
         pipeline = None
         if "pipeline_instance" in resolved:
             pipeline = resolved["pipeline_instance"]
+        elif "reference_instance" in resolved:
+            pipeline = resolved["reference_instance"]
 
         if pipeline is not None:
 
@@ -460,7 +465,8 @@ def main():
             exit()
 
         resolved = manager.resolve_reference(search)
-        if "artifact_list" in resolved:
+        print(resolved)
+        if "artifact_list" in resolved and len(resolved["artifact_list"]) > 0:  # TODO: why is a blank artifact_list sometimes being added?
             print(f"Artifacts matching {search}:")
             for artifact in resolved["artifact_list"]:
                 print(
@@ -469,8 +475,16 @@ def main():
                     f"(context: {artifact.context_name})".ljust(40),
                 )
         elif "pipeline_instance" in resolved:
-            print(f"Artifacts in {search}:")
+            print(f"Artifacts in pipeline {search}:")
             for artifact in resolved["pipeline_instance"].artifacts:
+                print(
+                    artifact.name.ljust(20),
+                    f" (stage: {artifact.compute.name})".ljust(40),
+                    f"(context: {artifact.context_name})".ljust(40),
+                )
+        elif "reference_instance" in resolved:
+            print(f"Artifacts in reference {resolved["reference_instance"].name}:")
+            for artifact in resolved["reference_instance"].artifacts:
                 print(
                     artifact.name.ljust(20),
                     f" (stage: {artifact.compute.name})".ljust(40),
