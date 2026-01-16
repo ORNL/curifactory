@@ -209,15 +209,22 @@ class Manager:
         if types is None or "runs" in types:
             with self.db_connection() as db:
                 # TODO: prob shouldn't be checking reference itself??
-                references_df = db.sql(f"SELECT * FROM cf_run WHERE starts_with(reference, '{ref_str}')").df()
+                ref_name_str = ref_str
+                if "." in ref_name_str:
+                    ref_name_str = ref_str[:ref_str.index(".")]
+                references_df = db.sql(f"SELECT * FROM cf_run WHERE starts_with(reference, '{ref_name_str}')").df()
 
             resolutions["reference_names"] = references_df.reference.values.tolist()
             if len(resolutions["reference_names"]) == 1:
                 resolutions["reference_instance"] = cf.pipeline.PipelineFromRef(resolutions["reference_names"][0])
 
             if "pipeline_instance" not in resolutions and "reference_instance" in resolutions:
-                if reference_parts["artifact_filter"] is not None:
-                    resolutions["artifact_list"] = resolutions["reference_instance"].artifacts.filter(reference_parts["artifact_filter"])
+                # if reference_parts["artifact_filter"] is not None:
+                if "." in ref_str:
+                    print("Yep!")
+                    filter_str = ref_str[ref_str.index(".")+1:]
+                    print("looking for artifacts filter string past reference: ", filter_str)
+                    resolutions["artifact_list"] = resolutions["reference_instance"].artifacts.filter(filter_str)
                     if len(resolutions["artifact_list"]) == 1:
                         resolutions["artifact"] = resolutions["artifact_list"][0]
 
