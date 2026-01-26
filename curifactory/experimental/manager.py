@@ -146,6 +146,11 @@ class Manager:
             **self.additional_configuration,
         }
 
+    @property
+    def runs(self) -> pd.DataFrame:
+        with self.db_connection() as db:
+            return db.sql("SELECT * FROM cf_run").df()
+
     def load_jinja_env(self):
         self.jinja_environment = Environment(
             loader=ChoiceLoader(
@@ -592,7 +597,7 @@ class Manager:
                 """,
                 [
                     artifact_id,
-                    artifact.compute.db_id,
+                    artifact.compute.db_id if artifact.compute is not None else None,
                     run_id,
                     artifact.name,
                     artifact.compute_hash()[0],

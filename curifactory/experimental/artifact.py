@@ -175,22 +175,7 @@ class Artifact:
 
     def compute_hash(self):
         if self.compute is None:
-            if self.cacher is None:
-                return "", {}
-            else:
-                # do an informal hash on the cacher params
-                cacher_params = self.cacher.get_params()
-                hash_values = {}
-                for param, value in cacher_params.items():
-                    hash_values[param] = repr(value)
-                hash_total = 0
-                for key, value in hash_values.items():
-                    if value is None:
-                        continue
-                    hash_hex = hashlib.md5(f"{key}{value}".encode()).hexdigest()
-                    hash_total += int(hash_hex, 16)
-                hash_str = f"{hash_total:x}"
-                return hash_str, hash_values
+            return "", {}
         self.hash_str, self.hash_debug = self.compute.compute_hash()
         return self.hash_str, self.hash_debug
 
@@ -527,18 +512,19 @@ class Artifact:
             )
             artifact.cacher = cacher
 
-        stage = cf.stage.Stage.load_from_uuid(
-            artifact_row.stage_id,
-            building_stages,
-            building_artifacts,
-            prepopulated_stage=prepopulated_stage,
-        )
+        if not pd.isna(artifact_row.stage_id):
+            stage = cf.stage.Stage.load_from_uuid(
+                artifact_row.stage_id,
+                building_stages,
+                building_artifacts,
+                prepopulated_stage=prepopulated_stage,
+            )
 
-        if artifact_row.is_list:
-            artifact.inner_artifact_list = stage.args
-        else:
-            stage.outputs.append(artifact)
-            artifact.compute = stage
+            if artifact_row.is_list:
+                artifact.inner_artifact_list = stage.args
+            else:
+                stage.outputs.append(artifact)
+                artifact.compute = stage
 
         building_artifacts[uuid] = artifact
 
@@ -703,10 +689,11 @@ class Artifact:
 
         self._node(g, **kwargs)
 
-        self.compute.visualize(g, **kwargs)
-        if (str(id(self.compute)), str(self.internal_id)) not in g._edges:
-            g.edge(str(id(self.compute)), str(self.internal_id))
-            g._edges.append((str(id(self.compute)), str(self.internal_id)))
+        if self.compute is not None:
+            self.compute.visualize(g, **kwargs)
+            if (str(id(self.compute)), str(self.internal_id)) not in g._edges:
+                g.edge(str(id(self.compute)), str(self.internal_id))
+                g._edges.append((str(id(self.compute)), str(self.internal_id)))
 
         return g
 
@@ -912,3 +899,20 @@ class DBArtifact(Artifact):
             name=name, cacher=cf.caching.DBCacher(connection_str, **kwargs)
         )
         self.cacher.artifact = self
+
+    def compute_hash(self):
+        # do an informal hash on the cacher params
+        cacher_params = self.cacher.get_params()
+        hash_values = {}
+        for param, value in cacher_params.items():
+            hash_values[param] = repr(value)
+        hash_total = 0
+        for key, value in hash_values.items():
+            if value is None:
+                continue
+            hash_hex = hashlib.md5(f"{key}{value}".encode()).hexdigest()
+            hash_total += int(hash_hex, 16)
+        hash_str = f"{hash_total:x}"
+        self.hash_str = hash_str
+        self.hash_debug = hash_values
+        return hash_str, hash_values

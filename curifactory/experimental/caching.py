@@ -148,7 +148,7 @@ class Cacheable:
             artifact_id=self.artifact.db_id,
             artifact_hash=self.artifact.hash_str,
             paths=self.cache_paths,
-            stage_id=self.artifact.compute.db_id,
+            stage_id=self.artifact.compute.db_id if self.artifact.compute is not None else None,
             # stage_params=self.artifact.compute.db_id,
         )
         self.metadata = metadata
@@ -325,20 +325,51 @@ class ParquetCacher(Cacheable):
 
 class DBCacher(Cacheable):
     """A cacher that loads a duckdb database connection."""
-    params = ["connection_str", "kwargs"]
+    params = ["connection_str", "kwargs", "extensions"]
 
-    def __init__(self, connection_str: str = None, **kwargs):
+    def __init__(self, connection_str: str = None, extensions: list[str] = None, **kwargs):
         super().__init__(extension=".db")
         self.connection_str = connection_str
+        self.extensions = extensions
         self.kwargs = kwargs
 
-    def check(self):
+        if self.extensions is None:
+            self.extensions = []
+
+    def check(self, silent: bool = False):
         return True
+
+    def load(self):
+        # modified to change log language and also both load/save metadata
+        self.load_metadata()
+        obj = self.load_obj()
+        if self.artifact is not None:
+            cf.get_manager().logger.debug("setting object on artifact")
+            self.artifact.obj = obj
+            cf.get_manager().record_artifact(self.artifact)
+            self.artifact.computed = True
+        cf.get_manager().logger.debug(f"Completed loading {self.artifact.name}")
+        self.save_metadata()
+        return obj
 
     def load_obj(self):
         if self.connection_str is None:
             self.connection_str = self.get_path()
+        cf.get_manager().logger.info(f"Loading db at {self.connection_str}...")
         db = duckdb.connect(self.connection_str, **self.kwargs)
+        for extension in self.extensions:
+            try:
+                db.load_extension(extension)
+                cf.get_manager().logger.debug(f"Loaded db extension {extension}")
+            except duckdb.IOException:
+                try:
+                    cf.get_manager().logger.debug(f"Trying to install extension {extension}...")
+                    db.install_extension(extension)
+                except duckdb.HTTPException:
+                    cf.get_manager().logger.debug(f"Trying to install community extension {extension}...")
+                    db.install_extension(extension, repository="community")
+                db.load_extension(extension)
+                cf.get_manager().logger.debug(f"Loaded db extension {extension}")
         return db
 
 
