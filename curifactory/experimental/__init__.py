@@ -1,11 +1,13 @@
+from typing import Any
+
 from curifactory.experimental import (
     artifact,
     caching,
     manager,
     pipeline,
+    reporting,
     stage,
     utils,
-    reporting,
 )
 
 # cache statuses
@@ -46,6 +48,10 @@ def report(reportable: reporting.Reportable):
 
 def get_manager():
     return manager.Manager.get_manager()
+
+
+def global_config() -> dict[str, Any]:
+    return manager.Manager.get_manager().additional_configuration
 
 
 def get_output_path(output_artifact_index: int = 0) -> stage.OutputArtifactPathResolve:

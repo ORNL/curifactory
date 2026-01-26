@@ -1,10 +1,12 @@
 # from simplification.experiment import Experiment
 # from simplification.stage import Stage
 import copy
+import hashlib
 import inspect
 import json
 import logging
 from functools import partial
+from typing import Any
 from uuid import UUID
 
 import duckdb
@@ -173,7 +175,22 @@ class Artifact:
 
     def compute_hash(self):
         if self.compute is None:
-            return ""
+            if self.cacher is None:
+                return "", {}
+            else:
+                # do an informal hash on the cacher params
+                cacher_params = self.cacher.get_params()
+                hash_values = {}
+                for param, value in cacher_params.items():
+                    hash_values[param] = repr(value)
+                hash_total = 0
+                for key, value in hash_values.items():
+                    if value is None:
+                        continue
+                    hash_hex = hashlib.md5(f"{key}{value}".encode()).hexdigest()
+                    hash_total += int(hash_hex, 16)
+                hash_str = f"{hash_total:x}"
+                return hash_str, hash_values
         self.hash_str, self.hash_debug = self.compute.compute_hash()
         return self.hash_str, self.hash_debug
 
@@ -528,6 +545,8 @@ class Artifact:
         return artifact
 
     def verify(self):
+        if self.compute is None:
+            return True
         if isinstance(self.compute.outputs, list):
             return self in self.compute.outputs
         return self == self.compute.outputs
@@ -538,13 +557,14 @@ class Artifact:
     def dependencies(self) -> list["Artifact"]:
         """Gets any input artifacts from the compute stage."""
         artifact_dependencies = []
-        for arg in self.compute._combined_args():
-            if isinstance(arg, Artifact):
-                artifact_dependencies.append(arg)
-        for stage in self.compute.dependencies:
-            for arg in stage._combined_args():
+        if self.compute is not None:
+            for arg in self.compute._combined_args():
                 if isinstance(arg, Artifact):
                     artifact_dependencies.append(arg)
+            for stage in self.compute.dependencies:
+                for arg in stage._combined_args():
+                    if isinstance(arg, Artifact):
+                        artifact_dependencies.append(arg)
         return artifact_dependencies
 
     def artifact_list(self, building_list: list = None):
@@ -881,4 +901,14 @@ class StageReportables(Artifact):
     def __init__(self):
         super().__init__(name="reportables", cacher=cf.caching.ReportablesCacher())
         # apparently a cacher used in the init doesn't trigger the set_attr??
+        self.cacher.artifact = self
+
+
+class DBArtifact(Artifact):
+    """Artifact that represents a duckdb connection"""
+
+    def __init__(self, name: str = None, connection_str: str = None, **kwargs):
+        super().__init__(
+            name=name, cacher=cf.caching.DBCacher(connection_str, **kwargs)
+        )
         self.cacher.artifact = self

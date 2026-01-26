@@ -53,6 +53,8 @@ STAGE_CONTEXT = _StageContext()
 
 
 class OutputArtifactPathResolve:
+    """Used for getting the path of an _output_ artifact as an _input_ to the stage."""
+
     def __init__(self, output_artifact_index):
         self.output_artifact_index = output_artifact_index
 
@@ -65,6 +67,23 @@ class OutputArtifactPathResolve:
         if artifact.cacher is None:
             return None
         return artifact.cacher.get_path(dry=True)
+
+
+class ConfigResolve:
+    """Check global config at runtime for specified key, or use specified default if not found.
+
+    This can either be used in a stage def or cacher.
+    """
+
+    def __init__(self, config_key_name: str, default: Any = None):
+        self.config_key_name = config_key_name
+        self.default = default
+
+    def resolve(self):
+        global_config = cf.global_config()
+        if self.config_key_name in global_config:
+            return global_config[self.config_key_name]
+        return self.default
 
 
 @dataclass
@@ -718,7 +737,7 @@ class Stage:
                 cf.get_manager().record_stage_artifact_input(
                     self, arg, arg_index, arg_name
                 )
-        elif isinstance(arg, OutputArtifactPathResolve):
+        elif isinstance(arg, (OutputArtifactPathResolve, ConfigResolve)):
             obj = arg.resolve(self)
         else:
             obj = arg

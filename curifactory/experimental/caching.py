@@ -1,5 +1,5 @@
-import json
 import importlib
+import json
 import os
 import pickle
 from pathlib import Path
@@ -321,6 +321,25 @@ class ParquetCacher(Cacheable):
                 )
 
             return db.from_parquet(self.get_path())
+
+
+class DBCacher(Cacheable):
+    """A cacher that loads a duckdb database connection."""
+    params = ["connection_str", "kwargs"]
+
+    def __init__(self, connection_str: str = None, **kwargs):
+        super().__init__(extension=".db")
+        self.connection_str = connection_str
+        self.kwargs = kwargs
+
+    def check(self):
+        return True
+
+    def load_obj(self):
+        if self.connection_str is None:
+            self.connection_str = self.get_path()
+        db = duckdb.connect(self.connection_str, **self.kwargs)
+        return db
 
 
 class DBTableCacher(Cacheable):

@@ -113,6 +113,7 @@ class Manager:
         self.default_pipeline_modules: list[str] = default_pipeline_modules
 
         self.additional_configuration: dict[str, Any] = additional_configuration
+        """Anything in additional configuration can be accessed/referenced in stages"""
         # ---- /configuration ----
 
         self.current_pipeline_run = None
