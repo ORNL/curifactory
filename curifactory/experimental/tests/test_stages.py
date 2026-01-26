@@ -1,11 +1,11 @@
-from artifact import Artifact
-from stage import Stage, stage
+from curifactory.experimental.artifact import Artifact
+from curifactory.experimental.stage import Stage, stage
 
 
 def test_basic_stage_def():
     """A stage with no outputs should still work."""
 
-    @stage([])
+    @stage()
     def do_nothing():
         return None
 
@@ -17,7 +17,7 @@ def test_basic_stage_def():
 def test_stage_with_return():
     """A stage with a return should return a populated Stage object."""
 
-    @stage([Artifact("thing")])
+    @stage(Artifact("thing"))
     def return_thing():
         return 5
 
@@ -25,14 +25,14 @@ def test_stage_with_return():
     assert hasattr(s1, "thing")
     assert isinstance(s1.thing, Artifact)
     output = s1()
-    assert output.object == 5
+    assert output.obj == 5
 
 
 def test_multiple_of_same_stage_should_return_diff_artifacts():
     """Having multiple instances of a stage should be returning a new
     artifact each time, to avoid weird mutability problems."""
 
-    @stage([Artifact("thing")])
+    @stage(Artifact("thing"))
     def return_thing():
         return 5
 
@@ -40,3 +40,6 @@ def test_multiple_of_same_stage_should_return_diff_artifacts():
     s2 = return_thing()
 
     assert s1.thing != s2.thing
+    assert s1.outputs == s1.thing
+    assert s2.outputs == s2.thing
+    assert s1.outputs != s2.outputs
