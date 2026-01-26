@@ -1,5 +1,6 @@
 import argparse
 import logging
+import subprocess
 
 from graphviz import Digraph
 
@@ -119,3 +120,19 @@ def human_readable_time(seconds: float) -> str:
         converted *= 10**3
 
     return f"{converted:.2f}{suffix}"
+
+
+def run_command(cmd: list[str]):
+    """Prints output from running a command as it occurs.
+
+    Args:
+        cmd: Either a string command or array of strings, as one would pass to
+            ``subprocess.run()``
+    """
+    logging.debug("Running command '%s'" % str(cmd))
+
+    print(*cmd)
+
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, text=True) as p:
+        for line in p.stdout:
+            print(line, end="")  # process line here

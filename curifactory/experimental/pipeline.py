@@ -1,9 +1,13 @@
 import copy
 import dataclasses
+import html
 import inspect
+import json
 from dataclasses import dataclass, field, make_dataclass
+from pathlib import Path
 from typing import Any
 from uuid import UUID
+
 from jinja2 import Template
 
 import curifactory.experimental as cf
@@ -102,13 +106,15 @@ class Pipeline:
         reportables_list = []
         handled_stages = []
         for artifact in self.artifacts:
+            if artifact.compute is None:
+                continue
             if artifact.compute not in handled_stages and len(artifact.compute.reportables.obj) > 0:
                 reportables_list.extend(artifact.compute.reportables.obj)
                 handled_stages.append(artifact.compute)
 
         return reportables_list
 
-    def report(self, template="default.html") -> str:
+    def report(self, template="default.html", save: bool = False) -> str:
         manager = cf.get_manager()
         # TODO: prob have a property for this or something in mnaager rather
         # than asking it to load _here_
@@ -116,7 +122,23 @@ class Pipeline:
             manager.load_jinja_env()
 
         template = manager.jinja_environment.get_template(template)
-        output = template.render(reportables=self.reportables, pipeline_name=self.name, reference_name=self.reference)
+        output = template.render(
+            reportables=self.reportables,
+            pipeline_name=self.name,
+            reference_name=self.reference,
+            map=self.visualize().pipe(format="svg", encoding="utf-8"),
+            parameters=html.escape(json.dumps(self.parameters, indent=2, default=str)),
+            pipeline_metadata={
+                "Database ID": self.db_id,
+                "Run number": self.run_number,
+                "Start": self.start_timestamp,
+                "End": self.end_timestamp,
+            },
+        )
+
+        if save:
+            with open(str(Path(manager.reports_path) / f"{self.reference}.html"), 'w') as outfile:
+                outfile.write(output)
         return output
 
     def define(self) -> list["cf.artifact.Artifact"]:
@@ -212,6 +234,11 @@ class Pipeline:
             metadata = self.outputs.cacher.load_metadata()
             results = manager.search_for_artifact_generating_run(metadata["artifact_id"])
             manager.logger.info(f"Collecting outputs from {results["reference"]}")
+            self.reference = results["reference"]
+            self.db_id = results["id"]
+            self.run_number = results["run_number"]
+            self.start_timestamp = results["start_time"]
+            self.end_timestamp = results["end_time"]
 
             returns = self.outputs.get()
             return self.outputs

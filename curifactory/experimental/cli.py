@@ -85,8 +85,11 @@ def main():
         help="Replace specific artifacts with other artifacts.",
     )
 
-    diag_parser = subparsers.add_parser("diagram", help="Render pipeline diagram")
-    diag_parser.add_argument("pipeline")
+    # diag_parser = subparsers.add_parser("diagram", help="Render pipeline diagram")
+    # diag_parser.add_argument("pipeline")
+
+    reports_parser = subparsers.add_parser("reports", help="Run HTML reports server")
+    reports_parser.add_argument("-p", "--port")
 
     argcomplete.autocomplete(parser, always_complete_options=False)
     argcomplete.autocomplete(run_parser, always_complete_options=False)
@@ -273,6 +276,7 @@ def main():
             if "artifact" not in resolved and "artifact_list" not in resolved:
                 print(pipeline)
                 pipeline.run()
+                pipeline.report(save=True)
             # if search_parts["artifact_filter"] is None:
             else:
                 if "artifact" in resolved:
@@ -282,28 +286,29 @@ def main():
                     manager.logger.debug(f"Attempting to get Artifacts {[artifact.name for artifact in resolved['artifact_list']]}")
                     for artifact in resolved["artifact_list"]:
                         artifact.get()
+                    artifact.context.report(save=True)
                 # for artifact in pipeline.artifacts.filter(
                 #     search_parts["artifact_filter"]
                 # ):
                 #     artifact.get()
                 #     print(artifact.cacher.load_paths())
 
-    elif parsed.command == "diagram":
-        manager = cf.get_manager()
-        manager.load_default_pipeline_imports()
-
-        search = parsed.pipeline
-        resolved = manager.resolve_reference(search)
-
-        pipeline = None
-        if "pipeline_instance" in resolved:
-            pipeline = resolved["pipeline_instance"]
-
-        if pipeline is not None:
-            dot = pipeline.visualize()
-            # print(dot.pipe(format="kitty"))
-            import subprocess
-            subprocess.run(["/usr/bin/kitty", "icat"], input=dot.pipe(format="kitty"))
+    # elif parsed.command == "diagram":
+    #     manager = cf.get_manager()
+    #     manager.load_default_pipeline_imports()
+    #
+    #     search = parsed.pipeline
+    #     resolved = manager.resolve_reference(search)
+    #
+    #     pipeline = None
+    #     if "pipeline_instance" in resolved:
+    #         pipeline = resolved["pipeline_instance"]
+    #
+    #     if pipeline is not None:
+    #         dot = pipeline.visualize()
+    #         # print(dot.pipe(format="kitty"))
+    #         import subprocess
+    #         subprocess.run(["/usr/bin/kitty", "icat"], input=dot.pipe(format="kitty"))
 
     elif parsed.command == "map":
         manager = cf.get_manager()
@@ -505,6 +510,15 @@ def main():
                 print(f"Pipeline classes matching '{search}':")
             for exp_class in resolved["pipeline_class_list"]:
                 print(exp_class.__name__)
+
+    elif parsed.command == "reports":
+        manager = cf.get_manager()
+        os.chdir(manager.reports_path)
+        cf.utils.run_command(
+            ["python", "-m", "http.server", str(parsed.port)]#, "--bind", args.host]
+        )
+        os.chdir("..")
+
 
 
         # if parsed.thing_to_list is None:

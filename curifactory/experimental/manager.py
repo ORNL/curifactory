@@ -44,6 +44,7 @@ class Manager:
         self,
         database_path: str = "data/store.db",
         cache_path: str = "data/cache",
+        reports_path: str = "reports",
         default_pipeline_modules: list[str] = None,
         **additional_configuration,
     ):
@@ -65,6 +66,8 @@ class Manager:
 
         self.cache_path = cache_path
 
+        self.reports_path = reports_path
+
         self.repr_functions: dict[type, callable] = {
             duckdb.DuckDBPyRelation: lambda obj: f"(duckdb) {len(obj)} rows",
             pd.DataFrame: lambda obj: f"(pandas) {len(obj)} rows",
@@ -80,12 +83,22 @@ class Manager:
                 </head>
                 <body>
                     <h1>{{ reference_name }}</h1>
-                    <h3>{{ pipeline_name }}</h3>
+                    <h3>Pipeline: {{ pipeline_name }}</h3>
+
+                    {% include "metadata.html" %}
 
                     <h2>Reportables</h2>
                     {% for reportable in reportables %}
                         {% include "reportable.html" %}
                     {% endfor %}
+
+                    <h2>Pipeline map</h2>
+                    {{ map }}
+
+                    <h2>Parameters</h2>
+                    <pre>
+{{ parameters }}
+                    </pre>
                 </body>
             </html>
             """,
@@ -108,6 +121,16 @@ class Manager:
                     {{ reportable.html }}
                 </div> <!-- /reportable -->
             """,
+
+            "metadata.html": """
+                <div class='metadata_block'>
+                    <ul>
+                    {% for key, value in pipeline_metadata.items() %}
+                        <li><b>{{ key }}</b> - {{ value }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            """
         }
 
         self.default_pipeline_modules: list[str] = default_pipeline_modules
@@ -412,6 +435,7 @@ class Manager:
         database_dir = Path(self.database_path).parent
         database_dir.mkdir(parents=True, exist_ok=True)
         Path(self.cache_path).mkdir(parents=True, exist_ok=True)
+        Path(self.reports_path).mkdir(parents=True, exist_ok=True)
 
     def ensure_store_tables(self):
         with self.db_connection() as db:
