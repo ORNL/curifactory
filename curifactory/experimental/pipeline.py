@@ -79,6 +79,7 @@ class Pipeline:
 
         for name, value in self.parameters.items():
             if isinstance(value, (Pipeline, cf.artifact.Artifact)):
+                # print(f"Copying {name}...")
                 setattr(self, name, value.copy())
             elif isinstance(value, list):
                 for index, item in enumerate(value):
@@ -270,6 +271,8 @@ class Pipeline:
         """Checks if any involved artifacts are in any way shared/can be explicitly pointed to, one from the other."""
         # TODO: if any artifact contexts are different here, warn?
         replaced = []
+        # TODO: not sure if this is the correct place to do this, but ensure
+        # that every artifact has a hash_str
         for artifact1 in self.artifacts:
             for artifact2 in self.artifacts:
                 if artifact1 == artifact2:  # or artifact2 in replaced:

@@ -104,8 +104,10 @@ class Artifact:
 
         # TODO: these should probably be properties that just return the
         # compute stage's hash str
-        self._hash_str = None
-        self._hash_debug = None
+        # self._hash_str = None
+        # self._hash_debug = None
+        self.__hash_str = None
+        self.__hash_debug = None
 
         self._compute: cf.stage.Stage = None
 
@@ -176,12 +178,21 @@ class Artifact:
     def compute_hash(self):
         if self.compute is None:
             return "", {}
-        self.hash_str, self.hash_debug = self.compute.compute_hash()
-        return self.hash_str, self.hash_debug
+        return self.compute.compute_hash()
+        # self.hash_str, self.hash_debug = self.compute.compute_hash()
+        # return self.hash_str, self.hash_debug
 
     def check_shared_artifact(self, other_artifact):
         """Two artifacts are considered equivalent (can be shared) if their hash and name is the same"""
         # TODO: is it a problem to use hash_str directly instead of compute_hash?
+        if self.hash_str is None:
+            logging.warning(
+                f"Hash string of None on artifact {self.contextualized_name}"
+            )
+        if other_artifact.hash_str is None:
+            logging.warning(
+                f"Hash string of None on artifact {other_artifact.contextualized_name}"
+            )
         if (
             self.name == other_artifact.name
             and self.hash_str == other_artifact.hash_str
@@ -295,7 +306,7 @@ class Artifact:
 
     def get(self):
         cf.get_manager().logger.debug(
-            f"Looking for artifact {self.contextualized_name} - {self.compute_hash()[0]}"
+            f"Looking for artifact {self.contextualized_name} - {self.hash_str}"
         )
         try:
             # Note that computed is set by the _stage_
@@ -357,6 +368,14 @@ class Artifact:
         if minus in context_names:
             context_names.remove(minus)
         return context_names
+
+    @property
+    def _hash_str(self):
+        return self.compute_hash()[0]
+
+    @property
+    def _hash_debug(self):
+        return self.compute_hash()[1]
 
     @property
     def artifacts(self):
@@ -438,8 +457,8 @@ class Artifact:
         building_artifacts[self.internal_id] = artifact
         artifact.cacher = copy.deepcopy(self.cacher)
         artifact.obj = self.obj
-        artifact.hash_str = self.hash_str
-        artifact.hash_debug = self.hash_debug
+        # artifact.hash_str = self.hash_str
+        # artifact.hash_debug = self.hash_debug
         if self.compute is not None:
             artifact.compute = self.compute._inner_copy(
                 building_stages, building_artifacts
@@ -498,7 +517,7 @@ class Artifact:
             prepopulated_stage = artifact.compute
         else:
             artifact = cf.artifact.Artifact(name=artifact_row["name"])
-            artifact.hash_str = artifact_row.hash
+            # artifact.hash_str = artifact_row.hash
         artifact.db_id = uuid
 
         if artifact_row.cacher_type is not None:
@@ -579,7 +598,6 @@ class Artifact:
         # TODO: outdated, mimic artifact_list above
         artifacts = self.artifact_list()
         for artifact in artifacts:
-            artifact.compute_hash()
             print("----")
             print(
                 artifact.name,
@@ -640,7 +658,6 @@ class Artifact:
         return ArtifactList(name, artifacts)
 
     def _node(self, dot, **kwargs):
-        self.compute_hash()
         if self.name is not None:
             str_name = str(
                 self.name
@@ -856,8 +873,8 @@ class ArtifactList(Artifact):  # , list):
         )  # , self.inner_artifact_list)
         building_artifacts[self.internal_id] = artifact
         # artifact.cacher = copy.deepcopy(self.cacher)
-        artifact.hash_str = self.hash_str
-        artifact.hash_debug = self.hash_debug
+        # artifact.hash_str = self.hash_str
+        # artifact.hash_debug = self.hash_debug
         # if self.compute is not None:
         #     artifact.compute = self.compute._inner_copy(
         #         building_stages, building_artifacts
@@ -913,6 +930,6 @@ class DBArtifact(Artifact):
             hash_hex = hashlib.md5(f"{key}{value}".encode()).hexdigest()
             hash_total += int(hash_hex, 16)
         hash_str = f"{hash_total:x}"
-        self.hash_str = hash_str
-        self.hash_debug = hash_values
+        # self.hash_str = hash_str
+        # self.hash_debug = hash_values
         return hash_str, hash_values

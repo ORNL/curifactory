@@ -7,11 +7,22 @@ from curifactory.experimental.manager import Manager
 
 @pytest.fixture()
 def test_manager():
+    # with Manager.from_config({"default_pipeline_modules": ["pipelines.example"]}) as manager:
+    #     yield manager
+    manager = Manager.from_config(
+        {
+            "default_pipeline_modules": [
+                "curifactory.experimental.tests.pipelines.example"
+            ]
+        }
+    )
+    return manager
+
+
+@pytest.fixture(scope="session", autouse=True)
+def clear_filesystem():
     shutil.rmtree("data", ignore_errors=True)
     shutil.rmtree("reports", ignore_errors=True)
-
-    with Manager.from_config({}) as manager:
-        yield manager
-
+    yield
     shutil.rmtree("data", ignore_errors=True)
     shutil.rmtree("reports", ignore_errors=True)
