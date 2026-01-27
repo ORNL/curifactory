@@ -20,9 +20,26 @@ def test_manager():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def clear_filesystem():
+def _clear_filesystem():
     shutil.rmtree("data", ignore_errors=True)
     shutil.rmtree("reports", ignore_errors=True)
+    shutil.rmtree("curifactory/experimental/tests/data", ignore_errors=True)
+    shutil.rmtree("curifactory/experimental/tests/reports", ignore_errors=True)
     yield
     shutil.rmtree("data", ignore_errors=True)
     shutil.rmtree("reports", ignore_errors=True)
+    shutil.rmtree("curifactory/experimental/tests/data", ignore_errors=True)
+    shutil.rmtree("curifactory/experimental/tests/reports", ignore_errors=True)
+
+
+@pytest.fixture()
+def clear_filesystem():
+    shutil.rmtree("data", ignore_errors=True)
+    shutil.rmtree("reports", ignore_errors=True)
+    shutil.rmtree("curifactory/experimental/tests/data", ignore_errors=True)
+    shutil.rmtree("curifactory/experimental/tests/reports", ignore_errors=True)
+    yield
+    shutil.rmtree("data", ignore_errors=True)
+    shutil.rmtree("reports", ignore_errors=True)
+    shutil.rmtree("curifactory/experimental/tests/data", ignore_errors=True)
+    shutil.rmtree("curifactory/experimental/tests/reports", ignore_errors=True)

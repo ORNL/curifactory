@@ -1,5 +1,7 @@
 """Tests for string to artifact/pipeline/reference conversion, primarily important for CLI usage"""
 
+from curifactory.experimental.tests.pipelines.example import add_thingsc
+
 
 def test_var_resolution(test_manager):
     """Resolving a string referring to a variable name of an instantiated pipeline should correctly return that pipeline."""
@@ -55,6 +57,42 @@ def test_artifact_from_stage_resolution(test_manager):
     """Requesting an artifact by stage name with single output artifact should return that artifact"""
     test_manager.load_default_pipeline_imports()
     resolutions = test_manager.resolve_reference("ex_one.get_thing1")
-    print(resolutions)
+    assert "artifact" in resolutions
+    assert resolutions["artifact"].name == "thing1"
+
+
+def test_ref_resolution(clear_filesystem, test_manager):
+    """Requesting a ref should return that pipeline."""
+    test_manager.load_default_pipeline_imports()
+    p1 = add_thingsc("p1")
+    p1.run()
+
+    resolutions = test_manager.resolve_reference(p1.reference)
+    assert "reference_instance" in resolutions
+    assert resolutions["reference_instance"].name == "p1"
+    assert resolutions["reference_instance"].reference == p1.reference
+    assert resolutions["reference_instance"].db_id == p1.db_id
+
+
+def test_partial_ref_resolution(clear_filesystem, test_manager):
+    """Requesting a ref just based on first part of name should still return that pipeline."""
+    test_manager.load_default_pipeline_imports()
+    p1 = add_thingsc("p1")
+    p1.run()
+
+    resolutions = test_manager.resolve_reference("p1_1")
+    assert "reference_instance" in resolutions
+    assert resolutions["reference_instance"].name == "p1"
+    assert resolutions["reference_instance"].reference == p1.reference
+    assert resolutions["reference_instance"].db_id == p1.db_id
+
+
+def test_artifact_of_ref_resolution(clear_filesystem, test_manager):
+    """Requesting an artifact from a ref should correctly return that artifact."""
+    test_manager.load_default_pipeline_imports()
+    p1 = add_thingsc("p1")
+    p1.run()
+
+    resolutions = test_manager.resolve_reference("p1_1.thing1")
     assert "artifact" in resolutions
     assert resolutions["artifact"].name == "thing1"

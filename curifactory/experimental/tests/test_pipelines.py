@@ -111,3 +111,23 @@ def test_pipeline_copy_retains_hashes(test_manager):
     p1_copy = p1.copy()
     assert p1.artifacts.thing1[0].hash_str is not None
     assert p1_copy.artifacts.thing1[0].hash_str is not None
+
+
+def test_pipeline_of_pipelines_first_stage_consolidation(test_manager):
+    """When multiple pipelines come together and have similar stages those should be
+    merged/replaced with a single one."""
+
+    @pipeline
+    def simple_aggregate(pipe1, pipe2):
+        return pipe1.outputs, pipe2.outputs
+
+    p1 = add_things("p1", num1=2, num2=7)
+    p2 = add_things("p2", num1=2, num2=9)
+
+    p3 = simple_aggregate("p3", p1, p2)
+    assert len(p3.artifacts.thing1) == 1
+    assert p3.artifacts.p2.thing1[0] == p3.artifacts.p1.thing1[0]
+
+    p3.run()
+    assert p3.outputs[0].obj == 9
+    assert p3.outputs[1].obj == 11

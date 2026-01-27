@@ -548,6 +548,8 @@ class PipelineFromRef(Pipeline):
         self.end_timestamp = pipeline_row.end_time
         self.reference = pipeline_row.reference
         self.run_number = pipeline_row.run_number
+        self.name = pipeline_row.pipeline_name
+        # TODO: should also grab pipeline_class?
 
     def define(self):
         target_artifact = cf.artifact.Artifact.load_from_uuid(self.target_artifact_row.id)

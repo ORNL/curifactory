@@ -2,7 +2,7 @@ from curifactory.experimental.artifact import Artifact
 from curifactory.experimental.stage import Stage, stage
 
 
-def test_basic_stage_def():
+def test_basic_stage_def(test_manager):
     """A stage with no outputs should still work."""
 
     @stage()
@@ -14,7 +14,7 @@ def test_basic_stage_def():
     s()
 
 
-def test_stage_with_return():
+def test_stage_with_return(test_manager):
     """A stage with a return should return a populated Stage object."""
 
     @stage(Artifact("thing"))
@@ -28,7 +28,7 @@ def test_stage_with_return():
     assert output.obj == 5
 
 
-def test_multiple_of_same_stage_should_return_diff_artifacts():
+def test_multiple_of_same_stage_should_return_diff_artifacts(test_manager):
     """Having multiple instances of a stage should be returning a new
     artifact each time, to avoid weird mutability problems."""
 
