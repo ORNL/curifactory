@@ -764,8 +764,12 @@ def test_pandas_json_cacher_with_df_no_recursion_error(configured_test_manager):
     np.testing.assert_almost_equal(df.values, data)
 
 
+# NOTE: removed hdf5 for now because pytables isn't supported in python 3.14
+# please see https://github.com/PyTables/PyTables/issues/1261
 @pytest.mark.parametrize(
-    "io_format", ["csv", "json", "parquet", "pickle", "orc", "hdf5", "excel", "xml"]
+    # "io_format", ["csv", "json", "parquet", "pickle", "orc", "hdf5", "excel", "xml"]
+    "io_format",
+    ["csv", "json", "parquet", "pickle", "orc", "excel", "xml"],
 )
 def test_pandas_cacher_for_all_io_formats(configured_test_manager, io_format):
     """The PandasCacher should work for save and load for all IO formats."""

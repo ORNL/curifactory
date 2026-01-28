@@ -1,0 +1,24 @@
+name: curifactory
+channels:
+- conda-forge
+dependencies:
+- black
+- flake8
+- graphviz
+- isort
+- jupyter
+- jupyterlab
+- matplotlib
+- numpy
+- pandas
+- pre-commit
+- pytest
+- pytest-mock
+- python
+- psutil
+- rich
+- argcomplete
+- pyarrow
+- lxml
+- openpyxl
+- duckdb
