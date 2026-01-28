@@ -317,13 +317,13 @@ be used for the run notes. If a ``EDITOR`` environment variable is set,
 curifactory will attempt to open that editor, otherwise it will run through a
 list of editors and open the first one it finds.
 
-.. figure:: images/report_notes_shortform.png
+.. figure:: ../images/report_notes_shortform.png
     :align: center
 
     The first line of the notes (if multi-line) shows up with the run in the
     report index in italics.
 
-.. figure:: images/report_notes_longform.png
+.. figure:: ../images/report_notes_longform.png
     :align: center
 
     The entire notes content shows up in a "Notes" section under the info block
@@ -635,7 +635,7 @@ Export experiment explorer as a jupyter notebook (``--notebook``)
 After the experiment completes, write a jupyter notebook with information about the run and
 basic template code to load and explore the cached data.
 
-.. figure:: images/example_notebook.png
+.. figure:: ../images/example_notebook.png
     :align: center
 
     An example output notebook generated after running the experiment.

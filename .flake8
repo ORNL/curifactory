@@ -3,3 +3,6 @@ ignore = E203, E501, W503, W605, E402
 max-line-length = 100
 max-complexity = 18
 select = B,C,E,F,W,T4,B9
+per-file-ignores=
+    # F401: imported but unused, usually done by intent in init
+    curifactory/experimental/__init__.py:F401

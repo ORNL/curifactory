@@ -41,44 +41,13 @@ Features
     :maxdepth: 2
     :caption: Usage
 
-    installation.rst
-    getting_started.rst
-    components.rst
-    parameters.rst
-    cache.rst
-    hashing_mechanics.rst
-    experiment_graph.rst
-    reports.rst
-    config.rst
-    cli_guide.rst
-    example.rst
-    tips.rst
-    cookbook.rst
-    migration.rst
-
-
-
+    user_guide.rst
 
 .. toctree::
     :maxdepth: 2
     :caption: API
 
-    args.rst
-    caching.rst
-    dag.rst
-    docker.rst
-    experiment.rst
-    hashing.rst
-    manager.rst
-    params.rst
-    procedure.rst
-    project.rst
-    record.rst
-    reporting.rst
-    staging.rst
-    store.rst
-    utils.rst
-
+    api_reference.rst
 
 
 Indices and tables

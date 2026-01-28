@@ -2,16 +2,12 @@
 # from simplification.stage import Stage
 import copy
 import hashlib
-import inspect
 import json
 import logging
 from functools import partial
-from typing import Any
 from uuid import UUID
 
-import duckdb
 import pandas as pd
-from graphviz import Digraph
 
 import curifactory.experimental as cf
 
@@ -36,60 +32,55 @@ def pointer_based_property(name):
     )
 
 
-class ArtifactManager:
-    # TODO: possibly needs a name?
-    def __init__(self):
-        # self.artifacts: dict[str, Artifact | ArtifactManager] = {}
-        # pass
-        self.artifacts: list[Artifact] = []
-
-    def __getitem__(self, key):
-        return self.artifacts[key]
-
-    # def __setitem__(self, key, value):
-    #     pass
-
-    def display(self):
-        for artifact in self.artifacts:
-            print(artifact)
-
-
-Artifacts = ArtifactManager()  # TODO: set up as part of global config?
-# config should be accessible via cf.config? And that gets set from commandline,
-# but both library and cli have a default
-# TODO: IDEA: IDEA: perhaps a better way of creating the artifacts map is to rely on an
-# explicit map() function on experiment that iterates backwards through each
-# final artifact's compute chain and adds the appropriate table reference (then
-# we don't have to worry about the artifact having filter_name) and we have a
-# (possibly) less dodgy settattr on experiment.
-# Experiment names could still be implicitly tracked on instantiation, which
-# would then potentially allow more direct control over how/what gets mapped.
-
-
 # TODO: is it possible to add our own type [] thing, so someone could say:
 # Artifact[pytorch.Module]
 class Artifact:
     internal_id = pointer_based_property("internal_id")
+    """Refers to the ``id()`` of the underlying Artifact object. Since Artifacts are also loosely
+    pointers, can use this to determine which underlying object is being pointed to."""
     name = pointer_based_property("name")
+    """Name of the artifact"""
     cacher = pointer_based_property("cacher")
+    """Cacher instance/strategy used to save/load the computed object."""
     obj = pointer_based_property("obj")
+    """The computed object itself - this is populated either by running the
+    compute stage or by loading it with the cacher if previously computed."""
     computed = pointer_based_property("computed")
+    """A boolean representing whether the compute stage that outputs this artifact has run or not."""
     compute = pointer_based_property("compute")
+    """The ``Stage`` object that outputs this artifact."""
     hash_str = pointer_based_property("hash_str")
+    """The string of the numerical hash encoding the parameters for the stage that produces this artifact."""
     hash_debug = pointer_based_property("hash_debug")
+    """A dictionary of parameters/parameter values that results in the hash for this artifact."""
     previous_context_names = pointer_based_property("previous_context_names")
+    """Any previous pipeline names through which this artifact has been passed. When a pipeline is passed
+    into a new pipeline, or a previous pipeline's artifact is copied into a new one, that previous pipeline
+    name is retained here."""
     context = pointer_based_property("context")
+    """The ``Pipeline`` that "owns" this artifact."""
 
     db_id = pointer_based_property("db_id")
+    """UUID of this artifact within the store database."""
     generated_time = pointer_based_property("generated_time")
-    reportable = pointer_based_property("reportable")
+    """Timestamp of when the compute stage outputting this artifact ran."""
+    # reportable = pointer_based_property("reportable")
 
-    in_db = pointer_based_property("in_db")
-    in_cache = pointer_based_property("in_cache")
+    # in_db = pointer_based_property("in_db")
+    # """Boolean calculated during mapping, reflects if artifact is found within the store database."""
+    # in_cache = pointer_based_property("in_cache")
+    # """Boolean calculated during mapping, reflects if artifact found at cache path."""
 
     overwrite = pointer_based_property("overwrite")
+    """Boolean flag for whether to force this artifact's compute stage to run (ignoring cached values).
+    Setting this to ``True`` impacts all downstream artifacts."""
     cache_status = pointer_based_property("cache_status")
+    """Integer (unofficial enum) referring to whether this artifact is in cache
+    or doesn't even have a cacher. See __init__.py for possible statuses."""
     map_status = pointer_based_property("map_status")
+    """Integer (unofficial enum) referring to what will be done with this
+    artifact in a run (e.g. compute, skip, use cache, or overwrite, etc. See
+    __init__.py for possible statuses."""
 
     def __init__(self, name=None, cacher=None):
         self.pointer = None
@@ -115,19 +106,16 @@ class Artifact:
         # new context, we assign the
         self._previous_context_names: list[str] = []
         self._context: cf.pipeline.Pipeline = None
-        # self.context: ArtifactManager = None
-        # self.original_context:
-        # self.context_name: str = None
 
         self.context = self._find_context()
-        self._add_to_context()
 
         self._db_id: UUID = None
         self._generated_time = None
-        self._reportable: bool = False
+        # self._reportable: bool = False
 
         self._overwrite: bool = False
 
+        self._cache_status: int = None
         self._map_status: int = None
 
         # the reason I'm hesitant to explicitly track dependents is that someone
@@ -149,31 +137,9 @@ class Artifact:
 
     # TODO: do we actually need to add every context on the stack?
     def _find_context(self) -> "cf.pipeline.Pipeline":
-        # print("Seeking context for artifact ", self.name, cf.get_manager()._pipeline_defining_stack)
         if len(cf.get_manager()._pipeline_defining_stack) > 0:
-            # self.context = cf.get_manager()._pipeline_defining_stack[-1]
             return cf.get_manager()._pipeline_defining_stack[-1]
-            # print("Context: ", self.context.name)
         return None
-        # TODO: check if context is none first?
-        # for frame in inspect.stack():
-        #     if "self" in frame.frame.f_locals.keys() and isinstance(
-        #         frame.frame.f_locals["self"], cf.experiment.Experiment
-        #     ):
-        #         # print("FOUND THE EXPERIMENT")
-        #         return frame.frame.f_locals["self"]
-        # return None
-        #
-
-    # TODO: if pipeline.artifacts is just filter of outputs, we may not
-    # actually need this at all
-    def _add_to_context(self):
-        """Add this artifact to the context pipeline's artifact manager."""
-        # if self.context is None:
-        #     Artifacts.artifacts.append(self)
-        # else:
-        #     self.context.artifacts.artifacts.append(self)
-        pass
 
     def compute_hash(self):
         if self.compute is None:
@@ -311,11 +277,11 @@ class Artifact:
         try:
             # Note that computed is set by the _stage_
             if self.computed or self.obj is not None:
-                cf.get_manager().logger.debug(f"\tAlready computed!")
+                cf.get_manager().logger.debug("\tAlready computed!")
                 return self.obj
             overwrite = self.determine_overwrite()
             if self.cacher is not None and not overwrite:
-                cf.get_manager().logger.debug(f"\tChecking cacher")
+                cf.get_manager().logger.debug("\tChecking cacher")
                 if self.cacher.check():
                     self.obj = self.cacher.load()
                     # TODO: metadata stuff

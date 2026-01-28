@@ -24,7 +24,7 @@ These components are:
 * records
 * stages
 
-.. figure:: images/components_all.png
+.. figure:: ../images/components_all.png
     :align: center
 
 
@@ -45,7 +45,7 @@ report.
 
     manager = ArtifactManager("notebook_example_0") # we pass in a name to associate with this run.
 
-.. figure:: images/components_manager.png
+.. figure:: ../images/components_manager.png
     :align: center
 
     The artifact manager contains and keeps track of the overall session for the experiment stuff.
@@ -87,7 +87,7 @@ research code, making it easy to organize and keep track of hyperparameters.
     default_params = MyParams(name="default")
     doubled_params = MyParams(name="doubled", some_scalar_multiplier=2.0)
 
-.. figure:: images/components_args.png
+.. figure:: ../images/components_args.png
     :align: center
 
     Creating and passing different parameter sets through the experiment stuff
@@ -118,7 +118,7 @@ as research code is evaluated.
 
 
 
-.. figure:: images/components_records.png
+.. figure:: ../images/components_records.png
     :align: center
 
     The state for each record is what's actually storing the results from the
@@ -170,7 +170,7 @@ the returned ``initial_value`` data.
     #> {'initial_value': 5.0} {'initial_value': 10.0}
 
 
-.. figure:: images/components_stages.png
+.. figure:: ../images/components_stages.png
     :align: center
 
     Stages are the "experiment stuff". A stage uses and modifies the state of a passed record. This is where the
@@ -211,7 +211,7 @@ can be functionally chained together:
 
 
 
-.. figure:: images/components_stages_in_context.png
+.. figure:: ../images/components_stages_in_context.png
     :align: center
 
     Records can be "pipelined" through sequences of stages to create a full
@@ -274,7 +274,7 @@ passed in the ``records`` list that the aggregate stage has access to, the
 ``final_value`` dictionary only had entries for ``r1`` and ``r2``, so the output
 artifact ``all_final_values`` only lists those two parameter sets.
 
-.. figure:: images/aggregates.png
+.. figure:: ../images/aggregates.png
     :align: center
 
 To recap, the artifact manager keeps track of the overall session for a
@@ -287,7 +287,7 @@ to the passed records based on their associated parameters, and the
 results for each stage are stored back into the record’s now modified
 state.
 
-.. figure:: images/components_all.png
+.. figure:: ../images/components_all.png
     :align: center
 
 
@@ -565,16 +565,16 @@ A few of these are:
   these to generate correctly.
 
 
-.. figure:: images/getting_started_display_info.png
+.. figure:: ../images/getting_started_display_info.png
     :align: center
 
-.. figure:: images/getting_started_display_all_reportables.png
+.. figure:: ../images/getting_started_display_all_reportables.png
     :align: center
 
-.. figure:: images/getting_started_display_record_reportables.png
+.. figure:: ../images/getting_started_display_record_reportables.png
     :align: center
 
-.. figure:: images/getting_started_display_stage_graph.png
+.. figure:: ../images/getting_started_display_stage_graph.png
     :align: center
 
 
@@ -637,7 +637,7 @@ When these two functions are in place, curifactory takes the list of arguments
 computed from :code:`get_params()` and passes it into the :code:`run()` function
 along with a fully initialized :code:`ArtifactManager`.
 
-.. figure:: images/curifactory_run_mechanics.png
+.. figure:: ../images/curifactory_run_mechanics.png
     :align: center
 
 These mechanics provide a methodical way of creating curifactory-based runnables
@@ -821,7 +821,7 @@ file) and combine all returned parameter sets into a single list that gets passe
 into the experiment's :code:`run()`.
 
 
-.. figure:: images/curifactory_overview_simpler.png
+.. figure:: ../images/curifactory_overview_simpler.png
     :align: center
 
     Creating distinct parameters files allows for structuring shared parameter sets

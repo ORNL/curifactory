@@ -70,7 +70,7 @@ your experiment to "share" the state of a data processing record with the remain
 
 The above will result in an experiment graph that looks something like the following, assuming two argsets:
 
-.. figure:: images/common_proc.png
+.. figure:: ../images/common_proc.png
     :align: center
 
 The ``make_copy()`` function on ``Record`` instances creates a new record with a deepcopy of the

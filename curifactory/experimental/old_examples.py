@@ -1,5 +1,5 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 from artifact import Artifact, ArtifactList, Artifacts
 from caching import PickleCacher

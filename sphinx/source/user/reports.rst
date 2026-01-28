@@ -26,30 +26,30 @@ Reports have 5 sections:
 
 Examples of these sections are displayed below:
 
-.. figure:: images/report_metadata.png
+.. figure:: ../images/report_metadata.png
     :scale: 60%
 
     An experiment metadata section. The hashes are the hash strings that are used to prefix
     cached data from records using that parameter set.
 
-.. figure:: images/report_reportables.png
+.. figure:: ../images/report_reportables.png
 
     A reportables section, in this case most reportables came from an aggregate stage named
     "compile_results", and one from "report_results", reflected in the title for each
     reportable. The small colored box to the right of each reportable corresponds to the
     color of the record it came from as shown in the maps below.
 
-.. figure:: images/report_map.png
+.. figure:: ../images/report_map.png
 
     An example experiment map. The :code:`compile_results` stage is an aggregate stage in this
     case, and you can visually identify which records are passed into it.
 
-.. figure:: images/report_map_complicated.png
+.. figure:: ../images/report_map_complicated.png
 
     A more complicated experiment map. This can be a useful tool to help determine where
     specific variables in a record state are coming from and where they're used.
 
-.. figure:: images/record_detail.png
+.. figure:: ../images/record_detail.png
     :scale: 60%
 
     An example of a record in the stage detail section. In order, the details for each

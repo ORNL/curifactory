@@ -1,3 +1,5 @@
+"""This module contains a revised design and API for a more pipeline and artifact oriented framework."""
+
 from typing import Any
 
 from curifactory.experimental import (

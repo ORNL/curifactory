@@ -1,7 +1,7 @@
 Components
 ==========
 
-.. figure:: images/experiment_workflow.png
+.. figure:: ../images/experiment_workflow.png
     :align: center
 
     Experiments route parameters into lists of stages, stages route relevant
@@ -58,7 +58,7 @@ The below sections describe how the different components interact with and flow 
 Stage flow
 ..........
 
-.. figure:: images/interactions_stage.png
+.. figure:: ../images/interactions_stage.png
     :align: center
 
 A stage is the processing or transformation of a record. A record has a :code:`state` attribute, which is a dictionary
@@ -76,7 +76,7 @@ experiment CLI, which minimally requires using experiments as well.)
 Procedure flow
 ..............
 
-.. figure:: images/interactions_procedure.png
+.. figure:: ../images/interactions_procedure.png
     :align: center
 
 Procedures simplify calling multiple stages. A procedure is defined with a list of these stages, and then
@@ -112,7 +112,7 @@ There are several ways you can control what set of records is passed into an agg
 Experiment flow
 ...............
 
-.. figure:: images/interactions_experiment.png
+.. figure:: ../images/interactions_experiment.png
     :align: center
 
     Note that this is a simplified example of an experiment running a single procedure. You can in principle
@@ -141,7 +141,7 @@ The decorator itself primarily accepts three parameters: :code:`inputs`, :code:`
 The :code:`inputs` and :code:`outputs` parameters are arrays of strings, where each string is the name of an artifact
 (piece of data) to retrieve or store on the record.
 
-.. figure:: images/curifactory_stage_explanation.png
+.. figure:: ../images/curifactory_stage_explanation.png
     :align: center
 
 The above example shows how decorator parameters interface with the function. The cachers, if specified,

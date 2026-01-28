@@ -33,14 +33,13 @@ license-files = ["LICENSE"]
 authors = [
     { name = "Nathan Martindale, Jason Hite, Scott L. Stewart, Mark Adams", email = "curifactory-help@ornl.gov" }
 ]
-classifers = [
+classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
-    "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
     "Development Status :: 4 - Beta",
     "Environment :: Console",
