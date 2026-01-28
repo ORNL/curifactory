@@ -29,6 +29,8 @@ class Cacheable:
         the path gets returned."""
 
         self.cache_paths: list = []
+        #self.cache_path: str = None
+        #"""If None, use the manager's cache path?"""
 
     def resolve_template_string(self, path: str) -> str:
         """Intended for when path_override is specified, this returns the path with
