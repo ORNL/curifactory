@@ -1,9 +1,8 @@
-import pytest
+from test.experimental.pipelines.example import add_things
 
 from curifactory.experimental.artifact import Artifact
-from curifactory.experimental.pipeline import Pipeline, pipeline
-from curifactory.experimental.stage import Stage, stage
-from curifactory.experimental.tests.pipelines.example import add_things
+from curifactory.experimental.pipeline import pipeline
+from curifactory.experimental.stage import stage
 
 
 def test_basic_pipeline(test_manager):

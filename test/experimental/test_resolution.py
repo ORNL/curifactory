@@ -1,6 +1,6 @@
 """Tests for string to artifact/pipeline/reference conversion, primarily important for CLI usage"""
 
-from curifactory.experimental.tests.pipelines.example import add_thingsc
+from test.experimental.pipelines.example import add_thingsc
 
 
 def test_var_resolution(test_manager):

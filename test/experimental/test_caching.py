@@ -1,5 +1,6 @@
+from test.experimental.pipelines.example import add_thingsc
+
 from curifactory.experimental.pipeline import PipelineFromRef
-from curifactory.experimental.tests.pipelines.example import add_thingsc
 
 
 def test_basic_caching_when_exactly_rerun(clear_filesystem, test_manager):
