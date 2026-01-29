@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hashing Mechanics &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Experiment Graph (DAG)" href="experiment_graph.html" />
+    <link rel="prev" title="Cache" href="cache.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and parameter sets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Hashing Mechanics</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#skipping-parameters-in-a-single-set">Skipping parameters in a single set</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="experiment_graph.html">Experiment Graph (DAG)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Curifactory Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dag.html">DAG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing.html">Hashing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="params.html">Params</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Hashing Mechanics</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/hashing_mechanics.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="hashing-mechanics">
+<h1>Hashing Mechanics<a class="headerlink" href="#hashing-mechanics" title="Permalink to this headline"></a></h1>
+<p>As discussed in <a class="reference internal" href="parameters.html#parameter-set-hashes-and-operational-parameters"><span class="std std-ref">Parameter set hashes and operational parameters</span></a>, curifactory computes a hash of
+every parameter set run through an experiment, and uses that hash to uniquely identify/version the outputs
+associated with it. This page discusses in more detail how the hash is computed and how you can modify it.</p>
+<p>The overall process involves iterating through every field of the parameter class, getting a string
+representation for the value of each, computing the md5 hash of that string, summing up the
+integer values of each md5 hash, and then turning this final (very large number) into a hexidecimal
+string. We sum the individual md5 hashes so that the order in which the fields are iterated doesn’t
+affect the hash.</p>
+<p>There is an ordered list of mechanisms that curifactory will go through to try produce
+the string representation:</p>
+<ol class="arabic simple">
+<li><p>If it’s an internal curifactory parameter, skip it, don’t let it influence the hash.  This
+includes <code class="docutils literal notranslate"><span class="pre">name</span></code>, <code class="docutils literal notranslate"><span class="pre">hash</span></code>, <code class="docutils literal notranslate"><span class="pre">overwrite</span></code>, and the <code class="docutils literal notranslate"><span class="pre">hash_representations</span></code> field itself.</p></li>
+<li><p>If the value of the parameter is <code class="docutils literal notranslate"><span class="pre">None</span></code>, skip it.</p></li>
+<li><p>If the current field is in this parameter class’s <code class="docutils literal notranslate"><span class="pre">hash_representations</span></code>, call its specified
+function (or skip this parameter if the value is <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p></li>
+<li><p>If the parameter is another dataclass, recursively use all of these mechanics on the fields inside
+it.</p></li>
+<li><p>If the parameter is a callable, use its <code class="docutils literal notranslate"><span class="pre">__qualname__</span></code></p></li>
+<li><p>Otherwise default to calling <code class="docutils literal notranslate"><span class="pre">repr</span></code> on it.</p></li>
+</ol>
+<p>“Skipping” a parameter only means it does not take part in determining the hash. If you
+run <code class="docutils literal notranslate"><span class="pre">my_param_set.params_hash(dry=True)</span></code>, instead of returning the hash it will return
+the computed dictionary of hashing mechanisms to be used on every attribute and the string
+representation that will be passed to the md5 hashing algorithm. For any parameter that
+will be skipped, it will list the reason why. See example below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Params</span><span class="p">(</span><span class="n">ExperimentParameters</span><span class="p">):</span>
+    <span class="n">some_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">operational_param</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9</span>
+    <span class="n">something_crazy</span><span class="p">:</span> <span class="nb">any</span> <span class="o">=</span> <span class="s2">&quot;crazy&quot;</span>
+    <span class="n">nothing</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">hash_representations</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">set_hash_functions</span><span class="p">(</span>
+        <span class="n">operational_param</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">something_crazy</span><span class="o">=</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="p">)</span>
+
+
+<span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">some_value</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">params_hash</span><span class="p">(</span><span class="n">dry</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1">#&gt; {&#39;name&#39;: (&#39;SKIPPED: blacklist&#39;, None),</span>
+<span class="c1">#&gt;  &#39;hash&#39;: (&#39;SKIPPED: blacklist&#39;, None),</span>
+<span class="c1">#&gt;  &#39;overwrite&#39;: (&#39;SKIPPED: blacklist&#39;, None),</span>
+<span class="c1">#&gt;  &#39;hash_representations&#39;: (&#39;SKIPPED: blacklist&#39;, None),</span>
+<span class="c1">#&gt;  &#39;some_value&#39;: (&#39;repr(param_set.some_value)&#39;, &#39;6&#39;),</span>
+<span class="c1">#&gt;  &#39;operational_param&#39;: (&#39;SKIPPED: set to None in hash_representations&#39;, None),</span>
+<span class="c1">#&gt;  &#39;something_crazy&#39;: (&quot;param_set.hash_representations[&#39;something_crazy&#39;](param_set, param_set.something_crazy)&quot;,</span>
+<span class="c1">#&gt;   &#39;crazy&#39;),</span>
+<span class="c1">#&gt;  &#39;nothing&#39;: (&#39;SKIPPED: value is None&#39;, None)}</span>
+</pre></div>
+</div>
+<div class="section" id="skipping-parameters-in-a-single-set">
+<h2>Skipping parameters in a single set<a class="headerlink" href="#skipping-parameters-in-a-single-set" title="Permalink to this headline"></a></h2>
+<p>As demonstrated so far, we can set the <code class="docutils literal notranslate"><span class="pre">hash_representations</span></code> on the parameter class itself with
+<code class="docutils literal notranslate"><span class="pre">set_hash_functions</span></code>, and this is normally the preferred way to ensure a particular parameter always
+gets ignored for the hash. However, sometimes it makes sense to only ignore a parameter in a one or a couple
+cases, perhaps for all the parameter sets coming from a single parameter file.</p>
+<p>You can set the <code class="docutils literal notranslate"><span class="pre">hash_representations</span></code> on the fly after creating a parameter set:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Params</span><span class="p">(</span><span class="n">ExperimentParameters</span><span class="p">):</span>
+    <span class="n">i_matter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">sometimes_i_matter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">7</span>
+
+<span class="n">p1</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">i_matter</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">p2</span> <span class="o">=</span> <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;test2&quot;</span><span class="p">,</span> <span class="n">i_matter</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">p2</span><span class="o">.</span><span class="n">hash_representations</span><span class="p">[</span><span class="s2">&quot;sometimes_i_matter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="n">p1</span><span class="o">.</span><span class="n">params_hash</span><span class="p">(</span><span class="n">dry</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1">#&gt; { ...</span>
+<span class="c1">#&gt;  &#39;i_matter&#39;: (&#39;repr(param_set.i_matter)&#39;, &#39;3&#39;),</span>
+<span class="c1">#&gt;  &#39;sometimes_i_matter&#39;: (&#39;repr(param_set.sometimes_i_matter)&#39;, &#39;7&#39;)}</span>
+
+<span class="n">p2</span><span class="o">.</span><span class="n">params_hash</span><span class="p">(</span><span class="n">dry</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1">#&gt; { ...</span>
+<span class="c1">#&gt;  &#39;i_matter&#39;: (&#39;repr(param_set.i_matter)&#39;, &#39;2&#39;),</span>
+<span class="c1">#&gt;  &#39;sometimes_i_matter&#39;: (&#39;SKIPPED: set to None in hash_representations&#39;, None)}</span>
+</pre></div>
+</div>
+<p>The outputs of the dry params hash calls above shows that p1 includes the actual value of the
+<code class="docutils literal notranslate"><span class="pre">sometimes_i_matter</span></code> parameter, while p2 skips it.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="cache.html" class="btn btn-neutral float-left" title="Cache" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="experiment_graph.html" class="btn btn-neutral float-right" title="Experiment Graph (DAG)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

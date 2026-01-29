@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tips and tricks &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Curifactory Cookbook" href="cookbook.html" />
+    <link rel="prev" title="Example Experiment" href="example.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and parameter sets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing_mechanics.html">Hashing Mechanics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment_graph.html">Experiment Graph (DAG)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tips and tricks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#minimum-code-to-run-stages">Minimum code to run stages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#common-dataset-for-multiple-different-argsets">Common dataset for multiple different argsets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#branching-in-experiments">Branching in experiments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-the-git-commit-hash-from-reports">Using the git commit hash from reports</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#softlinking-data-directories">Softlinking data directories</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Curifactory Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dag.html">DAG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing.html">Hashing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="params.html">Params</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Tips and tricks</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/tips.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="tips-and-tricks">
+<h1>Tips and tricks<a class="headerlink" href="#tips-and-tricks" title="Permalink to this headline"></a></h1>
+<div class="section" id="minimum-code-to-run-stages">
+<h2>Minimum code to run stages<a class="headerlink" href="#minimum-code-to-run-stages" title="Permalink to this headline"></a></h2>
+<p>Directly/manually running stages can be useful for a variety of reasons, whether for debugging them,
+using the same configuration values as from an experiment, or as a basis for exploration in
+a jupyter notebook.</p>
+<p>The smallest set of components needed to do this is an <code class="docutils literal notranslate"><span class="pre">Params</span></code> instance, an
+<code class="docutils literal notranslate"><span class="pre">ArtifactManager</span></code>, and a <code class="docutils literal notranslate"><span class="pre">Record</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># required components</span>
+<span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">ArtifactManager</span><span class="p">,</span> <span class="n">Record</span>
+<span class="kn">from</span> <span class="nn">params</span> <span class="kn">import</span> <span class="n">Params</span>  <span class="c1"># a custom dataclass extending cf.ExperimentParameters</span>
+
+<span class="c1"># import whatever stages you need to run</span>
+<span class="kn">from</span> <span class="nn">stages.data</span> <span class="kn">import</span> <span class="n">get_data</span><span class="p">,</span> <span class="n">clean_data</span>
+
+<span class="c1"># initialize instances of the required components</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">Params</span><span class="p">()</span> <span class="c1"># create/initialize the params. Note that you could also directly</span>
+                  <span class="c1"># load and manually call the get_params() of a parameter file</span>
+<span class="n">mngr</span> <span class="o">=</span> <span class="n">ArtifactManager</span><span class="p">(</span><span class="s2">&quot;some_cache_ref_name&quot;</span><span class="p">)</span> <span class="c1"># the caching prefix name (normally</span>
+                                              <span class="c1"># the experiment name)</span>
+<span class="n">record</span> <span class="o">=</span> <span class="n">Record</span><span class="p">(</span><span class="n">mngr</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+
+<span class="c1"># run desired stages</span>
+<span class="n">clean_data</span><span class="p">(</span><span class="n">get_data</span><span class="p">(</span><span class="n">record</span><span class="p">))</span>
+
+<span class="c1"># get the return from the last run stage (you could also get it from record.state)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that calling any stage, e.g. <code class="docutils literal notranslate"><span class="pre">get_data(record)</span></code> returns the modified record that
+was passed in, and since calling a stage always only takes exactly one parameter, (the record
+to use) you can directly chain the stages together with <code class="docutils literal notranslate"><span class="pre">clean_data(get_data(record))</span></code></p>
+</div>
+<div class="section" id="common-dataset-for-multiple-different-argsets">
+<h2>Common dataset for multiple different argsets<a class="headerlink" href="#common-dataset-for-multiple-different-argsets" title="Permalink to this headline"></a></h2>
+<p>For some experiments, you may have a single dataset processing procedure that all other parameter sets
+share. By default, caching only applies to a single parameter set, so the data would have to be recomputed for
+every parameter set, if you defined your entire experiment in one procedure. However, it’s possible to write
+your experiment to “share” the state of a data processing record with the remainder of your argsets.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">param_sets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Params</span><span class="p">],</span> <span class="n">mngr</span><span class="p">:</span> <span class="n">ArtifactManager</span><span class="p">):</span>
+
+    <span class="c1"># define the procedures</span>
+    <span class="n">common_data_proc</span> <span class="o">=</span> <span class="n">Procedure</span><span class="p">([</span><span class="n">get_data</span><span class="p">,</span> <span class="n">clean_data</span><span class="p">],</span> <span class="n">mngr</span><span class="p">)</span> <span class="c1"># the resulting state of this procedure</span>
+                                                               <span class="c1"># should be the same for all our</span>
+                                                               <span class="c1"># parameter sets, so we only want to run</span>
+                                                               <span class="c1"># once it</span>
+    <span class="n">model_proc</span> <span class="o">=</span> <span class="n">Procedure</span><span class="p">([</span><span class="n">train_model</span><span class="p">,</span> <span class="n">test_model</span><span class="p">],</span> <span class="n">mngr</span><span class="p">)</span> <span class="c1"># this procedure is where we expect our</span>
+                                                            <span class="c1"># argsets to differ, so run it per param set</span>
+
+    <span class="c1"># run our common procedure once (assuming all of the relevant parameter sets are _actually_ the</span>
+    <span class="c1"># same, we can just pull from the first one)</span>
+    <span class="n">data_record</span> <span class="o">=</span> <span class="n">common_data_proc</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">param_sets</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># run each argset through model procedure</span>
+    <span class="k">for</span> <span class="n">param_set</span> <span class="ow">in</span> <span class="n">param_sets</span><span class="p">:</span>
+        <span class="n">record</span> <span class="o">=</span> <span class="n">data_record</span><span class="o">.</span><span class="n">make_copy</span><span class="p">(</span><span class="n">param_set</span><span class="p">)</span> <span class="c1"># duplicate the data record&#39;s state but with new param sets</span>
+        <span class="n">model_proc</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">param_set</span><span class="p">,</span> <span class="n">record</span><span class="p">)</span> <span class="c1"># we can manually specify the record to use in a procedure if</span>
+                                          <span class="c1"># we already have one</span>
+</pre></div>
+</div>
+<p>The above will result in an experiment graph that looks something like the following, assuming two argsets:</p>
+<div class="figure align-center">
+<img alt="_images/common_proc.png" src="_images/common_proc.png" />
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">make_copy()</span></code> function on <code class="docutils literal notranslate"><span class="pre">Record</span></code> instances creates a new record with a deepcopy of the
+<code class="docutils literal notranslate"><span class="pre">state</span></code> attribute, meaning you can define procedures that only have later stages, and pass them
+the copied records.</p>
+<p>This can be extended beyond just common datasets - any baseline procedure that will not change state
+across different parameter sets in a given experiment can follow this same pattern.</p>
+</div>
+<div class="section" id="branching-in-experiments">
+<h2>Branching in experiments<a class="headerlink" href="#branching-in-experiments" title="Permalink to this headline"></a></h2>
+<p>When running experiments that compare many different approaches, it is likely you’ll need to
+run different procedures for different parameter sets (as different stages may be necessary, for example in
+training an sklearn algorithm versus a model implemented in pytorch.) Since experiment scripts are
+arbitrary, you can create parameters intended solely for use in the experiment itself, and simply branch
+based on those parameters for each given parameter set:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">param_sets</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Params</span><span class="p">],</span> <span class="n">mngr</span><span class="p">:</span> <span class="n">ArtifactManager</span><span class="p">):</span>
+    <span class="n">proc1</span> <span class="o">=</span> <span class="n">Procedure</span><span class="p">([</span><span class="n">get_data</span><span class="p">,</span> <span class="n">clean_data</span><span class="p">,</span> <span class="n">train_sklearn_alg</span><span class="p">,</span> <span class="n">test_model</span><span class="p">],</span> <span class="n">mngr</span><span class="p">)</span>
+    <span class="n">proc2</span> <span class="o">=</span> <span class="n">Procedure</span><span class="p">([</span><span class="n">get_data</span><span class="p">,</span> <span class="n">clean_data</span><span class="p">,</span> <span class="n">train_pytorch</span><span class="p">,</span> <span class="n">test_model</span><span class="p">],</span> <span class="n">mngr</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">param_set</span> <span class="ow">in</span> <span class="n">param_sets</span><span class="p">:</span>
+        <span class="c1"># we assume &quot;model_type&quot; is one of the arguments</span>
+        <span class="k">if</span> <span class="n">param_set</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;sklearn&quot;</span><span class="p">:</span>
+            <span class="n">proc1</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">param_set</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">param_set</span><span class="o">.</span><span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;pytorch&quot;</span><span class="p">:</span>
+            <span class="n">proc2</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">param_set</span><span class="p">)</span>
+
+    <span class="n">Procedure</span><span class="p">([</span><span class="n">compile_results</span><span class="p">],</span> <span class="n">mngr</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="c1"># an appropriately constructed</span>
+                                                 <span class="c1"># aggregate stage can still run</span>
+                                                 <span class="c1"># to compare outputs across multiple</span>
+                                                 <span class="c1"># procedures.</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-the-git-commit-hash-from-reports">
+<h2>Using the git commit hash from reports<a class="headerlink" href="#using-the-git-commit-hash-from-reports" title="Permalink to this headline"></a></h2>
+<p>Every time an experiment is run, the experiment store keeps track of the current git commit hash.
+If you need to be able to exactly reproduce an experiment, ensure that all code is committed before
+the run, and run it with the <code class="docutils literal notranslate"><span class="pre">--full-store</span></code> flag (see the <a class="reference internal" href="cli_guide.html#full-stores"><span class="std std-ref">Full stores (--store-full, --dry-cache)</span></a> section.)
+The output report from your run will contain the git commit hash in the top metadata fields, as well
+as the command to reproduce it with the correct cache.</p>
+<p>To re-run, checkout that hash in git, and enter the reproduce command given in the report:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>commit
+experiment<span class="w"> </span>some_experiment<span class="w"> </span>-p<span class="w"> </span>some_params<span class="w"> </span>--store-full
+
+<span class="c1"># review the report to get the appropriate run reproduce command and the git commit hash</span>
+
+<span class="c1"># to exactly reproduce:</span>
+git<span class="w"> </span>checkout<span class="w"> </span><span class="o">[</span>COMMIT_HASH<span class="o">]</span>
+experiment<span class="w"> </span>some_experiment<span class="w"> </span>-p<span class="w"> </span>some_params<span class="w"> </span>--cache<span class="w"> </span>data/runs/<span class="o">[</span>RUN_REF_NAME<span class="o">]</span><span class="w"> </span>--dry-cache
+</pre></div>
+</div>
+</div>
+<div class="section" id="softlinking-data-directories">
+<h2>Softlinking data directories<a class="headerlink" href="#softlinking-data-directories" title="Permalink to this headline"></a></h2>
+<p>If dealing with very large data, in order to not have to mess with cache paths it can sometimes
+be useful to softlink the <cite>data/cache</cite> and <cite>data/runs</cite>. If you have one or more starting datasets
+that you want your experiments to have access to, you could softlink it to <cite>data/raw</cite></p>
+<p>In order to make these easy to work with, it’s recommended to make a shell script or makefile that
+runs something like:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># link_data_dirs.sh</span>
+
+ln<span class="w"> </span>-s<span class="w"> </span><span class="o">[</span>some_cache_path<span class="o">]</span><span class="w"> </span>./data/cache
+ln<span class="w"> </span>-s<span class="w"> </span><span class="o">[</span>some_runs_folder<span class="o">]</span><span class="w"> </span>./data/runs
+ln<span class="w"> </span>-s<span class="w"> </span><span class="o">[</span>some_datasets_path<span class="o">]</span><span class="w"> </span>./data/raw
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="example.html" class="btn btn-neutral float-left" title="Example Experiment" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="cookbook.html" class="btn btn-neutral float-right" title="Curifactory Cookbook" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

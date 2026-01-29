@@ -145,6 +145,28 @@ class HTMLReporter(Reportable):
         return self.html_string
 
 
+class LatexTableReporter(Reportable):
+    """Output a latex string for a pandas dataframe, useful for copying a table from a report
+    into a latex paper.
+
+    Args:
+        df (pd.DataFrame): The pandas dataframe to render in latex in the report.
+        kwargs: Any arguments to pass to `pandas.io.formats.style.Styler.to_latex <https://pandas.pydata.org/docs/reference/api/pandas.io.formats.style.Styler.to_latex.html#pandas.io.formats.style.Styler.to_latex>`_
+    """
+
+    def __init__(self, df: pd.DataFrame, name: str = None, group: str = None, **kwargs):
+        self.df = df
+        self.kwargs = kwargs
+        super().__init__(name=name, group=group)
+
+    def html(self) -> list[str]:
+        return [
+            "<pre>",
+            self.df.style.to_latex(**self.kwargs),
+            "</pre>",
+        ]
+
+
 class DFReporter(Reportable):
     """Adds an HTML table to the report for the given pandas dataframe.
 
@@ -186,11 +208,7 @@ class DFReporter(Reportable):
             output.append(f"<th>{index}</th>")
 
             for item in row:
-                if (
-                    type(item) == float
-                    or type(item) == np.float64
-                    or type(item) == np.float32
-                ):
+                if isinstance(item, (float, np.float64, np.float32)):
                     output.append(
                         "<td align='right'><pre>{0:.{1}f}</pre></td>".format(
                             item, self.float_prec
@@ -248,6 +266,42 @@ class FigureReporter(Reportable):
 
     def html(self) -> str:
         return f"<img src='{self.path}/{self.qualified_name}.{self.kwargs['format']}'>"
+
+
+class ImageReporter(Reportable):
+    """Adds an image to the report from a specified path.
+
+    Args:
+        image_path (str): Path to an image to copy into report folder and display on report.
+    """
+
+    def __init__(self, image_path: str, name: str = None, group: str = None):
+        self.image_path = image_path
+        self.copied = False
+        self.cache_path = None
+        super().__init__(name=name, group=group)
+
+    def render(self):
+        _, extension = os.path.splitext(self.image_path)
+
+        # we have to copy the image into cache so that if the image gets deleted
+        # (or wasn't already being properly saved uniquely within the cache),
+        # rerunning the experiment will still replicate the image into the
+        # report correctly.
+        if not self.copied:
+            self.cache_path = self.record.get_path(self.qualified_name + extension)
+            shutil.copyfile(self.image_path, self.cache_path)
+            self.copied = True
+
+        new_path = f"{self.path}/{self.qualified_name}{extension}"
+        shutil.copyfile(self.cache_path, new_path)
+
+    def html(self) -> str:
+        # NOTE: duplicated because self.path is different for html() than
+        # render()
+        _, extension = os.path.splitext(self.image_path)
+        new_path = f"{self.path}/{self.qualified_name}{extension}"
+        return f"<img src='{new_path}'>"
 
 
 class LinePlotReporter(Reportable):

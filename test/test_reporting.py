@@ -2,13 +2,19 @@ import os
 from dataclasses import dataclass
 from enum import IntEnum
 
+import pandas as pd
 from graphviz import Digraph
 
 import curifactory as cf
 from curifactory import reporting
 from curifactory.caching import JsonCacher, PickleCacher
 from curifactory.experiment import run_experiment
-from curifactory.reporting import JsonReporter, _add_record_subgraph, render_reportable
+from curifactory.reporting import (
+    JsonReporter,
+    LatexTableReporter,
+    _add_record_subgraph,
+    render_reportable,
+)
 
 
 def test_reportables_cached(configured_test_manager):
@@ -171,6 +177,32 @@ def test_all_relevant_reports_generated(configured_test_manager):
     )
 
 
+def test_no_report_generated_when_no_report_flag(configured_test_manager):
+    """When the `--no-report` flag is used, running the experiment shouldn't generate a report."""
+
+    configured_test_manager.store_full = True
+    run_experiment(
+        "simple_cache",
+        ["simple_cache"],
+        param_set_names=["thing1", "thing2"],
+        mngr=configured_test_manager,
+        store_full=True,
+        report=False,
+    )
+
+    assert not os.path.exists(
+        f"{configured_test_manager.reports_path}/{configured_test_manager.get_reference_name()}/index.html"
+    )
+
+    assert not os.path.exists(
+        f"{configured_test_manager.reports_path}/_latest/index.html"
+    )
+
+    assert not os.path.exists(
+        f"{configured_test_manager.get_run_output_path()}/report/index.html"
+    )
+
+
 def test_log_copied_to_report(configured_test_manager):
     """A copy of the log should be included in the report folder."""
     configured_test_manager.store_full = True
@@ -191,3 +223,32 @@ def test_log_copied_to_report(configured_test_manager):
     assert os.path.exists(
         f"{configured_test_manager.get_run_output_path()}/report/log.txt"
     )
+
+
+def test_image_reporter_persists_after_original_deletion(configured_test_manager):
+    """The ImageReporter should still display the image in a report for a re-run
+    experiment, even if the original image was deleted."""
+
+    run_experiment("image_reporter", ["image_reporter"], mngr=configured_test_manager)
+    assert os.path.exists(
+        f"{configured_test_manager.reports_path}/{configured_test_manager.get_reference_name()}/reportables/test_save_manual_image_0.png"
+    )
+
+    os.remove("testing.png")
+
+    run_experiment("image_reporter", ["image_reporter"], mngr=configured_test_manager)
+    assert os.path.exists(
+        f"{configured_test_manager.reports_path}/{configured_test_manager.get_reference_name()}/reportables/test_save_manual_image_0.png"
+    )
+
+
+def test_latex_table_reporter():
+    """The LatexTableReporter should correctly...output a latex table? This is just
+    a basic functionality test."""
+    df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+    r = LatexTableReporter(df)
+    assert r.html() == [
+        "<pre>",
+        "\\begin{tabular}{lrr}\n & a & b \\\\\n0 & 1 & 4 \\\\\n1 & 2 & 5 \\\\\n2 & 3 & 6 \\\\\n\\end{tabular}\n",
+        "</pre>",
+    ]

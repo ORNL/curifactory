@@ -1,4 +1,3 @@
-# https://madewithml.com/courses/mlops/makefile
 SHELL=/usr/bin/env bash
 VERSION=$(shell python -c "import curifactory; print(curifactory.__version__)")
 MAMBA=micromamba
@@ -26,22 +25,22 @@ publish: ## build the package and push to pypi
 	@twine upload dist/* --skip-existing
 
 .PHONY: apply-docs
-apply-docs: ## copy current sphinx documentation into version-specific docs/ folder
-	@rm -rf docs/latest
-	@echo "Copying documentation to 'docs/latest'..."
-	@cp -r sphinx/build/html docs/latest
+apply-docs: ## copy current built sphinx documentation into version-specific docs/folder.
+	-@unlink docs/stable
 	@echo "Copying documentation to docs/$(VERSION)"
-	@rm -f docs/$(VERSION)
+	-@rm -rf docs/$(VERSION)
 	@cp -r sphinx/build/html docs/$(VERSION)
+	@echo "Linking to docs/stable"
+	@ln -s $(VERSION)/ docs/stable
 
 .PHONY: style
-style: ## executes style formatting
+style: ## run autofixers and linters.
 	black .
 	flake8
 	isort .
 
 .PHONY: clean
-clean: ## cleans all unnecessary files
+clean: ## remove auto-generated cruft files.
 	find . -type f -name "*.DS_Store" -ls -delete
 	find . | grep -E "(__pycache__|\.pyc|\.pyo)" | xargs rm -rf
 	find . | grep -E ".pytest_cache" | xargs rm -rf
@@ -73,18 +72,24 @@ testing-envs: ## create envs for running unit tests in python 3.10-3.14
 
 .PHONY: test-all
 test-all: ## runs unit tests in python 3.10-3.14
-	@echo -e "\n################# PYTHON 3.9 ##################\n"
-	micromamba run -n cftest39 pytest
-
 	@echo -e "\n################# PYTHON 3.10 ##################\n"
 	micromamba run -n cftest310 pytest
 
 	@echo -e "\n################# PYTHON 3.11 ##################\n"
 	micromamba run -n cftest311 pytest
 
+	@echo -e "\n################# PYTHON 3.12 ##################\n"
+	micromamba run -n cftest312 pytest
+
+	@echo -e "\n################# PYTHON 3.13 ##################\n"
+	micromamba run -n cftest313 pytest
+
+	@echo -e "\n################# PYTHON 3.14 ##################\n"
+	micromamba run -n cftest314 pytest
+
 
 .PHONY: paper-draft
-paper-draft: ## generate JOSS paper draft
+paper-draft: ## build a draft version of the joss paper
 	docker run --rm \
 		--volume ./paper:/data \
 		--user $(id -u):$(id -g) \

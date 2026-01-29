@@ -131,6 +131,10 @@ def cmd_run(args):
     if args.no_log:
         log = False
 
+    report = True
+    if args.no_report:
+        report = False
+
     parallel = None
     if args.parallel is not None:
         parallel = int(args.parallel)
@@ -161,9 +165,11 @@ def cmd_run(args):
         parallel_mode=args.parallel_mode,
         lazy=args.lazy,
         ignore_lazy=args.ignore_lazy,
+        report=report,
         no_dag=args.no_dag,
         map_only=args.map_only,
         hashes_only=args.hashes_only,
+        paths_only=args.paths_only,
         print_params=args.print_params,
         no_color=args.no_color,
         quiet=args.quiet,
@@ -333,6 +339,12 @@ Examples:
         action="store_true",
         help="Include loggers from all non-cf libraries in logging output.",
     )
+    outputs_group.add_argument(
+        "--no-report",
+        dest="no_report",
+        action="store_true",
+        help="Specify this flag to not generate an output run report.",
+    )
 
     # ---- CACHING ----
     caching_group.add_argument(
@@ -435,6 +447,12 @@ Examples:
         dest="plain",
         action="store_true",
         help="Print normal logging rather than rich colored logs. This will output the exact same text printed into the file log.",
+    )
+    display_group.add_argument(
+        "--paths",
+        dest="paths_only",
+        action="store_true",
+        help="Specifying this _only_ prints out the cache paths of artifacts involved in the run string. Specifying this implies --dry.",
     )
 
     # ---- PARALLEL ----

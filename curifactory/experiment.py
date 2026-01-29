@@ -51,9 +51,11 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     run_ts_override: datetime.datetime = None,
     lazy: bool = False,
     ignore_lazy: bool = False,
+    report: bool = True,
     no_dag: bool = False,
     map_only: bool = False,
     hashes_only: bool = False,
+    paths_only: bool = False,
     print_params: Union[bool, str] = False,
     no_color: bool = False,
     quiet: bool = False,
@@ -122,6 +124,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             handle pickle serialization correctly may cause errors.
         ignore_lazy (bool): Run the experiment disabling any lazy object caching/keeping everything in memory.
             This can save time when memory is less of an issue.
+        report (bool): Whether to generate an output run report or not.
         no_dag (bool): Prevent pre-execution mapping of experiment records and stages. Recommended if doing
             anything fancy with records like dynamically creating them based on results of previous records.
             Mapping is done by running the experiment but skipping all stage execution.
@@ -129,6 +132,8 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             map to stdout. **Note that setting this to True automatically sets dry.**
         hashes_only (bool): Runs only the parameter set collection from parameter files and then prints out
             the corresponding hashes to stdout. **Note that setting this to True automatically sets dry.**
+        paths_only (bool): Runs pre-execution mapping of an experiment and exists, printing out all cache paths
+            involved in the experiment. **Note that setting this to True automatically sets dry.**
         print_params (Union[bool, str]): Runs only the parameter set collection from parameter files and then prints out
             the corresponding parameters to stdout. **Note that setting this to True automatically sets dry.**
         no_color (bool): Suppress fancy colors in console output.
@@ -164,11 +169,11 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
 
     # if we request a map only run, make sure we don't impact any files, so
     # automatically set "dry"
-    if map_only or hashes_only or print_params:
+    if map_only or hashes_only or print_params or paths_only:
         dry = True
 
     # for certain debug commands, don't print logs to stdout
-    if hashes_only or print_params:
+    if hashes_only or print_params or paths_only:
         quiet = True
 
     if run_string is None:
@@ -208,12 +213,16 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             run_string += " --lazy"
         if ignore_lazy:
             run_string += " --ignore-lazy"
+        if not report:
+            run_string += " --no-report"
         if no_dag:
             run_string += " --no-dag"
         if map_only:
             run_string += " --map"
         if hashes_only:
             run_string += " --hashes"
+        if paths_only:
+            run_string += " --paths"
         if print_params:
             run_string += " --print-params"
         if no_color:
@@ -587,8 +596,12 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                     mngr.run_timestamp,
                     lazy,
                     ignore_lazy,
+                    report,
                     no_dag,
                     map_only,
+                    hashes_only,
+                    paths_only,
+                    print_params,
                     no_color,
                     quiet,
                     progress,
@@ -654,6 +667,20 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                 dag.print_experiment_map()
                 logging.info("Map-only mode, skipping remainder of experiment.")
                 return dag, mngr
+
+            if paths_only:
+                paths = []
+                dag = mngr.map
+                for artifact in dag.artifacts:
+                    if artifact.cacher is None:
+                        continue
+                    paths.extend(artifact.cacher.cache_paths)
+                    metadata_path = artifact.cacher.get_path("_metadata.json")
+                    if metadata_path not in paths:
+                        paths.append(metadata_path)
+                for path in paths:
+                    print(path)
+                return paths, mngr
 
             # create a (rich) progress bar and the associated tasks for each
             # mapped record.
@@ -765,7 +792,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
                 f"{mngr.experiment_run_number}_{mngr.run_timestamp.strftime('%Y-%m-%d')}",
             )
 
-    if not dry and not parallel_mode:
+    if not dry and not parallel_mode and report:
         mngr.generate_report()
 
     # At the end, in case we're in a live context, turn off dag mode on the

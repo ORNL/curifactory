@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DAG &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Docker" href="docker.html" />
+    <link rel="prev" title="Caching" href="caching.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and parameter sets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing_mechanics.html">Hashing Mechanics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment_graph.html">Experiment Graph (DAG)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Curifactory Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">DAG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing.html">Hashing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="params.html">Params</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">DAG</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/dag.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="module-curifactory.dag">
+<span id="dag"></span><h1>DAG<a class="headerlink" href="#module-curifactory.dag" title="Permalink to this headline"></a></h1>
+<p>Classes for managing an experiment’s map/DAG logic.</p>
+<p><strong>Classes:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.dag.DAG" title="curifactory.dag.DAG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DAG</span></code></a>()</p></td>
+<td><p>A DAG represents an entire mapped version of an experiment as a graph, where the nodes are stages and the connections are the outputs of one stage mapped to the associated inputs of another.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.dag.ExecutionNode" title="curifactory.dag.ExecutionNode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExecutionNode</span></code></a>(record, stage_name)</p></td>
+<td><p>Represents a particular stage for a particular record - a node in the overall experiment graph.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt id="curifactory.dag.DAG">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.dag.</span></code><code class="sig-name descname"><span class="pre">DAG</span></code><a class="headerlink" href="#curifactory.dag.DAG" title="Permalink to this definition"></a></dt>
+<dd><p>A DAG represents an entire mapped version of an experiment as a graph, where
+the nodes are stages and the connections are the outputs of one stage mapped to
+the associated inputs of another.</p>
+<p>The DAG is constructed as the first step of an experiment run (provided it isn’t
+run with <code class="docutils literal notranslate"><span class="pre">no_dag=True</span></code> or <code class="docutils literal notranslate"><span class="pre">--no-dag</span></code> on the CLI), by setting the artifact
+manager to a special <code class="docutils literal notranslate"><span class="pre">map_mode</span></code>. The experiment code is all run but every stage
+short circuits before execution and after collecting information about it
+(the record it’s part of, what outputs are cached, etc.) This information is then
+used to determine which stages actually need to execute, working backwards from
+the leaf stages. This differs from curifactory’s base <code class="docutils literal notranslate"><span class="pre">no_dag</span></code> mode because the
+need-to-execute for every stage is based primarily on whether any future stage
+actually requires this one’s outputs and has a need-to-execute (resulting in a
+recursive check backwards from the leaf stages.)</p>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.dag.DAG.analyze" title="curifactory.dag.DAG.analyze"><code class="xref py py-obj docutils literal notranslate"><span class="pre">analyze</span></code></a>()</p></td>
+<td><p>Construct execution trees and execution list.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.dag.DAG.build_execution_tree_recursive" title="curifactory.dag.DAG.build_execution_tree_recursive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_execution_tree_recursive</span></code></a>(record, stage)</p></td>
+<td><p>Recursively builds the stage dependency tree based on inputs/outputs.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.dag.DAG.build_execution_trees" title="curifactory.dag.DAG.build_execution_trees"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_execution_trees</span></code></a>()</p></td>
+<td><p>Build an execution tree (essentially the sub-DAG) for every leaf node found.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.dag.DAG.child_records" title="curifactory.dag.DAG.child_records"><code class="xref py py-obj docutils literal notranslate"><span class="pre">child_records</span></code></a>(record)</p></td>
+<td><p>Return a list of all records for which the provided record is an input record.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.dag.DAG.determine_execution_list" title="curifactory.dag.DAG.determine_execution_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">determine_execution_list</span></code></a>()</p></td>
+<td><p>I’ve got them on the list, they’ll none of them be missed.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.dag.DAG.determine_execution_list_recursive" title="curifactory.dag.DAG.determine_execution_list_recursive"><code class="xref py py-obj docutils literal notranslate"><span class="pre">determine_execution_list_recursive</span></code></a>(node, …)</p></td>
+<td><p>Determines if the requested stage will need to execute or not, and if so prepends itself and all prior stages needed to execute through recursive calls.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.dag.DAG.find_leaves" title="curifactory.dag.DAG.find_leaves"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_leaves</span></code></a>()</p></td>
+<td><p>Get all of the nodes who have no outputs depended on by any others, these should be all of the “last” stages in the experiment and/or utility stages (e.g.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.dag.DAG.get_record_string" title="curifactory.dag.DAG.get_record_string"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_record_string</span></code></a>(record_index)</p></td>
+<td><p>Get a string representation for the given record.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.dag.DAG.is_leaf" title="curifactory.dag.DAG.is_leaf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_leaf</span></code></a>(record, stage_name)</p></td>
+<td><p>Check if the given stage is a leaf, based on two conditions:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.dag.DAG.is_output_used_anywhere" title="curifactory.dag.DAG.is_output_used_anywhere"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_output_used_anywhere</span></code></a>(record, …)</p></td>
+<td><p>Check if the specified output is used as input in any stage.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.dag.DAG.print_experiment_map" title="curifactory.dag.DAG.print_experiment_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_experiment_map</span></code></a>()</p></td>
+<td><p>Print the representations for each record.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Attributes:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.dag.DAG.artifacts" title="curifactory.dag.DAG.artifacts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">artifacts</span></code></a></p></td>
+<td><p>This should essentially be an equivalent copy of ArtifactManager.artifacts.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.dag.DAG.execution_list" title="curifactory.dag.DAG.execution_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execution_list</span></code></a></p></td>
+<td><p>This is the list of ExecutionNode individual (non-recursive) string representations: <code class="docutils literal notranslate"><span class="pre">(RECORD_ID,</span> <span class="pre">STAGE_NAME)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.dag.DAG.execution_trees" title="curifactory.dag.DAG.execution_trees"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execution_trees</span></code></a></p></td>
+<td><p>The set of node execution trees - each node here is a “leaf stage”, or stage with no outputs that other stages depend on.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="curifactory.dag.DAG.analyze">
+<code class="sig-name descname"><span class="pre">analyze</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.dag.DAG.analyze" title="Permalink to this definition"></a></dt>
+<dd><p>Construct execution trees and execution list.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.dag.DAG.artifacts">
+<code class="sig-name descname"><span class="pre">artifacts</span></code><em class="property"><span class="pre">:</span> <span class="pre">list</span></em><a class="headerlink" href="#curifactory.dag.DAG.artifacts" title="Permalink to this definition"></a></dt>
+<dd><p>This should essentially be an equivalent copy of ArtifactManager.artifacts.
+All of record’s stage inputs and outputs should correctly index into this.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.dag.DAG.build_execution_tree_recursive">
+<code class="sig-name descname"><span class="pre">build_execution_tree_recursive</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><span class="pre">curifactory.record.Record</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">stage</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#curifactory.dag.ExecutionNode" title="curifactory.dag.ExecutionNode"><span class="pre">curifactory.dag.ExecutionNode</span></a><a class="headerlink" href="#curifactory.dag.DAG.build_execution_tree_recursive" title="Permalink to this definition"></a></dt>
+<dd><p>Recursively builds the stage dependency tree based on inputs/outputs. This does
+not condition anything based on cache or overwrite status, this is exclusively the
+“inverted” stage path (provided stage is the root).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.dag.DAG.build_execution_trees">
+<code class="sig-name descname"><span class="pre">build_execution_trees</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.dag.DAG.build_execution_trees" title="Permalink to this definition"></a></dt>
+<dd><p>Build an execution tree (essentially the sub-DAG) for every leaf node found.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.dag.DAG.child_records">
+<code class="sig-name descname"><span class="pre">child_records</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><span class="pre">curifactory.record.Record</span></a></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#curifactory.dag.DAG.child_records" title="Permalink to this definition"></a></dt>
+<dd><p>Return a list of all records for which the provided record is an input record.
+(This occurs when calling <code class="docutils literal notranslate"><span class="pre">record.make_copy()</span></code> and for aggregates.)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.dag.DAG.determine_execution_list">
+<code class="sig-name descname"><span class="pre">determine_execution_list</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.dag.DAG.determine_execution_list" title="Permalink to this definition"></a></dt>
+<dd><p>I’ve got them on the list, they’ll none of them be missed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.dag.DAG.determine_execution_list_recursive">
+<code class="sig-name descname"><span class="pre">determine_execution_list_recursive</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#curifactory.dag.ExecutionNode" title="curifactory.dag.ExecutionNode"><span class="pre">curifactory.dag.ExecutionNode</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite_check_only</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#curifactory.dag.DAG.determine_execution_list_recursive" title="Permalink to this definition"></a></dt>
+<dd><p>Determines if the requested stage will need to execute or not, and if so prepends
+itself and all prior stages needed to execute through recursive calls.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.dag.DAG.execution_list">
+<code class="sig-name descname"><span class="pre">execution_list</span></code><em class="property"><span class="pre">:</span> <span class="pre">list</span></em><a class="headerlink" href="#curifactory.dag.DAG.execution_list" title="Permalink to this definition"></a></dt>
+<dd><p>This is the list of ExecutionNode individual (non-recursive) string
+representations: <code class="docutils literal notranslate"><span class="pre">(RECORD_ID,</span> <span class="pre">STAGE_NAME)</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.dag.DAG.execution_trees">
+<code class="sig-name descname"><span class="pre">execution_trees</span></code><em class="property"><span class="pre">:</span> <span class="pre">list</span></em><a class="headerlink" href="#curifactory.dag.DAG.execution_trees" title="Permalink to this definition"></a></dt>
+<dd><p>The set of node execution trees - each node here is a “leaf stage”, or
+stage with no outputs that other stages depend on. This is essentially the
+inverted tree, because stage “leafs” will each be a root of an execution
+tree, where the sub-trees are all the dependencies required for it to run.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.dag.DAG.find_leaves">
+<code class="sig-name descname"><span class="pre">find_leaves</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">list</span><a class="headerlink" href="#curifactory.dag.DAG.find_leaves" title="Permalink to this definition"></a></dt>
+<dd><p>Get all of the nodes who have no outputs depended on by any others, these
+should be all of the “last” stages in the experiment and/or utility stages
+(e.g. a stage that just handles reporting or something like that/doesn’t really
+output any artifacts.)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list of tuples where the first element is the record index and the
+second is the name of the stage.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.dag.DAG.get_record_string">
+<code class="sig-name descname"><span class="pre">get_record_string</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record_index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.dag.DAG.get_record_string" title="Permalink to this definition"></a></dt>
+<dd><p>Get a string representation for the given record. This collects
+all of the associated stages, inputs and outputs for each, and cache
+status for each artifact.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.dag.DAG.is_leaf">
+<code class="sig-name descname"><span class="pre">is_leaf</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><span class="pre">curifactory.record.Record</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">stage_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#curifactory.dag.DAG.is_leaf" title="Permalink to this definition"></a></dt>
+<dd><p>Check if the given stage is a leaf, based on two conditions:</p>
+<ol class="arabic simple">
+<li><p>Stage is a leaf if it has no output artifacts.</p></li>
+<li><dl class="simple">
+<dt>Stage is a leaf if it has outputs but they aren’t used as inputs in</dt><dd><p>any other stages.</p>
+</dd>
+</dl>
+</li>
+</ol>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.dag.DAG.is_output_used_anywhere">
+<code class="sig-name descname"><span class="pre">is_output_used_anywhere</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><span class="pre">curifactory.record.Record</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">stage_search_start_index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">bool</span><a class="headerlink" href="#curifactory.dag.DAG.is_output_used_anywhere" title="Permalink to this definition"></a></dt>
+<dd><p>Check if the specified output is used as input in any stage.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.dag.DAG.print_experiment_map">
+<code class="sig-name descname"><span class="pre">print_experiment_map</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.dag.DAG.print_experiment_map" title="Permalink to this definition"></a></dt>
+<dd><p>Print the representations for each record.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="curifactory.dag.ExecutionNode">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">curifactory.dag.</span></code><code class="sig-name descname"><span class="pre">ExecutionNode</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><span class="pre">curifactory.record.Record</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">stage_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.dag.ExecutionNode" title="Permalink to this definition"></a></dt>
+<dd><p>Represents a particular stage for a particular record - a node in the
+overall experiment graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>record</strong> (<a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><em>Record</em></a>) – The record in which this stage would execute.</p></li>
+<li><p><strong>stage_name</strong> (<em>str</em>) – The name of the stage that would execute.</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Methods:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.dag.ExecutionNode.chain_rep" title="curifactory.dag.ExecutionNode.chain_rep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chain_rep</span></code></a>()</p></td>
+<td><p>Return this node represented as a tuple of the record index and stage name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.dag.ExecutionNode.string_rep" title="curifactory.dag.ExecutionNode.string_rep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">string_rep</span></code></a>([level])</p></td>
+<td><p>Recursively collect and return this node’s index and name and that of its subtrees.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Attributes:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.dag.ExecutionNode.dependencies" title="curifactory.dag.ExecutionNode.dependencies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dependencies</span></code></a></p></td>
+<td><p>Dependencies are the ‘subtree’ - the other nodes/stages that create the outputs that match this node’s inputs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.dag.ExecutionNode.parent" title="curifactory.dag.ExecutionNode.parent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parent</span></code></a></p></td>
+<td><p>The parent is a node that depends on this one/uses its outputs.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="curifactory.dag.ExecutionNode.chain_rep">
+<code class="sig-name descname"><span class="pre">chain_rep</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">tuple</span><a class="headerlink" href="#curifactory.dag.ExecutionNode.chain_rep" title="Permalink to this definition"></a></dt>
+<dd><p>Return this node represented as a tuple of the record index and stage name.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.dag.ExecutionNode.dependencies">
+<code class="sig-name descname"><span class="pre">dependencies</span></code><em class="property"><span class="pre">:</span> <span class="pre">list</span></em><a class="headerlink" href="#curifactory.dag.ExecutionNode.dependencies" title="Permalink to this definition"></a></dt>
+<dd><p>Dependencies are the ‘subtree’ - the other nodes/stages that create
+the outputs that match this node’s inputs.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="curifactory.dag.ExecutionNode.parent">
+<code class="sig-name descname"><span class="pre">parent</span></code><em class="property"><span class="pre">:</span> <a class="reference internal" href="#curifactory.dag.ExecutionNode" title="curifactory.dag.ExecutionNode"><span class="pre">curifactory.dag.ExecutionNode</span></a></em><a class="headerlink" href="#curifactory.dag.ExecutionNode.parent" title="Permalink to this definition"></a></dt>
+<dd><p>The parent is a node that depends on this one/uses its outputs.
+(This means that the same execution node might appear in multiple
+execution trees, if its output is used by more than one other stage)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="curifactory.dag.ExecutionNode.string_rep">
+<code class="sig-name descname"><span class="pre">string_rep</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="headerlink" href="#curifactory.dag.ExecutionNode.string_rep" title="Permalink to this definition"></a></dt>
+<dd><p>Recursively collect and return this node’s index and name and that of
+its subtrees.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="caching.html" class="btn btn-neutral float-left" title="Caching" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="docker.html" class="btn btn-neutral float-right" title="Docker" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

@@ -87,7 +87,7 @@ Once enabled, the `experiment` command will provide tab complete for experiment 
 ## Documentation
 
 The documentation for the latest version of Curifactory can be found at:
-[https://ornl.github.io/curifactory/latest/index.html](https://ornl.github.io/curifactory/latest/index.html).
+[https://ornl.github.io/curifactory/stable/index.html](https://ornl.github.io/curifactory/stable/index.html).
 
 
 ## Examples

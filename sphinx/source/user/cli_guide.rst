@@ -360,6 +360,168 @@ You can use ``experiment reports --update`` to regenerate this index based
 on all discovered folders in your reports directory.
 
 
+Getting Experiment DAG and Parameter Info
+=========================================
+
+Sometimes when running an experiment, it unexpectedly runs a record you weren't
+expecting or thought was already cached, or it didn't seem that the parameters
+were quite right. The CLI has a few different flags to display parameters and
+planned experiment map execution without actually running it.
+
+Experiment maps/cache status
+............................
+
+Printing the map of an experiment (using ``--map``) will display the list of
+records collected from the DAG, which will include the name and hash of the
+associated parameter set, the list of stages, and the input and output artifacts
+associated with each stage. If any artifacts are found in the cache, it will
+state this and include the run name of the experiment that generated it.
+
+An example ``--map`` output:
+
+.. code-block:: bash
+
+   $ experiment iris --map
+
+   ==== Record 0 (simple_lr) hash: 25835102b5c3a5842e7ac87658365c7bd ====
+   Stage: load_data
+           Outputs:
+                   training_data (cached) [iris_36_2025-07-20-T094259]
+                   testing_data (cached) [iris_36_2025-07-20-T094259]
+   Stage: train_model
+           Inputs:
+                   training_data (cached) [iris_36_2025-07-20-T094259]
+          Outputs:
+                   model (cached) [iris_36_2025-07-20-T094259]
+   ==== Record 1 (simple_rf) hash: 1b2e0b91ba94b00f01ae33840e870ec7b ====
+   Stage: load_data
+          Outputs:
+                   training_data
+                   testing_data
+   Stage: train_model
+           Inputs:
+                   training_data
+           Outputs:
+                   model
+   ==== Record 2 (None) hash: d711fcb3fa7bbb5cfe94195d86528f4e ====
+   Stage: test_models (leaf)
+           Input records:
+                   Record 0 (simple_lr)
+                   Record 1 (simple_rf)
+           Inputs:
+                   model (cached) [iris_36_2025-07-20-T094259]
+                   model
+                   testing_data (cached) [iris_36_2025-07-20-T094259]
+                   testing_data
+           Outputs:
+                   scores
+
+This output shows the three records from two different parameter sets (the last
+record is using an aggregate stage), and all of the ``simple_lr`` record's
+artifacts were found in cache from a previous run.
+
+Note that all of ``--map`` and the other flags listed in this section will
+respond to the specific experiment run string provided, meaning that if you were
+to run ``experiment iris -n simple_lr --map``, it would only map the experiment
+with the ``simple_lr`` parameter set.
+
+Parameter set hashes/parameters
+...............................
+
+You can get a list of just the hashes and names of parameter sets that will run
+by using the ``--hashes`` argument:
+
+.. code-block:: bash
+
+   $ experiment iris --hashes
+
+   25835102b5c3a5842e7ac87658365c7bd simple_lr
+   1b2e0b91ba94b00f01ae33840e870ec7b simple_rf
+
+You can see a more expanded view of the parameters and get a complete printout
+of what is contained in the parameter sets by using ``--print-params`` instead
+of ``--hashes``:
+
+.. code-block:: bash
+
+   $ experiment iris --print-params
+
+   25835102b5c3a5842e7ac87658365c7bd simple_lr
+   {
+       "name": "simple_lr",
+       "balanced": "True",
+       "n": "100",
+       "seed": "1",
+       "model_type": "LogisticRegression",
+       "test_percent": "0.25"
+   }
+   1b2e0b91ba94b00f01ae33840e870ec7b simple_rf
+   {
+       "name": "simple_rf",
+       "balanced": "False",
+       "n": "100",
+       "seed": "1",
+       "model_type": "RandomForestClassifier",
+       "test_percent": "0.25"
+   }
+
+The ``--print-params`` flag can also accept the name of a specific parameter set
+within the experiment run **or the prefix (first few characters, enough to be
+unique) of any parameter set hash stored in the parameter registry**, (even if
+it's not associated with the experiment name listed) and it will print that full
+parameter set. This is especially useful for comparing a previous version of a
+parameter set with the current one.
+
+.. code-block:: bash
+
+   $ experiment iris --print-params 1b2e0b
+
+   1b2e0b91ba94b00f01ae33840e870ec7b simple_rf
+   {
+       "name": "simple_rf",
+       "balanced": "False",
+       "n": "100",
+       "seed": "1",
+       "model_type": "RandomForestClassifier",
+       "test_percent": "0.25"
+   }
+
+Cache paths
+...........
+
+Finally, ``--paths`` will print out the artifact cache paths for all involved
+artifacts in an experiment map. There are two important notes about this
+functionality:
+
+1. This is printing all of the _expected_ paths that will be involved and/or already exist in cache, this is not specifically listing paths that do in fact already exist in the cache folder.
+2. This is only going based on artifact cachers - any ``record.get_dir()`` or ``record.get_path()`` calls that occur _inside_ of a stage and subsequently saved to won't appear in this list (as curifactory has no way to know what paths actually get used inside of a stage without actually executing it)
+
+.. code-block:: bash
+
+   $ experiment iris --paths
+
+   data/cache/iris_25835102b5c3a5842e7ac87658365c7bd_load_data_training_data.pkl
+   data/cache/iris_25835102b5c3a5842e7ac87658365c7bd_load_data_training_data_metadata.json
+   data/cache/iris_25835102b5c3a5842e7ac87658365c7bd_load_data_testing_data.pkl
+   data/cache/iris_25835102b5c3a5842e7ac87658365c7bd_load_data_testing_data_metadata.json
+   data/cache/iris_25835102b5c3a5842e7ac87658365c7bd_train_model_model.pkl
+   data/cache/iris_25835102b5c3a5842e7ac87658365c7bd_train_model_model_metadata.json
+   data/cache/iris_1b2e0b91ba94b00f01ae33840e870ec7b_load_data_training_data.pkl
+   data/cache/iris_1b2e0b91ba94b00f01ae33840e870ec7b_load_data_training_data_metadata.json
+   data/cache/iris_1b2e0b91ba94b00f01ae33840e870ec7b_load_data_testing_data.pkl
+   data/cache/iris_1b2e0b91ba94b00f01ae33840e870ec7b_load_data_testing_data_metadata.json
+   data/cache/iris_1b2e0b91ba94b00f01ae33840e870ec7b_train_model_model.pkl
+   data/cache/iris_1b2e0b91ba94b00f01ae33840e870ec7b_train_model_model_metadata.json
+
+
+This command can be used to pipe paths into other commands, which can be useful to
+clear out the cache for a particular experiment run without using ``--overwrite``:
+
+.. code-block:: bash
+
+   experiment iris --paths | xargs rm
+
+
 Full reference
 ==============
 
@@ -450,6 +612,12 @@ Suppress logging (``--no-log``)
 
 Specifying this flag will disable writing a console log file to the ``logs/`` directory.
 
+Suppress report generation (``--no-report``)
+............................................
+
+Specifying this flag will disable the output report generation at the end of the
+experiment.
+
 Overwrite cache (``--overwrite``)
 .....................................
 
@@ -526,6 +694,38 @@ experiment has everything cached or not.
 
 Note that if you run this with ``--verbose``, it will also print out the exact set of
 stages it plans to execute in DAG model.
+
+See :ref:`Getting Experiment DAG and Parameter Info` for more info.
+
+
+Only print experiment hashes and names (``--hashes``)
+.....................................................
+
+Prints out only the parameter set hashes for a run, followed by a space, followed by the
+parameter set name.
+
+See :ref:`Getting Experiment DAG and Parameter Info` for more info.
+
+
+Only print parameter set contents (``--print-params``)
+......................................................
+
+When specified only as a flag, will print out the JSON of each individual
+parameter set involved in a run. Can be given a specific name of a parameter set
+in that run to print out just that set, or the unique prefix of any hash of any
+parameter set in the parameter registry (any previously used parameter set from
+any run) to print out that specific set.
+
+See :ref:`Getting Experiment DAG and Parameter Info` for more info.
+
+
+Only print artifact cache paths (``--paths``)
+.............................................
+
+Only print out the expected cache paths of any artifacts involved in an
+experiment run.
+
+See :ref:`Getting Experiment DAG and Parameter Info` for more info.
 
 
 Run experiment purely linearly instead with DAG (``--no-dag``)

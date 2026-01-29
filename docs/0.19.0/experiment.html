@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Experiment &mdash; Curifactory  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Hashing" href="hashing.html" />
+    <link rel="prev" title="Docker" href="docker.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameter files and parameter sets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cache.html">Cache</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing_mechanics.html">Hashing Mechanics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment_graph.html">Experiment Graph (DAG)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reports.html">Reports</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">Configuration and directory structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli_guide.html">CLI Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips.html">Tips and tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cookbook.html">Curifactory Cookbook</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">Migration Guide</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dag.html">DAG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hashing.html">Hashing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="manager.html">Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="params.html">Params</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedure.html">Procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record.html">Record</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staging.html">Staging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="store.html">Store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Experiment</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/experiment.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <div class="section" id="module-curifactory.experiment">
+<span id="experiment"></span><h1>Experiment<a class="headerlink" href="#module-curifactory.experiment" title="Permalink to this headline"></a></h1>
+<p>This is the ‘main’ runnable function and CLI, which handles setting up logging,
+folders, reports, and running the passed experiment.</p>
+<p>This file contains a <code class="code docutils literal notranslate"><span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">&quot;__main__&quot;</span></code> and can be run directly.</p>
+<p><strong>Functions:</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.experiment.collect_parameter_sets" title="curifactory.experiment.collect_parameter_sets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">collect_parameter_sets</span></code></a>(manager, param_files, …)</p></td>
+<td><p>Load the requested parameter files, run their get_params, and filter down based on any other relevant CLI args.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.experiment.list_experiments" title="curifactory.experiment.list_experiments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_experiments</span></code></a>()</p></td>
+<td><p>Print out all valid experiments that have a <code class="code docutils literal notranslate"><span class="pre">def</span> <span class="pre">run()</span></code> function, including any top-of-file docstrings associated with each.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.experiment.list_params" title="curifactory.experiment.list_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_params</span></code></a>()</p></td>
+<td><p>Print out all valid parameter files that have a <code class="code docutils literal notranslate"><span class="pre">def</span> <span class="pre">get_params()</span></code> function, including any top-of-file docstrings associated with each.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.experiment.regex_lister" title="curifactory.experiment.regex_lister"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regex_lister</span></code></a>(module_name, regex[, try_import])</p></td>
+<td><p>Used by both list_experiments and list_params.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.experiment.run_experiment" title="curifactory.experiment.run_experiment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_experiment</span></code></a>(experiment_name[, …])</p></td>
+<td><p>The experiment entrypoint function.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt id="curifactory.experiment.collect_parameter_sets">
+<code class="sig-prename descclassname"><span class="pre">curifactory.experiment.</span></code><code class="sig-name descname"><span class="pre">collect_parameter_sets</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_files</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite_override</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_set_names</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_set_indices_resolved</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_full</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.experiment.collect_parameter_sets" title="Permalink to this definition"></a></dt>
+<dd><p>Load the requested parameter files, run their get_params, and filter down based
+on any other relevant CLI args.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="curifactory.experiment.list_experiments">
+<code class="sig-prename descclassname"><span class="pre">curifactory.experiment.</span></code><code class="sig-name descname"><span class="pre">list_experiments</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.experiment.list_experiments" title="Permalink to this definition"></a></dt>
+<dd><p>Print out all valid experiments that have a <code class="code docutils literal notranslate"><span class="pre">def</span> <span class="pre">run()</span></code> function, including
+any top-of-file docstrings associated with each.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="curifactory.experiment.list_params">
+<code class="sig-prename descclassname"><span class="pre">curifactory.experiment.</span></code><code class="sig-name descname"><span class="pre">list_params</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.experiment.list_params" title="Permalink to this definition"></a></dt>
+<dd><p>Print out all valid parameter files that have a <code class="code docutils literal notranslate"><span class="pre">def</span> <span class="pre">get_params()</span></code>
+function, including any top-of-file docstrings associated with each.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="curifactory.experiment.regex_lister">
+<code class="sig-prename descclassname"><span class="pre">curifactory.experiment.</span></code><code class="sig-name descname"><span class="pre">regex_lister</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">try_import</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.experiment.regex_lister" title="Permalink to this definition"></a></dt>
+<dd><p>Used by both list_experiments and list_params. This scans every file in the passed
+folder for the requested regex, and tries to import the files that have a match.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="curifactory.experiment.run_experiment">
+<code class="sig-prename descclassname"><span class="pre">curifactory.experiment.</span></code><code class="sig-name descname"><span class="pre">run_experiment</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiment_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite_override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dir_override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mngr</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager" title="curifactory.manager.ArtifactManager"><span class="pre">curifactory.manager.ArtifactManager</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_debug</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry_cache</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_full</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_errors</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_docker</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_notebook</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_string</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stage_overwrites</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_set_names</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_set_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_param_set_indices</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_mode</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_lock</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">multiprocessing.context.BaseContext.Lock</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_queue</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">multiprocessing.context.BaseContext.Queue</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_num_override</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_ts_override</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime.datetime</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lazy</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_lazy</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_dag</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_only</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hashes_only</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paths_only</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_params</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_color</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plain</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notes</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_loggers</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.experiment.run_experiment" title="Permalink to this definition"></a></dt>
+<dd><p>The experiment entrypoint function. This executes the given experiment
+with the given parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>experiment_name</strong> (<em>str</em>) – The name of the experiment script (without the <code class="docutils literal notranslate"><span class="pre">.py</span></code>).</p></li>
+<li><p><strong>param_files</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – A list of names of parameter files (without the <code class="docutils literal notranslate"><span class="pre">.py</span></code>).</p></li>
+<li><p><strong>overwrite_override</strong> (<em>bool</em>) – Whether to force overwrite on all cache data.</p></li>
+<li><p><strong>cache_dir_override</strong> (<em>str</em>) – Specify a non-default cache location. This would be used if
+running with the cache from a previous <code class="docutils literal notranslate"><span class="pre">--store-full</span></code> run.</p></li>
+<li><p><strong>mngr</strong> (<a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager" title="curifactory.manager.ArtifactManager"><em>ArtifactManager</em></a>) – An artifact manager to use for the experiment. One will be automatically
+created if none is passed.</p></li>
+<li><p><strong>log</strong> (<em>bool</em>) – Whether to write a log file or not.</p></li>
+<li><p><strong>log_debug</strong> (<em>bool</em>) – Whether to include DEBUG level messages in the log.</p></li>
+<li><p><strong>dry</strong> (<em>bool</em>) – Setting dry to true will suppress saving any files (including logs), and will
+not update parameter stores. (It should have no effect on any files.)</p></li>
+<li><p><strong>dry_cache</strong> (<em>bool</em>) – Setting this to true only suppresses saving cache files. This is recommended
+if you’re running with a cache_dir_override for some previous <code class="docutils literal notranslate"><span class="pre">--store-full</span></code> run, so you
+don’t accidentally overwrite or add new data to the <code class="docutils literal notranslate"><span class="pre">--store-full</span></code> directory.</p></li>
+<li><p><strong>store_full</strong> (<em>bool</em>) – Store environment info, log, output report, and all cached files in a
+run-specific folder (<code class="code docutils literal notranslate"><span class="pre">data/runs</span></code> by default)</p></li>
+<li><p><strong>log_errors</strong> (<em>bool</em>) – Whether to include error messages in the log output.</p></li>
+<li><p><strong>prefix</strong> (<em>str</em>) – Instead of using the experiment name to group cached data, use this prefix instead.</p></li>
+<li><p><strong>build_docker</strong> (<em>bool</em>) – If true, build a docker image with all of the run cache afterwards.</p></li>
+<li><p><strong>build_notebook</strong> (<em>bool</em>) – If true, add a notebook with run info and default cells to reproduce
+after run execution.</p></li>
+<li><p><strong>run_string</strong> (<em>str</em>) – An automatically populated string representing the CLI command for the run,
+do not change this.</p></li>
+<li><p><strong>stage_overwrites</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – A list of string stage names that you should overwrite, this is
+useful if there are specific stages you sometimes want to recompute but the remainder of
+the data can remain cached.</p></li>
+<li><p><strong>param_set_names</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – A list of parameter set names to run. If this is specified, only parameter
+sets with these names will be passed on to the experiment.</p></li>
+<li><p><strong>param_set_indices</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – A list of parameter set indices to run. If this is specified, only the
+parameter sets returned from the passed parameter files, indexed by the ranges specified, will
+be passed to the experiment. Note that you can specify ranges delineated with ‘-‘, e.g. ‘3-7’.</p></li>
+<li><p><strong>global_param_set_indices</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – A list of parameter set indices to run, indexing the entire collection
+of parameter sets passed to the experiment instead of each individual parameters file. This
+can be used to help more intelligently parallelize runs. Formatting follows the same rules
+as param_set_indices.</p></li>
+<li><p><strong>parallel</strong> (<em>int</em>) – How many subprocesses to split this run into. If specified, the experiment will
+be run that many times with divided up global_param_set_indices in order to generated cached
+data for all parameters, and then re-run a final time with all cached data combined. Note
+then that any speedup from this is based on how well and how many steps are cached.</p></li>
+<li><p><strong>parallel_mode</strong> (<em>bool</em>) – This is handled by the parallel parameter, informing a particular subproc
+run that it is being executed from a parallel run.</p></li>
+<li><p><strong>parallel_lock</strong> (<em>multiprocessing.Lock</em>) – If this function is called from a multiprocessing context, use
+this lock to help prevent files being written to and read simultaneously.</p></li>
+<li><p><strong>parallel_queue</strong> (<em>multiprocessing.Queue</em>) – If this function is called from a multiprocessing context,
+use this queue for communicating success/errors back to the main process.</p></li>
+<li><p><strong>run_num_override</strong> (<em>int</em>) – Handled in parallel mode, since parallel process experiments do not get
+run number (since manager.store is not called) the log gets stored in an incorrectly named
+file.</p></li>
+<li><p><strong>run_ts_override</strong> (<em>datetime.datetime</em>) – Handled in parallel mode, since parallel process experiments
+do not get the same timestamp if started a few seconds later, the log gets stored in an
+incorrectly named file.</p></li>
+<li><p><strong>lazy</strong> (<em>bool</em>) – If true, attempts to set all stage outputs as Lazy objects. Outputs that do not have
+a cacher specified will be given a <code class="docutils literal notranslate"><span class="pre">PickleCacher</span></code>. Note that objects without a cacher that do not
+handle pickle serialization correctly may cause errors.</p></li>
+<li><p><strong>ignore_lazy</strong> (<em>bool</em>) – Run the experiment disabling any lazy object caching/keeping everything in memory.
+This can save time when memory is less of an issue.</p></li>
+<li><p><strong>report</strong> (<em>bool</em>) – Whether to generate an output run report or not.</p></li>
+<li><p><strong>no_dag</strong> (<em>bool</em>) – Prevent pre-execution mapping of experiment records and stages. Recommended if doing
+anything fancy with records like dynamically creating them based on results of previous records.
+Mapping is done by running the experiment but skipping all stage execution.</p></li>
+<li><p><strong>map_only</strong> (<em>bool</em>) – Runs the pre-execution mapping of an experiment and immediately exits, printing the
+map to stdout. <strong>Note that setting this to True automatically sets dry.</strong></p></li>
+<li><p><strong>hashes_only</strong> (<em>bool</em>) – Runs only the parameter set collection from parameter files and then prints out
+the corresponding hashes to stdout. <strong>Note that setting this to True automatically sets dry.</strong></p></li>
+<li><p><strong>paths_only</strong> (<em>bool</em>) – Runs pre-execution mapping of an experiment and exists, printing out all cache paths
+involved in the experiment. <strong>Note that setting this to True automatically sets dry.</strong></p></li>
+<li><p><strong>print_params</strong> (<em>Union</em><em>[</em><em>bool</em><em>, </em><em>str</em><em>]</em>) – Runs only the parameter set collection from parameter files and then prints out
+the corresponding parameters to stdout. <strong>Note that setting this to True automatically sets dry.</strong></p></li>
+<li><p><strong>no_color</strong> (<em>bool</em>) – Suppress fancy colors in console output.</p></li>
+<li><p><strong>quiet</strong> (<em>bool</em>) – Suppress all console log output.</p></li>
+<li><p><strong>progress</strong> (<em>bool</em>) – Display fancy rich progress bars for each record.</p></li>
+<li><p><strong>plain</strong> (<em>bool</em>) – Use normal text log output rather than rich log. Note that
+this negates progress.</p></li>
+<li><p><strong>notes</strong> (<em>str</em>) – A git-log-like message to store in the run info for the current run. If this is an
+empty string, query the user for an input string.</p></li>
+<li><p><strong>all_loggers</strong> (<em>bool</em>) – Whether to include all non-curifactory library loggers in the output logs
+as well.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Whatever is returned from the experiment <code class="code docutils literal notranslate"><span class="pre">run()</span></code>.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">curifactory</span> <span class="kn">import</span> <span class="n">experiment</span><span class="p">,</span> <span class="n">ArtifactManager</span>
+<span class="n">mngr</span> <span class="o">=</span> <span class="n">ArtifactManager</span><span class="p">()</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">run_experiment</span><span class="p">(</span><span class="s1">&#39;exp_name&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;params1&#39;</span><span class="p">,</span> <span class="s1">&#39;params2&#39;</span><span class="p">],</span> <span class="n">mngr</span><span class="o">=</span><span class="n">mngr</span><span class="p">,</span> <span class="n">dry</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="docker.html" class="btn btn-neutral float-left" title="Docker" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="hashing.html" class="btn btn-neutral float-right" title="Hashing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

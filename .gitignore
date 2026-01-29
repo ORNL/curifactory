@@ -12,6 +12,7 @@ test/examples/logs/*
 curifactory.egg-info/*
 **.stats
 **/.ipynb_checkpoints/*
+**/.virtual_documents/*
 
 data/*
 dist/*
