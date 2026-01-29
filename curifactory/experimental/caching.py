@@ -9,8 +9,6 @@ import duckdb
 import pandas as pd
 
 import curifactory.experimental as cf
-from curifactory.experimental.artifact import Artifact
-from curifactory.experimental.manager import Manager
 
 
 class Cacheable:
@@ -29,8 +27,8 @@ class Cacheable:
         the path gets returned."""
 
         self.cache_paths: list = []
-        #self.cache_path: str = None
-        #"""If None, use the manager's cache path?"""
+        # self.cache_path: str = None
+        # """If None, use the manager's cache path?"""
 
     def resolve_template_string(self, path: str) -> str:
         """Intended for when path_override is specified, this returns the path with
@@ -150,7 +148,11 @@ class Cacheable:
             artifact_id=self.artifact.db_id,
             artifact_hash=self.artifact.hash_str,
             paths=self.cache_paths,
-            stage_id=self.artifact.compute.db_id if self.artifact.compute is not None else None,
+            stage_id=(
+                self.artifact.compute.db_id
+                if self.artifact.compute is not None
+                else None
+            ),
             # stage_params=self.artifact.compute.db_id,
         )
         self.metadata = metadata
@@ -228,8 +230,12 @@ class Cacheable:
         Path(self.get_path("_metadata.json")).unlink(missing_ok=True)
 
     @staticmethod
-    def get_from_db_metadata(cacher_module: str, cacher_type: str, cacher_params: dict[str, Any]):
-        cf.get_manager().logger.debug(f"Instantiating cacher from module '{cacher_module}' of type '{cacher_type}' with params {cacher_params}")
+    def get_from_db_metadata(
+        cacher_module: str, cacher_type: str, cacher_params: dict[str, Any]
+    ):
+        cf.get_manager().logger.debug(
+            f"Instantiating cacher from module '{cacher_module}' of type '{cacher_type}' with params {cacher_params}"
+        )
         module = importlib.import_module(cacher_module)
         cacher_class = getattr(module, cacher_type)
         print(type(cacher_params), cacher_params)
@@ -282,10 +288,12 @@ class ParquetCacher(Cacheable):
 
     def save_obj(
         self,
-        obj: duckdb.DuckDBPyRelation
-        | pd.DataFrame
-        | dict[str, list]
-        | list[dict[str | Any]],
+        obj: (
+            duckdb.DuckDBPyRelation
+            | pd.DataFrame
+            | dict[str, list]
+            | list[dict[str | Any]]
+        ),
     ):
         # if self.use_db_arg != -1:
         #     """If told to use db, convert to relation"""
@@ -327,9 +335,12 @@ class ParquetCacher(Cacheable):
 
 class DBCacher(Cacheable):
     """A cacher that loads a duckdb database connection."""
+
     params = ["connection_str", "kwargs", "extensions"]
 
-    def __init__(self, connection_str: str = None, extensions: list[str] = None, **kwargs):
+    def __init__(
+        self, connection_str: str = None, extensions: list[str] = None, **kwargs
+    ):
         super().__init__(extension=".db")
         self.connection_str = connection_str
         self.extensions = extensions
@@ -365,10 +376,14 @@ class DBCacher(Cacheable):
                 cf.get_manager().logger.debug(f"Loaded db extension {extension}")
             except duckdb.IOException:
                 try:
-                    cf.get_manager().logger.debug(f"Trying to install extension {extension}...")
+                    cf.get_manager().logger.debug(
+                        f"Trying to install extension {extension}..."
+                    )
                     db.install_extension(extension)
                 except duckdb.HTTPException:
-                    cf.get_manager().logger.debug(f"Trying to install community extension {extension}...")
+                    cf.get_manager().logger.debug(
+                        f"Trying to install community extension {extension}..."
+                    )
                     db.install_extension(extension, repository="community")
                 db.load_extension(extension)
                 cf.get_manager().logger.debug(f"Loaded db extension {extension}")
@@ -422,7 +437,7 @@ class DBTableCacher(Cacheable):
                 f"CREATE TABLE {self.get_table_name()} AS SELECT * FROM relation_object"
             )
             self.extra_metadata["result"] = "created"
-        except:
+        except duckdb.CatalogException:
             db.sql(
                 f"INSERT OR REPLACE INTO {self.get_table_name()} (SELECT * FROM relation_object)"
             )
@@ -466,12 +481,21 @@ class TrackingDBTableCacher(DBTableCacher):
         super().__init__(path_override, use_db_arg, table_name, db)
         self.id_cols = id_cols
         if id_cols is None:
-            raise Exception("TrackingDBTableCacher must be provided with a set of columns to uniquely ID each row.")
+            raise Exception(
+                "TrackingDBTableCacher must be provided with a set of columns to uniquely ID each row."
+            )
 
     def save_obj(self, relation_object: duckdb.DuckDBPyRelation):
+
+        id_column_type_list = ",".join(
+            [id_col + " " + self.id_cols[id_col] for id_col in self.id_cols]
+        )
+        id_column_list = ",".join([id_col for id_col in self.id_cols])
+
         db = self.get_db()
-        db.sql(f"CREATE TABLE IF NOT EXISTS _cftrack_{self.get_table_name()} ({",".join([id_col + " " + self.id_cols[id_col] for id_col in self.id_cols])}, metadata_id UUID)")
-        # db.sql("CREATE TABLE IF NOT EXISTS _cf_metadata (id UUID, table_name VARCHAR)")
+        db.sql(
+            f"CREATE TABLE IF NOT EXISTS _cftrack_{self.get_table_name()} ({id_column_type_list}, metadata_id UUID)"
+        )
 
         self.clear_obj()
 
@@ -480,18 +504,29 @@ class TrackingDBTableCacher(DBTableCacher):
 
         # ensure primary keys
         if self.extra_metadata["result"] == "created":
-            db.sql(f"ALTER TABLE {self.get_table_name()} ADD PRIMARY KEY ({','.join([id_col for id_col in self.id_cols])})")
+            db.sql(
+                f"ALTER TABLE {self.get_table_name()} ADD PRIMARY KEY ({id_column_type_list})"
+            )
 
         # add a metadata row
         stage_id = self.artifact.compute.db_id
         # db.execute("INSERT INTO _cf_metadata VALUES (?, ?)", [stage_id, self.get_table_name()])
 
         # Add a row for each row in relation_object
-        tracking_rows = db.sql(f"SELECT {",".join([id_col for id_col in self.id_cols])}, '{stage_id}' as metadata_id from relation_object")
-        db.sql(f"INSERT INTO _cftrack_{self.get_table_name()} (SELECT * FROM tracking_rows)")
+        tracking_rows = db.sql(  # noqa: F841
+            f"SELECT {id_column_list}, '{stage_id}' as metadata_id from relation_object"
+        )
+        db.sql(
+            f"INSERT INTO _cftrack_{self.get_table_name()} (SELECT * FROM tracking_rows)"
+        )
 
     def equals_condition(self, prefix):
-        condition = " AND ".join([f"{self.get_table_name()}.{id_col} = {prefix}.{id_col}" for id_col in self.id_cols])
+        condition = " AND ".join(
+            [
+                f"{self.get_table_name()}.{id_col} = {prefix}.{id_col}"
+                for id_col in self.id_cols
+            ]
+        )
         return condition
 
     def join_condition(self):
@@ -517,7 +552,9 @@ class TrackingDBTableCacher(DBTableCacher):
             e.add_note(f"Was running query: {deletion_query}")
             raise
 
-        db.sql(f"DELETE FROM _cftrack_{self.get_table_name()} WHERE metadata_id = '{stage_id}'")
+        db.sql(
+            f"DELETE FROM _cftrack_{self.get_table_name()} WHERE metadata_id = '{stage_id}'"
+        )
 
     def load_obj(self):
         db = self.get_db()
@@ -533,6 +570,7 @@ class MetadataOnlyCacher(Cacheable):
     """Only writes out a metadata file, can be used for checking that a
     stage was completed/based on parameters. The underlying assumption is that the
     stage only mutated something in some way and has no specific object to retrieve."""
+
     params = ["path_override"]
 
     def __init__(self, path_override: str = None):
@@ -554,6 +592,7 @@ class AggregateArtifactCacher(Cacheable):
     NOTE: Can't be used as an inline cacher? (depends on an initialized
     ArtifactList artifact)
     """
+
     params = []
 
     def __init__(self):
@@ -677,6 +716,7 @@ class FileReferenceCacher(Cacheable):
 
                 return my_file_list
     """
+
     params = ["path_override"]
 
     def __init__(self, *args, **kwargs):

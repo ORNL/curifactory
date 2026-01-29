@@ -54,19 +54,24 @@ test: ## runs unit tests
 
 .PHONY: testing-envs
 testing-envs: ## create envs for running unit tests in python 3.10-3.14
-	micromamba create -n cftest310 python=3.10 -y
+	# micromamba create -n cftest310 python=3.10 -y
+	micromamba create -n cftest310 -f environment.yml python=3.10 -y
 	micromamba run -n cftest310 pip install -r requirements.txt
 
-	micromamba create -n cftest311 python=3.11 -y
+	# micromamba create -n cftest311 python=3.11 -y
+	micromamba create -n cftest311 -f environment.yml python=3.11 -y
 	micromamba run -n cftest311 pip install -r requirements.txt
 
-	micromamba create -n cftest312 python=3.12 -y
+	# micromamba create -n cftest312 python=3.12 -y
+	micromamba create -n cftest312 -f environment.yml python=3.12 -y
 	micromamba run -n cftest312 pip install -r requirements.txt
 
-	micromamba create -n cftest313 python=3.13 -y
+	# micromamba create -n cftest313 python=3.13 -y
+	micromamba create -n cftest313 -f environment.yml python=3.13 -y
 	micromamba run -n cftest313 pip install -r requirements.txt
 
-	micromamba create -n cftest314 python=3.14 -y
+	# micromamba create -n cftest314 python=3.14 -y
+	micromamba create -n cftest314 -f environment.yml python=3.14 -y
 	micromamba run -n cftest314 pip install -r requirements.txt
 
 

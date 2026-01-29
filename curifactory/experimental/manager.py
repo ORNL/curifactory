@@ -13,8 +13,8 @@ from uuid import UUID, uuid4
 
 import duckdb
 import pandas as pd
-from jinja2 import ChoiceLoader, DictLoader, Environment, Template
-from rich import get_console, reconfigure
+from jinja2 import ChoiceLoader, DictLoader, Environment
+from rich import get_console
 from rich.logging import RichHandler
 
 import curifactory.experimental as cf
@@ -102,7 +102,6 @@ class Manager:
                 </body>
             </html>
             """,
-
             "style.css": """
                 .reportable {
                     border: 1px solid gray;
@@ -113,7 +112,6 @@ class Manager:
                     padding-bottom: 0px;
                 }
             """,
-
             "reportable.html": """
                 <div class='reportable'>
                     <a name='{{ reportable.name }}'></a>
@@ -121,7 +119,6 @@ class Manager:
                     {{ reportable.html }}
                 </div> <!-- /reportable -->
             """,
-
             "metadata.html": """
                 <div class='metadata_block'>
                     <ul>
@@ -130,7 +127,7 @@ class Manager:
                     {% endfor %}
                     </ul>
                 </div>
-            """
+            """,
         }
 
         self.default_pipeline_modules: list[str] = default_pipeline_modules
@@ -159,7 +156,6 @@ class Manager:
         self._default_imports = False
         # self.load_default_pipeline_imports()
 
-
     @property
     def config(self) -> dict[str, Any]:
         return {
@@ -182,7 +178,7 @@ class Manager:
                     # FileSystemLoader ...
                 ]
             ),
-            autoescape=False
+            autoescape=False,
         )
 
     def resolve_reference(self, ref_str: str, types: list[str] = None):
@@ -206,7 +202,15 @@ class Manager:
 
         # TODO: check for path (if contains '/'?)
 
-        if types is None or "module" in types or "pipeline" in types or "pipeline_instance" in types or "pipeline_instance_list" in types or "pipeline_class" in types or "pipeline_class_list" in types:
+        if (
+            types is None
+            or "module" in types
+            or "pipeline" in types
+            or "pipeline_instance" in types
+            or "pipeline_instance_list" in types
+            or "pipeline_class" in types
+            or "pipeline_class_list" in types
+        ):
             reference_parts = self.divide_reference_parts(ref_str)
             print("ref parts", reference_parts)
             if reference_parts["module"] is not None:
@@ -216,22 +220,32 @@ class Manager:
 
             if reference_parts["pipeline"] is not None:
                 if reference_parts["pipeline"] in self.pipeline_ref_names:
-                    resolutions["pipeline_instance"] = self.pipeline_ref_names[reference_parts["pipeline"]]
+                    resolutions["pipeline_instance"] = self.pipeline_ref_names[
+                        reference_parts["pipeline"]
+                    ]
                 if reference_parts["pipeline"] in self.pipelines:
-                    resolutions["pipeline_class"] = self.pipelines[reference_parts["pipeline"]]
+                    resolutions["pipeline_class"] = self.pipelines[
+                        reference_parts["pipeline"]
+                    ]
 
                 resolutions["pipeline_instance_list"] = {
-                    name: self.pipeline_ref_names[name] for name in self.pipeline_ref_names.keys() if name.startswith(reference_parts["pipeline"])
+                    name: self.pipeline_ref_names[name]
+                    for name in self.pipeline_ref_names.keys()
+                    if name.startswith(reference_parts["pipeline"])
                 }
                 # TODO: class list should also be based on module if pipeline is ""
                 resolutions["pipeline_class_list"] = [
-                    self.pipelines[name] for name in self.pipelines.keys() if name.startswith(reference_parts["pipeline"])
+                    self.pipelines[name]
+                    for name in self.pipelines.keys()
+                    if name.startswith(reference_parts["pipeline"])
                 ]
 
             if "pipeline_instance" in resolutions:
                 # check for artifacts
                 if reference_parts["artifact_filter"] is not None:
-                    resolutions["artifact_list"] = resolutions["pipeline_instance"].artifacts.filter(reference_parts["artifact_filter"])
+                    resolutions["artifact_list"] = resolutions[
+                        "pipeline_instance"
+                    ].artifacts.filter(reference_parts["artifact_filter"])
                     if len(resolutions["artifact_list"]) == 1:
                         resolutions["artifact"] = resolutions["artifact_list"][0]
 
@@ -240,23 +254,34 @@ class Manager:
                 # TODO: prob shouldn't be checking reference itself??
                 ref_name_str = ref_str
                 if "." in ref_name_str:
-                    ref_name_str = ref_str[:ref_str.index(".")]
-                references_df = db.sql(f"SELECT * FROM cf_run WHERE starts_with(reference, '{ref_name_str}')").df()
+                    ref_name_str = ref_str[: ref_str.index(".")]
+                references_df = db.sql(
+                    f"SELECT * FROM cf_run WHERE starts_with(reference, '{ref_name_str}')"
+                ).df()
 
             resolutions["reference_names"] = references_df.reference.values.tolist()
             if len(resolutions["reference_names"]) == 1:
-                resolutions["reference_instance"] = cf.pipeline.PipelineFromRef(resolutions["reference_names"][0])
+                resolutions["reference_instance"] = cf.pipeline.PipelineFromRef(
+                    resolutions["reference_names"][0]
+                )
 
-            if "pipeline_instance" not in resolutions and "reference_instance" in resolutions:
+            if (
+                "pipeline_instance" not in resolutions
+                and "reference_instance" in resolutions
+            ):
                 # if reference_parts["artifact_filter"] is not None:
                 if "." in ref_str:
                     print("Yep!")
-                    filter_str = ref_str[ref_str.index(".")+1:]
-                    print("looking for artifacts filter string past reference: ", filter_str)
-                    resolutions["artifact_list"] = resolutions["reference_instance"].artifacts.filter(filter_str)
+                    filter_str = ref_str[ref_str.index(".") + 1 :]
+                    print(
+                        "looking for artifacts filter string past reference: ",
+                        filter_str,
+                    )
+                    resolutions["artifact_list"] = resolutions[
+                        "reference_instance"
+                    ].artifacts.filter(filter_str)
                     if len(resolutions["artifact_list"]) == 1:
                         resolutions["artifact"] = resolutions["artifact_list"][0]
-
 
             # resolutions["pipeline_instance_list"] = [
             #     self.pipeline_ref_names[name] for name in
@@ -291,7 +316,7 @@ class Manager:
             if remainder is None:
                 remainder = module_str.split(".")[-1]
             else:
-                remainder = f"{module_str.split(".")[-1]}.{remainder}"
+                remainder = module_str.split(".")[-1] + f".{remainder}"
 
             if "." not in module_str:
                 # TODO: error? or no?
@@ -318,7 +343,9 @@ class Manager:
                         can_make_default = False
                 if can_make_default:
                     pipeline = value(f"{value.type_name}_default")
-                    self.add_pipeline_to_ref_names(module_str, value.type_name, pipeline)
+                    self.add_pipeline_to_ref_names(
+                        module_str, value.type_name, pipeline
+                    )
 
         # return the piece of the module_str that wasn't the module
         return remainder
@@ -345,15 +372,17 @@ class Manager:
         for module_name in self.imported_module_names:
             if ref_str.startswith(module_name):
                 parts["module"] = module_name
-                ref_str = ref_str[len(module_name):]
+                ref_str = ref_str[len(module_name) :]
                 if ref_str.startswith("."):
                     ref_str = ref_str[1:]
                 break
 
         for name in self.pipeline_ref_names:
-            if ref_str.startswith(name) and (len(ref_str) == len(name) or ref_str[len(name):len(name)+1] == "."):
+            if ref_str.startswith(name) and (
+                len(ref_str) == len(name) or ref_str[len(name) : len(name) + 1] == "."
+            ):
                 parts["pipeline"] = self.pipeline_ref_names[name].name
-                ref_str = ref_str[len(name):]
+                ref_str = ref_str[len(name) :]
                 if ref_str.startswith("."):
                     ref_str = ref_str[1:]
                 break
@@ -366,9 +395,6 @@ class Manager:
         else:
             parts["artifact_filter"] = ref_str
         return parts
-
-
-
 
     def quietly_import_module(self, module_str: str):
         module = None
@@ -420,7 +446,9 @@ class Manager:
         if self.project_root is None:
             search_depth = 3
             prefix = "./"
-            while not os.path.exists(f"{prefix}{CONFIGURATION_FILE}") and search_depth > 0:
+            while (
+                not os.path.exists(f"{prefix}{CONFIGURATION_FILE}") and search_depth > 0
+            ):
                 prefix += "../"
                 search_depth -= 1
             if os.path.exists(f"{prefix}{CONFIGURATION_FILE}"):
@@ -540,7 +568,9 @@ class Manager:
     #         return None
     #     return artifact.cacher.get_path(dry=True)
 
-    def load_artifact_metadata_by_id(self, db_id: UUID, artifact: "Artifact") -> bool:
+    def load_artifact_metadata_by_id(
+        self, db_id: UUID, artifact: "cf.artifact.Artifact"
+    ) -> bool:
         # returns False if didn't find
         pass
 
@@ -554,7 +584,9 @@ class Manager:
         """Get the reference name of this run in the pipeline registry.
 
         The format for this name is ``[pipeline_name]_[run_number]_[timestamp]``."""
-        return f"{pipeline.name}_{pipeline.run_number}_{self.get_str_timestamp(pipeline)}"
+        return (
+            f"{pipeline.name}_{pipeline.run_number}_{self.get_str_timestamp(pipeline)}"
+        )
 
     def get_next_pipeline_run_number(self, pipeline) -> int:
         with self.db_connection() as db:
@@ -630,7 +662,7 @@ class Manager:
                     cacher_module,
                     cacher_params,
                     self.get_artifact_obj_repr(artifact),
-                    isinstance(artifact, cf.artifact.ArtifactList)
+                    isinstance(artifact, cf.artifact.ArtifactList),
                 ],
             )
 
@@ -667,7 +699,6 @@ class Manager:
                 """,
                 [stage.db_id, dependency_stage.db_id],
             )
-
 
     def record_stage(self, stage):
         if not self.currently_recording:

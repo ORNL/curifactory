@@ -8,8 +8,6 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID
 
-from jinja2 import Template
-
 import curifactory.experimental as cf
 
 
@@ -109,7 +107,10 @@ class Pipeline:
         for artifact in self.artifacts:
             if artifact.compute is None:
                 continue
-            if artifact.compute not in handled_stages and len(artifact.compute.reportables.obj) > 0:
+            if (
+                artifact.compute not in handled_stages
+                and len(artifact.compute.reportables.obj) > 0
+            ):
                 reportables_list.extend(artifact.compute.reportables.obj)
                 handled_stages.append(artifact.compute)
 
@@ -138,7 +139,9 @@ class Pipeline:
         )
 
         if save:
-            with open(str(Path(manager.reports_path) / f"{self.reference}.html"), 'w') as outfile:
+            with open(
+                str(Path(manager.reports_path) / f"{self.reference}.html"), "w"
+            ) as outfile:
                 outfile.write(output)
         return output
 
@@ -201,17 +204,25 @@ class Pipeline:
         for entry, verified in self.pre_consolidation_checks.items():
             if not verified:
                 all_good = False
-        cf.get_manager().logger.info(f"Pre-consolidation checks: {'good' if all_good else 'bad'}")
+        cf.get_manager().logger.info(
+            f"Pre-consolidation checks: {'good' if all_good else 'bad'}"
+        )
         if not all_good:
-            cf.get_manager().logger.warn(f"Pre-consolidation checks failed:\n {self.pre_consolidation_checks}")
+            cf.get_manager().logger.warn(
+                f"Pre-consolidation checks failed:\n {self.pre_consolidation_checks}"
+            )
 
         all_good = True
         for entry, verified in self.post_consolidation_checks.items():
             if not verified:
                 all_good = False
-        cf.get_manager().logger.info(f"Post-consolidation checks: {'good' if all_good else 'bad'}")
+        cf.get_manager().logger.info(
+            f"Post-consolidation checks: {'good' if all_good else 'bad'}"
+        )
         if not all_good:
-            cf.get_manager().logger.warn(f"Post-consolidation checks failed:\n {self.post_consolidation_checks}")
+            cf.get_manager().logger.warn(
+                f"Post-consolidation checks failed:\n {self.post_consolidation_checks}"
+            )
 
     def run(self):
         manager = cf.get_manager()
@@ -227,21 +238,28 @@ class Pipeline:
                 overwrites_found = True
                 break
 
-        if self.outputs.cacher is not None and self.outputs.cacher.check(silent=True) and not overwrites_found:
+        if (
+            self.outputs.cacher is not None
+            and self.outputs.cacher.check(silent=True)
+            and not overwrites_found
+        ):
             manager.currently_recording = False
             manager.logger.info("Pipeline outputs already found, re-loading...")
 
             # find the previous run reference
             metadata = self.outputs.cacher.load_metadata()
-            results = manager.search_for_artifact_generating_run(metadata["artifact_id"])
-            manager.logger.info(f"Collecting outputs from {results["reference"]}")
+            results = manager.search_for_artifact_generating_run(
+                metadata["artifact_id"]
+            )
+            manager.logger.info(f"Collecting outputs from {results['reference']}")
             self.reference = results["reference"]
             self.db_id = results["id"]
             self.run_number = results["run_number"]
             self.start_timestamp = results["start_time"]
             self.end_timestamp = results["end_time"]
 
-            returns = self.outputs.get()
+            # returns = self.outputs.get()
+            self.outputs.get()
             return self.outputs
 
         manager.currently_recording = True
@@ -249,7 +267,7 @@ class Pipeline:
         manager.logger.info(f"Running pipeline {self.name}")
         manager.record_pipeline_run(self)
 
-        returns = self.outputs.get()
+        # returns = self.outputs.get()
         # if isinstance(self.outputs, list):
         #     returns = []
         #     for art in self.outputs:
@@ -257,6 +275,8 @@ class Pipeline:
         #         returns.append(art.compute())
         # else:
         #     returns = self.outputs.compute()
+
+        self.outputs.get()
 
         manager.current_pipeline_run = None
         manager.record_pipeline_run_completion(self)
@@ -279,9 +299,14 @@ class Pipeline:
                     continue
                 if artifact1.check_shared_artifact(artifact2):
                     # artifact2.previous_context_names.append(artifact2.
-                    #artifact1.previous_context_names.append(artifact2.context.name)
-                    for context_name in artifact2.previous_context_names + [artifact2.context.name]:
-                        if context_name not in artifact1.previous_context_names and context_name != artifact1.context.name:
+                    # artifact1.previous_context_names.append(artifact2.context.name)
+                    for context_name in artifact2.previous_context_names + [
+                        artifact2.context.name
+                    ]:
+                        if (
+                            context_name not in artifact1.previous_context_names
+                            and context_name != artifact1.context.name
+                        ):
                             artifact1.previous_context_names.append(context_name)
                     artifact2.replace(artifact1)
                     # shared = artifact1.copy()
@@ -311,8 +336,18 @@ class Pipeline:
     @staticmethod
     def load_from_refname(refname: str):
         with cf.get_manager().db_connection() as db:
-            pipeline_row = db.sql(f"select * from cf_run where reference = '{refname}'").df().iloc[0]
-            target_artifact_row = db.sql(f"select * from cf_artifact where id = '{pipeline_row.target_id}'").df().iloc[0]
+            pipeline_row = (
+                db.sql(f"select * from cf_run where reference = '{refname}'")
+                .df()
+                .iloc[0]
+            )
+            target_artifact_row = (
+                db.sql(
+                    f"select * from cf_artifact where id = '{pipeline_row.target_id}'"
+                )
+                .df()
+                .iloc[0]
+            )
         # pipeline = Pipeline(pipeline_row.name)
         pipeline = Pipeline(pipeline_row.reference)
         pipeline.db_id = pipeline_row.id
@@ -386,7 +421,7 @@ class Pipeline:
     #     return self.name
 
 
-def pipeline(function):
+def pipeline(function):  # noqa: C901
     # make the fields based on the function signature
     field_tuples = []
     parameters = inspect.signature(function).parameters
@@ -480,14 +515,22 @@ def pipeline(function):
     # return wrapper
 
     class PipelineFactoryWrapper:
-        def __init__(self, pipeline_type_name, pipeline_field_tuples, original_function, pipe_dataclass):
+        def __init__(
+            self,
+            pipeline_type_name,
+            pipeline_field_tuples,
+            original_function,
+            pipe_dataclass,
+        ):
             self.type_name = pipeline_type_name
             # TODO: is type_name necessary? Just change to name
             self.field_tuples = pipeline_field_tuples
             self.original_function = original_function
             self.__doc__ = original_function.__doc__
             self.pipe_dataclass = pipe_dataclass
-            cf.get_manager().pipelines[self.pipe_dataclass.__name__] = self.pipe_dataclass
+            cf.get_manager().pipelines[
+                self.pipe_dataclass.__name__
+            ] = self.pipe_dataclass
             cf.get_manager().parameterized_pipelines[pipeline_dataclass] = []
 
         def __call__(self, *args, **kwargs):
@@ -517,20 +560,26 @@ def pipeline(function):
                         if parameter[1] is Any:
                             call_parts.append(f"{parameter[0]}")
                         else:
-                            call_parts.append(f"{parameter[0]}: {parameter[1].__name__}")
+                            call_parts.append(
+                                f"{parameter[0]}: {parameter[1].__name__}"
+                            )
                     elif len(parameter) == 3:
                         default_value = parameter[2].default_factory()
                         if isinstance(default_value, str):
-                            default_value = f"\"{default_value}\""
+                            default_value = f'"{default_value}"'
                         if parameter[1] is Any:
                             call_parts.append(f"{parameter[0]}={default_value}")
                         else:
-                            call_parts.append(f"{parameter[0]}: {parameter[1].__name__} = {default_value}")
+                            call_parts.append(
+                                f"{parameter[0]}: {parameter[1].__name__} = {default_value}"
+                            )
                 else:
                     call_parts.append(parameter)
             return f"Pipeline {self.type_name}({', '.join(call_parts)})"
 
-    return PipelineFactoryWrapper(function.__name__, field_tuples, function, pipeline_dataclass)
+    return PipelineFactoryWrapper(
+        function.__name__, field_tuples, function, pipeline_dataclass
+    )
 
 
 @dataclass
@@ -538,8 +587,18 @@ class PipelineFromRef(Pipeline):
     def __post_init__(self):
 
         with cf.get_manager().db_connection() as db:
-            pipeline_row = db.sql(f"select * from cf_run where reference = '{self.name}'").df().iloc[0]
-            self.target_artifact_row = db.sql(f"select * from cf_artifact where id = '{pipeline_row.target_id}'").df().iloc[0]
+            pipeline_row = (
+                db.sql(f"select * from cf_run where reference = '{self.name}'")
+                .df()
+                .iloc[0]
+            )
+            self.target_artifact_row = (
+                db.sql(
+                    f"select * from cf_artifact where id = '{pipeline_row.target_id}'"
+                )
+                .df()
+                .iloc[0]
+            )
 
         super().__post_init__()
 
@@ -552,7 +611,9 @@ class PipelineFromRef(Pipeline):
         # TODO: should also grab pipeline_class?
 
     def define(self):
-        target_artifact = cf.artifact.Artifact.load_from_uuid(self.target_artifact_row.id)
+        target_artifact = cf.artifact.Artifact.load_from_uuid(
+            self.target_artifact_row.id
+        )
         outputs = target_artifact
 
         pipeline_outputs = cf.artifact.ArtifactList("outputs")
