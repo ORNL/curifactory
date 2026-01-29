@@ -56,7 +56,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
     map_only: bool = False,
     hashes_only: bool = False,
     paths_only: bool = False,
-    print_params: Union[bool, str] = False,
+    print_params: bool | str = False,
     no_color: bool = False,
     quiet: bool = False,
     progress: bool = False,

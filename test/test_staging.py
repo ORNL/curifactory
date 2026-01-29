@@ -323,8 +323,7 @@ def test_missing_signature_inputs_correctly_finds_missing(
     """_missing_signature_inputs should return a list of any arguments not found in
     function signature line."""
 
-    def do_thing(thing1, thing2, thing3=4, thing4=5):
-        ...
+    def do_thing(thing1, thing2, thing3=4, thing4=5): ...
 
     assert _missing_signature_inputs(do_thing, input_names, assigned) == expected
 

@@ -1,15 +1,15 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from artifact import Artifact, ArtifactList, Artifacts
 from caching import PickleCacher
 from experiment import experiment
-from sklearn.base import ClassifierMixin
 from sklearn.datasets import load_iris
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from stage import stage
+
+from curifactory.experimental.artifact import Artifact, ArtifactList
 
 # ===============================================
 # OLD EXAMPLE

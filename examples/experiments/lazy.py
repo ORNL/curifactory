@@ -3,6 +3,7 @@
 This means curifactory will unload the object from memory as soon as the stage completes,
 and then automatically resolve it in an executing stage that needs it.
 """
+
 from dataclasses import dataclass
 
 import numpy as np

@@ -30,9 +30,10 @@ TODO: examples? (prob put this in the non-python-file docs)
 import hashlib
 import json
 import os
+from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import field, fields, is_dataclass
-from typing import Any, Callable, Union
+from typing import Any, Union
 
 PARAMETERS_BLACKLIST = ["name", "hash", "overwrite", "hash_representations"]
 """The default parameters on the ExperimentParameters class that we always
@@ -254,7 +255,7 @@ def hash_param_set(
     store_in_registry: bool = False,
     registry_path: str = None,
     dry: bool = False,
-) -> Union[str, dict]:
+) -> str | dict:
     """Returns a hex string representing the passed arguments, optionally recording
     the parameters and hash in the params registry.
 

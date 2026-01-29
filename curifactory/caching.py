@@ -397,18 +397,20 @@ class Cacheable:
         self.metadata = dict(
             artifact_generated=datetime.now().strftime(utils.TIMESTAMP_FORMAT),
             params_hash=self.record.get_hash(),
-            params_name=self.record.params.name
-            if self.record.params is not None
-            else None,
+            params_name=(
+                self.record.params.name if self.record.params is not None else None
+            ),
             record_name=self.record.get_reference_name(),
             stage=self.record.manager.current_stage_name,
             artifact_name=self.name,
             cacher_type=str(type(self)),
             record_prior_stages=self.record.stages[:-1],
             prior_records=input_record_names,
-            params=hashing.param_set_string_hash_representations(self.record.params)
-            if self.record.params is not None
-            else None,
+            params=(
+                hashing.param_set_string_hash_representations(self.record.params)
+                if self.record.params is not None
+                else None
+            ),
             extra=self.extra_metadata,  # cachers can store any additional info here they want.
             manager_run_info=manager_run_info,
         )
@@ -610,12 +612,12 @@ class PandasCacher(Cacheable):
 
     def __init__(
         self,
-        path_override: Optional[str] = None,
+        path_override: str | None = None,
         format: Literal[
             "csv", "json", "parquet", "pickle", "orc", "hdf5", "excel", "xml"
         ] = "pickle",
-        to_args: Optional[dict] = None,
-        read_args: Optional[dict] = None,
+        to_args: dict | None = None,
+        read_args: dict | None = None,
         **kwargs,
     ):
         self.format = _PandasIOType[format]
@@ -845,12 +847,12 @@ class FileReferenceCacher(Cacheable):
 
         return True
 
-    def load(self) -> Union[list[str], str]:
+    def load(self) -> list[str] | str:
         with open(self.get_path()) as infile:
             files = json.load(infile)
         return files
 
-    def save(self, files: Union[list[str], str]) -> str:
+    def save(self, files: list[str] | str) -> str:
         path = self.get_path()
         with open(path, "w") as outfile:
             json.dump(files, outfile, indent=4)

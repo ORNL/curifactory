@@ -104,7 +104,7 @@ class Reportable:
         self.stage: str = ""
         """The name of the stage this reportable comes from, used as part of the title."""
 
-    def html(self) -> Union[str, list[str]]:
+    def html(self) -> str | list[str]:
         """When a report is created, the ``html()`` function for every reportable is
         called and appended to the report. This function should either return a single
         string of html, or can return a list of lines of html.
@@ -135,13 +135,13 @@ class HTMLReporter(Reportable):
     """
 
     def __init__(
-        self, html_string: Union[str, list[str]], name: str = None, group: str = None
+        self, html_string: str | list[str], name: str = None, group: str = None
     ):
         self.html_string = html_string
         """The raw string of HTML to include."""
         super().__init__(name=name, group=group)
 
-    def html(self) -> Union[str, list[str]]:
+    def html(self) -> str | list[str]:
         return self.html_string
 
 
@@ -947,7 +947,7 @@ def map_single_svg(
     manager,
     record,
     detailed: bool = True,
-    colors: Union[list[str], dict[str, str]] = None,
+    colors: list[str] | dict[str, str] = None,
 ) -> Digraph:
     """Create a graphviz dot graph of the stages/artifacts for the given record.
 
@@ -976,7 +976,7 @@ def map_single_svg(
 
 
 def map_full_svg(
-    manager, detailed: bool = False, colors: Union[list[str], dict[str, str]] = None
+    manager, detailed: bool = False, colors: list[str] | dict[str, str] = None
 ) -> Digraph:
     """Create a graphviz dot graph for the entire experiment. (Maps out each stage and
     the input/output artifacts for each.)

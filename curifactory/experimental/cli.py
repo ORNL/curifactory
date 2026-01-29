@@ -3,11 +3,8 @@
 # https://stackoverflow.com/questions/4042452/display-help-message-with-python-argparse-when-script-is-called-without-any-argu
 
 import argparse
-import importlib
-import json
 import logging
 import os
-import sys
 from dataclasses import MISSING, fields
 
 import argcomplete
@@ -24,7 +21,7 @@ def completer_pipeline(**kwargs) -> list[str]:
     return []
 
 
-def main():
+def main():  # noqa: C901
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument(
         "-h",
@@ -38,8 +35,16 @@ def main():
 
     ls_parser = subparsers.add_parser("ls", help="List pipelines")
     ls_parser.add_argument("thing_to_list", nargs="?")
-    ls_parser.add_argument("-r", "--runs", dest="list_runs", action="store_true", help="List previous pipeline run names in database")
-    ls_parser.add_argument("--paths", dest="list_paths", action="store_true", help="List artifact paths")
+    ls_parser.add_argument(
+        "-r",
+        "--runs",
+        dest="list_runs",
+        action="store_true",
+        help="List previous pipeline run names in database",
+    )
+    ls_parser.add_argument(
+        "--paths", dest="list_paths", action="store_true", help="List artifact paths"
+    )
 
     run_parser = subparsers.add_parser("run", help="Run an pipeline", add_help=False)
     run_parser.add_argument("pipeline").completer = completer_pipeline
@@ -57,7 +62,9 @@ def main():
         dest="overwrite",
         help="Overwrite specific artifacts during run.",
     )
-    run_parser.add_argument("--overwrite-all", dest="overwrite_all", action="store_true")
+    run_parser.add_argument(
+        "--overwrite-all", dest="overwrite_all", action="store_true"
+    )
     run_parser.add_argument(
         "-r",
         "--replace",
@@ -67,7 +74,9 @@ def main():
     )
     run_parser.add_argument("--debug", "--verbose", action="store_true", dest="debug")
 
-    map_parser = subparsers.add_parser("map", help="Map out what needs to execute and what doesn't.")
+    map_parser = subparsers.add_parser(
+        "map", help="Map out what needs to execute and what doesn't."
+    )
     map_parser.add_argument("pipeline")
     map_parser.add_argument(
         "--ow",
@@ -76,7 +85,9 @@ def main():
         dest="overwrite",
         help="Overwrite specific artifacts during run.",
     )
-    map_parser.add_argument("--overwrite-all", dest="overwrite_all", action="store_true")
+    map_parser.add_argument(
+        "--overwrite-all", dest="overwrite_all", action="store_true"
+    )
     map_parser.add_argument(
         "-r",
         "--replace",
@@ -111,7 +122,8 @@ def main():
 
         manager = cf.get_manager()
         manager.load_default_pipeline_imports()
-        remainder = manager.import_pipelines_from_module(parsed.pipeline)
+        # remainder = manager.import_pipelines_from_module(parsed.pipeline)
+        manager.import_pipelines_from_module(parsed.pipeline)
 
         search = parsed.pipeline
         resolved = manager.resolve_reference(search)
@@ -232,7 +244,9 @@ def main():
             if parsed.replace is not None:
                 for replace_req in parsed.replace:
                     if "=" not in replace_req:
-                        raise SyntaxError("Please use '-r source_artifact=dest_artifact'")
+                        raise SyntaxError(
+                            "Please use '-r source_artifact=dest_artifact'"
+                        )
                     parts = replace_req.split("=")
                     source = parts[0]
                     dest = parts[1]
@@ -247,26 +261,34 @@ def main():
                         exit()
                     dest = dest_resolved["artifact"]
 
-                    manager.logger.debug(f"Replacing {source.contextualized_name} with {dest.contextualized_name}")
+                    manager.logger.debug(
+                        f"Replacing {source.contextualized_name} with {dest.contextualized_name}"
+                    )
                     # source.replace(dest.copy())  # not actually sure why this breaks
                     source.replace(dest)
                 pipeline.consolidate_shared_artifacts()
-
 
             # handle overwrites
             if parsed.overwrite is not None:
                 for overwrite_req in parsed.overwrite:
                     art_resolved = manager.resolve_reference(overwrite_req)
-                    if "artifact" not in art_resolved and "artifact_list" not in art_resolved:
+                    if (
+                        "artifact" not in art_resolved
+                        and "artifact_list" not in art_resolved
+                    ):
                         print(f"COULD NOT FIND {overwrite_req}.")
                         exit()
                     else:
                         if "artifact" in art_resolved:
                             art_resolved["artifact"].overwrite = True
-                            manager.logger.debug(f"Setting overwrite on art_{art_resolved['artifact'].name}")
+                            manager.logger.debug(
+                                f"Setting overwrite on art_{art_resolved['artifact'].name}"
+                            )
                         else:
                             for artifact in art_resolved["artifact_list"]:
-                                manager.logger.debug(f"Setting overwrite on art_{artifact.name}")
+                                manager.logger.debug(
+                                    f"Setting overwrite on art_{artifact.name}"
+                                )
                                 artifact.ovewrite = True
             if parsed.overwrite_all:
                 manager.logger.info("Setting overwrite on all artifacts")
@@ -280,10 +302,14 @@ def main():
             # if search_parts["artifact_filter"] is None:
             else:
                 if "artifact" in resolved:
-                    manager.logger.debug(f"Attempting to get Artifact '{resolved["artifact"].name}'")
+                    manager.logger.debug(
+                        f"Attempting to get Artifact '{resolved["artifact"].name}'"
+                    )
                     resolved["artifact"].get()
                 elif "artifact_list" in resolved:
-                    manager.logger.debug(f"Attempting to get Artifacts {[artifact.name for artifact in resolved['artifact_list']]}")
+                    manager.logger.debug(
+                        f"Attempting to get Artifacts {[artifact.name for artifact in resolved['artifact_list']]}"
+                    )
                     for artifact in resolved["artifact_list"]:
                         artifact.get()
                     artifact.context.report(save=True)
@@ -329,7 +355,9 @@ def main():
             if parsed.replace is not None:
                 for replace_req in parsed.replace:
                     if "=" not in replace_req:
-                        raise SyntaxError("Please use '-r source_artifact=dest_artifact'")
+                        raise SyntaxError(
+                            "Please use '-r source_artifact=dest_artifact'"
+                        )
                     parts = replace_req.split("=")
                     source = parts[0]
                     dest = parts[1]
@@ -344,26 +372,34 @@ def main():
                         exit()
                     dest = dest_resolved["artifact"]
 
-                    manager.logger.debug(f"Replacing {source.contextualized_name} with {dest.contextualized_name}")
+                    manager.logger.debug(
+                        f"Replacing {source.contextualized_name} with {dest.contextualized_name}"
+                    )
                     # source.replace(dest.copy())  # not actually sure why this breaks
                     source.replace(dest)
                 pipeline.consolidate_shared_artifacts()
-
 
             # handle overwrites
             if parsed.overwrite is not None:
                 for overwrite_req in parsed.overwrite:
                     art_resolved = manager.resolve_reference(overwrite_req)
-                    if "artifact" not in art_resolved and "artifact_list" not in art_resolved:
+                    if (
+                        "artifact" not in art_resolved
+                        and "artifact_list" not in art_resolved
+                    ):
                         print(f"COULD NOT FIND {overwrite_req}.")
                         exit()
                     else:
                         if "artifact" in art_resolved:
                             art_resolved["artifact"].overwrite = True
-                            manager.logger.debug(f"Setting overwrite on art_{art_resolved['artifact'].name}")
+                            manager.logger.debug(
+                                f"Setting overwrite on art_{art_resolved['artifact'].name}"
+                            )
                         else:
                             for artifact in art_resolved["artifact_list"]:
-                                manager.logger.debug(f"Setting overwrite on art_{artifact.name}")
+                                manager.logger.debug(
+                                    f"Setting overwrite on art_{artifact.name}"
+                                )
                                 artifact.ovewrite = True
 
             if parsed.overwrite_all:
@@ -380,7 +416,12 @@ def main():
                 for artifact in resolved["artifact_list"]:
                     mapped = artifact.map(mapped)
 
-        artifact_counts = {"to_compute": 0, "use_cache": 0, "skipped": 0, "found_in_cache": 0}
+        artifact_counts = {
+            "to_compute": 0,
+            "use_cache": 0,
+            "skipped": 0,
+            "found_in_cache": 0,
+        }
         stage_counts = {"to_compute": 0, "skipped": 0}
         for artifact in mapped["artifacts"]:
             if artifact.map_status in [cf.COMPUTE, cf.OVERWRITE]:
@@ -439,10 +480,16 @@ def main():
                     # console.print(f"\t[{color}]{artifact.contextualized_name} ---- {cf.status(artifact.map_status)}[/{color}]\t{cache_str}")
             map_str += "\n"
 
-        artifact_total = artifact_counts["to_compute"] + artifact_counts["use_cache"] + artifact_counts["skipped"]
+        artifact_total = (
+            artifact_counts["to_compute"]
+            + artifact_counts["use_cache"]
+            + artifact_counts["skipped"]
+        )
         stage_total = stage_counts["to_compute"] + stage_counts["skipped"]
         map_str += f"Artifacts to compute: [bold]{artifact_counts["to_compute"]}[/]/{artifact_total} ({artifact_counts["found_in_cache"]} in cache)\n"
-        map_str += f"Stages to compute: [bold]{stage_counts["to_compute"]}[/]/{stage_total}"
+        map_str += (
+            f"Stages to compute: [bold]{stage_counts["to_compute"]}[/]/{stage_total}"
+        )
 
         console.print(map_str)
 
@@ -471,7 +518,9 @@ def main():
 
         resolved = manager.resolve_reference(search)
         print(resolved)
-        if "artifact_list" in resolved and len(resolved["artifact_list"]) > 0:  # TODO: why is a blank artifact_list sometimes being added?
+        if (
+            "artifact_list" in resolved and len(resolved["artifact_list"]) > 0
+        ):  # TODO: why is a blank artifact_list sometimes being added?
             print(f"Artifacts matching {search}:")
             for artifact in resolved["artifact_list"]:
                 print(
@@ -515,11 +564,9 @@ def main():
         manager = cf.get_manager()
         os.chdir(manager.reports_path)
         cf.utils.run_command(
-            ["python", "-m", "http.server", str(parsed.port)]#, "--bind", args.host]
+            ["python", "-m", "http.server", str(parsed.port)]  # , "--bind", args.host]
         )
         os.chdir("..")
-
-
 
         # if parsed.thing_to_list is None:
         #     experiment_list = list(manager.experiment_ref_names.keys())

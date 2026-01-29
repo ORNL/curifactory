@@ -4,9 +4,10 @@ import inspect
 import os
 import threading
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import wraps
-from typing import Any, Callable, Union
+from typing import Any, Union
 from uuid import UUID
 
 import pandas as pd
@@ -16,15 +17,7 @@ import psutil
 if os.name != "nt":
     import resource
 
-from graphviz import Digraph
-
-# import simplification
 import curifactory.experimental as cf
-
-# import simplification.artifact
-
-
-# class StageContext:
 
 
 class FunctionStub:
@@ -751,13 +744,12 @@ class Stage:
         passed_args = []
         passed_kwargs = {}
 
-        manager = cf.get_manager()
-
         for i, arg in enumerate(self.args):
             passed_args.append(self.resolve_arg(record_resolution, arg_index=i))
         for kwarg in self.kwargs:
             passed_kwargs[kwarg] = self.resolve_arg(record_resolution, arg_name=kwarg)
 
+        # manager = cf.get_manager()
         # compute any inputs
         # for arg in self.args:
         #     # if a stage was passed in instead of an artifact, quite possible
@@ -798,7 +790,7 @@ class Stage:
 
         return passed_args, passed_kwargs
 
-    def __call__(self):
+    def __call__(self):  # noqa: C901
         try:
             manager = cf.get_manager()
 

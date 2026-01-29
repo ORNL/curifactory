@@ -98,7 +98,7 @@ def _log_stats(
 
 def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
     inputs: list[str] = None,
-    outputs: list[Union[str, Lazy]] = None,
+    outputs: list[str | Lazy] = None,
     cachers: list = None,
     suppress_missing_inputs: bool = False,
 ):
@@ -325,9 +325,9 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                     # set the active record on the cacher as well as provide a default name
                     # (the name of the output)
                     local_cachers[i].set_record(record)
-                    local_cachers[
-                        i
-                    ].stage = name  # set current stage name, so get_path is correct in later stages (particularly for lazy)
+                    local_cachers[i].stage = (
+                        name  # set current stage name, so get_path is correct in later stages (particularly for lazy)
+                    )
                     # if (
                     #     local_cachers[i].name is None
                     #     and local_cachers[i].path_override is None
@@ -743,9 +743,9 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                         # lazy instance (since we don't know if this is actually needed
                         # yet or not)
                         prev_record.state.resolve = False
-                        function_inputs[function_input][
-                            prev_record
-                        ] = prev_record.state[function_input]
+                        function_inputs[function_input][prev_record] = (
+                            prev_record.state[function_input]
+                        )
                         prev_record.state.resolve = True
             function_inputs.update(kwargs)
 
@@ -776,9 +776,9 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                     # set the active record on the cacher as well as provide a default name
                     # (the name of the output)
                     local_cachers[i].set_record(record)
-                    local_cachers[
-                        i
-                    ].stage = name  # set current stage name, so get_path is correct in later stages (particularly for lazy)
+                    local_cachers[i].stage = (
+                        name  # set current stage name, so get_path is correct in later stages (particularly for lazy)
+                    )
                     if (
                         local_cachers[i].name is None
                         and local_cachers[i].path_override is None
@@ -871,9 +871,9 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                                 "Resolving lazy load object '%s' from record %s"
                                 % (function_input, prev_record.get_reference_name())
                             )
-                            function_inputs[function_input][
-                                prev_record
-                            ] = function_inputs[function_input][prev_record].load()
+                            function_inputs[function_input][prev_record] = (
+                                function_inputs[function_input][prev_record].load()
+                            )
 
             record.manager.unlock()
             pre_cache_time_end = time.perf_counter()
@@ -1070,7 +1070,7 @@ def _dag_skip_check_cached_outputs(
 def _check_cached_outputs(
     stage_name: str,
     record: Record,
-    outputs: list[Union[str, Lazy]],
+    outputs: list[str | Lazy],
     cachers: list[Cacheable],
     records: list[Record] = None,
 ) -> bool:
@@ -1136,7 +1136,7 @@ def _check_cached_outputs(
 def _add_output_artifact(
     record,
     obj: Any,
-    outputs: list[Union[str, Lazy]],
+    outputs: list[str | Lazy],
     index: int,
     metadata=None,
     cacher=None,
@@ -1234,7 +1234,7 @@ def _store_reportables(stage_name, record, aggregate_records=None):
 def _store_outputs(
     function_name,
     record: Record,
-    outputs: list[Union[str, Cacheable]],
+    outputs: list[str | Cacheable],
     cachers: list[Cacheable],
     function_outputs: list[any],
     records: list[Record] = None,

@@ -1,6 +1,6 @@
 """Convenience class for grouping stages and automatically passing a record between them."""
 
-from typing import Callable
+from collections.abc import Callable
 
 from curifactory.manager import ArtifactManager, Record
 from curifactory.params import ExperimentParameters

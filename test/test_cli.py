@@ -1,4 +1,5 @@
 """Tests to make sure the command line interface to running experiments isn't broken."""
+
 import argparse
 
 from pytest_mock import mocker  # noqa: F401 -- flake8 doesn't see it's used as fixture

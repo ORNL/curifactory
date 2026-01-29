@@ -1,8 +1,9 @@
 """Contains the base parameter class ExperimentParameters, a dataclass meant to represent
 a configuration for an experiment run."""
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable, Union
+from typing import Union
 
 from curifactory import hashing
 
@@ -43,7 +44,7 @@ class ExperimentParameters:
 
     # NOTE: may be able to take parent classes' hashing functions into account as well
     # https://stackoverflow.com/questions/10091957/get-parent-class-name
-    hash_representations: dict[str, Union[None, Callable]] = field(
+    hash_representations: dict[str, None | Callable] = field(
         default_factory=dict, repr=False
     )
     """Dictionary of parameter names in the dataclass where you can provide functions
