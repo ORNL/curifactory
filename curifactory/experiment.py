@@ -11,7 +11,6 @@ import multiprocessing as mp
 import os
 import re
 import sys
-from typing import Union
 
 from curifactory import utils
 from curifactory.manager import ArtifactManager
@@ -434,7 +433,7 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             print(param_set.hash, param_set.name)
             print(json.dumps(params_dictionary, indent=4))
 
-        if type(print_params) == str:
+        if isinstance(print_params, str):
             # check names in final_param_sets
             found = False
             for param_set in final_param_sets:
@@ -930,7 +929,7 @@ def collect_parameter_sets(
                 raise e
 
         param_sets = param_module.get_params()
-        if type(param_sets) != list:
+        if not isinstance(param_sets, list):
             logging.error(
                 "Parameter file '%s' did not return a list, please make sure any `get_params()` functions are returning non-empty arrays."
                 % param_file_name

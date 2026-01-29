@@ -33,7 +33,7 @@ import os
 from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import field, fields, is_dataclass
-from typing import Any, Union
+from typing import Any
 
 PARAMETERS_BLACKLIST = ["name", "hash", "overwrite", "hash_representations"]
 """The default parameters on the ExperimentParameters class that we always
@@ -68,7 +68,7 @@ def set_hash_functions(*args, **kwargs):
                 )
     """
     if len(args) > 0:
-        if type(args[0]) != dict:
+        if not isinstance(args[0], dict):
             raise ValueError(
                 "If providing a positional arg to set_hash_functions, it must be a dictionary."
             )

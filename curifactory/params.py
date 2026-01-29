@@ -3,7 +3,6 @@ a configuration for an experiment run."""
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Union
 
 from curifactory import hashing
 

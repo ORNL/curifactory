@@ -8,7 +8,7 @@ import os
 import pickle
 import time
 from functools import wraps
-from typing import Any, Union
+from typing import Any
 
 import psutil
 
@@ -169,7 +169,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                     % (name, record.manager.current_stage_name)
                 )
             # apply consistent handling
-            nonlocal inputs, outputs, cachers
+            nonlocal inputs, outputs, cachers  # noqa: F824
             if inputs is None:
                 inputs = []
             if outputs is None:
@@ -210,7 +210,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             # check for lazy object / cacher mismatch in outputs
             for output in outputs:
                 if (
-                    type(output) == Lazy
+                    isinstance(output, Lazy)
                     and local_cachers is None
                     and not record.manager.lazy
                     and not record.manager.ignore_lazy
@@ -224,7 +224,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             if record.manager.lazy:
                 no_cachers = False
                 for index, output in enumerate(outputs):
-                    if type(output) != Lazy:
+                    if not isinstance(output, Lazy):
                         logging.debug("Forcing lazy cache for '%s'" % output)
                         outputs[index] = Lazy(output)
                         # NOTE: since Lazy caching doesn't work without a cacher, we need to ensure
@@ -241,7 +241,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                             local_cachers.append(PickleCacher)
             elif record.manager.ignore_lazy:
                 for index, output in enumerate(outputs):
-                    if type(output) == Lazy:
+                    if isinstance(output, Lazy):
                         logging.debug("Disabling lazy cache for '%s'" % output)
                         outputs[index] = output.name
 
@@ -320,7 +320,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                 # instantiate cachers if not already
                 for i in range(len(local_cachers)):
                     cacher = local_cachers[i]
-                    if type(cacher) == type:
+                    if isinstance(cacher, type):
                         local_cachers[i] = cacher()
                     # set the active record on the cacher as well as provide a default name
                     # (the name of the output)
@@ -332,7 +332,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                     #     local_cachers[i].name is None
                     #     and local_cachers[i].path_override is None
                     # ):
-                    if type(outputs[i]) == Lazy:
+                    if isinstance(outputs[i], Lazy):
                         local_cachers[i].name = outputs[i].name
                     else:
                         local_cachers[i].name = outputs[i]
@@ -411,7 +411,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
             if execute_stage:
                 for function_input in function_inputs:
                     if (
-                        type(function_inputs[function_input]) == Lazy
+                        isinstance(function_inputs[function_input], Lazy)
                         and function_inputs[function_input].resolve
                     ):
                         logging.debug(
@@ -423,7 +423,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
                     # make sure a skipped output hasn't made it through - this would indicate
                     # a mistake in the DAG or perhaps the user didn't correctly list all expected
                     # state inputs in an aggregate
-                    if type(function_inputs[function_input]) == SkippedOutput:
+                    if isinstance(function_inputs[function_input], SkippedOutput):
                         raise ExecutingWithSkippedInputError(
                             "Input '%s' was never computed, indicating a DAG error. Try running with '--no-map'."
                             % function_input
@@ -478,7 +478,7 @@ def stage(  # noqa: C901 -- TODO: will be difficult to simplify...
 
             # iterate the outputs rather than function_outputs
             for index, output_name in enumerate(outputs):
-                if type(output_name) == Lazy:
+                if isinstance(output_name, Lazy):
                     lazy_found = True
                     logging.debug("Lazy object '%s' will be cleaned." % output_name)
                     if index == 0 and len(outputs) == 1:
@@ -623,7 +623,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 )
 
             # apply consistent handling
-            nonlocal inputs, outputs, cachers
+            nonlocal inputs, outputs, cachers  # noqa: F824
             if inputs is None:
                 inputs = []
             if outputs is None:
@@ -669,7 +669,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             # check for lazy object / cacher mismatch in outputs
             for output in outputs:
                 if (
-                    type(output) == Lazy
+                    isinstance(output, Lazy)
                     and local_cachers is None
                     and not record.manager.lazy
                     and not record.manager.ignore_lazy
@@ -683,7 +683,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
             if record.manager.lazy:
                 no_cachers = False
                 for index, output in enumerate(outputs):
-                    if type(output) != Lazy:
+                    if not isinstance(output, Lazy):
                         logging.debug("Forcing lazy cache for '%s'" % output)
                         outputs[index] = Lazy(output)
                         # NOTE: since Lazy caching doesn't work without a cacher, we need to ensure
@@ -700,7 +700,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                             local_cachers.append(PickleCacher)
             elif record.manager.ignore_lazy:
                 for index, output in enumerate(outputs):
-                    if type(output) == Lazy:
+                    if isinstance(output, Lazy):
                         logging.debug("Disabling lazy cache for '%s'" % output)
                         outputs[index] = output.name
 
@@ -771,7 +771,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                 # instantiate cachers if not already
                 for i in range(len(local_cachers)):
                     cacher = local_cachers[i]
-                    if type(cacher) == type:
+                    if isinstance(cacher, type):
                         local_cachers[i] = cacher()
                     # set the active record on the cacher as well as provide a default name
                     # (the name of the output)
@@ -783,7 +783,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
                         local_cachers[i].name is None
                         and local_cachers[i].path_override is None
                     ):
-                        if type(outputs[i]) == Lazy:
+                        if isinstance(outputs[i], Lazy):
                             local_cachers[i].name = outputs[i].name
                         else:
                             local_cachers[i].name = outputs[i]
@@ -929,7 +929,7 @@ def aggregate(  # noqa: C901 -- TODO: will be difficult to simplify...
 
             # iterate the outputs rather than function_outputs
             for index, output_name in enumerate(outputs):
-                if type(output_name) == Lazy:
+                if isinstance(output_name, Lazy):
                     lazy_found = True
                     logging.debug("Lazy object '%s' will be cleaned." % output_name)
                     if index == 0 and len(outputs) == 1:
@@ -1097,7 +1097,7 @@ def _check_cached_outputs(
             if cachers[i].check():
                 cachers[i].load_metadata()
                 # handle lazy objects by setting the cacher but not actually loading yet.
-                if type(outputs[i]) == Lazy:
+                if isinstance(outputs[i], Lazy):
                     outputs[i].cacher = cachers[i]
                     # we set the output to just be the Lazy instance for now
                     output = outputs[i]
@@ -1246,7 +1246,7 @@ def _store_outputs(
     if cachers is not None:
         logging.info("Stage %s caching outputs..." % function_name)
 
-    if type(function_outputs) != tuple:
+    if not isinstance(function_outputs, tuple):
         function_outputs = (function_outputs,)
 
     if len(outputs) != len(function_outputs):
@@ -1257,7 +1257,7 @@ def _store_outputs(
 
     # store each argument in the record and cache if requested
     for index, output in enumerate(function_outputs):
-        if type(outputs[index]) == Lazy:
+        if isinstance(outputs[index], Lazy):
             record.state[str(outputs[index])] = outputs[index]
             # TODO: (01/13/2022) if cachers is none, throw an error
         else:
@@ -1286,7 +1286,7 @@ def _store_outputs(
             artifact.metadata = metadata
 
         # if specified as lazy, be sure to populate the cacher
-        if type(outputs[index]) == Lazy:
+        if isinstance(outputs[index], Lazy):
             outputs[index].cacher = cachers[index]
 
 

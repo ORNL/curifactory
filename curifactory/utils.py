@@ -358,7 +358,7 @@ def preview_object(object: any) -> str:
     # handle lazy instances differently - since it's possible we've never loaded it
     # into memory the string rep might _just_ be the lazy instance. Grab the preview
     # string from the cacher's metadata if so.
-    if type(object) == curifactory.Lazy:
+    if isinstance(object, curifactory.Lazy):
         metadata = object.cacher.load_metadata()
         preview = metadata["preview"]
 

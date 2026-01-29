@@ -23,7 +23,7 @@ class CacheAwareDict(dict):
 
     def __getitem__(self, key):
         item = super().__getitem__(key)
-        if type(item) == Lazy and self.resolve and item.resolve:
+        if isinstance(item, Lazy) and self.resolve and item.resolve:
             logging.debug("Auto-resolving lazy object '%s'..." % key)
             return item.cacher.load()
         else:

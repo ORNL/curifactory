@@ -48,7 +48,7 @@ def train_model(record, training_data):
     model_args = dict(class_weight=weight, random_state=params.seed)
 
     # set up model-specific from parameters
-    if type(params.model_type) == RandomForestClassifier:
+    if isinstance(params.model_type, RandomForestClassifier):
         model_args.update(dict(n_estimators=params.n))
 
     # fit the parameterized model

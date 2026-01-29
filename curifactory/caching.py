@@ -15,7 +15,7 @@ import pickle
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Literal, Optional, Union
+from typing import Literal
 
 import pandas as pd
 
@@ -836,7 +836,7 @@ class FileReferenceCacher(Cacheable):
         with open(self.get_path()) as infile:
             files = json.load(infile)
 
-        if type(files) == list:
+        if isinstance(files, list):
             for file in files:
                 logging.debug("Checking from file list: '%s'" % file)
                 if not os.path.exists(file):

@@ -12,7 +12,6 @@ import json
 import logging
 import os
 import shutil
-from typing import Union
 
 import matplotlib.pyplot as plt
 import numpy as np
