@@ -5,6 +5,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+
+## [0.20.0] - 2026-01-29
+
+### Added
+* Experimental new API added via the `curifactory.experimental` module.
+  This API is more pipeline and artifact centric, fixing many of the
+  longstanding design issues and painpoints that the current API has. Once the
+  experimental version is stabilized, it will become the new main `curifactory`
+  module, and the current API will live for a few additional versions under
+  `curifactory.old`.
+* `cf` CLI tool to use the experimental API
+
+### Changed
+* Supported python versions to match current non-EOL (dropped 3.9)
+
+
+
 ## [0.19.0] - 2025-07-20
 
 ### Added

@@ -1,0 +1,1696 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reporting &mdash; Curifactory  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Staging" href="staging.html" />
+    <link rel="prev" title="Record" href="record.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="../index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Usage</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide.html">User Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../user/installation.html">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user/installation.html#tab-completion">Tab completion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../user/getting_started.html">Getting Started</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user/getting_started.html#basic-components">Basic components</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../user/getting_started.html#artifact-manager">Artifact manager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/getting_started.html#parameters">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/getting_started.html#records">Records</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/getting_started.html#stages">Stages</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../user/getting_started.html#caching-and-reporting">Caching and reporting</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../user/getting_started.html#caching">Caching</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/getting_started.html#lazy-loading">Lazy loading</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/getting_started.html#reporting">Reporting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../user/getting_started.html#experiment-organization">Experiment organization</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../user/getting_started.html#basic-mechanics">Basic mechanics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/getting_started.html#the-experiment-script-file">The experiment script file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/getting_started.html#the-experiment-cli">The experiment CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/getting_started.html#parameter-files">Parameter files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/getting_started.html#organization-of-growing-projects">Organization of growing projects</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../user/getting_started.html#next-steps">Next steps</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../user/components.html">Components</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user/components.html#component-interactions">Component interactions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../user/components.html#stage-flow">Stage flow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/components.html#procedure-flow">Procedure flow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/components.html#experiment-flow">Experiment flow</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../user/components.html#anatomy-of-a-stage">Anatomy of a stage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/components.html#stage-parameters">Stage parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/components.html#aggregate-parameters">Aggregate parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../user/parameters.html">Parameter files and parameter sets</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user/parameters.html#the-experimentparameters-class">The <code class="code docutils literal notranslate"><span class="pre">ExperimentParameters</span></code> class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/parameters.html#programmatic-definition">Programmatic definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/parameters.html#using-parameters">Using parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/parameters.html#parameter-set-hashes-and-operational-parameters">Parameter set hashes and operational parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/parameters.html#subparameter-classes">Subparameter classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../user/cache.html">Cache</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user/cache.html#using-cachers">Using cachers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../user/cache.html#cacher-arguments">Cacher arguments</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cache.html#inline-cachers">Inline cachers</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../user/cache.html#metadata">Metadata</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/cache.html#lazy-cache-objects">Lazy cache objects</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../user/cache.html#lazy-resolve">Lazy resolve</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../user/hashing_mechanics.html">Hashing Mechanics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user/hashing_mechanics.html#skipping-parameters-in-a-single-set">Skipping parameters in a single set</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../user/experiment_graph.html">Experiment Graph (DAG)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user/reports.html">Reports</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user/reports.html#report-structure">Report structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/reports.html#reportables">Reportables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/reports.html#reportable-groups">Reportable groups</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../user/config.html">Configuration and directory structure</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user/config.html#project-directories">Project directories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/config.html#configuration">Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../user/cli_guide.html">CLI Guide</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user/cli_guide.html#running-an-experiment">Running an experiment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/cli_guide.html#filtering-to-specific-parameter-sets">Filtering to specific parameter sets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/cli_guide.html#caching-controls">Caching controls</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#specifying-cache-directory-c-cache">Specifying cache directory (<code class="docutils literal notranslate"><span class="pre">-c</span></code>, <code class="docutils literal notranslate"><span class="pre">--cache</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#overwriting-cached-data-overwrite-overwrite-stage">Overwriting cached data (<code class="docutils literal notranslate"><span class="pre">--overwrite</span></code>, <code class="docutils literal notranslate"><span class="pre">--overwrite-stage</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#full-stores-store-full-dry-cache">Full stores (<code class="docutils literal notranslate"><span class="pre">--store-full</span></code>, <code class="docutils literal notranslate"><span class="pre">--dry-cache</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#lazy-cache-objects-lazy-ignore-lazy">Lazy cache objects (<code class="docutils literal notranslate"><span class="pre">--lazy</span></code>, <code class="docutils literal notranslate"><span class="pre">--ignore-lazy</span></code>)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../user/cli_guide.html#parallel-runs">Parallel runs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/cli_guide.html#listing-experiments-and-parameters">Listing experiments and parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/cli_guide.html#experiment-run-notes">Experiment run notes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/cli_guide.html#hosting-html-reports">Hosting HTML reports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/cli_guide.html#getting-experiment-dag-and-parameter-info">Getting Experiment DAG and Parameter Info</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#experiment-maps-cache-status">Experiment maps/cache status</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#parameter-set-hashes-parameters">Parameter set hashes/parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#cache-paths">Cache paths</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../user/cli_guide.html#full-reference">Full reference</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#parameter-names-p-params">Parameter names (<code class="docutils literal notranslate"><span class="pre">-p</span></code>, <code class="docutils literal notranslate"><span class="pre">--params`</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#parameter-set-names-n-names">Parameter set names (<code class="docutils literal notranslate"><span class="pre">-n</span></code>, <code class="docutils literal notranslate"><span class="pre">--names</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#argument-set-indices-indices">Argument set indices (<code class="docutils literal notranslate"><span class="pre">--indices</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#global-arument-set-indices-global-indices">Global arument set indices (<code class="docutils literal notranslate"><span class="pre">--global-indices</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#parallel-parallel">Parallel (<code class="docutils literal notranslate"><span class="pre">--parallel</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#parallel-mode-parallel-safe">Parallel mode (<code class="docutils literal notranslate"><span class="pre">--parallel-safe</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#suppress-logging-no-log">Suppress logging (<code class="docutils literal notranslate"><span class="pre">--no-log</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#suppress-report-generation-no-report">Suppress report generation (<code class="docutils literal notranslate"><span class="pre">--no-report</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#overwrite-cache-overwrite">Overwrite cache (<code class="docutils literal notranslate"><span class="pre">--overwrite</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#overwrite-cache-for-stage-overwrite-stage">Overwrite cache for stage (<code class="docutils literal notranslate"><span class="pre">--overwrite-stage</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#full-store-s-store-full">Full store (<code class="docutils literal notranslate"><span class="pre">-s</span></code>, <code class="docutils literal notranslate"><span class="pre">--store-full</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#cache-directory-c-cache">Cache directory (<code class="docutils literal notranslate"><span class="pre">-c</span></code>, <code class="docutils literal notranslate"><span class="pre">--cache</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#force-lazy-caching-lazy">Force lazy caching (<code class="docutils literal notranslate"><span class="pre">--lazy</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#force-no-lazy-caching-ignore-lazy">Force no lazy caching (<code class="docutils literal notranslate"><span class="pre">--ignore-lazy</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#include-debug-logs-v-verbose">Include debug logs (<code class="docutils literal notranslate"><span class="pre">-v</span></code>, <code class="docutils literal notranslate"><span class="pre">--verbose</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#progress-bars-progress">Progress bars (<code class="docutils literal notranslate"><span class="pre">--progress</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#only-print-experiment-map-map">Only print experiment map (<code class="docutils literal notranslate"><span class="pre">--map</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#only-print-experiment-hashes-and-names-hashes">Only print experiment hashes and names (<code class="docutils literal notranslate"><span class="pre">--hashes</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#only-print-parameter-set-contents-print-params">Only print parameter set contents (<code class="docutils literal notranslate"><span class="pre">--print-params</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#only-print-artifact-cache-paths-paths">Only print artifact cache paths (<code class="docutils literal notranslate"><span class="pre">--paths</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#run-experiment-purely-linearly-instead-with-dag-no-dag">Run experiment purely linearly instead with DAG (<code class="docutils literal notranslate"><span class="pre">--no-dag</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#suppress-console-log-output-quiet">Suppress console log output (<code class="docutils literal notranslate"><span class="pre">--quiet</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#suppress-terminal-colors-in-case-of-unrecognized-non-support-no-color">Suppress terminal colors in case of unrecognized non-support (<code class="docutils literal notranslate"><span class="pre">--no-color</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#suppress-rich-formatting-of-logging-plain">Suppress rich formatting of logging (<code class="docutils literal notranslate"><span class="pre">--plain</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#suppress-all-file-output-dry">Suppress all file output (<code class="docutils literal notranslate"><span class="pre">--dry</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#suppress-writing-to-cache-dry-cache">Suppress writing to cache (<code class="docutils literal notranslate"><span class="pre">--dry-cache</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#include-errors-in-log-files-log-errors">Include errors in log files (<code class="docutils literal notranslate"><span class="pre">--log-errors</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#custom-cache-name-prefix-n-name">Custom cache name prefix (<code class="docutils literal notranslate"><span class="pre">-n</span></code>, <code class="docutils literal notranslate"><span class="pre">--name</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#experiment-run-notes-notes">Experiment run notes (<code class="docutils literal notranslate"><span class="pre">--notes</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#export-experiment-in-docker-container-docker">Export experiment in docker container (<code class="docutils literal notranslate"><span class="pre">--docker</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#export-experiment-explorer-as-a-jupyter-notebook-notebook">Export experiment explorer as a jupyter notebook (<code class="docutils literal notranslate"><span class="pre">--notebook</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/cli_guide.html#serve-html-reports-on-a-specified-port-and-host-port-host">Serve HTML reports on a specified port and host (<code class="docutils literal notranslate"><span class="pre">--port</span></code>, <code class="docutils literal notranslate"><span class="pre">--host</span></code>)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../user/example.html">Example Experiment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../user/tips.html">Tips and tricks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user/tips.html#minimum-code-to-run-stages">Minimum code to run stages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/tips.html#common-dataset-for-multiple-different-argsets">Common dataset for multiple different argsets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/tips.html#branching-in-experiments">Branching in experiments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/tips.html#using-the-git-commit-hash-from-reports">Using the git commit hash from reports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/tips.html#softlinking-data-directories">Softlinking data directories</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../user/cookbook.html">Curifactory Cookbook</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user/cookbook.html#distributed-torchrun-via-external-stage">Distributed <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> via external stage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../user/cookbook.html#cachers-for-pytorch-lightning-models">Cachers for Pytorch Lightning models</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../user/migration.html">Migration Guide</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../user/migration.html#id1">0.14.0 - 0.15.0</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../user/migration.html#change-any-record-args-references-to-record-params">Change any <code class="docutils literal notranslate"><span class="pre">Record.args</span></code> references to <code class="docutils literal notranslate"><span class="pre">Record.params</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../user/migration.html#classes-subclassing-curifactory-args-experimentargs-should-subclass-curifactory-params-experimentparameters">Classes subclassing <code class="docutils literal notranslate"><span class="pre">curifactory.args.ExperimentArgs</span></code> should subclass <code class="docutils literal notranslate"><span class="pre">curifactory.params.ExperimentParameters</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../user/migration.html#id2">0.13.0 - 0.14.0</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../user/migration.html#aggregate-stages-should-now-specify-inputs-in-the-decorator">Aggregate stages should now specify <code class="docutils literal notranslate"><span class="pre">inputs</span></code> in the decorator</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api_reference.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="caching.html">Caching</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable"><code class="docutils literal notranslate"><span class="pre">Cacheable</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.cache_paths"><code class="docutils literal notranslate"><span class="pre">Cacheable.cache_paths</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.check"><code class="docutils literal notranslate"><span class="pre">Cacheable.check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.collect_metadata"><code class="docutils literal notranslate"><span class="pre">Cacheable.collect_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.extension"><code class="docutils literal notranslate"><span class="pre">Cacheable.extension</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.extra_metadata"><code class="docutils literal notranslate"><span class="pre">Cacheable.extra_metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.get_dir"><code class="docutils literal notranslate"><span class="pre">Cacheable.get_dir()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.get_path"><code class="docutils literal notranslate"><span class="pre">Cacheable.get_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.load"><code class="docutils literal notranslate"><span class="pre">Cacheable.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.load_metadata"><code class="docutils literal notranslate"><span class="pre">Cacheable.load_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.metadata"><code class="docutils literal notranslate"><span class="pre">Cacheable.metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.name"><code class="docutils literal notranslate"><span class="pre">Cacheable.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.path_override"><code class="docutils literal notranslate"><span class="pre">Cacheable.path_override</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.prefix"><code class="docutils literal notranslate"><span class="pre">Cacheable.prefix</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.record"><code class="docutils literal notranslate"><span class="pre">Cacheable.record</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.save"><code class="docutils literal notranslate"><span class="pre">Cacheable.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.save_metadata"><code class="docutils literal notranslate"><span class="pre">Cacheable.save_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.set_record"><code class="docutils literal notranslate"><span class="pre">Cacheable.set_record()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.stage"><code class="docutils literal notranslate"><span class="pre">Cacheable.stage</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.subdir"><code class="docutils literal notranslate"><span class="pre">Cacheable.subdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Cacheable.track"><code class="docutils literal notranslate"><span class="pre">Cacheable.track</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="caching.html#curifactory.caching.FileReferenceCacher"><code class="docutils literal notranslate"><span class="pre">FileReferenceCacher</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.FileReferenceCacher.check"><code class="docutils literal notranslate"><span class="pre">FileReferenceCacher.check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.FileReferenceCacher.load"><code class="docutils literal notranslate"><span class="pre">FileReferenceCacher.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.FileReferenceCacher.save"><code class="docutils literal notranslate"><span class="pre">FileReferenceCacher.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="caching.html#curifactory.caching.JsonCacher"><code class="docutils literal notranslate"><span class="pre">JsonCacher</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.JsonCacher.load"><code class="docutils literal notranslate"><span class="pre">JsonCacher.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.JsonCacher.save"><code class="docutils literal notranslate"><span class="pre">JsonCacher.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="caching.html#curifactory.caching.Lazy"><code class="docutils literal notranslate"><span class="pre">Lazy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.Lazy.load"><code class="docutils literal notranslate"><span class="pre">Lazy.load()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="caching.html#curifactory.caching.PandasCacher"><code class="docutils literal notranslate"><span class="pre">PandasCacher</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.PandasCacher.load"><code class="docutils literal notranslate"><span class="pre">PandasCacher.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.PandasCacher.save"><code class="docutils literal notranslate"><span class="pre">PandasCacher.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="caching.html#curifactory.caching.PandasCsvCacher"><code class="docutils literal notranslate"><span class="pre">PandasCsvCacher</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="caching.html#curifactory.caching.PandasJsonCacher"><code class="docutils literal notranslate"><span class="pre">PandasJsonCacher</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="caching.html#curifactory.caching.PathRef"><code class="docutils literal notranslate"><span class="pre">PathRef</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.PathRef.load"><code class="docutils literal notranslate"><span class="pre">PathRef.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.PathRef.save"><code class="docutils literal notranslate"><span class="pre">PathRef.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="caching.html#curifactory.caching.PickleCacher"><code class="docutils literal notranslate"><span class="pre">PickleCacher</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.PickleCacher.load"><code class="docutils literal notranslate"><span class="pre">PickleCacher.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.PickleCacher.save"><code class="docutils literal notranslate"><span class="pre">PickleCacher.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="caching.html#curifactory.caching.RawJupyterNotebookCacher"><code class="docutils literal notranslate"><span class="pre">RawJupyterNotebookCacher</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.RawJupyterNotebookCacher.load"><code class="docutils literal notranslate"><span class="pre">RawJupyterNotebookCacher.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="caching.html#curifactory.caching.RawJupyterNotebookCacher.save"><code class="docutils literal notranslate"><span class="pre">RawJupyterNotebookCacher.save()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dag.html">DAG</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dag.html#curifactory.dag.DAG"><code class="docutils literal notranslate"><span class="pre">DAG</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.DAG.analyze"><code class="docutils literal notranslate"><span class="pre">DAG.analyze()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.DAG.artifacts"><code class="docutils literal notranslate"><span class="pre">DAG.artifacts</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.DAG.build_execution_tree_recursive"><code class="docutils literal notranslate"><span class="pre">DAG.build_execution_tree_recursive()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.DAG.build_execution_trees"><code class="docutils literal notranslate"><span class="pre">DAG.build_execution_trees()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.DAG.child_records"><code class="docutils literal notranslate"><span class="pre">DAG.child_records()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.DAG.determine_execution_list"><code class="docutils literal notranslate"><span class="pre">DAG.determine_execution_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.DAG.determine_execution_list_recursive"><code class="docutils literal notranslate"><span class="pre">DAG.determine_execution_list_recursive()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.DAG.execution_list"><code class="docutils literal notranslate"><span class="pre">DAG.execution_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.DAG.execution_trees"><code class="docutils literal notranslate"><span class="pre">DAG.execution_trees</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.DAG.find_leaves"><code class="docutils literal notranslate"><span class="pre">DAG.find_leaves()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.DAG.get_record_string"><code class="docutils literal notranslate"><span class="pre">DAG.get_record_string()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.DAG.is_leaf"><code class="docutils literal notranslate"><span class="pre">DAG.is_leaf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.DAG.is_output_used_anywhere"><code class="docutils literal notranslate"><span class="pre">DAG.is_output_used_anywhere()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.DAG.print_experiment_map"><code class="docutils literal notranslate"><span class="pre">DAG.print_experiment_map()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.DAG.records"><code class="docutils literal notranslate"><span class="pre">DAG.records</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dag.html#curifactory.dag.ExecutionNode"><code class="docutils literal notranslate"><span class="pre">ExecutionNode</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.ExecutionNode.chain_rep"><code class="docutils literal notranslate"><span class="pre">ExecutionNode.chain_rep()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.ExecutionNode.dependencies"><code class="docutils literal notranslate"><span class="pre">ExecutionNode.dependencies</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.ExecutionNode.parent"><code class="docutils literal notranslate"><span class="pre">ExecutionNode.parent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="dag.html#curifactory.dag.ExecutionNode.string_rep"><code class="docutils literal notranslate"><span class="pre">ExecutionNode.string_rep()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="docker.html">Docker</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="docker.html#curifactory.docker.build_docker"><code class="docutils literal notranslate"><span class="pre">build_docker()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="experiment.html">Experiment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="experiment.html#curifactory.experiment.collect_parameter_sets"><code class="docutils literal notranslate"><span class="pre">collect_parameter_sets()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment.html#curifactory.experiment.list_experiments"><code class="docutils literal notranslate"><span class="pre">list_experiments()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment.html#curifactory.experiment.list_params"><code class="docutils literal notranslate"><span class="pre">list_params()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment.html#curifactory.experiment.regex_lister"><code class="docutils literal notranslate"><span class="pre">regex_lister()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment.html#curifactory.experiment.run_experiment"><code class="docutils literal notranslate"><span class="pre">run_experiment()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hashing.html">Hashing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hashing.html#curifactory.hashing.PARAMETERS_BLACKLIST"><code class="docutils literal notranslate"><span class="pre">PARAMETERS_BLACKLIST</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hashing.html#curifactory.hashing.add_params_combo_hash"><code class="docutils literal notranslate"><span class="pre">add_params_combo_hash()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hashing.html#curifactory.hashing.compute_hash"><code class="docutils literal notranslate"><span class="pre">compute_hash()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hashing.html#curifactory.hashing.get_param_set_hash_values"><code class="docutils literal notranslate"><span class="pre">get_param_set_hash_values()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hashing.html#curifactory.hashing.get_parameter_hash_value"><code class="docutils literal notranslate"><span class="pre">get_parameter_hash_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hashing.html#curifactory.hashing.hash_param_set"><code class="docutils literal notranslate"><span class="pre">hash_param_set()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hashing.html#curifactory.hashing.param_set_string_hash_representations"><code class="docutils literal notranslate"><span class="pre">param_set_string_hash_representations()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="hashing.html#curifactory.hashing.set_hash_functions"><code class="docutils literal notranslate"><span class="pre">set_hash_functions()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="manager.html">Manager</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager"><code class="docutils literal notranslate"><span class="pre">ArtifactManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.artifacts"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.artifacts</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.cache_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.cache_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.conda_env"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.conda_env</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.config"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.current_stage_name"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.current_stage_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.display_all_reportables"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.display_all_reportables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.display_group_reportables"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.display_group_reportables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.display_info"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.display_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.display_record_reportables"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.display_record_reportables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.display_reportable"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.display_reportable()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.display_stage_graph"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.display_stage_graph()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.display_stage_reportables"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.display_stage_reportables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.dry"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.dry</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.dry_cache"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.dry_cache</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.error"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.error</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.error_thrown"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.error_thrown</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.experiment_name"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.experiment_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.experiment_run_number"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.experiment_run_number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.generate_report"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.generate_report()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.get_all_param_sets"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_all_param_sets()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.get_artifact_filename"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_artifact_filename()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.get_artifact_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_artifact_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.get_grouped_reportables"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_grouped_reportables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.get_reference_name"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_reference_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.get_reportable_groups"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_reportable_groups()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.get_run_output_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_run_output_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.get_str_timestamp"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_str_timestamp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.get_ungrouped_reportables"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_ungrouped_reportables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.git_commit_hash"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.git_commit_hash</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.git_workdir_dirty"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.git_workdir_dirty</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.hostname"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.hostname</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.ignore_lazy"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.ignore_lazy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.interactive"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.interactive</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.lazy"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.lazy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.live_report_path_generated"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.live_report_path_generated</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.lock"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.lock()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.logs_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.logs_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.manager_cache_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.manager_cache_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.map"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.map</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.map_mode"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.map_mode</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.map_records"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.map_records()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.mapped_artifacts"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.mapped_artifacts</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.notebooks_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.notebooks_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.notes"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.notes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.os"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.os</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.overwrite"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.overwrite</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.overwrite_stages"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.overwrite_stages</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.parallel_lock"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.parallel_lock</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.parallel_mode"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.parallel_mode</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.param_file_param_sets"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.param_file_param_sets</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.parameter_files"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.parameter_files</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.pip_freeze"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.pip_freeze</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.prefix"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.prefix</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.records"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.records</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.report_css_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.report_css_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.reportables"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.reportables</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.reports_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.reports_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.reproduction_line"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.reproduction_line</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.run_info"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.run_info</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.run_line"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.run_line</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.run_timestamp"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.run_timestamp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.runs_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.runs_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.stage_active"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.stage_active</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.status"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.store"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.store()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.store_full"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.store_full</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.stored"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.stored</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.unlock"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.unlock()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.update_map_progress"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.update_map_progress()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager.write_run_env_output"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.write_run_env_output()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="params.html">Params</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="params.html#curifactory.params.ExperimentParameters"><code class="docutils literal notranslate"><span class="pre">ExperimentParameters</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="params.html#curifactory.params.ExperimentParameters.hash"><code class="docutils literal notranslate"><span class="pre">ExperimentParameters.hash</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="params.html#curifactory.params.ExperimentParameters.hash_representations"><code class="docutils literal notranslate"><span class="pre">ExperimentParameters.hash_representations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="params.html#curifactory.params.ExperimentParameters.name"><code class="docutils literal notranslate"><span class="pre">ExperimentParameters.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="params.html#curifactory.params.ExperimentParameters.overwrite"><code class="docutils literal notranslate"><span class="pre">ExperimentParameters.overwrite</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="params.html#curifactory.params.ExperimentParameters.params_hash"><code class="docutils literal notranslate"><span class="pre">ExperimentParameters.params_hash()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="procedure.html">Procedure</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="procedure.html#curifactory.procedure.NoArtifactManagerError"><code class="docutils literal notranslate"><span class="pre">NoArtifactManagerError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="procedure.html#curifactory.procedure.Procedure"><code class="docutils literal notranslate"><span class="pre">Procedure</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="procedure.html#curifactory.procedure.Procedure.run"><code class="docutils literal notranslate"><span class="pre">Procedure.run()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="project.html">Project</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="project.html#curifactory.project.add_completion_to_rc"><code class="docutils literal notranslate"><span class="pre">add_completion_to_rc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#curifactory.project.initialize_project"><code class="docutils literal notranslate"><span class="pre">initialize_project()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="project.html#curifactory.project.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="record.html">Record</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="record.html#curifactory.record.ArtifactRepresentation"><code class="docutils literal notranslate"><span class="pre">ArtifactRepresentation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.ArtifactRepresentation.html_safe"><code class="docutils literal notranslate"><span class="pre">ArtifactRepresentation.html_safe()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="record.html#curifactory.record.CacheAwareDict"><code class="docutils literal notranslate"><span class="pre">CacheAwareDict</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.CacheAwareDict.resolve"><code class="docutils literal notranslate"><span class="pre">CacheAwareDict.resolve</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="record.html#curifactory.record.MapArtifactRepresentation"><code class="docutils literal notranslate"><span class="pre">MapArtifactRepresentation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="record.html#curifactory.record.Record"><code class="docutils literal notranslate"><span class="pre">Record</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.combo_hash"><code class="docutils literal notranslate"><span class="pre">Record.combo_hash</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.get_dir"><code class="docutils literal notranslate"><span class="pre">Record.get_dir()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.get_hash"><code class="docutils literal notranslate"><span class="pre">Record.get_hash()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.get_path"><code class="docutils literal notranslate"><span class="pre">Record.get_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.get_record_index"><code class="docutils literal notranslate"><span class="pre">Record.get_record_index()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.get_reference_name"><code class="docutils literal notranslate"><span class="pre">Record.get_reference_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.input_records"><code class="docutils literal notranslate"><span class="pre">Record.input_records</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.is_aggregate"><code class="docutils literal notranslate"><span class="pre">Record.is_aggregate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.make_copy"><code class="docutils literal notranslate"><span class="pre">Record.make_copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.manager"><code class="docutils literal notranslate"><span class="pre">Record.manager</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.output"><code class="docutils literal notranslate"><span class="pre">Record.output</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.params"><code class="docutils literal notranslate"><span class="pre">Record.params</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.report"><code class="docutils literal notranslate"><span class="pre">Record.report()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.set_aggregate"><code class="docutils literal notranslate"><span class="pre">Record.set_aggregate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.set_hash"><code class="docutils literal notranslate"><span class="pre">Record.set_hash()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.stage_cachers"><code class="docutils literal notranslate"><span class="pre">Record.stage_cachers</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.stage_inputs"><code class="docutils literal notranslate"><span class="pre">Record.stage_inputs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.stage_inputs_names"><code class="docutils literal notranslate"><span class="pre">Record.stage_inputs_names</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.stage_kwargs_keys"><code class="docutils literal notranslate"><span class="pre">Record.stage_kwargs_keys</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.stage_outputs"><code class="docutils literal notranslate"><span class="pre">Record.stage_outputs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.stage_suppress_missing"><code class="docutils literal notranslate"><span class="pre">Record.stage_suppress_missing</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.stages"><code class="docutils literal notranslate"><span class="pre">Record.stages</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.state"><code class="docutils literal notranslate"><span class="pre">Record.state</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.state_artifact_reps"><code class="docutils literal notranslate"><span class="pre">Record.state_artifact_reps</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.store_tracked_paths"><code class="docutils literal notranslate"><span class="pre">Record.store_tracked_paths()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.stored_paths"><code class="docutils literal notranslate"><span class="pre">Record.stored_paths</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="record.html#curifactory.record.Record.unstored_tracked_paths"><code class="docutils literal notranslate"><span class="pre">Record.unstored_tracked_paths</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Reporting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.DFReporter"><code class="docutils literal notranslate"><span class="pre">DFReporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.DFReporter.html"><code class="docutils literal notranslate"><span class="pre">DFReporter.html()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.FigureReporter"><code class="docutils literal notranslate"><span class="pre">FigureReporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.FigureReporter.group"><code class="docutils literal notranslate"><span class="pre">FigureReporter.group</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.FigureReporter.html"><code class="docutils literal notranslate"><span class="pre">FigureReporter.html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.FigureReporter.kwargs"><code class="docutils literal notranslate"><span class="pre">FigureReporter.kwargs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.FigureReporter.name"><code class="docutils literal notranslate"><span class="pre">FigureReporter.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.FigureReporter.path"><code class="docutils literal notranslate"><span class="pre">FigureReporter.path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.FigureReporter.qualified_name"><code class="docutils literal notranslate"><span class="pre">FigureReporter.qualified_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.FigureReporter.render"><code class="docutils literal notranslate"><span class="pre">FigureReporter.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.FigureReporter.rendered"><code class="docutils literal notranslate"><span class="pre">FigureReporter.rendered</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.FigureReporter.stage"><code class="docutils literal notranslate"><span class="pre">FigureReporter.stage</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.HTMLReporter"><code class="docutils literal notranslate"><span class="pre">HTMLReporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.HTMLReporter.group"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.group</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.HTMLReporter.html"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.HTMLReporter.html_string"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.html_string</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.HTMLReporter.name"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.HTMLReporter.path"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.HTMLReporter.qualified_name"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.qualified_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.HTMLReporter.rendered"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.rendered</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.HTMLReporter.stage"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.stage</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.ImageReporter"><code class="docutils literal notranslate"><span class="pre">ImageReporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.ImageReporter.html"><code class="docutils literal notranslate"><span class="pre">ImageReporter.html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.ImageReporter.render"><code class="docutils literal notranslate"><span class="pre">ImageReporter.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.JsonReporter"><code class="docutils literal notranslate"><span class="pre">JsonReporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.JsonReporter.html"><code class="docutils literal notranslate"><span class="pre">JsonReporter.html()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.LatexTableReporter"><code class="docutils literal notranslate"><span class="pre">LatexTableReporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.LatexTableReporter.html"><code class="docutils literal notranslate"><span class="pre">LatexTableReporter.html()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.LinePlotReporter"><code class="docutils literal notranslate"><span class="pre">LinePlotReporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.LinePlotReporter.html"><code class="docutils literal notranslate"><span class="pre">LinePlotReporter.html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.LinePlotReporter.render"><code class="docutils literal notranslate"><span class="pre">LinePlotReporter.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.Reportable"><code class="docutils literal notranslate"><span class="pre">Reportable</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.Reportable.group"><code class="docutils literal notranslate"><span class="pre">Reportable.group</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.Reportable.html"><code class="docutils literal notranslate"><span class="pre">Reportable.html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.Reportable.name"><code class="docutils literal notranslate"><span class="pre">Reportable.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.Reportable.path"><code class="docutils literal notranslate"><span class="pre">Reportable.path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.Reportable.qualified_name"><code class="docutils literal notranslate"><span class="pre">Reportable.qualified_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.Reportable.record"><code class="docutils literal notranslate"><span class="pre">Reportable.record</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.Reportable.render"><code class="docutils literal notranslate"><span class="pre">Reportable.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.Reportable.rendered"><code class="docutils literal notranslate"><span class="pre">Reportable.rendered</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#curifactory.reporting.Reportable.stage"><code class="docutils literal notranslate"><span class="pre">Reportable.stage</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.map_full_svg"><code class="docutils literal notranslate"><span class="pre">map_full_svg()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.map_single_svg"><code class="docutils literal notranslate"><span class="pre">map_single_svg()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.prepare_report_path"><code class="docutils literal notranslate"><span class="pre">prepare_report_path()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.render_graph"><code class="docutils literal notranslate"><span class="pre">render_graph()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.render_report_all_reportables"><code class="docutils literal notranslate"><span class="pre">render_report_all_reportables()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.render_report_argset_dump"><code class="docutils literal notranslate"><span class="pre">render_report_argset_dump()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.render_report_detailed_stage_maps"><code class="docutils literal notranslate"><span class="pre">render_report_detailed_stage_maps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.render_report_head"><code class="docutils literal notranslate"><span class="pre">render_report_head()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.render_report_info_block"><code class="docutils literal notranslate"><span class="pre">render_report_info_block()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.render_report_reportables_toc"><code class="docutils literal notranslate"><span class="pre">render_report_reportables_toc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.render_report_stage_map"><code class="docutils literal notranslate"><span class="pre">render_report_stage_map()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.render_report_toc"><code class="docutils literal notranslate"><span class="pre">render_report_toc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.render_reportable"><code class="docutils literal notranslate"><span class="pre">render_reportable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.run_report"><code class="docutils literal notranslate"><span class="pre">run_report()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#curifactory.reporting.update_report_index"><code class="docutils literal notranslate"><span class="pre">update_report_index()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="staging.html">Staging</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="staging.html#curifactory.staging.CachersMismatchError"><code class="docutils literal notranslate"><span class="pre">CachersMismatchError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="staging.html#curifactory.staging.EmptyCachersError"><code class="docutils literal notranslate"><span class="pre">EmptyCachersError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="staging.html#curifactory.staging.ExecutingWithSkippedInputError"><code class="docutils literal notranslate"><span class="pre">ExecutingWithSkippedInputError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="staging.html#curifactory.staging.InputSignatureError"><code class="docutils literal notranslate"><span class="pre">InputSignatureError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="staging.html#curifactory.staging.OutputSignatureError"><code class="docutils literal notranslate"><span class="pre">OutputSignatureError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="staging.html#curifactory.staging.SkippedOutput"><code class="docutils literal notranslate"><span class="pre">SkippedOutput</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="staging.html#curifactory.staging.aggregate"><code class="docutils literal notranslate"><span class="pre">aggregate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="staging.html#curifactory.staging.stage"><code class="docutils literal notranslate"><span class="pre">stage()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="store.html">Store</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="store.html#curifactory.store.ManagerStore"><code class="docutils literal notranslate"><span class="pre">ManagerStore</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="store.html#curifactory.store.ManagerStore.add_run"><code class="docutils literal notranslate"><span class="pre">ManagerStore.add_run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="store.html#curifactory.store.ManagerStore.get_experiment_runs"><code class="docutils literal notranslate"><span class="pre">ManagerStore.get_experiment_runs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="store.html#curifactory.store.ManagerStore.get_run"><code class="docutils literal notranslate"><span class="pre">ManagerStore.get_run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="store.html#curifactory.store.ManagerStore.load"><code class="docutils literal notranslate"><span class="pre">ManagerStore.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="store.html#curifactory.store.ManagerStore.path"><code class="docutils literal notranslate"><span class="pre">ManagerStore.path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="store.html#curifactory.store.ManagerStore.runs"><code class="docutils literal notranslate"><span class="pre">ManagerStore.runs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="store.html#curifactory.store.ManagerStore.save"><code class="docutils literal notranslate"><span class="pre">ManagerStore.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="store.html#curifactory.store.ManagerStore.update_run"><code class="docutils literal notranslate"><span class="pre">ManagerStore.update_run()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">Utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.CONFIGURATION_FILE"><code class="docutils literal notranslate"><span class="pre">CONFIGURATION_FILE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.EDITORS"><code class="docutils literal notranslate"><span class="pre">EDITORS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.PrefixedLogFactory"><code class="docutils literal notranslate"><span class="pre">PrefixedLogFactory</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.StreamToLogger"><code class="docutils literal notranslate"><span class="pre">StreamToLogger</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#curifactory.utils.StreamToLogger.write"><code class="docutils literal notranslate"><span class="pre">StreamToLogger.write()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.TIMESTAMP_FORMAT"><code class="docutils literal notranslate"><span class="pre">TIMESTAMP_FORMAT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.check_git_dirty_workingdir"><code class="docutils literal notranslate"><span class="pre">check_git_dirty_workingdir()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.get_command_output"><code class="docutils literal notranslate"><span class="pre">get_command_output()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.get_conda_env"><code class="docutils literal notranslate"><span class="pre">get_conda_env()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.get_conda_list"><code class="docutils literal notranslate"><span class="pre">get_conda_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.get_configuration"><code class="docutils literal notranslate"><span class="pre">get_configuration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.get_current_commit"><code class="docutils literal notranslate"><span class="pre">get_current_commit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.get_editor"><code class="docutils literal notranslate"><span class="pre">get_editor()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.get_os"><code class="docutils literal notranslate"><span class="pre">get_os()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.get_pip_freeze"><code class="docutils literal notranslate"><span class="pre">get_pip_freeze()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.get_py_opening_comment"><code class="docutils literal notranslate"><span class="pre">get_py_opening_comment()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.human_readable_mem_usage"><code class="docutils literal notranslate"><span class="pre">human_readable_mem_usage()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.human_readable_time"><code class="docutils literal notranslate"><span class="pre">human_readable_time()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.init_logging"><code class="docutils literal notranslate"><span class="pre">init_logging()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.preview_object"><code class="docutils literal notranslate"><span class="pre">preview_object()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.run_command"><code class="docutils literal notranslate"><span class="pre">run_command()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#curifactory.utils.set_logging_prefix"><code class="docutils literal notranslate"><span class="pre">set_logging_prefix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="experimental.html">Experimental Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="experimental/artifact.html">Artifact</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="experimental/artifact.html#curifactory.experimental.artifact.Artifact"><code class="docutils literal notranslate"><span class="pre">Artifact</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/artifact.html#curifactory.experimental.artifact.ArtifactFilter"><code class="docutils literal notranslate"><span class="pre">ArtifactFilter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/artifact.html#curifactory.experimental.artifact.ArtifactList"><code class="docutils literal notranslate"><span class="pre">ArtifactList</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/artifact.html#curifactory.experimental.artifact.DBArtifact"><code class="docutils literal notranslate"><span class="pre">DBArtifact</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/artifact.html#curifactory.experimental.artifact.StageReportables"><code class="docutils literal notranslate"><span class="pre">StageReportables</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/artifact.html#curifactory.experimental.artifact.pointer_based_property"><code class="docutils literal notranslate"><span class="pre">pointer_based_property()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/artifact.html#curifactory.experimental.artifact.pointer_based_property_getter"><code class="docutils literal notranslate"><span class="pre">pointer_based_property_getter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/artifact.html#curifactory.experimental.artifact.pointer_based_property_setter"><code class="docutils literal notranslate"><span class="pre">pointer_based_property_setter()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="experimental/init.html">Experimental</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="experimental/init.html#curifactory.experimental.convert_artifact_to_path"><code class="docutils literal notranslate"><span class="pre">convert_artifact_to_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/init.html#curifactory.experimental.get_artifact_paths"><code class="docutils literal notranslate"><span class="pre">get_artifact_paths()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/init.html#curifactory.experimental.get_manager"><code class="docutils literal notranslate"><span class="pre">get_manager()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/init.html#curifactory.experimental.get_output_path"><code class="docutils literal notranslate"><span class="pre">get_output_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/init.html#curifactory.experimental.global_config"><code class="docutils literal notranslate"><span class="pre">global_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/init.html#curifactory.experimental.report"><code class="docutils literal notranslate"><span class="pre">report()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/init.html#curifactory.experimental.status"><code class="docutils literal notranslate"><span class="pre">status()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="experimental/caching.html">Caching</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="experimental/caching.html#curifactory.experimental.caching.AggregateArtifactCacher"><code class="docutils literal notranslate"><span class="pre">AggregateArtifactCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/caching.html#curifactory.experimental.caching.Cacheable"><code class="docutils literal notranslate"><span class="pre">Cacheable</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/caching.html#curifactory.experimental.caching.DBCacher"><code class="docutils literal notranslate"><span class="pre">DBCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/caching.html#curifactory.experimental.caching.DBTableCacher"><code class="docutils literal notranslate"><span class="pre">DBTableCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/caching.html#curifactory.experimental.caching.FileReferenceCacher"><code class="docutils literal notranslate"><span class="pre">FileReferenceCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/caching.html#curifactory.experimental.caching.JsonCacher"><code class="docutils literal notranslate"><span class="pre">JsonCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/caching.html#curifactory.experimental.caching.MetadataOnlyCacher"><code class="docutils literal notranslate"><span class="pre">MetadataOnlyCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/caching.html#curifactory.experimental.caching.ParquetCacher"><code class="docutils literal notranslate"><span class="pre">ParquetCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/caching.html#curifactory.experimental.caching.PathRef"><code class="docutils literal notranslate"><span class="pre">PathRef</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/caching.html#curifactory.experimental.caching.PickleCacher"><code class="docutils literal notranslate"><span class="pre">PickleCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/caching.html#curifactory.experimental.caching.ReportablesCacher"><code class="docutils literal notranslate"><span class="pre">ReportablesCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/caching.html#curifactory.experimental.caching.TrackingDBTableCacher"><code class="docutils literal notranslate"><span class="pre">TrackingDBTableCacher</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="experimental/cli.html">CLI</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="experimental/cli.html#curifactory.experimental.cli.completer_pipeline"><code class="docutils literal notranslate"><span class="pre">completer_pipeline()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/cli.html#curifactory.experimental.cli.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="experimental/manager.html">Manager</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="experimental/manager.html#curifactory.experimental.manager.CONFIGURATION_FILE"><code class="docutils literal notranslate"><span class="pre">CONFIGURATION_FILE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/manager.html#curifactory.experimental.manager.Manager"><code class="docutils literal notranslate"><span class="pre">Manager</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/manager.html#curifactory.experimental.manager.TIMESTAMP_FORMAT"><code class="docutils literal notranslate"><span class="pre">TIMESTAMP_FORMAT</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="experimental/pipeline.html">Pipeline</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="experimental/pipeline.html#curifactory.experimental.pipeline.Pipeline"><code class="docutils literal notranslate"><span class="pre">Pipeline</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/pipeline.html#curifactory.experimental.pipeline.PipelineFromRef"><code class="docutils literal notranslate"><span class="pre">PipelineFromRef</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/pipeline.html#curifactory.experimental.pipeline.pipeline"><code class="docutils literal notranslate"><span class="pre">pipeline()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="experimental/reporting.html">Reporting</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="experimental/reporting.html#curifactory.experimental.reporting.HTMLReporter"><code class="docutils literal notranslate"><span class="pre">HTMLReporter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/reporting.html#curifactory.experimental.reporting.Reportable"><code class="docutils literal notranslate"><span class="pre">Reportable</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="experimental/stage.html">Stage</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="experimental/stage.html#curifactory.experimental.stage.ConfigResolve"><code class="docutils literal notranslate"><span class="pre">ConfigResolve</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/stage.html#curifactory.experimental.stage.FunctionStub"><code class="docutils literal notranslate"><span class="pre">FunctionStub</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/stage.html#curifactory.experimental.stage.OutputArtifactPathResolve"><code class="docutils literal notranslate"><span class="pre">OutputArtifactPathResolve</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/stage.html#curifactory.experimental.stage.Stage"><code class="docutils literal notranslate"><span class="pre">Stage</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/stage.html#curifactory.experimental.stage.run"><code class="docutils literal notranslate"><span class="pre">run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/stage.html#curifactory.experimental.stage.stage"><code class="docutils literal notranslate"><span class="pre">stage()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="experimental/utils.html">Utils</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="experimental/utils.html#curifactory.experimental.utils.AppendReplaceAction"><code class="docutils literal notranslate"><span class="pre">AppendReplaceAction</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/utils.html#curifactory.experimental.utils.FailsafeDict"><code class="docutils literal notranslate"><span class="pre">FailsafeDict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/utils.html#curifactory.experimental.utils.PrefixedLogFactory"><code class="docutils literal notranslate"><span class="pre">PrefixedLogFactory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/utils.html#curifactory.experimental.utils.human_readable_mem_usage"><code class="docutils literal notranslate"><span class="pre">human_readable_mem_usage()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/utils.html#curifactory.experimental.utils.human_readable_time"><code class="docutils literal notranslate"><span class="pre">human_readable_time()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/utils.html#curifactory.experimental.utils.init_graphviz_graph"><code class="docutils literal notranslate"><span class="pre">init_graphviz_graph()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/utils.html#curifactory.experimental.utils.run_command"><code class="docutils literal notranslate"><span class="pre">run_command()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="experimental/utils.html#curifactory.experimental.utils.set_logging_prefix"><code class="docutils literal notranslate"><span class="pre">set_logging_prefix()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api_reference.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Reporting</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/reporting.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="module-curifactory.reporting">
+<span id="reporting"></span><h1>Reporting<a class="headerlink" href="#module-curifactory.reporting" title="Link to this heading"></a></h1>
+<p>Classes for handling reporting - adding customizable pieces of information
+to an HTML experiement run report.</p>
+<p>This is handled through a base <code class="docutils literal notranslate"><span class="pre">Reportable</span></code> class, and each reporter class
+extends it.</p>
+<p><strong>Classes:</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.DFReporter" title="curifactory.reporting.DFReporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFReporter</span></code></a>(df[, name, group, float_prec])</p></td>
+<td><p>Adds an HTML table to the report for the given pandas dataframe.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.FigureReporter" title="curifactory.reporting.FigureReporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FigureReporter</span></code></a>(fig[, name, group])</p></td>
+<td><p>Adds a passed matplotlib figure to the report.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.HTMLReporter" title="curifactory.reporting.HTMLReporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HTMLReporter</span></code></a>(html_string[, name, group])</p></td>
+<td><p>Adds the raw string of HTML passed to it to the report.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.ImageReporter" title="curifactory.reporting.ImageReporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ImageReporter</span></code></a>(image_path[, name, group])</p></td>
+<td><p>Adds an image to the report from a specified path.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.JsonReporter" title="curifactory.reporting.JsonReporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JsonReporter</span></code></a>(dictionary[, name, group])</p></td>
+<td><p>Adds an indented JSON dump in a <code class="docutils literal notranslate"><span class="pre">&lt;pre&gt;</span></code> tag for a passed dictionary.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.LatexTableReporter" title="curifactory.reporting.LatexTableReporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LatexTableReporter</span></code></a>(df[, name, group])</p></td>
+<td><p>Output a latex string for a pandas dataframe, useful for copying a table from a report into a latex paper.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.LinePlotReporter" title="curifactory.reporting.LinePlotReporter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LinePlotReporter</span></code></a>(y[, x, name, group, ...])</p></td>
+<td><p>Takes set(s) of data, creates matplotlib line plots for it, and adds to the report.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.Reportable" title="curifactory.reporting.Reportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Reportable</span></code></a>([name, group])</p></td>
+<td><p>The base reporter class, any custom reporter should extend this.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Functions:</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.map_full_svg" title="curifactory.reporting.map_full_svg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_full_svg</span></code></a>(manager[, detailed, colors])</p></td>
+<td><p>Create a graphviz dot graph for the entire experiment.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.map_single_svg" title="curifactory.reporting.map_single_svg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_single_svg</span></code></a>(manager, record[, detailed, ...])</p></td>
+<td><p>Create a graphviz dot graph of the stages/artifacts for the given record.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.prepare_report_path" title="curifactory.reporting.prepare_report_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_report_path</span></code></a>(output_path, report_name)</p></td>
+<td><p>Set up any necessary folders for a report at the given location.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.render_graph" title="curifactory.reporting.render_graph"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_graph</span></code></a>(graph)</p></td>
+<td><p>Attempts to return the unicode text for the graph svg.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.render_report_all_reportables" title="curifactory.reporting.render_report_all_reportables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_report_all_reportables</span></code></a>(manager, ...)</p></td>
+<td><p>Get the HTML for displaying all reportables output.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.render_report_argset_dump" title="curifactory.reporting.render_report_argset_dump"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_report_argset_dump</span></code></a>(manager)</p></td>
+<td><p>Dump out the JSON for all args used by manager.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.render_report_detailed_stage_maps" title="curifactory.reporting.render_report_detailed_stage_maps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_report_detailed_stage_maps</span></code></a>(manager, ...)</p></td>
+<td><p>Generate and write out a more detailed graphviz graph for each record and return the html.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.render_report_head" title="curifactory.reporting.render_report_head"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_report_head</span></code></a>(manager)</p></td>
+<td><p>Generates the report head tag.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.render_report_info_block" title="curifactory.reporting.render_report_info_block"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_report_info_block</span></code></a>(manager)</p></td>
+<td><p>Generate the header and block of metadata at the top of the report.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.render_report_reportables_toc" title="curifactory.reporting.render_report_reportables_toc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_report_reportables_toc</span></code></a>(manager)</p></td>
+<td><p>Render the table of contents for the reportables.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.render_report_stage_map" title="curifactory.reporting.render_report_stage_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_report_stage_map</span></code></a>(manager, graphs_path)</p></td>
+<td><p>Generate and write out the graphviz graph for the stages and return the html to display it.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.render_report_toc" title="curifactory.reporting.render_report_toc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_report_toc</span></code></a>()</p></td>
+<td><p>Render table of contents for the overall report.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.render_reportable" title="curifactory.reporting.render_reportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_reportable</span></code></a>(reportable, manager, ...)</p></td>
+<td><p>Render a reportable to file and get the HTML to display it.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.run_report" title="curifactory.reporting.run_report"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_report</span></code></a>(manager, output_path, name[, ...])</p></td>
+<td><p>Generate a full HTML report for the given manager and passed argsets.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.update_report_index" title="curifactory.reporting.update_report_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_report_index</span></code></a>(experiments_path, ...)</p></td>
+<td><p>Generate a nice index.html with a summary line for each experiment run report in the passed directory.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="curifactory.reporting.DFReporter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">DFReporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_prec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.DFReporter" title="Link to this definition"></a></dt>
+<dd><p>Adds an HTML table to the report for the given pandas dataframe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – The pandas dataframe to include in the report.</p></li>
+<li><p><strong>float_prec</strong> (<em>int</em>) – the floating point precision to round all values to.</p></li>
+<li><p><strong>name</strong> (<em>str</em>)</p></li>
+<li><p><strong>group</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you need to use any of the pandas stylers, apply them and pass <code class="docutils literal notranslate"><span class="pre">df.render()</span></code> to
+an <code class="docutils literal notranslate"><span class="pre">HTMLReporter</span></code> instead.</p>
+</div>
+<p><strong>Methods:</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.DFReporter.html" title="curifactory.reporting.DFReporter.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">html</span></code></a>()</p></td>
+<td><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is called and appended to the report.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="curifactory.reporting.DFReporter.html">
+<span class="sig-name descname"><span class="pre">html</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.DFReporter.html" title="Link to this definition"></a></dt>
+<dd><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is
+called and appended to the report. This function should either return a single
+string of html, or can return a list of lines of html.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="curifactory.reporting.FigureReporter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">FigureReporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.FigureReporter" title="Link to this definition"></a></dt>
+<dd><p>Adds a passed matplotlib figure to the report.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fig</strong> – A matplotlib figure to render.</p></li>
+<li><p><strong>kwargs</strong> – All keywords args are passed to the figures <code class="docutils literal notranslate"><span class="pre">savefig()</span></code> call in render.</p></li>
+<li><p><strong>name</strong> (<em>str</em>)</p></li>
+<li><p><strong>group</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Methods:</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.FigureReporter.html" title="curifactory.reporting.FigureReporter.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">html</span></code></a>()</p></td>
+<td><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is called and appended to the report.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.FigureReporter.render" title="curifactory.reporting.FigureReporter.render"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render</span></code></a>()</p></td>
+<td><p>Any file outputs or calculations that should only run once go here.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Attributes:</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.FigureReporter.kwargs" title="curifactory.reporting.FigureReporter.kwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kwargs</span></code></a></p></td>
+<td><p>All keywords args are passed to the figures <code class="docutils literal notranslate"><span class="pre">savefig()</span></code> call in render.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.FigureReporter.group">
+<span class="sig-name descname"><span class="pre">group</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#curifactory.reporting.FigureReporter.group" title="Link to this definition"></a></dt>
+<dd><p>If specified, reports group all reportables with the same <code class="docutils literal notranslate"><span class="pre">group</span></code> value together.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="curifactory.reporting.FigureReporter.html">
+<span class="sig-name descname"><span class="pre">html</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.FigureReporter.html" title="Link to this definition"></a></dt>
+<dd><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is
+called and appended to the report. This function should either return a single
+string of html, or can return a list of lines of html.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.FigureReporter.kwargs">
+<span class="sig-name descname"><span class="pre">kwargs</span></span><a class="headerlink" href="#curifactory.reporting.FigureReporter.kwargs" title="Link to this definition"></a></dt>
+<dd><p>All keywords args are passed to the figures <code class="docutils literal notranslate"><span class="pre">savefig()</span></code> call in render.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.FigureReporter.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#curifactory.reporting.FigureReporter.name" title="Link to this definition"></a></dt>
+<dd><p>if a custom reportable is saving anything
+in a render function, don’t use just name in the path. <code class="docutils literal notranslate"><span class="pre">self.qualified_name</span></code> should be
+preferred, as it is the fully prefixed name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The suffix to title the reportable with. NOTE</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.FigureReporter.path">
+<span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#curifactory.reporting.FigureReporter.path" title="Link to this definition"></a></dt>
+<dd><p>Set internally by reporting functions, this variable holds a valid path where a
+reportable can save files (e.g. images) as needed. This is available to access both
+in <code class="code docutils literal notranslate"><span class="pre">render()</span></code> and <code class="code docutils literal notranslate"><span class="pre">html()</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.FigureReporter.qualified_name">
+<span class="sig-name descname"><span class="pre">qualified_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#curifactory.reporting.FigureReporter.qualified_name" title="Link to this definition"></a></dt>
+<dd><p>The full prefixed name including the stage name and aggregate indicator. This is
+set by the record when a <code class="docutils literal notranslate"><span class="pre">report()</span></code> is called.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="curifactory.reporting.FigureReporter.render">
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.FigureReporter.render" title="Link to this definition"></a></dt>
+<dd><p>Any file outputs or calculations that should only run once go here.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.FigureReporter.rendered">
+<span class="sig-name descname"><span class="pre">rendered</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#curifactory.reporting.FigureReporter.rendered" title="Link to this definition"></a></dt>
+<dd><p>A flag indicating whether this reportable’s <code class="code docutils literal notranslate"><span class="pre">render()</span></code> has been called yet or not.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.FigureReporter.stage">
+<span class="sig-name descname"><span class="pre">stage</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#curifactory.reporting.FigureReporter.stage" title="Link to this definition"></a></dt>
+<dd><p>The name of the stage this reportable comes from, used as part of the title.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="curifactory.reporting.HTMLReporter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">HTMLReporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">html_string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.HTMLReporter" title="Link to this definition"></a></dt>
+<dd><p>Adds the raw string of HTML passed to it to the report.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>html_string</strong> (<em>str</em>) – The raw string of HTML to include.</p></li>
+<li><p><strong>name</strong> (<em>str</em>)</p></li>
+<li><p><strong>group</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">report_hello</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">Record</span> <span class="p">,</span><span class="o">...</span><span class="p">):</span>
+    <span class="n">record</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">HTMLReporter</span><span class="p">(</span><span class="s2">&quot;&lt;h1&gt;Hello world!&lt;/h1&gt;&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><strong>Methods:</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.HTMLReporter.html" title="curifactory.reporting.HTMLReporter.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">html</span></code></a>()</p></td>
+<td><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is called and appended to the report.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Attributes:</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.HTMLReporter.html_string" title="curifactory.reporting.HTMLReporter.html_string"><code class="xref py py-obj docutils literal notranslate"><span class="pre">html_string</span></code></a></p></td>
+<td><p>The raw string of HTML to include.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.HTMLReporter.group">
+<span class="sig-name descname"><span class="pre">group</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#curifactory.reporting.HTMLReporter.group" title="Link to this definition"></a></dt>
+<dd><p>If specified, reports group all reportables with the same <code class="docutils literal notranslate"><span class="pre">group</span></code> value together.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="curifactory.reporting.HTMLReporter.html">
+<span class="sig-name descname"><span class="pre">html</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.HTMLReporter.html" title="Link to this definition"></a></dt>
+<dd><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is
+called and appended to the report. This function should either return a single
+string of html, or can return a list of lines of html.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str | list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.HTMLReporter.html_string">
+<span class="sig-name descname"><span class="pre">html_string</span></span><a class="headerlink" href="#curifactory.reporting.HTMLReporter.html_string" title="Link to this definition"></a></dt>
+<dd><p>The raw string of HTML to include.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.HTMLReporter.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#curifactory.reporting.HTMLReporter.name" title="Link to this definition"></a></dt>
+<dd><p>if a custom reportable is saving anything
+in a render function, don’t use just name in the path. <code class="docutils literal notranslate"><span class="pre">self.qualified_name</span></code> should be
+preferred, as it is the fully prefixed name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The suffix to title the reportable with. NOTE</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.HTMLReporter.path">
+<span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#curifactory.reporting.HTMLReporter.path" title="Link to this definition"></a></dt>
+<dd><p>Set internally by reporting functions, this variable holds a valid path where a
+reportable can save files (e.g. images) as needed. This is available to access both
+in <code class="code docutils literal notranslate"><span class="pre">render()</span></code> and <code class="code docutils literal notranslate"><span class="pre">html()</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.HTMLReporter.qualified_name">
+<span class="sig-name descname"><span class="pre">qualified_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#curifactory.reporting.HTMLReporter.qualified_name" title="Link to this definition"></a></dt>
+<dd><p>The full prefixed name including the stage name and aggregate indicator. This is
+set by the record when a <code class="docutils literal notranslate"><span class="pre">report()</span></code> is called.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.HTMLReporter.rendered">
+<span class="sig-name descname"><span class="pre">rendered</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#curifactory.reporting.HTMLReporter.rendered" title="Link to this definition"></a></dt>
+<dd><p>A flag indicating whether this reportable’s <code class="code docutils literal notranslate"><span class="pre">render()</span></code> has been called yet or not.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.HTMLReporter.stage">
+<span class="sig-name descname"><span class="pre">stage</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#curifactory.reporting.HTMLReporter.stage" title="Link to this definition"></a></dt>
+<dd><p>The name of the stage this reportable comes from, used as part of the title.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="curifactory.reporting.ImageReporter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">ImageReporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.ImageReporter" title="Link to this definition"></a></dt>
+<dd><p>Adds an image to the report from a specified path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image_path</strong> (<em>str</em>) – Path to an image to copy into report folder and display on report.</p></li>
+<li><p><strong>name</strong> (<em>str</em>)</p></li>
+<li><p><strong>group</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Methods:</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.ImageReporter.html" title="curifactory.reporting.ImageReporter.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">html</span></code></a>()</p></td>
+<td><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is called and appended to the report.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.ImageReporter.render" title="curifactory.reporting.ImageReporter.render"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render</span></code></a>()</p></td>
+<td><p>Any file outputs or calculations that should only run once go here.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="curifactory.reporting.ImageReporter.html">
+<span class="sig-name descname"><span class="pre">html</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.ImageReporter.html" title="Link to this definition"></a></dt>
+<dd><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is
+called and appended to the report. This function should either return a single
+string of html, or can return a list of lines of html.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="curifactory.reporting.ImageReporter.render">
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.ImageReporter.render" title="Link to this definition"></a></dt>
+<dd><p>Any file outputs or calculations that should only run once go here.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="curifactory.reporting.JsonReporter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">JsonReporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictionary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.JsonReporter" title="Link to this definition"></a></dt>
+<dd><p>Adds an indented JSON dump in a <code class="docutils literal notranslate"><span class="pre">&lt;pre&gt;</span></code> tag for a passed dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dictionary</strong> (<em>Dict</em>) – The python dictionary to write to a JSON string. Technically
+this can be anything json-serializable, so this includes single values and
+lists.</p></li>
+<li><p><strong>name</strong> (<em>str</em>)</p></li>
+<li><p><strong>group</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Methods:</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.JsonReporter.html" title="curifactory.reporting.JsonReporter.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">html</span></code></a>()</p></td>
+<td><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is called and appended to the report.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="curifactory.reporting.JsonReporter.html">
+<span class="sig-name descname"><span class="pre">html</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.JsonReporter.html" title="Link to this definition"></a></dt>
+<dd><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is
+called and appended to the report. This function should either return a single
+string of html, or can return a list of lines of html.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="curifactory.reporting.LatexTableReporter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">LatexTableReporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.LatexTableReporter" title="Link to this definition"></a></dt>
+<dd><p>Output a latex string for a pandas dataframe, useful for copying a table from a report
+into a latex paper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – The pandas dataframe to render in latex in the report.</p></li>
+<li><p><strong>kwargs</strong> – Any arguments to pass to <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.io.formats.style.Styler.to_latex.html#pandas.io.formats.style.Styler.to_latex">pandas.io.formats.style.Styler.to_latex</a></p></li>
+<li><p><strong>name</strong> (<em>str</em>)</p></li>
+<li><p><strong>group</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Methods:</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.LatexTableReporter.html" title="curifactory.reporting.LatexTableReporter.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">html</span></code></a>()</p></td>
+<td><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is called and appended to the report.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="curifactory.reporting.LatexTableReporter.html">
+<span class="sig-name descname"><span class="pre">html</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.LatexTableReporter.html" title="Link to this definition"></a></dt>
+<dd><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is
+called and appended to the report. This function should either return a single
+string of html, or can return a list of lines of html.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="curifactory.reporting.LinePlotReporter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">LinePlotReporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savefig_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.LinePlotReporter" title="Link to this definition"></a></dt>
+<dd><p>Takes set(s) of data, creates matplotlib line plots for it, and adds to the report.</p>
+<p>There are several ways to use this reportable, x (optional) and y are both either a single
+list/numpy array of data, or are both dictionaries of lists/numpy arrays of data to plot.</p>
+<p>Possible combinations:</p>
+<ul class="simple">
+<li><p>Passing a single list/numpy array of only y data</p></li>
+<li><p>Passing a single list/numpy array of y and x data</p></li>
+<li><p>Passing a dictionary (where keys appear in the legend) of lists/numpy arrays of y data, each to be plotted as its own line.</p></li>
+<li><p>Passing a dictionary (where keys appear in the legend) of lists/numpy arrays of both y and x data, each to be plotted as its own line.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> – a single list/numpy array or dictionary of lists/numpy arrays of y data.</p></li>
+<li><p><strong>x</strong> – (optional), a single list/numpy array or dictionary of lists/numpy arrays of x data.
+If specified, this must match y.</p></li>
+<li><p><strong>plot_kwargs</strong> (<em>Dict</em>) – The <a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs to pass to the matplotlib <code class="docutils literal notranslate"><span class="pre">plt.plot()</span></code> call.</p></li>
+<li><p><strong>savefig_kwargs</strong> (<em>Dict</em>) – The <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs to pass to the <code class="docutils literal notranslate"><span class="pre">fig.savefig()</span></code> call on render.</p></li>
+<li><p><strong>name</strong> (<em>str</em>)</p></li>
+<li><p><strong>group</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@stage</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">report_results</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">Record</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+
+    <span class="n">train_loss</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">]</span>
+    <span class="n">test_loss</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">]</span>
+    <span class="n">acc</span> <span class="o">=</span> <span class="p">[</span><span class="mf">.93</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="mf">0.96</span><span class="p">]</span>
+
+    <span class="n">record</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">LinePlotReporter</span><span class="p">(</span>
+        <span class="n">y</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;Training loss&quot;</span><span class="p">:</span> <span class="n">train_loss</span><span class="p">,</span>
+            <span class="s2">&quot;Testing loss&quot;</span><span class="p">:</span> <span class="n">test_loss</span><span class="p">,</span>
+            <span class="s2">&quot;Accuracy&quot;</span><span class="p">:</span> <span class="n">acc</span>
+        <span class="p">},</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;training_history&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The above block will result in the following graph added to the report:</p>
+<figure class="align-center">
+<img alt="api/line_plot_reporter_example.png" src="api/line_plot_reporter_example.png" />
+</figure>
+<p><strong>Methods:</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.LinePlotReporter.html" title="curifactory.reporting.LinePlotReporter.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">html</span></code></a>()</p></td>
+<td><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is called and appended to the report.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.LinePlotReporter.render" title="curifactory.reporting.LinePlotReporter.render"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render</span></code></a>()</p></td>
+<td><p>Any file outputs or calculations that should only run once go here.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="curifactory.reporting.LinePlotReporter.html">
+<span class="sig-name descname"><span class="pre">html</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.LinePlotReporter.html" title="Link to this definition"></a></dt>
+<dd><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is
+called and appended to the report. This function should either return a single
+string of html, or can return a list of lines of html.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="curifactory.reporting.LinePlotReporter.render">
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.LinePlotReporter.render" title="Link to this definition"></a></dt>
+<dd><p>Any file outputs or calculations that should only run once go here.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="curifactory.reporting.Reportable">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">Reportable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.Reportable" title="Link to this definition"></a></dt>
+<dd><p>The base reporter class, any custom reporter should extend this.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – A (optional) reference name to give this piece of reported info, it is used
+as the title string suffix. If <code class="docutils literal notranslate"><span class="pre">None</span></code> is supplied, it will be suffixed with the
+number of the reportable.</p></li>
+<li><p><strong>group</strong> (<em>str</em>) – An optional string to use for grouping multiple related reportables
+together in the report. By default, all reportables are ordered by record. This
+will create a separate entry on the TOC and put them next to each other in the
+report.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When subclassing a reportable, <code class="docutils literal notranslate"><span class="pre">html()</span></code> must be overriden, and <code class="docutils literal notranslate"><span class="pre">render()</span></code>
+optionally may be depending on the nature of the reportable. If a reportable relies on
+some form of external file, such as an image or figure, implement <code class="docutils literal notranslate"><span class="pre">render()</span></code> to save
+it (using this class’s <code class="docutils literal notranslate"><span class="pre">path</span></code> variable as the directory), and then reference it
+in the output from <code class="docutils literal notranslate"><span class="pre">html()</span></code>. The internal reporting mechanisms handle calling
+both of these functions as needed.</p>
+<p>A simplified example of the <code class="docutils literal notranslate"><span class="pre">FigureReporter</span></code> is shown here:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">FigureReporter</span><span class="p">(</span><span class="n">Reportable</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span> <span class="o">=</span> <span class="n">fig</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">qualified_name</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">html</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;img src=&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">qualified_name</span><span class="si">}</span><span class="s2">.png&#39;&gt;&quot;</span>
+</pre></div>
+</div>
+</div>
+<p><strong>Attributes:</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.Reportable.group" title="curifactory.reporting.Reportable.group"><code class="xref py py-obj docutils literal notranslate"><span class="pre">group</span></code></a></p></td>
+<td><p>If specified, reports group all reportables with the same <code class="docutils literal notranslate"><span class="pre">group</span></code> value together.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.Reportable.name" title="curifactory.reporting.Reportable.name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></a></p></td>
+<td><p>if a custom reportable is saving anything in a render function, don't use just name in the path.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.Reportable.path" title="curifactory.reporting.Reportable.path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path</span></code></a></p></td>
+<td><p>Set internally by reporting functions, this variable holds a valid path where a reportable can save files (e.g. images) as needed.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.Reportable.qualified_name" title="curifactory.reporting.Reportable.qualified_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">qualified_name</span></code></a></p></td>
+<td><p>The full prefixed name including the stage name and aggregate indicator.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.Reportable.record" title="curifactory.reporting.Reportable.record"><code class="xref py py-obj docutils literal notranslate"><span class="pre">record</span></code></a></p></td>
+<td><p>The record this reportable came from, automatically populated via <code class="docutils literal notranslate"><span class="pre">record.report()</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.Reportable.rendered" title="curifactory.reporting.Reportable.rendered"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rendered</span></code></a></p></td>
+<td><p>A flag indicating whether this reportable's <code class="code docutils literal notranslate"><span class="pre">render()</span></code> has been called yet or not.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.Reportable.stage" title="curifactory.reporting.Reportable.stage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stage</span></code></a></p></td>
+<td><p>The name of the stage this reportable comes from, used as part of the title.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Methods:</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#curifactory.reporting.Reportable.html" title="curifactory.reporting.Reportable.html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">html</span></code></a>()</p></td>
+<td><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is called and appended to the report.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#curifactory.reporting.Reportable.render" title="curifactory.reporting.Reportable.render"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render</span></code></a>()</p></td>
+<td><p>Any file outputs or calculations that should only run once go here.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.Reportable.group">
+<span class="sig-name descname"><span class="pre">group</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#curifactory.reporting.Reportable.group" title="Link to this definition"></a></dt>
+<dd><p>If specified, reports group all reportables with the same <code class="docutils literal notranslate"><span class="pre">group</span></code> value together.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="curifactory.reporting.Reportable.html">
+<span class="sig-name descname"><span class="pre">html</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.Reportable.html" title="Link to this definition"></a></dt>
+<dd><p>When a report is created, the <code class="docutils literal notranslate"><span class="pre">html()</span></code> function for every reportable is
+called and appended to the report. This function should either return a single
+string of html, or can return a list of lines of html.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Any subclass is <strong>required</strong> to implement this.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str | list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.Reportable.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#curifactory.reporting.Reportable.name" title="Link to this definition"></a></dt>
+<dd><p>if a custom reportable is saving anything
+in a render function, don’t use just name in the path. <code class="docutils literal notranslate"><span class="pre">self.qualified_name</span></code> should be
+preferred, as it is the fully prefixed name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The suffix to title the reportable with. NOTE</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.Reportable.path">
+<span class="sig-name descname"><span class="pre">path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#curifactory.reporting.Reportable.path" title="Link to this definition"></a></dt>
+<dd><p>Set internally by reporting functions, this variable holds a valid path where a
+reportable can save files (e.g. images) as needed. This is available to access both
+in <code class="code docutils literal notranslate"><span class="pre">render()</span></code> and <code class="code docutils literal notranslate"><span class="pre">html()</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.Reportable.qualified_name">
+<span class="sig-name descname"><span class="pre">qualified_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#curifactory.reporting.Reportable.qualified_name" title="Link to this definition"></a></dt>
+<dd><p>The full prefixed name including the stage name and aggregate indicator. This is
+set by the record when a <code class="docutils literal notranslate"><span class="pre">report()</span></code> is called.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.Reportable.record">
+<span class="sig-name descname"><span class="pre">record</span></span><a class="headerlink" href="#curifactory.reporting.Reportable.record" title="Link to this definition"></a></dt>
+<dd><p>The record this reportable came from, automatically populated via <code class="docutils literal notranslate"><span class="pre">record.report()</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record">Record</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="curifactory.reporting.Reportable.render">
+<span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.Reportable.render" title="Link to this definition"></a></dt>
+<dd><p>Any file outputs or calculations that should only run once go here.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.Reportable.rendered">
+<span class="sig-name descname"><span class="pre">rendered</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#curifactory.reporting.Reportable.rendered" title="Link to this definition"></a></dt>
+<dd><p>A flag indicating whether this reportable’s <code class="code docutils literal notranslate"><span class="pre">render()</span></code> has been called yet or not.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="curifactory.reporting.Reportable.stage">
+<span class="sig-name descname"><span class="pre">stage</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#curifactory.reporting.Reportable.stage" title="Link to this definition"></a></dt>
+<dd><p>The name of the stage this reportable comes from, used as part of the title.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="curifactory.reporting.map_full_svg">
+<span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">map_full_svg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detailed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.map_full_svg" title="Link to this definition"></a></dt>
+<dd><p>Create a graphviz dot graph for the entire experiment. (Maps out each stage and
+the input/output artifacts for each.)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>manager</strong> (<a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager" title="curifactory.manager.ArtifactManager"><em>ArtifactManager</em></a>) – the manager to base the graph off of.</p></li>
+<li><p><strong>detailed</strong> (<em>bool</em>) – Whether to include artifact preview and caching information or not.</p></li>
+<li><p><strong>colors</strong> (<em>list</em><em>[</em><em>str</em><em>] </em><em>| </em><em>dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em>) – A list or dictionary of colors to use if you wish to override the default.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Digraph</em></p>
+</dd>
+</dl>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>For this function to run successfully, graphviz must be installed.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="curifactory.reporting.map_single_svg">
+<span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">map_single_svg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detailed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.map_single_svg" title="Link to this definition"></a></dt>
+<dd><p>Create a graphviz dot graph of the stages/artifacts for the given record.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>manager</strong> (<a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager" title="curifactory.manager.ArtifactManager"><em>ArtifactManager</em></a>) – the manager to base the graph off of.</p></li>
+<li><p><strong>record</strong> (<a class="reference internal" href="record.html#curifactory.record.Record" title="curifactory.record.Record"><em>Record</em></a>) – The specific record to make the graph for.</p></li>
+<li><p><strong>detailed</strong> (<em>bool</em>) – Whether to include artifact preview and caching information or not.</p></li>
+<li><p><strong>colors</strong> (<em>list</em><em>[</em><em>str</em><em>] </em><em>| </em><em>dict</em><em>[</em><em>str</em><em>, </em><em>str</em><em>]</em>) – A list or dictionary of colors to use if you wish to override the default.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Digraph</em></p>
+</dd>
+</dl>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>For this function to run successfully, graphviz must be installed.</p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="curifactory.reporting.prepare_report_path">
+<span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">prepare_report_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.prepare_report_path" title="Link to this definition"></a></dt>
+<dd><p>Set up any necessary folders for a report at the given location.
+This will not error if the location already has a report in it, but
+will remove existing reportables and graphs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A tuple containing the folder path to place the report html, the
+subdirectory within that folder to place the graphviz files, and
+the subdirectory to place any rendered reportable files.</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>output_path</strong> (<em>str</em>)</p></li>
+<li><p><strong>report_name</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[str, str, str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="curifactory.reporting.render_graph">
+<span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">render_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.render_graph" title="Link to this definition"></a></dt>
+<dd><p>Attempts to return the unicode text for the graph svg.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="curifactory.reporting.render_report_all_reportables">
+<span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">render_report_all_reportables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reportables_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">override_display_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notebook</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.render_report_all_reportables" title="Link to this definition"></a></dt>
+<dd><p>Get the HTML for displaying all reportables output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reportables_path</strong> (<em>str</em>)</p></li>
+<li><p><strong>override_display_path</strong> (<em>str</em>)</p></li>
+<li><p><strong>notebook</strong> (<em>bool</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="curifactory.reporting.render_report_argset_dump">
+<span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">render_report_argset_dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.render_report_argset_dump" title="Link to this definition"></a></dt>
+<dd><p>Dump out the JSON for all args used by manager.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="curifactory.reporting.render_report_detailed_stage_maps">
+<span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">render_report_detailed_stage_maps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graphs_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.render_report_detailed_stage_maps" title="Link to this definition"></a></dt>
+<dd><p>Generate and write out a more detailed graphviz graph for each record and return the html.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="curifactory.reporting.render_report_head">
+<span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">render_report_head</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.render_report_head" title="Link to this definition"></a></dt>
+<dd><p>Generates the report head tag.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="curifactory.reporting.render_report_info_block">
+<span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">render_report_info_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.render_report_info_block" title="Link to this definition"></a></dt>
+<dd><p>Generate the header and block of metadata at the top of the report.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="curifactory.reporting.render_report_reportables_toc">
+<span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">render_report_reportables_toc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.render_report_reportables_toc" title="Link to this definition"></a></dt>
+<dd><p>Render the table of contents for the reportables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="curifactory.reporting.render_report_stage_map">
+<span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">render_report_stage_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graphs_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.render_report_stage_map" title="Link to this definition"></a></dt>
+<dd><p>Generate and write out the graphviz graph for the stages and return the html to display it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="curifactory.reporting.render_report_toc">
+<span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">render_report_toc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.render_report_toc" title="Link to this definition"></a></dt>
+<dd><p>Render table of contents for the overall report.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="curifactory.reporting.render_reportable">
+<span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">render_reportable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reportable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">manager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reportables_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">override_display_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notebook</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.render_reportable" title="Link to this definition"></a></dt>
+<dd><p>Render a reportable to file and get the HTML to display it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reportable</strong> (<a class="reference internal" href="#curifactory.reporting.Reportable" title="curifactory.reporting.Reportable"><em>Reportable</em></a>)</p></li>
+<li><p><strong>reportables_path</strong> (<em>str</em>)</p></li>
+<li><p><strong>override_display_path</strong> (<em>str</em>)</p></li>
+<li><p><strong>notebook</strong> (<em>bool</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="curifactory.reporting.run_report">
+<span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">run_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">css_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.run_report" title="Link to this definition"></a></dt>
+<dd><p>Generate a full HTML report for the given manager and passed argsets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>manager</strong> (<a class="reference internal" href="manager.html#curifactory.manager.ArtifactManager" title="curifactory.manager.ArtifactManager"><em>ArtifactManager</em></a>) – The manager to base the graph off of.</p></li>
+<li><p><strong>output_path</strong> (<em>str</em>) – The string path to the root directory of where you want the report stored.</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – The name to store this report under (will generate a folder of this name in the
+output_path.</p></li>
+<li><p><strong>css_path</strong> (<em>str</em>) – The path to a css file to use for styling the report. (This file will get
+copied into the output_path/name folder.)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the folder path to place the report html, the
+subdirectory within that folder to place the graphviz files, and
+the subdirectory to place any rendered reportable files.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[str, str, str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="curifactory.reporting.update_report_index">
+<span class="sig-prename descclassname"><span class="pre">curifactory.reporting.</span></span><span class="sig-name descname"><span class="pre">update_report_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiments_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reports_root_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#curifactory.reporting.update_report_index" title="Link to this definition"></a></dt>
+<dd><p>Generate a nice index.html with a summary line for each experiment run report in the
+passed directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>experiments_path</strong> (<em>str</em>) – The path to where the experiment scripts are, used to get any top
+experiment description comments from the file.</p></li>
+<li><p><strong>reports_root_dir</strong> (<em>str</em>) – The directory containing the report folders. This is where the output
+index.html is placed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="record.html" class="btn btn-neutral float-left" title="Record" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="staging.html" class="btn btn-neutral float-right" title="Staging" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>

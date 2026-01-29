@@ -1,0 +1,1434 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CLI Guide &mdash; Curifactory  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Example Experiment" href="example.html" />
+    <link rel="prev" title="Configuration and directory structure" href="config.html" />
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+
+
+          <a href="../index.html" class="icon icon-home">
+            Curifactory
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Usage</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../user_guide.html">User Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#tab-completion">Tab completion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#basic-components">Basic components</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="getting_started.html#artifact-manager">Artifact manager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="getting_started.html#parameters">Parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="getting_started.html#records">Records</a></li>
+<li class="toctree-l4"><a class="reference internal" href="getting_started.html#stages">Stages</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#caching-and-reporting">Caching and reporting</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="getting_started.html#caching">Caching</a></li>
+<li class="toctree-l4"><a class="reference internal" href="getting_started.html#lazy-loading">Lazy loading</a></li>
+<li class="toctree-l4"><a class="reference internal" href="getting_started.html#reporting">Reporting</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#experiment-organization">Experiment organization</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="getting_started.html#basic-mechanics">Basic mechanics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="getting_started.html#the-experiment-script-file">The experiment script file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="getting_started.html#the-experiment-cli">The experiment CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="getting_started.html#parameter-files">Parameter files</a></li>
+<li class="toctree-l4"><a class="reference internal" href="getting_started.html#organization-of-growing-projects">Organization of growing projects</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="getting_started.html#next-steps">Next steps</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="components.html">Components</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="components.html#component-interactions">Component interactions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="components.html#stage-flow">Stage flow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="components.html#procedure-flow">Procedure flow</a></li>
+<li class="toctree-l4"><a class="reference internal" href="components.html#experiment-flow">Experiment flow</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="components.html#anatomy-of-a-stage">Anatomy of a stage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="components.html#stage-parameters">Stage parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="components.html#aggregate-parameters">Aggregate parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html">Parameter files and parameter sets</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="parameters.html#the-experimentparameters-class">The <code class="code docutils literal notranslate"><span class="pre">ExperimentParameters</span></code> class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="parameters.html#programmatic-definition">Programmatic definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="parameters.html#using-parameters">Using parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="parameters.html#parameter-set-hashes-and-operational-parameters">Parameter set hashes and operational parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="parameters.html#subparameter-classes">Subparameter classes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cache.html">Cache</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#using-cachers">Using cachers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="cache.html#cacher-arguments">Cacher arguments</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cache.html#inline-cachers">Inline cachers</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#metadata">Metadata</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cache.html#lazy-cache-objects">Lazy cache objects</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="cache.html#lazy-resolve">Lazy resolve</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="hashing_mechanics.html">Hashing Mechanics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="hashing_mechanics.html#skipping-parameters-in-a-single-set">Skipping parameters in a single set</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="experiment_graph.html">Experiment Graph (DAG)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reports.html">Reports</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="reports.html#report-structure">Report structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reports.html#reportables">Reportables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reports.html#reportable-groups">Reportable groups</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">Configuration and directory structure</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="config.html#project-directories">Project directories</a></li>
+<li class="toctree-l3"><a class="reference internal" href="config.html#configuration">Configuration</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">CLI Guide</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#running-an-experiment">Running an experiment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filtering-to-specific-parameter-sets">Filtering to specific parameter sets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#caching-controls">Caching controls</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#specifying-cache-directory-c-cache">Specifying cache directory (<code class="docutils literal notranslate"><span class="pre">-c</span></code>, <code class="docutils literal notranslate"><span class="pre">--cache</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#overwriting-cached-data-overwrite-overwrite-stage">Overwriting cached data (<code class="docutils literal notranslate"><span class="pre">--overwrite</span></code>, <code class="docutils literal notranslate"><span class="pre">--overwrite-stage</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#full-stores-store-full-dry-cache">Full stores (<code class="docutils literal notranslate"><span class="pre">--store-full</span></code>, <code class="docutils literal notranslate"><span class="pre">--dry-cache</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#lazy-cache-objects-lazy-ignore-lazy">Lazy cache objects (<code class="docutils literal notranslate"><span class="pre">--lazy</span></code>, <code class="docutils literal notranslate"><span class="pre">--ignore-lazy</span></code>)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#parallel-runs">Parallel runs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#listing-experiments-and-parameters">Listing experiments and parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#experiment-run-notes">Experiment run notes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hosting-html-reports">Hosting HTML reports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getting-experiment-dag-and-parameter-info">Getting Experiment DAG and Parameter Info</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#experiment-maps-cache-status">Experiment maps/cache status</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parameter-set-hashes-parameters">Parameter set hashes/parameters</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cache-paths">Cache paths</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#full-reference">Full reference</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#parameter-names-p-params">Parameter names (<code class="docutils literal notranslate"><span class="pre">-p</span></code>, <code class="docutils literal notranslate"><span class="pre">--params`</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parameter-set-names-n-names">Parameter set names (<code class="docutils literal notranslate"><span class="pre">-n</span></code>, <code class="docutils literal notranslate"><span class="pre">--names</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#argument-set-indices-indices">Argument set indices (<code class="docutils literal notranslate"><span class="pre">--indices</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#global-arument-set-indices-global-indices">Global arument set indices (<code class="docutils literal notranslate"><span class="pre">--global-indices</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parallel-parallel">Parallel (<code class="docutils literal notranslate"><span class="pre">--parallel</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parallel-mode-parallel-safe">Parallel mode (<code class="docutils literal notranslate"><span class="pre">--parallel-safe</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#suppress-logging-no-log">Suppress logging (<code class="docutils literal notranslate"><span class="pre">--no-log</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#suppress-report-generation-no-report">Suppress report generation (<code class="docutils literal notranslate"><span class="pre">--no-report</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#overwrite-cache-overwrite">Overwrite cache (<code class="docutils literal notranslate"><span class="pre">--overwrite</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#overwrite-cache-for-stage-overwrite-stage">Overwrite cache for stage (<code class="docutils literal notranslate"><span class="pre">--overwrite-stage</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#full-store-s-store-full">Full store (<code class="docutils literal notranslate"><span class="pre">-s</span></code>, <code class="docutils literal notranslate"><span class="pre">--store-full</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cache-directory-c-cache">Cache directory (<code class="docutils literal notranslate"><span class="pre">-c</span></code>, <code class="docutils literal notranslate"><span class="pre">--cache</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#force-lazy-caching-lazy">Force lazy caching (<code class="docutils literal notranslate"><span class="pre">--lazy</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#force-no-lazy-caching-ignore-lazy">Force no lazy caching (<code class="docutils literal notranslate"><span class="pre">--ignore-lazy</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#include-debug-logs-v-verbose">Include debug logs (<code class="docutils literal notranslate"><span class="pre">-v</span></code>, <code class="docutils literal notranslate"><span class="pre">--verbose</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#progress-bars-progress">Progress bars (<code class="docutils literal notranslate"><span class="pre">--progress</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#only-print-experiment-map-map">Only print experiment map (<code class="docutils literal notranslate"><span class="pre">--map</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#only-print-experiment-hashes-and-names-hashes">Only print experiment hashes and names (<code class="docutils literal notranslate"><span class="pre">--hashes</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#only-print-parameter-set-contents-print-params">Only print parameter set contents (<code class="docutils literal notranslate"><span class="pre">--print-params</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#only-print-artifact-cache-paths-paths">Only print artifact cache paths (<code class="docutils literal notranslate"><span class="pre">--paths</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run-experiment-purely-linearly-instead-with-dag-no-dag">Run experiment purely linearly instead with DAG (<code class="docutils literal notranslate"><span class="pre">--no-dag</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#suppress-console-log-output-quiet">Suppress console log output (<code class="docutils literal notranslate"><span class="pre">--quiet</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#suppress-terminal-colors-in-case-of-unrecognized-non-support-no-color">Suppress terminal colors in case of unrecognized non-support (<code class="docutils literal notranslate"><span class="pre">--no-color</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#suppress-rich-formatting-of-logging-plain">Suppress rich formatting of logging (<code class="docutils literal notranslate"><span class="pre">--plain</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#suppress-all-file-output-dry">Suppress all file output (<code class="docutils literal notranslate"><span class="pre">--dry</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#suppress-writing-to-cache-dry-cache">Suppress writing to cache (<code class="docutils literal notranslate"><span class="pre">--dry-cache</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#include-errors-in-log-files-log-errors">Include errors in log files (<code class="docutils literal notranslate"><span class="pre">--log-errors</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#custom-cache-name-prefix-n-name">Custom cache name prefix (<code class="docutils literal notranslate"><span class="pre">-n</span></code>, <code class="docutils literal notranslate"><span class="pre">--name</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#experiment-run-notes-notes">Experiment run notes (<code class="docutils literal notranslate"><span class="pre">--notes</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#export-experiment-in-docker-container-docker">Export experiment in docker container (<code class="docutils literal notranslate"><span class="pre">--docker</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#export-experiment-explorer-as-a-jupyter-notebook-notebook">Export experiment explorer as a jupyter notebook (<code class="docutils literal notranslate"><span class="pre">--notebook</span></code>)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#serve-html-reports-on-a-specified-port-and-host-port-host">Serve HTML reports on a specified port and host (<code class="docutils literal notranslate"><span class="pre">--port</span></code>, <code class="docutils literal notranslate"><span class="pre">--host</span></code>)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="example.html">Example Experiment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tips.html">Tips and tricks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tips.html#minimum-code-to-run-stages">Minimum code to run stages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tips.html#common-dataset-for-multiple-different-argsets">Common dataset for multiple different argsets</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tips.html#branching-in-experiments">Branching in experiments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tips.html#using-the-git-commit-hash-from-reports">Using the git commit hash from reports</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tips.html#softlinking-data-directories">Softlinking data directories</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="cookbook.html">Curifactory Cookbook</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cookbook.html#distributed-torchrun-via-external-stage">Distributed <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> via external stage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cookbook.html#cachers-for-pytorch-lightning-models">Cachers for Pytorch Lightning models</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="migration.html">Migration Guide</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="migration.html#id1">0.14.0 - 0.15.0</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="migration.html#change-any-record-args-references-to-record-params">Change any <code class="docutils literal notranslate"><span class="pre">Record.args</span></code> references to <code class="docutils literal notranslate"><span class="pre">Record.params</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="migration.html#classes-subclassing-curifactory-args-experimentargs-should-subclass-curifactory-params-experimentparameters">Classes subclassing <code class="docutils literal notranslate"><span class="pre">curifactory.args.ExperimentArgs</span></code> should subclass <code class="docutils literal notranslate"><span class="pre">curifactory.params.ExperimentParameters</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="migration.html#id2">0.13.0 - 0.14.0</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="migration.html#aggregate-stages-should-now-specify-inputs-in-the-decorator">Aggregate stages should now specify <code class="docutils literal notranslate"><span class="pre">inputs</span></code> in the decorator</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/caching.html">Caching</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable"><code class="docutils literal notranslate"><span class="pre">Cacheable</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.cache_paths"><code class="docutils literal notranslate"><span class="pre">Cacheable.cache_paths</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.check"><code class="docutils literal notranslate"><span class="pre">Cacheable.check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.collect_metadata"><code class="docutils literal notranslate"><span class="pre">Cacheable.collect_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.extension"><code class="docutils literal notranslate"><span class="pre">Cacheable.extension</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.extra_metadata"><code class="docutils literal notranslate"><span class="pre">Cacheable.extra_metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.get_dir"><code class="docutils literal notranslate"><span class="pre">Cacheable.get_dir()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.get_path"><code class="docutils literal notranslate"><span class="pre">Cacheable.get_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.load"><code class="docutils literal notranslate"><span class="pre">Cacheable.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.load_metadata"><code class="docutils literal notranslate"><span class="pre">Cacheable.load_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.metadata"><code class="docutils literal notranslate"><span class="pre">Cacheable.metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.name"><code class="docutils literal notranslate"><span class="pre">Cacheable.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.path_override"><code class="docutils literal notranslate"><span class="pre">Cacheable.path_override</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.prefix"><code class="docutils literal notranslate"><span class="pre">Cacheable.prefix</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.record"><code class="docutils literal notranslate"><span class="pre">Cacheable.record</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.save"><code class="docutils literal notranslate"><span class="pre">Cacheable.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.save_metadata"><code class="docutils literal notranslate"><span class="pre">Cacheable.save_metadata()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.set_record"><code class="docutils literal notranslate"><span class="pre">Cacheable.set_record()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.stage"><code class="docutils literal notranslate"><span class="pre">Cacheable.stage</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.subdir"><code class="docutils literal notranslate"><span class="pre">Cacheable.subdir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Cacheable.track"><code class="docutils literal notranslate"><span class="pre">Cacheable.track</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/caching.html#curifactory.caching.FileReferenceCacher"><code class="docutils literal notranslate"><span class="pre">FileReferenceCacher</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.FileReferenceCacher.check"><code class="docutils literal notranslate"><span class="pre">FileReferenceCacher.check()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.FileReferenceCacher.load"><code class="docutils literal notranslate"><span class="pre">FileReferenceCacher.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.FileReferenceCacher.save"><code class="docutils literal notranslate"><span class="pre">FileReferenceCacher.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/caching.html#curifactory.caching.JsonCacher"><code class="docutils literal notranslate"><span class="pre">JsonCacher</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.JsonCacher.load"><code class="docutils literal notranslate"><span class="pre">JsonCacher.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.JsonCacher.save"><code class="docutils literal notranslate"><span class="pre">JsonCacher.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/caching.html#curifactory.caching.Lazy"><code class="docutils literal notranslate"><span class="pre">Lazy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.Lazy.load"><code class="docutils literal notranslate"><span class="pre">Lazy.load()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/caching.html#curifactory.caching.PandasCacher"><code class="docutils literal notranslate"><span class="pre">PandasCacher</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.PandasCacher.load"><code class="docutils literal notranslate"><span class="pre">PandasCacher.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.PandasCacher.save"><code class="docutils literal notranslate"><span class="pre">PandasCacher.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/caching.html#curifactory.caching.PandasCsvCacher"><code class="docutils literal notranslate"><span class="pre">PandasCsvCacher</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/caching.html#curifactory.caching.PandasJsonCacher"><code class="docutils literal notranslate"><span class="pre">PandasJsonCacher</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/caching.html#curifactory.caching.PathRef"><code class="docutils literal notranslate"><span class="pre">PathRef</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.PathRef.load"><code class="docutils literal notranslate"><span class="pre">PathRef.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.PathRef.save"><code class="docutils literal notranslate"><span class="pre">PathRef.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/caching.html#curifactory.caching.PickleCacher"><code class="docutils literal notranslate"><span class="pre">PickleCacher</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.PickleCacher.load"><code class="docutils literal notranslate"><span class="pre">PickleCacher.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.PickleCacher.save"><code class="docutils literal notranslate"><span class="pre">PickleCacher.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/caching.html#curifactory.caching.RawJupyterNotebookCacher"><code class="docutils literal notranslate"><span class="pre">RawJupyterNotebookCacher</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.RawJupyterNotebookCacher.load"><code class="docutils literal notranslate"><span class="pre">RawJupyterNotebookCacher.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/caching.html#curifactory.caching.RawJupyterNotebookCacher.save"><code class="docutils literal notranslate"><span class="pre">RawJupyterNotebookCacher.save()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/dag.html">DAG</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG"><code class="docutils literal notranslate"><span class="pre">DAG</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG.analyze"><code class="docutils literal notranslate"><span class="pre">DAG.analyze()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG.artifacts"><code class="docutils literal notranslate"><span class="pre">DAG.artifacts</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG.build_execution_tree_recursive"><code class="docutils literal notranslate"><span class="pre">DAG.build_execution_tree_recursive()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG.build_execution_trees"><code class="docutils literal notranslate"><span class="pre">DAG.build_execution_trees()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG.child_records"><code class="docutils literal notranslate"><span class="pre">DAG.child_records()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG.determine_execution_list"><code class="docutils literal notranslate"><span class="pre">DAG.determine_execution_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG.determine_execution_list_recursive"><code class="docutils literal notranslate"><span class="pre">DAG.determine_execution_list_recursive()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG.execution_list"><code class="docutils literal notranslate"><span class="pre">DAG.execution_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG.execution_trees"><code class="docutils literal notranslate"><span class="pre">DAG.execution_trees</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG.find_leaves"><code class="docutils literal notranslate"><span class="pre">DAG.find_leaves()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG.get_record_string"><code class="docutils literal notranslate"><span class="pre">DAG.get_record_string()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG.is_leaf"><code class="docutils literal notranslate"><span class="pre">DAG.is_leaf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG.is_output_used_anywhere"><code class="docutils literal notranslate"><span class="pre">DAG.is_output_used_anywhere()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG.print_experiment_map"><code class="docutils literal notranslate"><span class="pre">DAG.print_experiment_map()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.DAG.records"><code class="docutils literal notranslate"><span class="pre">DAG.records</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/dag.html#curifactory.dag.ExecutionNode"><code class="docutils literal notranslate"><span class="pre">ExecutionNode</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.ExecutionNode.chain_rep"><code class="docutils literal notranslate"><span class="pre">ExecutionNode.chain_rep()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.ExecutionNode.dependencies"><code class="docutils literal notranslate"><span class="pre">ExecutionNode.dependencies</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.ExecutionNode.parent"><code class="docutils literal notranslate"><span class="pre">ExecutionNode.parent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/dag.html#curifactory.dag.ExecutionNode.string_rep"><code class="docutils literal notranslate"><span class="pre">ExecutionNode.string_rep()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/docker.html">Docker</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/docker.html#curifactory.docker.build_docker"><code class="docutils literal notranslate"><span class="pre">build_docker()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/experiment.html">Experiment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/experiment.html#curifactory.experiment.collect_parameter_sets"><code class="docutils literal notranslate"><span class="pre">collect_parameter_sets()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/experiment.html#curifactory.experiment.list_experiments"><code class="docutils literal notranslate"><span class="pre">list_experiments()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/experiment.html#curifactory.experiment.list_params"><code class="docutils literal notranslate"><span class="pre">list_params()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/experiment.html#curifactory.experiment.regex_lister"><code class="docutils literal notranslate"><span class="pre">regex_lister()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/experiment.html#curifactory.experiment.run_experiment"><code class="docutils literal notranslate"><span class="pre">run_experiment()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/hashing.html">Hashing</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/hashing.html#curifactory.hashing.PARAMETERS_BLACKLIST"><code class="docutils literal notranslate"><span class="pre">PARAMETERS_BLACKLIST</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/hashing.html#curifactory.hashing.add_params_combo_hash"><code class="docutils literal notranslate"><span class="pre">add_params_combo_hash()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/hashing.html#curifactory.hashing.compute_hash"><code class="docutils literal notranslate"><span class="pre">compute_hash()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/hashing.html#curifactory.hashing.get_param_set_hash_values"><code class="docutils literal notranslate"><span class="pre">get_param_set_hash_values()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/hashing.html#curifactory.hashing.get_parameter_hash_value"><code class="docutils literal notranslate"><span class="pre">get_parameter_hash_value()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/hashing.html#curifactory.hashing.hash_param_set"><code class="docutils literal notranslate"><span class="pre">hash_param_set()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/hashing.html#curifactory.hashing.param_set_string_hash_representations"><code class="docutils literal notranslate"><span class="pre">param_set_string_hash_representations()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/hashing.html#curifactory.hashing.set_hash_functions"><code class="docutils literal notranslate"><span class="pre">set_hash_functions()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/manager.html">Manager</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager"><code class="docutils literal notranslate"><span class="pre">ArtifactManager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.artifacts"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.artifacts</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.cache_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.cache_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.conda_env"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.conda_env</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.config"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.current_stage_name"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.current_stage_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.display_all_reportables"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.display_all_reportables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.display_group_reportables"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.display_group_reportables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.display_info"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.display_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.display_record_reportables"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.display_record_reportables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.display_reportable"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.display_reportable()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.display_stage_graph"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.display_stage_graph()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.display_stage_reportables"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.display_stage_reportables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.dry"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.dry</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.dry_cache"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.dry_cache</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.error"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.error</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.error_thrown"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.error_thrown</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.experiment_name"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.experiment_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.experiment_run_number"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.experiment_run_number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.generate_report"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.generate_report()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.get_all_param_sets"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_all_param_sets()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.get_artifact_filename"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_artifact_filename()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.get_artifact_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_artifact_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.get_grouped_reportables"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_grouped_reportables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.get_reference_name"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_reference_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.get_reportable_groups"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_reportable_groups()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.get_run_output_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_run_output_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.get_str_timestamp"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_str_timestamp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.get_ungrouped_reportables"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.get_ungrouped_reportables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.git_commit_hash"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.git_commit_hash</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.git_workdir_dirty"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.git_workdir_dirty</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.hostname"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.hostname</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.ignore_lazy"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.ignore_lazy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.interactive"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.interactive</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.lazy"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.lazy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.live_report_path_generated"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.live_report_path_generated</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.lock"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.lock()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.logs_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.logs_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.manager_cache_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.manager_cache_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.map"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.map</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.map_mode"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.map_mode</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.map_records"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.map_records()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.mapped_artifacts"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.mapped_artifacts</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.notebooks_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.notebooks_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.notes"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.notes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.os"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.os</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.overwrite"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.overwrite</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.overwrite_stages"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.overwrite_stages</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.parallel_lock"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.parallel_lock</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.parallel_mode"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.parallel_mode</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.param_file_param_sets"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.param_file_param_sets</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.parameter_files"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.parameter_files</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.pip_freeze"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.pip_freeze</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.prefix"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.prefix</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.records"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.records</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.report_css_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.report_css_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.reportables"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.reportables</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.reports_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.reports_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.reproduction_line"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.reproduction_line</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.run_info"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.run_info</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.run_line"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.run_line</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.run_timestamp"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.run_timestamp</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.runs_path"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.runs_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.stage_active"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.stage_active</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.status"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.store"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.store()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.store_full"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.store_full</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.stored"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.stored</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.unlock"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.unlock()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.update_map_progress"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.update_map_progress()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/manager.html#curifactory.manager.ArtifactManager.write_run_env_output"><code class="docutils literal notranslate"><span class="pre">ArtifactManager.write_run_env_output()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/params.html">Params</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/params.html#curifactory.params.ExperimentParameters"><code class="docutils literal notranslate"><span class="pre">ExperimentParameters</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/params.html#curifactory.params.ExperimentParameters.hash"><code class="docutils literal notranslate"><span class="pre">ExperimentParameters.hash</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/params.html#curifactory.params.ExperimentParameters.hash_representations"><code class="docutils literal notranslate"><span class="pre">ExperimentParameters.hash_representations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/params.html#curifactory.params.ExperimentParameters.name"><code class="docutils literal notranslate"><span class="pre">ExperimentParameters.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/params.html#curifactory.params.ExperimentParameters.overwrite"><code class="docutils literal notranslate"><span class="pre">ExperimentParameters.overwrite</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/params.html#curifactory.params.ExperimentParameters.params_hash"><code class="docutils literal notranslate"><span class="pre">ExperimentParameters.params_hash()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/procedure.html">Procedure</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/procedure.html#curifactory.procedure.NoArtifactManagerError"><code class="docutils literal notranslate"><span class="pre">NoArtifactManagerError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/procedure.html#curifactory.procedure.Procedure"><code class="docutils literal notranslate"><span class="pre">Procedure</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/procedure.html#curifactory.procedure.Procedure.run"><code class="docutils literal notranslate"><span class="pre">Procedure.run()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/project.html">Project</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/project.html#curifactory.project.add_completion_to_rc"><code class="docutils literal notranslate"><span class="pre">add_completion_to_rc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/project.html#curifactory.project.initialize_project"><code class="docutils literal notranslate"><span class="pre">initialize_project()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/project.html#curifactory.project.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/record.html">Record</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/record.html#curifactory.record.ArtifactRepresentation"><code class="docutils literal notranslate"><span class="pre">ArtifactRepresentation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.ArtifactRepresentation.html_safe"><code class="docutils literal notranslate"><span class="pre">ArtifactRepresentation.html_safe()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/record.html#curifactory.record.CacheAwareDict"><code class="docutils literal notranslate"><span class="pre">CacheAwareDict</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.CacheAwareDict.resolve"><code class="docutils literal notranslate"><span class="pre">CacheAwareDict.resolve</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/record.html#curifactory.record.MapArtifactRepresentation"><code class="docutils literal notranslate"><span class="pre">MapArtifactRepresentation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/record.html#curifactory.record.Record"><code class="docutils literal notranslate"><span class="pre">Record</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.combo_hash"><code class="docutils literal notranslate"><span class="pre">Record.combo_hash</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.get_dir"><code class="docutils literal notranslate"><span class="pre">Record.get_dir()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.get_hash"><code class="docutils literal notranslate"><span class="pre">Record.get_hash()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.get_path"><code class="docutils literal notranslate"><span class="pre">Record.get_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.get_record_index"><code class="docutils literal notranslate"><span class="pre">Record.get_record_index()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.get_reference_name"><code class="docutils literal notranslate"><span class="pre">Record.get_reference_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.input_records"><code class="docutils literal notranslate"><span class="pre">Record.input_records</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.is_aggregate"><code class="docutils literal notranslate"><span class="pre">Record.is_aggregate</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.make_copy"><code class="docutils literal notranslate"><span class="pre">Record.make_copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.manager"><code class="docutils literal notranslate"><span class="pre">Record.manager</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.output"><code class="docutils literal notranslate"><span class="pre">Record.output</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.params"><code class="docutils literal notranslate"><span class="pre">Record.params</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.report"><code class="docutils literal notranslate"><span class="pre">Record.report()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.set_aggregate"><code class="docutils literal notranslate"><span class="pre">Record.set_aggregate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.set_hash"><code class="docutils literal notranslate"><span class="pre">Record.set_hash()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.stage_cachers"><code class="docutils literal notranslate"><span class="pre">Record.stage_cachers</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.stage_inputs"><code class="docutils literal notranslate"><span class="pre">Record.stage_inputs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.stage_inputs_names"><code class="docutils literal notranslate"><span class="pre">Record.stage_inputs_names</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.stage_kwargs_keys"><code class="docutils literal notranslate"><span class="pre">Record.stage_kwargs_keys</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.stage_outputs"><code class="docutils literal notranslate"><span class="pre">Record.stage_outputs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.stage_suppress_missing"><code class="docutils literal notranslate"><span class="pre">Record.stage_suppress_missing</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.stages"><code class="docutils literal notranslate"><span class="pre">Record.stages</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.state"><code class="docutils literal notranslate"><span class="pre">Record.state</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.state_artifact_reps"><code class="docutils literal notranslate"><span class="pre">Record.state_artifact_reps</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.store_tracked_paths"><code class="docutils literal notranslate"><span class="pre">Record.store_tracked_paths()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.stored_paths"><code class="docutils literal notranslate"><span class="pre">Record.stored_paths</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/record.html#curifactory.record.Record.unstored_tracked_paths"><code class="docutils literal notranslate"><span class="pre">Record.unstored_tracked_paths</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/reporting.html">Reporting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.DFReporter"><code class="docutils literal notranslate"><span class="pre">DFReporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.DFReporter.html"><code class="docutils literal notranslate"><span class="pre">DFReporter.html()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.FigureReporter"><code class="docutils literal notranslate"><span class="pre">FigureReporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.FigureReporter.group"><code class="docutils literal notranslate"><span class="pre">FigureReporter.group</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.FigureReporter.html"><code class="docutils literal notranslate"><span class="pre">FigureReporter.html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.FigureReporter.kwargs"><code class="docutils literal notranslate"><span class="pre">FigureReporter.kwargs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.FigureReporter.name"><code class="docutils literal notranslate"><span class="pre">FigureReporter.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.FigureReporter.path"><code class="docutils literal notranslate"><span class="pre">FigureReporter.path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.FigureReporter.qualified_name"><code class="docutils literal notranslate"><span class="pre">FigureReporter.qualified_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.FigureReporter.render"><code class="docutils literal notranslate"><span class="pre">FigureReporter.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.FigureReporter.rendered"><code class="docutils literal notranslate"><span class="pre">FigureReporter.rendered</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.FigureReporter.stage"><code class="docutils literal notranslate"><span class="pre">FigureReporter.stage</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.HTMLReporter"><code class="docutils literal notranslate"><span class="pre">HTMLReporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.HTMLReporter.group"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.group</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.HTMLReporter.html"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.HTMLReporter.html_string"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.html_string</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.HTMLReporter.name"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.HTMLReporter.path"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.HTMLReporter.qualified_name"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.qualified_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.HTMLReporter.rendered"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.rendered</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.HTMLReporter.stage"><code class="docutils literal notranslate"><span class="pre">HTMLReporter.stage</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.ImageReporter"><code class="docutils literal notranslate"><span class="pre">ImageReporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.ImageReporter.html"><code class="docutils literal notranslate"><span class="pre">ImageReporter.html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.ImageReporter.render"><code class="docutils literal notranslate"><span class="pre">ImageReporter.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.JsonReporter"><code class="docutils literal notranslate"><span class="pre">JsonReporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.JsonReporter.html"><code class="docutils literal notranslate"><span class="pre">JsonReporter.html()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.LatexTableReporter"><code class="docutils literal notranslate"><span class="pre">LatexTableReporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.LatexTableReporter.html"><code class="docutils literal notranslate"><span class="pre">LatexTableReporter.html()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.LinePlotReporter"><code class="docutils literal notranslate"><span class="pre">LinePlotReporter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.LinePlotReporter.html"><code class="docutils literal notranslate"><span class="pre">LinePlotReporter.html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.LinePlotReporter.render"><code class="docutils literal notranslate"><span class="pre">LinePlotReporter.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.Reportable"><code class="docutils literal notranslate"><span class="pre">Reportable</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.Reportable.group"><code class="docutils literal notranslate"><span class="pre">Reportable.group</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.Reportable.html"><code class="docutils literal notranslate"><span class="pre">Reportable.html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.Reportable.name"><code class="docutils literal notranslate"><span class="pre">Reportable.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.Reportable.path"><code class="docutils literal notranslate"><span class="pre">Reportable.path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.Reportable.qualified_name"><code class="docutils literal notranslate"><span class="pre">Reportable.qualified_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.Reportable.record"><code class="docutils literal notranslate"><span class="pre">Reportable.record</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.Reportable.render"><code class="docutils literal notranslate"><span class="pre">Reportable.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.Reportable.rendered"><code class="docutils literal notranslate"><span class="pre">Reportable.rendered</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.Reportable.stage"><code class="docutils literal notranslate"><span class="pre">Reportable.stage</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.map_full_svg"><code class="docutils literal notranslate"><span class="pre">map_full_svg()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.map_single_svg"><code class="docutils literal notranslate"><span class="pre">map_single_svg()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.prepare_report_path"><code class="docutils literal notranslate"><span class="pre">prepare_report_path()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.render_graph"><code class="docutils literal notranslate"><span class="pre">render_graph()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.render_report_all_reportables"><code class="docutils literal notranslate"><span class="pre">render_report_all_reportables()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.render_report_argset_dump"><code class="docutils literal notranslate"><span class="pre">render_report_argset_dump()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.render_report_detailed_stage_maps"><code class="docutils literal notranslate"><span class="pre">render_report_detailed_stage_maps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.render_report_head"><code class="docutils literal notranslate"><span class="pre">render_report_head()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.render_report_info_block"><code class="docutils literal notranslate"><span class="pre">render_report_info_block()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.render_report_reportables_toc"><code class="docutils literal notranslate"><span class="pre">render_report_reportables_toc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.render_report_stage_map"><code class="docutils literal notranslate"><span class="pre">render_report_stage_map()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.render_report_toc"><code class="docutils literal notranslate"><span class="pre">render_report_toc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.render_reportable"><code class="docutils literal notranslate"><span class="pre">render_reportable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.run_report"><code class="docutils literal notranslate"><span class="pre">run_report()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/reporting.html#curifactory.reporting.update_report_index"><code class="docutils literal notranslate"><span class="pre">update_report_index()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/staging.html">Staging</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/staging.html#curifactory.staging.CachersMismatchError"><code class="docutils literal notranslate"><span class="pre">CachersMismatchError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/staging.html#curifactory.staging.EmptyCachersError"><code class="docutils literal notranslate"><span class="pre">EmptyCachersError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/staging.html#curifactory.staging.ExecutingWithSkippedInputError"><code class="docutils literal notranslate"><span class="pre">ExecutingWithSkippedInputError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/staging.html#curifactory.staging.InputSignatureError"><code class="docutils literal notranslate"><span class="pre">InputSignatureError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/staging.html#curifactory.staging.OutputSignatureError"><code class="docutils literal notranslate"><span class="pre">OutputSignatureError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/staging.html#curifactory.staging.SkippedOutput"><code class="docutils literal notranslate"><span class="pre">SkippedOutput</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/staging.html#curifactory.staging.aggregate"><code class="docutils literal notranslate"><span class="pre">aggregate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/staging.html#curifactory.staging.stage"><code class="docutils literal notranslate"><span class="pre">stage()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/store.html">Store</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/store.html#curifactory.store.ManagerStore"><code class="docutils literal notranslate"><span class="pre">ManagerStore</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/store.html#curifactory.store.ManagerStore.add_run"><code class="docutils literal notranslate"><span class="pre">ManagerStore.add_run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/store.html#curifactory.store.ManagerStore.get_experiment_runs"><code class="docutils literal notranslate"><span class="pre">ManagerStore.get_experiment_runs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/store.html#curifactory.store.ManagerStore.get_run"><code class="docutils literal notranslate"><span class="pre">ManagerStore.get_run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/store.html#curifactory.store.ManagerStore.load"><code class="docutils literal notranslate"><span class="pre">ManagerStore.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/store.html#curifactory.store.ManagerStore.path"><code class="docutils literal notranslate"><span class="pre">ManagerStore.path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/store.html#curifactory.store.ManagerStore.runs"><code class="docutils literal notranslate"><span class="pre">ManagerStore.runs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/store.html#curifactory.store.ManagerStore.save"><code class="docutils literal notranslate"><span class="pre">ManagerStore.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/store.html#curifactory.store.ManagerStore.update_run"><code class="docutils literal notranslate"><span class="pre">ManagerStore.update_run()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/utils.html">Utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.CONFIGURATION_FILE"><code class="docutils literal notranslate"><span class="pre">CONFIGURATION_FILE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.EDITORS"><code class="docutils literal notranslate"><span class="pre">EDITORS</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.PrefixedLogFactory"><code class="docutils literal notranslate"><span class="pre">PrefixedLogFactory</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.StreamToLogger"><code class="docutils literal notranslate"><span class="pre">StreamToLogger</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/utils.html#curifactory.utils.StreamToLogger.write"><code class="docutils literal notranslate"><span class="pre">StreamToLogger.write()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.TIMESTAMP_FORMAT"><code class="docutils literal notranslate"><span class="pre">TIMESTAMP_FORMAT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.check_git_dirty_workingdir"><code class="docutils literal notranslate"><span class="pre">check_git_dirty_workingdir()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.get_command_output"><code class="docutils literal notranslate"><span class="pre">get_command_output()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.get_conda_env"><code class="docutils literal notranslate"><span class="pre">get_conda_env()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.get_conda_list"><code class="docutils literal notranslate"><span class="pre">get_conda_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.get_configuration"><code class="docutils literal notranslate"><span class="pre">get_configuration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.get_current_commit"><code class="docutils literal notranslate"><span class="pre">get_current_commit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.get_editor"><code class="docutils literal notranslate"><span class="pre">get_editor()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.get_os"><code class="docutils literal notranslate"><span class="pre">get_os()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.get_pip_freeze"><code class="docutils literal notranslate"><span class="pre">get_pip_freeze()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.get_py_opening_comment"><code class="docutils literal notranslate"><span class="pre">get_py_opening_comment()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.human_readable_mem_usage"><code class="docutils literal notranslate"><span class="pre">human_readable_mem_usage()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.human_readable_time"><code class="docutils literal notranslate"><span class="pre">human_readable_time()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.init_logging"><code class="docutils literal notranslate"><span class="pre">init_logging()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.preview_object"><code class="docutils literal notranslate"><span class="pre">preview_object()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.run_command"><code class="docutils literal notranslate"><span class="pre">run_command()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/utils.html#curifactory.utils.set_logging_prefix"><code class="docutils literal notranslate"><span class="pre">set_logging_prefix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/experimental.html">Experimental Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/experimental/artifact.html">Artifact</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/artifact.html#curifactory.experimental.artifact.Artifact"><code class="docutils literal notranslate"><span class="pre">Artifact</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/artifact.html#curifactory.experimental.artifact.ArtifactFilter"><code class="docutils literal notranslate"><span class="pre">ArtifactFilter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/artifact.html#curifactory.experimental.artifact.ArtifactList"><code class="docutils literal notranslate"><span class="pre">ArtifactList</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/artifact.html#curifactory.experimental.artifact.DBArtifact"><code class="docutils literal notranslate"><span class="pre">DBArtifact</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/artifact.html#curifactory.experimental.artifact.StageReportables"><code class="docutils literal notranslate"><span class="pre">StageReportables</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/artifact.html#curifactory.experimental.artifact.pointer_based_property"><code class="docutils literal notranslate"><span class="pre">pointer_based_property()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/artifact.html#curifactory.experimental.artifact.pointer_based_property_getter"><code class="docutils literal notranslate"><span class="pre">pointer_based_property_getter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/artifact.html#curifactory.experimental.artifact.pointer_based_property_setter"><code class="docutils literal notranslate"><span class="pre">pointer_based_property_setter()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/experimental/init.html">Experimental</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/init.html#curifactory.experimental.convert_artifact_to_path"><code class="docutils literal notranslate"><span class="pre">convert_artifact_to_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/init.html#curifactory.experimental.get_artifact_paths"><code class="docutils literal notranslate"><span class="pre">get_artifact_paths()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/init.html#curifactory.experimental.get_manager"><code class="docutils literal notranslate"><span class="pre">get_manager()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/init.html#curifactory.experimental.get_output_path"><code class="docutils literal notranslate"><span class="pre">get_output_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/init.html#curifactory.experimental.global_config"><code class="docutils literal notranslate"><span class="pre">global_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/init.html#curifactory.experimental.report"><code class="docutils literal notranslate"><span class="pre">report()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/init.html#curifactory.experimental.status"><code class="docutils literal notranslate"><span class="pre">status()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/experimental/caching.html">Caching</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/caching.html#curifactory.experimental.caching.AggregateArtifactCacher"><code class="docutils literal notranslate"><span class="pre">AggregateArtifactCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/caching.html#curifactory.experimental.caching.Cacheable"><code class="docutils literal notranslate"><span class="pre">Cacheable</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/caching.html#curifactory.experimental.caching.DBCacher"><code class="docutils literal notranslate"><span class="pre">DBCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/caching.html#curifactory.experimental.caching.DBTableCacher"><code class="docutils literal notranslate"><span class="pre">DBTableCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/caching.html#curifactory.experimental.caching.FileReferenceCacher"><code class="docutils literal notranslate"><span class="pre">FileReferenceCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/caching.html#curifactory.experimental.caching.JsonCacher"><code class="docutils literal notranslate"><span class="pre">JsonCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/caching.html#curifactory.experimental.caching.MetadataOnlyCacher"><code class="docutils literal notranslate"><span class="pre">MetadataOnlyCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/caching.html#curifactory.experimental.caching.ParquetCacher"><code class="docutils literal notranslate"><span class="pre">ParquetCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/caching.html#curifactory.experimental.caching.PathRef"><code class="docutils literal notranslate"><span class="pre">PathRef</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/caching.html#curifactory.experimental.caching.PickleCacher"><code class="docutils literal notranslate"><span class="pre">PickleCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/caching.html#curifactory.experimental.caching.ReportablesCacher"><code class="docutils literal notranslate"><span class="pre">ReportablesCacher</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/caching.html#curifactory.experimental.caching.TrackingDBTableCacher"><code class="docutils literal notranslate"><span class="pre">TrackingDBTableCacher</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/experimental/cli.html">CLI</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/cli.html#curifactory.experimental.cli.completer_pipeline"><code class="docutils literal notranslate"><span class="pre">completer_pipeline()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/cli.html#curifactory.experimental.cli.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/experimental/manager.html">Manager</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/manager.html#curifactory.experimental.manager.CONFIGURATION_FILE"><code class="docutils literal notranslate"><span class="pre">CONFIGURATION_FILE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/manager.html#curifactory.experimental.manager.Manager"><code class="docutils literal notranslate"><span class="pre">Manager</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/manager.html#curifactory.experimental.manager.TIMESTAMP_FORMAT"><code class="docutils literal notranslate"><span class="pre">TIMESTAMP_FORMAT</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/experimental/pipeline.html">Pipeline</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/pipeline.html#curifactory.experimental.pipeline.Pipeline"><code class="docutils literal notranslate"><span class="pre">Pipeline</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/pipeline.html#curifactory.experimental.pipeline.PipelineFromRef"><code class="docutils literal notranslate"><span class="pre">PipelineFromRef</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/pipeline.html#curifactory.experimental.pipeline.pipeline"><code class="docutils literal notranslate"><span class="pre">pipeline()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/experimental/reporting.html">Reporting</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/reporting.html#curifactory.experimental.reporting.HTMLReporter"><code class="docutils literal notranslate"><span class="pre">HTMLReporter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/reporting.html#curifactory.experimental.reporting.Reportable"><code class="docutils literal notranslate"><span class="pre">Reportable</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/experimental/stage.html">Stage</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/stage.html#curifactory.experimental.stage.ConfigResolve"><code class="docutils literal notranslate"><span class="pre">ConfigResolve</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/stage.html#curifactory.experimental.stage.FunctionStub"><code class="docutils literal notranslate"><span class="pre">FunctionStub</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/stage.html#curifactory.experimental.stage.OutputArtifactPathResolve"><code class="docutils literal notranslate"><span class="pre">OutputArtifactPathResolve</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/stage.html#curifactory.experimental.stage.Stage"><code class="docutils literal notranslate"><span class="pre">Stage</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/stage.html#curifactory.experimental.stage.run"><code class="docutils literal notranslate"><span class="pre">run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/stage.html#curifactory.experimental.stage.stage"><code class="docutils literal notranslate"><span class="pre">stage()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/experimental/utils.html">Utils</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/utils.html#curifactory.experimental.utils.AppendReplaceAction"><code class="docutils literal notranslate"><span class="pre">AppendReplaceAction</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/utils.html#curifactory.experimental.utils.FailsafeDict"><code class="docutils literal notranslate"><span class="pre">FailsafeDict</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/utils.html#curifactory.experimental.utils.PrefixedLogFactory"><code class="docutils literal notranslate"><span class="pre">PrefixedLogFactory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/utils.html#curifactory.experimental.utils.human_readable_mem_usage"><code class="docutils literal notranslate"><span class="pre">human_readable_mem_usage()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/utils.html#curifactory.experimental.utils.human_readable_time"><code class="docutils literal notranslate"><span class="pre">human_readable_time()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/utils.html#curifactory.experimental.utils.init_graphviz_graph"><code class="docutils literal notranslate"><span class="pre">init_graphviz_graph()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/utils.html#curifactory.experimental.utils.run_command"><code class="docutils literal notranslate"><span class="pre">run_command()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/experimental/utils.html#curifactory.experimental.utils.set_logging_prefix"><code class="docutils literal notranslate"><span class="pre">set_logging_prefix()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Curifactory</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../user_guide.html">User Guide</a></li>
+      <li class="breadcrumb-item active">CLI Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user/cli_guide.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+
+  <section id="cli-guide">
+<h1>CLI Guide<a class="headerlink" href="#cli-guide" title="Link to this heading"></a></h1>
+<p>The primary means of running Curifactory is through the provided <code class="docutils literal notranslate"><span class="pre">experiment</span></code> CLI.
+The three main tasks that can be run through this command line tool are:</p>
+<ul class="simple">
+<li><p>Run an experiment.</p></li>
+<li><p>List available experiments and parameters.</p></li>
+<li><p>Serve the local report HTML files via python simple web server.</p></li>
+</ul>
+<section id="running-an-experiment">
+<h2>Running an experiment<a class="headerlink" href="#running-an-experiment" title="Link to this heading"></a></h2>
+<p>Running the <code class="docutils literal notranslate"><span class="pre">experiment</span></code> tool always checks for a local <code class="docutils literal notranslate"><span class="pre">curifactory_config.json</span></code> for
+relevant paths, see <a class="reference internal" href="config.html#configuration"><span class="std std-ref">Configuration</span></a>.</p>
+<p>Running an experiment requires the name of an experiment file (minus the .py)
+and at least one parameters file (minus the .py) via the <code class="docutils literal notranslate"><span class="pre">-p</span></code> argument. Note that the filenames
+you pass are not full paths, they are only filenames within the paths specified in the
+configuration (by default an <code class="docutils literal notranslate"><span class="pre">/experiments/</span></code> and <code class="docutils literal notranslate"><span class="pre">/params/</span></code> folder.)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span>
+</pre></div>
+</div>
+<p>The above command calls the <code class="docutils literal notranslate"><span class="pre">get_params()</span></code> from the <code class="docutils literal notranslate"><span class="pre">PARAMS_FILE</span></code> and passes the returned list
+of <code class="docutils literal notranslate"><span class="pre">ExperimentParameters</span></code> instances into the <code class="docutils literal notranslate"><span class="pre">run()</span></code> function inside <code class="docutils literal notranslate"><span class="pre">EXPERIMENT_FILE</span></code>.</p>
+<p>For example, with the following project setup:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">params</span>
+    <span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
+    <span class="n">sklearn_algs</span><span class="o">.</span><span class="n">py</span>
+<span class="o">/</span><span class="n">experiments</span>
+    <span class="n">compare_models</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>We would run the experiment from the project root directory with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>compare_models<span class="w"> </span>-p<span class="w"> </span>sklearn_algs
+</pre></div>
+</div>
+<p>You can optionally specify multiple parameter files, where the combined returned <code class="docutils literal notranslate"><span class="pre">ExperimentParameters</span></code>
+lists from each file are placed into a single list and passed into the experiment.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE1<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE2<span class="o">]</span>
+</pre></div>
+</div>
+<p>Curifactory checks both the params module path as well as the experiments module
+path for files with valid <code class="docutils literal notranslate"><span class="pre">get_params()</span></code> files, so an experiment file that
+has this function may also be used in a <code class="docutils literal notranslate"><span class="pre">-p</span></code> flag.</p>
+<p>If you wish to run an experiment that has a <code class="docutils literal notranslate"><span class="pre">get_params()</span></code> defined and you
+want to use it as your parameter set, you can simply use</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span>
+</pre></div>
+</div>
+<p>Which curifactory will automatically expand to</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span>
+</pre></div>
+</div>
+</section>
+<section id="filtering-to-specific-parameter-sets">
+<h2>Filtering to specific parameter sets<a class="headerlink" href="#filtering-to-specific-parameter-sets" title="Link to this heading"></a></h2>
+<p>When there are parameter files that return large lists of <code class="docutils literal notranslate"><span class="pre">Params</span></code> instances, it can be useful
+to run only a small subset of them to update specific results or for testing purposes.</p>
+<p>This can be done with any of the <code class="docutils literal notranslate"><span class="pre">--names|-n</span></code>, <code class="docutils literal notranslate"><span class="pre">--indices</span></code>, or <code class="docutils literal notranslate"><span class="pre">--global-indices</span></code> arguments.</p>
+<p>For the following examples, assume we have a single parameters file returning three argsts:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Example parameters file</span><a class="headerlink" href="#id1" title="Link to this code"></a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">get_params</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Params</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;baseline_knn&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+        <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;baseline_svm&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+        <span class="n">Params</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;baseline_mlp&quot;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+    <span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<p>Using the <code class="docutils literal notranslate"><span class="pre">--names</span></code> (or <code class="docutils literal notranslate"><span class="pre">-n</span></code>) argument will only run the experiment with parameter sets that have one of the
+specified names. For example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span><span class="w"> </span>-n<span class="w"> </span>baseline_knn<span class="w"> </span>-n<span class="w"> </span>baseline_svm
+</pre></div>
+</div>
+<p>will pass only the knn and svm parameter sets into the experiment file. The same thing can be achieved
+with the <code class="docutils literal notranslate"><span class="pre">--indices</span></code> argument, specifying what indices of the parameter sets to run <strong>from each</strong>
+given parameter file. (Specifying multiple parameter files and multiple indices will
+run those indices from every parameter file.)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span><span class="w"> </span>--indices<span class="w"> </span><span class="m">0</span><span class="w"> </span>--indices<span class="w"> </span><span class="m">1</span>
+</pre></div>
+</div>
+<p>You can also specify ranges within a single <code class="docutils literal notranslate"><span class="pre">--indices</span></code> argument (note that the lower
+bound is inclusive and the upper bound is exclusive):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span><span class="w"> </span>--indices<span class="w"> </span><span class="m">0</span>-2
+</pre></div>
+</div>
+<p>Finally, the <code class="docutils literal notranslate"><span class="pre">--global-indices</span></code> specifies which indices out of the entire combined list of
+parameter sets to run. This is applicable when multiple parameter files are specified, and means that
+the order in which you specify them will matter. (This argument can handle ranges the same way as
+<code class="docutils literal notranslate"><span class="pre">indices</span></code>.)</p>
+</section>
+<section id="caching-controls">
+<h2>Caching controls<a class="headerlink" href="#caching-controls" title="Link to this heading"></a></h2>
+<p>Caching is an important aspect in Curifactory, allowing stages to save and automatically reload
+data without needing to rerun portions of the code. This is also useful for sharing entire
+experiment runs. There are several different command line arguments for influencing how caching works.</p>
+<section id="specifying-cache-directory-c-cache">
+<h3>Specifying cache directory (<code class="docutils literal notranslate"><span class="pre">-c</span></code>, <code class="docutils literal notranslate"><span class="pre">--cache</span></code>)<a class="headerlink" href="#specifying-cache-directory-c-cache" title="Link to this heading"></a></h3>
+<p>By default, the directory used for raw caching is set in the <code class="docutils literal notranslate"><span class="pre">curifactory_config.json</span></code>. For
+individual experiment runs, this can be changed by providing the <code class="docutils literal notranslate"><span class="pre">-c,</span> <span class="pre">--cache</span></code> argument,
+for which all cache data will be saved and loaded from the specified directory. <strong>This is particularly
+relevant if attempting to reproduce somebody else’s experiment and they have a</strong> <code class="docutils literal notranslate"><span class="pre">--store-full</span></code>
+<strong>run folder.</strong> (See the <a class="reference internal" href="#full-stores"><span class="std std-ref">Full stores (--store-full, --dry-cache)</span></a> section below .)</p>
+</section>
+<section id="overwriting-cached-data-overwrite-overwrite-stage">
+<span id="overwriting-cached-data"></span><h3>Overwriting cached data (<code class="docutils literal notranslate"><span class="pre">--overwrite</span></code>, <code class="docutils literal notranslate"><span class="pre">--overwrite-stage</span></code>)<a class="headerlink" href="#overwriting-cached-data-overwrite-overwrite-stage" title="Link to this heading"></a></h3>
+<p>Any changes made to the arguments running through an experiment will result in a different parameter hash
+and thus new cached files than previous runs. However, code changes will not force a cache overwrite,
+so in order to prevent inconsistent or incorrect data, you can force the experiment to ignore any
+previously cached data by specifying the <code class="docutils literal notranslate"><span class="pre">--overwrite</span></code> argument.</p>
+<p>If only specific stages have changed, rather than overwriting all cached data you can force a stage
+run of only desired stages with the <code class="docutils literal notranslate"><span class="pre">--overwrite-stage</span></code> argument:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span><span class="w"> </span>--overwrite-stage<span class="w"> </span>model_train<span class="w"> </span>--overwrite-stage<span class="w"> </span>model_test
+</pre></div>
+</div>
+<p>The above example will ignore cached values only for the <code class="docutils literal notranslate"><span class="pre">model_train</span></code> and <code class="docutils literal notranslate"><span class="pre">model_test</span></code> stages.
+<strong>Note that overwriting a stage in the middle of an experiment will not cause later stages to also overwrite,
+meaning that outdated data may still be in use.</strong></p>
+</section>
+<section id="full-stores-store-full-dry-cache">
+<span id="full-stores"></span><h3>Full stores (<code class="docutils literal notranslate"><span class="pre">--store-full</span></code>, <code class="docutils literal notranslate"><span class="pre">--dry-cache</span></code>)<a class="headerlink" href="#full-stores-store-full-dry-cache" title="Link to this heading"></a></h3>
+<p>Curifactory can collect all relevant data for a single experiment run and keep it in a
+run-specific folder, known as a <code class="docutils literal notranslate"><span class="pre">--store-full</span></code> run. This folder has all cached data
+from the run, a copy of the log and output report, and system environment information. This
+is useful for keeping finalized versions of experiments, for distributing runs to others for
+analysis, or for simply allowing easier reproduction of a specific set of results.</p>
+<p>For experiment reproduction, or running an experiment using an existing run-specific cache,
+it is also useful to use the <code class="docutils literal notranslate"><span class="pre">--dry-cache</span></code> argument, which allows stages to read files
+from the cache but prevents them from writing to it. This also allows you to specify stage overwrites
+to force specific stages to run without overwriting any of the previously cached files.</p>
+<p>In practice, this looks something like the following:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># run the experiment and store results in a run folder</span>
+<span class="c1"># by default, this is data/runs/[RUN_REFERENCE_NAME]/</span>
+experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span><span class="w"> </span>--store-full
+
+<span class="c1"># reproduce the run</span>
+experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span><span class="w"> </span>--cache<span class="w"> </span>data/runs/<span class="o">[</span>RUN_REFERENCE_NAME<span class="o">]</span><span class="w"> </span>--dry-cache
+</pre></div>
+</div>
+</section>
+<section id="lazy-cache-objects-lazy-ignore-lazy">
+<h3>Lazy cache objects (<code class="docutils literal notranslate"><span class="pre">--lazy</span></code>, <code class="docutils literal notranslate"><span class="pre">--ignore-lazy</span></code>)<a class="headerlink" href="#lazy-cache-objects-lazy-ignore-lazy" title="Link to this heading"></a></h3>
+<p>As discussed in the getting started documentation, lazy cachers keep objects out
+of memory as much as possible, loading them only if directly accessed. Normally,
+lazy cache objects are specified by initializing a stage output name with the
+<code class="docutils literal notranslate"><span class="pre">Lazy</span></code> class, but you can tell curifactory to assume all outputs are lazy
+by running:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span><span class="w"> </span>--lazy
+</pre></div>
+</div>
+<p>Note that lazy cache objects must have cachers specified to work. Since a stage
+can be specified without giving cachers, using this flag <strong>will automatically
+apply a pickle cacher to any outputs that do not have a specified cacher</strong>.
+While this should work for any pickleable objects, <strong>it may fail if any stages
+output something that can’t be correctly pickled.</strong></p>
+<p>Similarly, if running stages that have lazy objects but in an environment where
+keeping them in memory isn’t a big deal, you can turn off all lazy caching with
+the <code class="docutils literal notranslate"><span class="pre">--ignore-lazy</span></code> flag. In cases when dealing with large objects that
+are expensive to repeatedly save and reload, this can potentially speed up an experiment
+run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span><span class="w"> </span>--ignore-lazy
+</pre></div>
+</div>
+</section>
+</section>
+<section id="parallel-runs">
+<h2>Parallel runs<a class="headerlink" href="#parallel-runs" title="Link to this heading"></a></h2>
+<p>In situations where you may have a large number of argsets to run through a lengthy
+experiment, Curifactory can run many instances of the experiment in
+parallel, using the multiprocessing library.</p>
+<p>Running an experiment with the <code class="docutils literal notranslate"><span class="pre">--parallel</span> <span class="pre">4</span></code>
+argument will divide up the entire list of parameter sets into four ranges of global argument indices,
+spawn four processes, and run the experiment in each, passing in the range for that process. After
+all processes complete, the experiment is run again with all parameter sets. The idea is that, assuming
+caching is done in every important stage, all relevant data for each stage in the full run has
+already been cached from the individual runs done via multiprocessing, and so only final aggregate
+stages need to be re-run against the full set of records.</p>
+<p>This approach is <strong>very loosely</strong> equivalent to the below commands, assuming the parameters file returns 8 argsets:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">A loose interpretation of what the parallel flag does, if it were done manually via separate commands.</span><a class="headerlink" href="#id2" title="Link to this code"></a></div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span><span class="w"> </span>--parallel<span class="w"> </span><span class="m">4</span>
+
+<span class="c1"># the above translates* into running the following in separate processes:</span>
+
+experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span><span class="w"> </span>--parallel-mode<span class="w"> </span>--global-indices<span class="w"> </span><span class="m">0</span>-2
+experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span><span class="w"> </span>--parallel-mode<span class="w"> </span>--global-indices<span class="w"> </span><span class="m">2</span>-4
+experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span><span class="w"> </span>--parallel-mode<span class="w"> </span>--global-indices<span class="w"> </span><span class="m">4</span>-6
+experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span><span class="w"> </span>--parallel-mode<span class="w"> </span>--global-indices<span class="w"> </span><span class="m">6</span>-8
+
+<span class="c1"># with a final full run to handle the report and any aggregate stages:</span>
+
+experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+<p><strong>Note that running the above commands is not actually equivalent to running the experiment
+with</strong> <code class="docutils literal notranslate"><span class="pre">--parallel</span></code>. Using multiprocessing creates lock and queue variables that are used
+to ensure the processes aren’t stepping on each other, which can occur if you attempt to manually
+run these in parallel using the <code class="docutils literal notranslate"><span class="pre">--parallel-mode</span></code> flag.</p>
+<p>In order for parallel runs to be effective, there are a few assumptions about the experiments:</p>
+<ul class="simple">
+<li><p>There are few/low-compute-intensity aggregate stages towards the end of the experiment. Usually these are only done for final comparison/result analysis steps.</p></li>
+<li><p>All compute-heavy stages cache their outputs. The intent for this approach is that the final full run doesn’t need to run any compute.</p></li>
+<li><p>The type of parallelization you’re going for is on the very coarse experiment/argset level. This does not split computation at the stages or provide any sort of parallelization beyond running multiple argsets through the same experiment at the same time.</p></li>
+</ul>
+</section>
+<section id="listing-experiments-and-parameters">
+<h2>Listing experiments and parameters<a class="headerlink" href="#listing-experiments-and-parameters" title="Link to this heading"></a></h2>
+<p>You can get a list of valid experiment files and parameter files in the commandline by running:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>ls
+</pre></div>
+</div>
+<p>This will check every file in the experiments folder for files containing a <code class="docutils literal notranslate"><span class="pre">run()</span></code> function
+and every file in the parameters folder for files containing a <code class="docutils literal notranslate"><span class="pre">get_params()</span></code> function. Note
+that Curifactory attempts to import all files in order to check for potential errors on import, so
+standard warnings for if you’re importing somebody else’s code applies. This command can also take
+a while to run if any of the files have a large number of slow imports.</p>
+<p>The output listing looks something like:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>EXPERIMENTS:
+<span class="w">        </span>example_experiment<span class="w"> </span>-<span class="w"> </span>Some<span class="w"> </span>experiment<span class="w"> </span>description
+<span class="w">        </span>example_experiment2
+
+PARAMS:
+<span class="w">        </span>example_params<span class="w"> </span>-<span class="w"> </span>Basic<span class="w"> </span><span class="nb">set</span><span class="w"> </span>of<span class="w"> </span>parameters
+<span class="w">        </span>example_params2<span class="w"> </span>-<span class="w"> </span>Fancier<span class="w"> </span>parameters
+</pre></div>
+</div>
+<p>The descriptions after the - for each entry in the listing are directly parsed from any docstrings
+at the top of the relevant files, this is particularly useful when there are a large number of
+experiment and/or parameter files.</p>
+</section>
+<section id="experiment-run-notes">
+<h2>Experiment run notes<a class="headerlink" href="#experiment-run-notes" title="Link to this heading"></a></h2>
+<p>You can provide notes for an experiment run with the <code class="docutils literal notranslate"><span class="pre">--notes</span></code> flag. The
+idea for these is to be vaguely like git commit messages, in that if the notes
+span multiple lines, the first line will be the shortform version (displayed on
+the report index page) and the remainder of the lines will render in full on the
+experiment preport itself.</p>
+<p>You can either specify notes inline:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span><span class="w"> </span>--notes<span class="w"> </span><span class="s2">&quot;This is a note for this experiment run&quot;</span>
+</pre></div>
+</div>
+<p>Or simply specifying the notes flag by itself will open a text editor for you to
+enter the notes.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span><span class="o">[</span>EXPERIMENT_FILE<span class="o">]</span><span class="w"> </span>-p<span class="w"> </span><span class="o">[</span>PARAMS_FILE<span class="o">]</span><span class="w"> </span>--notes
+</pre></div>
+</div>
+<p>Once the text editor is saved and exited, the note content will
+be used for the run notes. If a <code class="docutils literal notranslate"><span class="pre">EDITOR</span></code> environment variable is set,
+curifactory will attempt to open that editor, otherwise it will run through a
+list of editors and open the first one it finds.</p>
+<figure class="align-center" id="id3">
+<img alt="../_images/report_notes_shortform.png" src="../_images/report_notes_shortform.png" />
+<figcaption>
+<p><span class="caption-text">The first line of the notes (if multi-line) shows up with the run in the
+report index in italics.</span><a class="headerlink" href="#id3" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<figure class="align-center" id="id4">
+<img alt="../_images/report_notes_longform.png" src="../_images/report_notes_longform.png" />
+<figcaption>
+<p><span class="caption-text">The entire notes content shows up in a “Notes” section under the info block
+in the run report.</span><a class="headerlink" href="#id4" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+</section>
+<section id="hosting-html-reports">
+<h2>Hosting HTML reports<a class="headerlink" href="#hosting-html-reports" title="Link to this heading"></a></h2>
+<p>Every experiment that runs to completion generates an HTML run report in the <code class="docutils literal notranslate"><span class="pre">reports/</span></code>
+folder, and updates the top level reports index.html. These files can be served with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>reports
+</pre></div>
+</div>
+<p>By default, this serves them on port 8080, but this can be configured with the <code class="docutils literal notranslate"><span class="pre">--port</span></code> flag:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>reports<span class="w"> </span>--port<span class="w"> </span><span class="m">6789</span>
+</pre></div>
+</div>
+<p>The IP the server will accept connections from can also be configured with the
+<code class="docutils literal notranslate"><span class="pre">--host</span></code> flag. By default this is 127.0.0.1, only allowing localhost
+connections.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>reports<span class="w"> </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0
+</pre></div>
+</div>
+<p>Note that if you run experiments on multiple machines and transfer all of the
+reports to the same folder, the report index will not accurately reflect them.
+You can use <code class="docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">reports</span> <span class="pre">--update</span></code> to regenerate this index based
+on all discovered folders in your reports directory.</p>
+</section>
+<section id="getting-experiment-dag-and-parameter-info">
+<h2>Getting Experiment DAG and Parameter Info<a class="headerlink" href="#getting-experiment-dag-and-parameter-info" title="Link to this heading"></a></h2>
+<p>Sometimes when running an experiment, it unexpectedly runs a record you weren’t
+expecting or thought was already cached, or it didn’t seem that the parameters
+were quite right. The CLI has a few different flags to display parameters and
+planned experiment map execution without actually running it.</p>
+<section id="experiment-maps-cache-status">
+<h3>Experiment maps/cache status<a class="headerlink" href="#experiment-maps-cache-status" title="Link to this heading"></a></h3>
+<p>Printing the map of an experiment (using <code class="docutils literal notranslate"><span class="pre">--map</span></code>) will display the list of
+records collected from the DAG, which will include the name and hash of the
+associated parameter set, the list of stages, and the input and output artifacts
+associated with each stage. If any artifacts are found in the cache, it will
+state this and include the run name of the experiment that generated it.</p>
+<p>An example <code class="docutils literal notranslate"><span class="pre">--map</span></code> output:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>experiment<span class="w"> </span>iris<span class="w"> </span>--map
+
+<span class="o">====</span><span class="w"> </span>Record<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">(</span>simple_lr<span class="o">)</span><span class="w"> </span>hash:<span class="w"> </span><span class="nv">25835102b5c3a5842e7ac87658365c7bd</span><span class="w"> </span><span class="o">====</span>
+Stage:<span class="w"> </span>load_data
+<span class="w">        </span>Outputs:
+<span class="w">                </span>training_data<span class="w"> </span><span class="o">(</span>cached<span class="o">)</span><span class="w"> </span><span class="o">[</span>iris_36_2025-07-20-T094259<span class="o">]</span>
+<span class="w">                </span>testing_data<span class="w"> </span><span class="o">(</span>cached<span class="o">)</span><span class="w"> </span><span class="o">[</span>iris_36_2025-07-20-T094259<span class="o">]</span>
+Stage:<span class="w"> </span>train_model
+<span class="w">        </span>Inputs:
+<span class="w">                </span>training_data<span class="w"> </span><span class="o">(</span>cached<span class="o">)</span><span class="w"> </span><span class="o">[</span>iris_36_2025-07-20-T094259<span class="o">]</span>
+<span class="w">       </span>Outputs:
+<span class="w">                </span>model<span class="w"> </span><span class="o">(</span>cached<span class="o">)</span><span class="w"> </span><span class="o">[</span>iris_36_2025-07-20-T094259<span class="o">]</span>
+<span class="o">====</span><span class="w"> </span>Record<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>simple_rf<span class="o">)</span><span class="w"> </span>hash:<span class="w"> </span><span class="nv">1b2e0b91ba94b00f01ae33840e870ec7b</span><span class="w"> </span><span class="o">====</span>
+Stage:<span class="w"> </span>load_data
+<span class="w">       </span>Outputs:
+<span class="w">                </span>training_data
+<span class="w">                </span>testing_data
+Stage:<span class="w"> </span>train_model
+<span class="w">        </span>Inputs:
+<span class="w">                </span>training_data
+<span class="w">        </span>Outputs:
+<span class="w">                </span><span class="nv">model</span>
+<span class="o">====</span><span class="w"> </span>Record<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="o">(</span>None<span class="o">)</span><span class="w"> </span>hash:<span class="w"> </span><span class="nv">d711fcb3fa7bbb5cfe94195d86528f4e</span><span class="w"> </span><span class="o">====</span>
+Stage:<span class="w"> </span>test_models<span class="w"> </span><span class="o">(</span>leaf<span class="o">)</span>
+<span class="w">        </span>Input<span class="w"> </span>records:
+<span class="w">                </span>Record<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">(</span>simple_lr<span class="o">)</span>
+<span class="w">                </span>Record<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>simple_rf<span class="o">)</span>
+<span class="w">        </span>Inputs:
+<span class="w">                </span>model<span class="w"> </span><span class="o">(</span>cached<span class="o">)</span><span class="w"> </span><span class="o">[</span>iris_36_2025-07-20-T094259<span class="o">]</span>
+<span class="w">                </span>model
+<span class="w">                </span>testing_data<span class="w"> </span><span class="o">(</span>cached<span class="o">)</span><span class="w"> </span><span class="o">[</span>iris_36_2025-07-20-T094259<span class="o">]</span>
+<span class="w">                </span>testing_data
+<span class="w">        </span>Outputs:
+<span class="w">                </span>scores
+</pre></div>
+</div>
+<p>This output shows the three records from two different parameter sets (the last
+record is using an aggregate stage), and all of the <code class="docutils literal notranslate"><span class="pre">simple_lr</span></code> record’s
+artifacts were found in cache from a previous run.</p>
+<p>Note that all of <code class="docutils literal notranslate"><span class="pre">--map</span></code> and the other flags listed in this section will
+respond to the specific experiment run string provided, meaning that if you were
+to run <code class="docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">iris</span> <span class="pre">-n</span> <span class="pre">simple_lr</span> <span class="pre">--map</span></code>, it would only map the experiment
+with the <code class="docutils literal notranslate"><span class="pre">simple_lr</span></code> parameter set.</p>
+</section>
+<section id="parameter-set-hashes-parameters">
+<h3>Parameter set hashes/parameters<a class="headerlink" href="#parameter-set-hashes-parameters" title="Link to this heading"></a></h3>
+<p>You can get a list of just the hashes and names of parameter sets that will run
+by using the <code class="docutils literal notranslate"><span class="pre">--hashes</span></code> argument:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>experiment<span class="w"> </span>iris<span class="w"> </span>--hashes
+
+25835102b5c3a5842e7ac87658365c7bd<span class="w"> </span>simple_lr
+1b2e0b91ba94b00f01ae33840e870ec7b<span class="w"> </span>simple_rf
+</pre></div>
+</div>
+<p>You can see a more expanded view of the parameters and get a complete printout
+of what is contained in the parameter sets by using <code class="docutils literal notranslate"><span class="pre">--print-params</span></code> instead
+of <code class="docutils literal notranslate"><span class="pre">--hashes</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>experiment<span class="w"> </span>iris<span class="w"> </span>--print-params
+
+25835102b5c3a5842e7ac87658365c7bd<span class="w"> </span>simple_lr
+<span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;name&quot;</span>:<span class="w"> </span><span class="s2">&quot;simple_lr&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;balanced&quot;</span>:<span class="w"> </span><span class="s2">&quot;True&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;n&quot;</span>:<span class="w"> </span><span class="s2">&quot;100&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;seed&quot;</span>:<span class="w"> </span><span class="s2">&quot;1&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;model_type&quot;</span>:<span class="w"> </span><span class="s2">&quot;LogisticRegression&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;test_percent&quot;</span>:<span class="w"> </span><span class="s2">&quot;0.25&quot;</span>
+<span class="o">}</span>
+1b2e0b91ba94b00f01ae33840e870ec7b<span class="w"> </span>simple_rf
+<span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;name&quot;</span>:<span class="w"> </span><span class="s2">&quot;simple_rf&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;balanced&quot;</span>:<span class="w"> </span><span class="s2">&quot;False&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;n&quot;</span>:<span class="w"> </span><span class="s2">&quot;100&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;seed&quot;</span>:<span class="w"> </span><span class="s2">&quot;1&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;model_type&quot;</span>:<span class="w"> </span><span class="s2">&quot;RandomForestClassifier&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;test_percent&quot;</span>:<span class="w"> </span><span class="s2">&quot;0.25&quot;</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">--print-params</span></code> flag can also accept the name of a specific parameter set
+within the experiment run <strong>or the prefix (first few characters, enough to be
+unique) of any parameter set hash stored in the parameter registry</strong>, (even if
+it’s not associated with the experiment name listed) and it will print that full
+parameter set. This is especially useful for comparing a previous version of a
+parameter set with the current one.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>experiment<span class="w"> </span>iris<span class="w"> </span>--print-params<span class="w"> </span>1b2e0b
+
+1b2e0b91ba94b00f01ae33840e870ec7b<span class="w"> </span>simple_rf
+<span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;name&quot;</span>:<span class="w"> </span><span class="s2">&quot;simple_rf&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;balanced&quot;</span>:<span class="w"> </span><span class="s2">&quot;False&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;n&quot;</span>:<span class="w"> </span><span class="s2">&quot;100&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;seed&quot;</span>:<span class="w"> </span><span class="s2">&quot;1&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;model_type&quot;</span>:<span class="w"> </span><span class="s2">&quot;RandomForestClassifier&quot;</span>,
+<span class="w">    </span><span class="s2">&quot;test_percent&quot;</span>:<span class="w"> </span><span class="s2">&quot;0.25&quot;</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+</section>
+<section id="cache-paths">
+<h3>Cache paths<a class="headerlink" href="#cache-paths" title="Link to this heading"></a></h3>
+<p>Finally, <code class="docutils literal notranslate"><span class="pre">--paths</span></code> will print out the artifact cache paths for all involved
+artifacts in an experiment map. There are two important notes about this
+functionality:</p>
+<ol class="arabic simple">
+<li><p>This is printing all of the _expected_ paths that will be involved and/or already exist in cache, this is not specifically listing paths that do in fact already exist in the cache folder.</p></li>
+<li><p>This is only going based on artifact cachers - any <code class="docutils literal notranslate"><span class="pre">record.get_dir()</span></code> or <code class="docutils literal notranslate"><span class="pre">record.get_path()</span></code> calls that occur _inside_ of a stage and subsequently saved to won’t appear in this list (as curifactory has no way to know what paths actually get used inside of a stage without actually executing it)</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>experiment<span class="w"> </span>iris<span class="w"> </span>--paths
+
+data/cache/iris_25835102b5c3a5842e7ac87658365c7bd_load_data_training_data.pkl
+data/cache/iris_25835102b5c3a5842e7ac87658365c7bd_load_data_training_data_metadata.json
+data/cache/iris_25835102b5c3a5842e7ac87658365c7bd_load_data_testing_data.pkl
+data/cache/iris_25835102b5c3a5842e7ac87658365c7bd_load_data_testing_data_metadata.json
+data/cache/iris_25835102b5c3a5842e7ac87658365c7bd_train_model_model.pkl
+data/cache/iris_25835102b5c3a5842e7ac87658365c7bd_train_model_model_metadata.json
+data/cache/iris_1b2e0b91ba94b00f01ae33840e870ec7b_load_data_training_data.pkl
+data/cache/iris_1b2e0b91ba94b00f01ae33840e870ec7b_load_data_training_data_metadata.json
+data/cache/iris_1b2e0b91ba94b00f01ae33840e870ec7b_load_data_testing_data.pkl
+data/cache/iris_1b2e0b91ba94b00f01ae33840e870ec7b_load_data_testing_data_metadata.json
+data/cache/iris_1b2e0b91ba94b00f01ae33840e870ec7b_train_model_model.pkl
+data/cache/iris_1b2e0b91ba94b00f01ae33840e870ec7b_train_model_model_metadata.json
+</pre></div>
+</div>
+<p>This command can be used to pipe paths into other commands, which can be useful to
+clear out the cache for a particular experiment run without using <code class="docutils literal notranslate"><span class="pre">--overwrite</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>iris<span class="w"> </span>--paths<span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="w"> </span>rm
+</pre></div>
+</div>
+</section>
+</section>
+<section id="full-reference">
+<h2>Full reference<a class="headerlink" href="#full-reference" title="Link to this heading"></a></h2>
+<p>Below is the full set of flags that can be used with the <code class="docutils literal notranslate"><span class="pre">experiment</span></code> command.</p>
+<section id="parameter-names-p-params">
+<h3>Parameter names (<code class="docutils literal notranslate"><span class="pre">-p</span></code>, <code class="docutils literal notranslate"><span class="pre">--params`</span></code>)<a class="headerlink" href="#parameter-names-p-params" title="Link to this heading"></a></h3>
+<p>The name of a python parameters file with a <code class="docutils literal notranslate"><span class="pre">get_params()</span></code> function. You can specify multiple
+parameter files with multiple <code class="docutils literal notranslate"><span class="pre">-p</span></code> flags, which will combine all returned parameter sets from
+all parameter files into a single parameter set list.</p>
+<p>Note that you do not include the actual path or .py, the string is directly used in the import as a
+submodule of the <code class="docutils literal notranslate"><span class="pre">params</span></code> module/folder.</p>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>some_experiment_name<span class="w"> </span>-p<span class="w"> </span>my_params<span class="w"> </span>-p<span class="w"> </span>my_other_params
+</pre></div>
+</div>
+</section>
+<section id="parameter-set-names-n-names">
+<h3>Parameter set names (<code class="docutils literal notranslate"><span class="pre">-n</span></code>, <code class="docutils literal notranslate"><span class="pre">--names</span></code>)<a class="headerlink" href="#parameter-set-names-n-names" title="Link to this heading"></a></h3>
+<p>Run the experiment with only argsets with the specified names (the <code class="docutils literal notranslate"><span class="pre">name</span></code> defined in the <code class="docutils literal notranslate"><span class="pre">ExperimentArgs</span></code>
+instance) given with this flag. Use only one name per flag, but as with the parameter names, this
+flag can be specified multiple times. See <a class="reference internal" href="#filtering-to-specific-parameter-sets"><span class="std std-ref">Filtering to specific parameter sets</span></a> above.</p>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>some_experiment_name<span class="w"> </span>-p<span class="w"> </span>my_params<span class="w"> </span>-n<span class="w"> </span>base_knn<span class="w"> </span>-n<span class="w"> </span>base_randomforest
+</pre></div>
+</div>
+</section>
+<section id="argument-set-indices-indices">
+<h3>Argument set indices (<code class="docutils literal notranslate"><span class="pre">--indices</span></code>)<a class="headerlink" href="#argument-set-indices-indices" title="Link to this heading"></a></h3>
+<p>Run the experiment with only argsets with the specified indices given with this flag <strong>within
+each specified parameters file</strong>. Indices can either be specified as individual numbers or as
+ranges in the format <code class="docutils literal notranslate"><span class="pre">[inclusive</span> <span class="pre">lower</span> <span class="pre">index]-[exclusive</span> <span class="pre">upper</span> <span class="pre">index]</span></code>. As with
+<code class="docutils literal notranslate"><span class="pre">--names</span></code>, this flag can be specified multiple times. See <a class="reference internal" href="#filtering-to-specific-parameter-sets"><span class="std std-ref">Filtering to specific parameter sets</span></a> above.</p>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>some_experiment_name<span class="w"> </span>-p<span class="w"> </span>my_params<span class="w"> </span>--indices<span class="w"> </span><span class="m">0</span>-2<span class="w"> </span>--indices<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+</section>
+<section id="global-arument-set-indices-global-indices">
+<h3>Global arument set indices (<code class="docutils literal notranslate"><span class="pre">--global-indices</span></code>)<a class="headerlink" href="#global-arument-set-indices-global-indices" title="Link to this heading"></a></h3>
+<p>Run the experiment with only argsets with the specified indices given with this flag <strong>out of
+the total list of args from all specified parameters files</strong>. Indices can either be specified
+as individual numbers or as ranges in the format <code class="code docutils literal notranslate"><span class="pre">[inclusive</span> <span class="pre">lower</span> <span class="pre">index]-[exclusive</span>
+<span class="pre">upper</span> <span class="pre">index]</span></code>. As with <code class="docutils literal notranslate"><span class="pre">--names</span></code>, this flag can be specified multiple times. See
+<a class="reference internal" href="#filtering-to-specific-parameter-sets"><span class="std std-ref">Filtering to specific parameter sets</span></a> above.</p>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>some_experiment_name<span class="w"> </span>-p<span class="w"> </span>my_params<span class="w"> </span>--global-indices<span class="w"> </span><span class="m">0</span>-2<span class="w"> </span>--global-indices<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+</section>
+<section id="parallel-parallel">
+<h3>Parallel (<code class="docutils literal notranslate"><span class="pre">--parallel</span></code>)<a class="headerlink" href="#parallel-parallel" title="Link to this heading"></a></h3>
+<p>Runs the experiment in parallel across the specified number of processes. This automatically divides
+up the arguments into a roughly even number per process, so each process only runs the experiment
+with those argsets. After each process completes, the full experiment is run again, but ideally all
+necessary data is already cached. See <a class="reference internal" href="#parallel-runs"><span class="std std-ref">Parallel runs</span></a>.</p>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>some_experiment_name<span class="w"> </span>-p<span class="w"> </span>my_params<span class="w"> </span>--parallel<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+</section>
+<section id="parallel-mode-parallel-safe">
+<h3>Parallel mode (<code class="docutils literal notranslate"><span class="pre">--parallel-safe</span></code>)<a class="headerlink" href="#parallel-mode-parallel-safe" title="Link to this heading"></a></h3>
+<p>Suppresses writing to the experiment store and output report while still running and caching
+results. This could in theory be used for writing your own paralleliztion, but be warned that
+the actual internal parallelization handles file locks appropriately, while this flag does not.
+See <a class="reference internal" href="#parallel-runs"><span class="std std-ref">Parallel runs</span></a>.</p>
+</section>
+<section id="suppress-logging-no-log">
+<h3>Suppress logging (<code class="docutils literal notranslate"><span class="pre">--no-log</span></code>)<a class="headerlink" href="#suppress-logging-no-log" title="Link to this heading"></a></h3>
+<p>Specifying this flag will disable writing a console log file to the <code class="docutils literal notranslate"><span class="pre">logs/</span></code> directory.</p>
+</section>
+<section id="suppress-report-generation-no-report">
+<h3>Suppress report generation (<code class="docutils literal notranslate"><span class="pre">--no-report</span></code>)<a class="headerlink" href="#suppress-report-generation-no-report" title="Link to this heading"></a></h3>
+<p>Specifying this flag will disable the output report generation at the end of the
+experiment.</p>
+</section>
+<section id="overwrite-cache-overwrite">
+<h3>Overwrite cache (<code class="docutils literal notranslate"><span class="pre">--overwrite</span></code>)<a class="headerlink" href="#overwrite-cache-overwrite" title="Link to this heading"></a></h3>
+<p>Specifying this flag ignores any existing cached data and will force all computation to run,
+overwriting all data. See <a class="reference internal" href="#overwriting-cached-data"><span class="std std-ref">Overwriting cached data (--overwrite, --overwrite-stage)</span></a>.</p>
+</section>
+<section id="overwrite-cache-for-stage-overwrite-stage">
+<h3>Overwrite cache for stage (<code class="docutils literal notranslate"><span class="pre">--overwrite-stage</span></code>)<a class="headerlink" href="#overwrite-cache-for-stage-overwrite-stage" title="Link to this heading"></a></h3>
+<p>Ignore only the cached outputs for the specified stages. You can specify this flag multiple
+times to ignore the cache for several stages. Note that any later computations are not automatically
+also overwritten, so take care with nondeterministic outputs in the middle of an experiment.
+See <a class="reference internal" href="#overwriting-cached-data"><span class="std std-ref">Overwriting cached data (--overwrite, --overwrite-stage)</span></a>.</p>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>some_experiment_name<span class="w"> </span>-p<span class="w"> </span>my_params<span class="w"> </span>--overwrite-stage<span class="w"> </span>train_model<span class="w"> </span>--overwrite-stage<span class="w"> </span>test_model
+</pre></div>
+</div>
+</section>
+<section id="full-store-s-store-full">
+<h3>Full store (<code class="docutils literal notranslate"><span class="pre">-s</span></code>, <code class="docutils literal notranslate"><span class="pre">--store-full</span></code>)<a class="headerlink" href="#full-store-s-store-full" title="Link to this heading"></a></h3>
+<p>Keep a full copy of all cached data, environment information, log, and output report from an
+experiment run in a run-specific folder, determined by the <code class="docutils literal notranslate"><span class="pre">run_path</span></code> in the configuration.
+See <a class="reference internal" href="#full-stores"><span class="std std-ref">Full stores (--store-full, --dry-cache)</span></a>.</p>
+</section>
+<section id="cache-directory-c-cache">
+<h3>Cache directory (<code class="docutils literal notranslate"><span class="pre">-c</span></code>, <code class="docutils literal notranslate"><span class="pre">--cache</span></code>)<a class="headerlink" href="#cache-directory-c-cache" title="Link to this heading"></a></h3>
+<p>Specify what directory to use for reading and writing cached data, if it differs from the
+configuration value. This is useful if using somebody else’s cached run. See <a class="reference internal" href="#caching-controls"><span class="std std-ref">Caching controls</span></a>.</p>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>some_experiment_name<span class="w"> </span>-p<span class="w"> </span>my_params<span class="w"> </span>--cache<span class="w"> </span>data/runs/some_specific_run_foldre<span class="w"> </span>--dry-cache
+</pre></div>
+</div>
+</section>
+<section id="force-lazy-caching-lazy">
+<h3>Force lazy caching (<code class="docutils literal notranslate"><span class="pre">--lazy</span></code>)<a class="headerlink" href="#force-lazy-caching-lazy" title="Link to this heading"></a></h3>
+<p>Treat all stage outputs as <code class="docutils literal notranslate"><span class="pre">Lazy</span></code> objects. Pickle cachers will be
+injected for any outputs that have no cacher specified. See <a class="reference internal" href="#caching-controls"><span class="std std-ref">Caching controls</span></a>.</p>
+</section>
+<section id="force-no-lazy-caching-ignore-lazy">
+<h3>Force no lazy caching (<code class="docutils literal notranslate"><span class="pre">--ignore-lazy</span></code>)<a class="headerlink" href="#force-no-lazy-caching-ignore-lazy" title="Link to this heading"></a></h3>
+<p>Treat lazy outputs like regular outputs, keeping them in memory instead.
+See <a class="reference internal" href="#caching-controls"><span class="std std-ref">Caching controls</span></a>.</p>
+</section>
+<section id="include-debug-logs-v-verbose">
+<h3>Include debug logs (<code class="docutils literal notranslate"><span class="pre">-v</span></code>, <code class="docutils literal notranslate"><span class="pre">--verbose</span></code>)<a class="headerlink" href="#include-debug-logs-v-verbose" title="Link to this heading"></a></h3>
+<p>Include debug messages in the output logs if specified.</p>
+</section>
+<section id="progress-bars-progress">
+<h3>Progress bars (<code class="docutils literal notranslate"><span class="pre">--progress</span></code>)<a class="headerlink" href="#progress-bars-progress" title="Link to this heading"></a></h3>
+<p>Output fancy rich progress bars for every record and overall experiment execution. Note that if you have
+code using TQDM progress bars, this can sometimes conflict and cause weird formatting issues, which is why
+it’s not enabled by default.</p>
+</section>
+<section id="only-print-experiment-map-map">
+<h3>Only print experiment map (<code class="docutils literal notranslate"><span class="pre">--map</span></code>)<a class="headerlink" href="#only-print-experiment-map-map" title="Link to this heading"></a></h3>
+<p>Specifying this flag <strong>only runs the pre-mapping phase</strong> of an experiment and then
+exits, printing out a summary of all records, stages, and artifacts with their respective
+cache statuses. This is useful for determining (before actually running) whether an
+experiment has everything cached or not.</p>
+<p>Note that if you run this with <code class="docutils literal notranslate"><span class="pre">--verbose</span></code>, it will also print out the exact set of
+stages it plans to execute in DAG model.</p>
+<p>See <a class="reference internal" href="#getting-experiment-dag-and-parameter-info"><span class="std std-ref">Getting Experiment DAG and Parameter Info</span></a> for more info.</p>
+</section>
+<section id="only-print-experiment-hashes-and-names-hashes">
+<h3>Only print experiment hashes and names (<code class="docutils literal notranslate"><span class="pre">--hashes</span></code>)<a class="headerlink" href="#only-print-experiment-hashes-and-names-hashes" title="Link to this heading"></a></h3>
+<p>Prints out only the parameter set hashes for a run, followed by a space, followed by the
+parameter set name.</p>
+<p>See <a class="reference internal" href="#getting-experiment-dag-and-parameter-info"><span class="std std-ref">Getting Experiment DAG and Parameter Info</span></a> for more info.</p>
+</section>
+<section id="only-print-parameter-set-contents-print-params">
+<h3>Only print parameter set contents (<code class="docutils literal notranslate"><span class="pre">--print-params</span></code>)<a class="headerlink" href="#only-print-parameter-set-contents-print-params" title="Link to this heading"></a></h3>
+<p>When specified only as a flag, will print out the JSON of each individual
+parameter set involved in a run. Can be given a specific name of a parameter set
+in that run to print out just that set, or the unique prefix of any hash of any
+parameter set in the parameter registry (any previously used parameter set from
+any run) to print out that specific set.</p>
+<p>See <a class="reference internal" href="#getting-experiment-dag-and-parameter-info"><span class="std std-ref">Getting Experiment DAG and Parameter Info</span></a> for more info.</p>
+</section>
+<section id="only-print-artifact-cache-paths-paths">
+<h3>Only print artifact cache paths (<code class="docutils literal notranslate"><span class="pre">--paths</span></code>)<a class="headerlink" href="#only-print-artifact-cache-paths-paths" title="Link to this heading"></a></h3>
+<p>Only print out the expected cache paths of any artifacts involved in an
+experiment run.</p>
+<p>See <a class="reference internal" href="#getting-experiment-dag-and-parameter-info"><span class="std std-ref">Getting Experiment DAG and Parameter Info</span></a> for more info.</p>
+</section>
+<section id="run-experiment-purely-linearly-instead-with-dag-no-dag">
+<h3>Run experiment purely linearly instead with DAG (<code class="docutils literal notranslate"><span class="pre">--no-dag</span></code>)<a class="headerlink" href="#run-experiment-purely-linearly-instead-with-dag-no-dag" title="Link to this heading"></a></h3>
+<p>To disable the DAG-based execution of an experiment, specify <code class="docutils literal notranslate"><span class="pre">-no-dag</span></code>. When
+running an experiment normally (in DAG mode), there is an experiment pre-mapping
+step that steps through your entire experiment and executes only the decorator portion
+of each stage, in order to map out what artifacts are inputs/outputs, which ones
+are already cached, and what stages actually need to execute in order to produce
+any final leaf artifacts. In some cases either with weird stage setups, or non-stage
+functions that take a long time to run or have side-effects, use <code class="docutils literal notranslate"><span class="pre">--no-dag</span></code> to
+eliminate this pre-mapping step and simply execute all the stages linearly (short-circuiting
+only based on cache status rather than map status.)</p>
+<p>Note that progress bars from <code class="docutils literal notranslate"><span class="pre">--progress</span></code> won’t work in <code class="docutils literal notranslate"><span class="pre">--no-dag</span></code> mode.</p>
+</section>
+<section id="suppress-console-log-output-quiet">
+<h3>Suppress console log output (<code class="docutils literal notranslate"><span class="pre">--quiet</span></code>)<a class="headerlink" href="#suppress-console-log-output-quiet" title="Link to this heading"></a></h3>
+<p>Make the output a little less busy and don’t include logging messages. Note that
+this will still render the progress bars, unless you also specify
+<code class="docutils literal notranslate"><span class="pre">--no-dag</span></code>.</p>
+</section>
+<section id="suppress-terminal-colors-in-case-of-unrecognized-non-support-no-color">
+<h3>Suppress terminal colors in case of unrecognized non-support (<code class="docutils literal notranslate"><span class="pre">--no-color</span></code>)<a class="headerlink" href="#suppress-terminal-colors-in-case-of-unrecognized-non-support-no-color" title="Link to this heading"></a></h3>
+<p>Not all terminals support color well, and the output is full of fun colors from
+Rich. Suppress them with this flag.</p>
+</section>
+<section id="suppress-rich-formatting-of-logging-plain">
+<h3>Suppress rich formatting of logging (<code class="docutils literal notranslate"><span class="pre">--plain</span></code>)<a class="headerlink" href="#suppress-rich-formatting-of-logging-plain" title="Link to this heading"></a></h3>
+<p>Turn off using Rich logging formatter. The logs output to the terminal will look exactly
+as they’re written into the log files.</p>
+</section>
+<section id="suppress-all-file-output-dry">
+<h3>Suppress all file output (<code class="docutils literal notranslate"><span class="pre">--dry</span></code>)<a class="headerlink" href="#suppress-all-file-output-dry" title="Link to this heading"></a></h3>
+<p>Runs the experiment without outputting or altering any files, including logs, experiment store,
+parameter registry, and cached data.</p>
+</section>
+<section id="suppress-writing-to-cache-dry-cache">
+<h3>Suppress writing to cache (<code class="docutils literal notranslate"><span class="pre">--dry-cache</span></code>)<a class="headerlink" href="#suppress-writing-to-cache-dry-cache" title="Link to this heading"></a></h3>
+<p>Allows reading from the cache but will not write any cache files. This is useful in combination with
+a non-default cache directory if reading somebody else’s cached run. See <a class="reference internal" href="#caching-controls"><span class="std std-ref">Caching controls</span></a>.</p>
+</section>
+<section id="include-errors-in-log-files-log-errors">
+<h3>Include errors in log files (<code class="docutils literal notranslate"><span class="pre">--log-errors</span></code>)<a class="headerlink" href="#include-errors-in-log-files-log-errors" title="Link to this heading"></a></h3>
+<p>Specifying this will record any errors and stack traces in the output log files by redirectring
+STDERR. Note that some libraries use STDERR for non-error messages, such as TQDM’s progress bars.
+(In some cases this may output a lot of extra lines into the log.)</p>
+</section>
+<section id="custom-cache-name-prefix-n-name">
+<h3>Custom cache name prefix (<code class="docutils literal notranslate"><span class="pre">-n</span></code>, <code class="docutils literal notranslate"><span class="pre">--name</span></code>)<a class="headerlink" href="#custom-cache-name-prefix-n-name" title="Link to this heading"></a></h3>
+<p>Give the cached values an explicit prefix as opposed to the experiment name.</p>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>some_experiment_name<span class="w"> </span>-p<span class="w"> </span>my_params<span class="w"> </span>--name<span class="w"> </span>final_run
+</pre></div>
+</div>
+<p>The above will output cache filenames starting in <code class="docutils literal notranslate"><span class="pre">final_run_[ARGHASH]...</span></code> rather than
+<code class="docutils literal notranslate"><span class="pre">some_experiment_name_[ARGHASH]</span></code>. This can be useful for tracking specific runs without
+using <code class="docutils literal notranslate"><span class="pre">--full-store</span></code>.</p>
+</section>
+<section id="experiment-run-notes-notes">
+<h3>Experiment run notes (<code class="docutils literal notranslate"><span class="pre">--notes</span></code>)<a class="headerlink" href="#experiment-run-notes-notes" title="Link to this heading"></a></h3>
+<p>Include notes in the run report for an experiment run.</p>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>some_experiment_name<span class="w"> </span>-p<span class="w"> </span>my_params<span class="w"> </span>--notes<span class="w"> </span><span class="s2">&quot;A simple test run.&quot;</span>
+</pre></div>
+</div>
+<p>Alternatively use a system text editor to enter notes:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>experiment<span class="w"> </span>some_experiment_name<span class="w"> </span>-p<span class="w"> </span>my_params<span class="w"> </span>--notes
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="#experiment-run-notes"><span class="std std-ref">Experiment run notes</span></a>.</p>
+</section>
+<section id="export-experiment-in-docker-container-docker">
+<h3>Export experiment in docker container (<code class="docutils literal notranslate"><span class="pre">--docker</span></code>)<a class="headerlink" href="#export-experiment-in-docker-container-docker" title="Link to this heading"></a></h3>
+<p>After the experiment completes, build a docker image with a complete copy of the current
+codebase, all data from the experiment run, and the output notebook. Assuming the default
+dockerfile that is created when running <code class="docutils literal notranslate"><span class="pre">curifactory</span> <span class="pre">init</span></code>, the resulting image, when
+run, hosts a file server with the data cache as well as the run notebook.</p>
+<p>Note that a wheel of Curifactory will need to be built, placed in the docker folder and referenced in the
+dockerfile in order for the notebook to run correctly. (This will be addressed in a later version.)</p>
+</section>
+<section id="export-experiment-explorer-as-a-jupyter-notebook-notebook">
+<h3>Export experiment explorer as a jupyter notebook (<code class="docutils literal notranslate"><span class="pre">--notebook</span></code>)<a class="headerlink" href="#export-experiment-explorer-as-a-jupyter-notebook-notebook" title="Link to this heading"></a></h3>
+<p>After the experiment completes, write a jupyter notebook with information about the run and
+basic template code to load and explore the cached data.</p>
+<figure class="align-center" id="id5">
+<img alt="../_images/example_notebook.png" src="../_images/example_notebook.png" />
+<figcaption>
+<p><span class="caption-text">An example output notebook generated after running the experiment.</span><a class="headerlink" href="#id5" title="Link to this image"></a></p>
+</figcaption>
+</figure>
+<p>This works by writing the code to re-run the experiment with the same
+parameters and experiment name, meaning all relevant data should already be cached.
+This results in a set of records in memory that should mirror the previous run, allowing
+live exploration of the states.</p>
+<p>Note that this requires an environment with <code class="docutils literal notranslate"><span class="pre">ipynb-py-convert</span></code> accessible from the command line,
+which should come with any jupyter installation.</p>
+</section>
+<section id="serve-html-reports-on-a-specified-port-and-host-port-host">
+<h3>Serve HTML reports on a specified port and host (<code class="docutils literal notranslate"><span class="pre">--port</span></code>, <code class="docutils literal notranslate"><span class="pre">--host</span></code>)<a class="headerlink" href="#serve-html-reports-on-a-specified-port-and-host-port-host" title="Link to this heading"></a></h3>
+<p>These flags only applies to the <code class="docutils literal notranslate"><span class="pre">experiment</span> <span class="pre">reports</span></code> command, specifying which port to
+serve the HTML reports on and what addresses to accept connectiosn from. See
+<a class="reference internal" href="#hosting-html-reports"><span class="std std-ref">Hosting HTML reports</span></a>.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="config.html" class="btn btn-neutral float-left" title="Configuration and directory structure" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="example.html" class="btn btn-neutral float-right" title="Example Experiment" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, UT Battelle, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+</body>
+</html>
