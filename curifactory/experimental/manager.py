@@ -310,6 +310,7 @@ class Manager:
 
     def import_pipelines_from_module(self, module_str: str):
         # try to load the module
+        self.logger.debug(f"Attempting to import {module_str}")
         module = self.quietly_import_module(module_str)
         remainder = None
         while module is None:
@@ -363,6 +364,9 @@ class Manager:
             building_module_str = ".".join(module_pieces[-i:])
             self.pipeline_ref_names[f"{building_module_str}.{attr_name}"] = pipeline
             self.pipeline_ref_names[f"{building_module_str}.{pipeline.name}"] = pipeline
+            self.logger.debug(
+                f"Adding pipeline {pipeline.name} at {building_module_str}.{pipeline.name}"
+            )
 
     def divide_reference_parts(self, ref_str: str) -> dict[str, str]:
         parts = {"module": None, "pipeline": None, "artifact_filter": None}

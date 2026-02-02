@@ -3,6 +3,7 @@
 # https://stackoverflow.com/questions/4042452/display-help-message-with-python-argparse-when-script-is-called-without-any-argu
 
 import argparse
+import json
 import logging
 import os
 from dataclasses import MISSING, fields
@@ -33,6 +34,11 @@ def main():  # noqa: C901
 
     subparsers = parser.add_subparsers(help="Commands:", dest="command")
 
+    conf_parser = subparsers.add_parser(
+        "config", help="View/edit curifactory configuration"
+    )
+    conf_parser.add_argument("--debug", "--verbose", action="store_true", dest="debug")
+
     ls_parser = subparsers.add_parser("ls", help="List pipelines")
     ls_parser.add_argument("thing_to_list", nargs="?")
     ls_parser.add_argument(
@@ -45,6 +51,7 @@ def main():  # noqa: C901
     ls_parser.add_argument(
         "--paths", dest="list_paths", action="store_true", help="List artifact paths"
     )
+    ls_parser.add_argument("--debug", "--verbose", action="store_true", dest="debug")
 
     run_parser = subparsers.add_parser("run", help="Run an pipeline", add_help=False)
     run_parser.add_argument("pipeline").completer = completer_pipeline
@@ -338,6 +345,10 @@ def main():  # noqa: C901
     #         import subprocess
     #         subprocess.run(["/usr/bin/kitty", "icat"], input=dot.pipe(format="kitty"))
 
+    elif parsed.command == "config":
+        manager = cf.get_manager()
+        print(json.dumps(manager.config, indent=4))
+
     elif parsed.command == "map":
         manager = cf.get_manager()
         manager.load_default_pipeline_imports()
@@ -498,6 +509,11 @@ def main():  # noqa: C901
 
     elif parsed.command == "ls":
         manager = cf.get_manager()
+        if parsed.debug:
+            print("Yep it's debug")
+            # logging.getLogger("curifactory").setLevel(logging.DEBUG)
+            manager.logger.setLevel(logging.DEBUG)
+            manager.init_root_logging()
 
         if not parsed.list_runs:
             manager.load_default_pipeline_imports()
@@ -551,7 +567,7 @@ def main():  # noqa: C901
                 else:
                     print(
                         artifact.name.ljust(20),
-                        f"".ljust(40),
+                        "".ljust(40),
                         f"(context: {artifact.context_name})".ljust(40),
                     )
         else:
