@@ -502,6 +502,8 @@ class Artifact:
         if artifact_row.is_list:
             artifact = cf.artifact.ArtifactList(name=artifact_row["name"])
             prepopulated_stage = artifact.compute
+        elif artifact_row.artifact_type == "DBArtifact":
+            artifact = cf.artifact.DBArtifact(name=artifact_row["name"])
         else:
             artifact = cf.artifact.Artifact(name=artifact_row["name"])
             # artifact.hash_str = artifact_row.hash

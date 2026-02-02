@@ -504,9 +504,12 @@ class TrackingDBTableCacher(DBTableCacher):
 
         # ensure primary keys
         if self.extra_metadata["result"] == "created":
-            db.sql(
-                f"ALTER TABLE {self.get_table_name()} ADD PRIMARY KEY ({id_column_type_list})"
-            )
+            query = f"ALTER TABLE {self.get_table_name()} ADD PRIMARY KEY ({id_column_list})"
+            try:
+                db.sql(query)
+            except duckdb.duckdb.ParserException as e:
+                e.add_note(f"Was trying to run query: {query}")
+                raise
 
         # add a metadata row
         stage_id = self.artifact.compute.db_id

@@ -521,6 +521,7 @@ class Manager:
                     name VARCHAR,
                     hash VARCHAR,
                     generated_time TIMESTAMP,
+                    artifact_type VARCHAR,
                     cacher_type VARCHAR,
                     cacher_module VARCHAR,
                     cacher_params JSON,
@@ -643,13 +644,14 @@ class Manager:
                         name,
                         hash,
                         generated_time,
+                        artifact_type,
                         cacher_type,
                         cacher_module,
                         cacher_params,
                         repr,
                         is_list
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     artifact_id,
@@ -658,6 +660,7 @@ class Manager:
                     artifact.name,
                     artifact.compute_hash()[0],
                     gen_time,
+                    artifact.__class__.__name__,
                     cacher_type,
                     cacher_module,
                     cacher_params,
