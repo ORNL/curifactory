@@ -127,6 +127,8 @@ def main():  # noqa: C901
 
         search = parsed.pipeline
         resolved = manager.resolve_reference(search)
+        # print(manager.imported_module_names)
+        print(resolved)
 
         if "pipeline_instance" in resolved:
             pipeline = resolved["pipeline_instance"]
@@ -339,6 +341,7 @@ def main():  # noqa: C901
     elif parsed.command == "map":
         manager = cf.get_manager()
         manager.load_default_pipeline_imports()
+        manager.import_pipelines_from_module(parsed.pipeline)
 
         search = parsed.pipeline
         resolved = manager.resolve_reference(search)
@@ -536,14 +539,21 @@ def main():  # noqa: C901
                     f" (stage: {artifact.compute.name})".ljust(40),
                     f"(context: {artifact.context_name})".ljust(40),
                 )
-        elif "reference_instance" in resolved:
+        elif "reference_instance" in resolved and search != "":
             print(f"Artifacts in reference {resolved["reference_instance"].name}:")
             for artifact in resolved["reference_instance"].artifacts:
-                print(
-                    artifact.name.ljust(20),
-                    f" (stage: {artifact.compute.name})".ljust(40),
-                    f"(context: {artifact.context_name})".ljust(40),
-                )
+                if artifact.compute is not None:
+                    print(
+                        artifact.name.ljust(20),
+                        f" (stage: {artifact.compute.name})".ljust(40),
+                        f"(context: {artifact.context_name})".ljust(40),
+                    )
+                else:
+                    print(
+                        artifact.name.ljust(20),
+                        f"".ljust(40),
+                        f"(context: {artifact.context_name})".ljust(40),
+                    )
         else:
             if search == "":
                 print("Pipelines:")

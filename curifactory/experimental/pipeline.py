@@ -481,10 +481,20 @@ def pipeline(function):  # noqa: C901
         pipeline_outputs = cf.artifact.ArtifactList("outputs")
         # pipeline_outputs = cf.artifact.ArtifactFilter(filter_string=f"{self.name}.outputs") # ???
         if type(outputs) is tuple:
+            # print("IT's A TUPLE")
             for output in outputs:
+                # print(output)
                 if isinstance(output, dict):
                     for key, value in output.items():
                         setattr(self, key, value)
+                elif isinstance(output, list):
+                    # print("it's a LIST")
+                    for sub_output in output:
+                        pipeline_outputs.append(sub_output)
+                elif isinstance(output, cf.artifact.ArtifactList):
+                    # print("ITS AN ALIST")
+                    for sub_output in output:
+                        pipeline_outputs.append(sub_output)
                 else:
                     pipeline_outputs.append(output)
                     # pipeline_outputs.artifacts.append(output)
@@ -623,6 +633,9 @@ class PipelineFromRef(Pipeline):
                 if isinstance(output, dict):
                     for key, value in output.items():
                         setattr(pipeline, key, value)
+                # elif isinstance(output, cf.artifact.ArtifactList):
+                #     for sub_output in output:
+                #         pipeline_outputs.append(sub_output)
                 else:
                     pipeline_outputs.append(output)
         else:

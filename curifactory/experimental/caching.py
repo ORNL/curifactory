@@ -369,7 +369,7 @@ class DBCacher(Cacheable):
         if self.connection_str is None:
             self.connection_str = self.get_path()
         cf.get_manager().logger.info(f"Loading db at {self.connection_str}...")
-        db = duckdb.connect(self.connection_str, **self.kwargs)
+        db = duckdb.connect(self.connection_str)
         for extension in self.extensions:
             try:
                 db.load_extension(extension)

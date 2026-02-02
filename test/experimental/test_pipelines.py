@@ -130,3 +130,29 @@ def test_pipeline_of_pipelines_first_stage_consolidation(test_manager):
     p3.run()
     assert p3.outputs[0].obj == 9
     assert p3.outputs[1].obj == 11
+
+
+def test_pipeline_that_returns_alists(test_manager):
+    """A pipeline that returns a tuple of .outputs should work."""
+
+    @stage(Artifact("things1"), Artifact("things2"))
+    def do_multiple_things(a: int = 4):
+        return a, a + 5
+
+    @stage(Artifact("things3"), Artifact("things4"))
+    def do_more_things(b: int = 6):
+        return b, b + 6
+
+    @pipeline
+    def things(a, b):
+        stage1 = do_multiple_things(a)
+        stage2 = do_more_things(b)
+
+        return stage1.outputs, stage2.outputs
+
+    t = things("t", 4, 5)
+    t.run()
+    assert t.artifacts.things1[0].obj == 4
+    assert t.artifacts.things2[0].obj == 9
+    assert t.artifacts.things3[0].obj == 5
+    assert t.artifacts.things4[0].obj == 11
