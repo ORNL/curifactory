@@ -69,7 +69,9 @@ html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 
 # https://sphinx-rtd-theme.readthedocs.io/en/stable/configuring.html
-html_theme_options = {"collapse_navigation": False}
+html_theme_options = {
+    # 'collapse_navigation': False
+}
 
 # html_context = {
 #     "css_files": ["_static/theme_overrides.css"]  # override wide tables in RTD theme

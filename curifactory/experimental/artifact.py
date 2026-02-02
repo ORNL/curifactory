@@ -49,10 +49,15 @@ class Artifact:
     """A boolean representing whether the compute stage that outputs this artifact has run or not."""
     compute = pointer_based_property("compute")
     """The ``Stage`` object that outputs this artifact."""
+
     hash_str = pointer_based_property("hash_str")
     """The string of the numerical hash encoding the parameters for the stage that produces this artifact."""
     hash_debug = pointer_based_property("hash_debug")
     """A dictionary of parameters/parameter values that results in the hash for this artifact."""
+
+    hash_str_val = pointer_based_property("hash_str_val")
+    hash_debug_val = pointer_based_property("hash_debug_val")
+
     previous_context_names = pointer_based_property("previous_context_names")
     """Any previous pipeline names through which this artifact has been passed. When a pipeline is passed
     into a new pipeline, or a previous pipeline's artifact is copied into a new one, that previous pipeline
@@ -99,6 +104,8 @@ class Artifact:
         # self._hash_debug = None
         self.__hash_str = None
         self.__hash_debug = None
+        self._hash_str_val = None
+        self._hash_debug_val = None
 
         self._compute: cf.stage.Stage = None
 
@@ -144,9 +151,10 @@ class Artifact:
     def compute_hash(self):
         if self.compute is None:
             return "", {}
-        return self.compute.compute_hash()
-        # self.hash_str, self.hash_debug = self.compute.compute_hash()
-        # return self.hash_str, self.hash_debug
+        # return self.compute.compute_hash()
+        # self.hash_str_val, self.hash_debug_val = self.compute.compute_hash()
+        self.hash_str, self.hash_debug = self.compute.compute_hash()
+        return self.hash_str_val, self.hash_debug_val
 
     def check_shared_artifact(self, other_artifact):
         """Two artifacts are considered equivalent (can be shared) if their hash and name is the same"""
@@ -205,7 +213,8 @@ class Artifact:
     def reset_map(self):
         self.map_status = None
         self.cache_status = None
-        self.compute.reset_map()
+        if self.compute is not None:
+            self.compute.reset_map()
 
     def map(self, mapped: dict = None, need: bool = True, source=None):
         if mapped is None:
@@ -259,7 +268,7 @@ class Artifact:
         # if this mapping was requested from the compute (likely due to another
         # output of that stage), don't get stuck in a recurisve loop, just
         # return
-        if self.compute == source:
+        if self.compute == source or self.compute is None:
             return mapped
 
         # recurse down into the stage map
@@ -337,11 +346,23 @@ class Artifact:
 
     @property
     def _hash_str(self):
-        return self.compute_hash()[0]
+        if self.hash_str_val is None:
+            self.compute_hash()
+        return self.hash_str_val
+
+    @_hash_str.setter
+    def _hash_str(self, value):
+        self.hash_str_val = value
 
     @property
     def _hash_debug(self):
-        return self.compute_hash()[1]
+        if self.hash_debug_val is None:
+            self.compute_hash()
+        return self.hash_debug_val
+
+    @_hash_debug.setter
+    def _hash_debug(self, value):
+        self.hash_debug_val = value
 
     @property
     def artifacts(self):
@@ -896,6 +917,6 @@ class DBArtifact(Artifact):
             hash_hex = hashlib.md5(f"{key}{value}".encode()).hexdigest()
             hash_total += int(hash_hex, 16)
         hash_str = f"{hash_total:x}"
-        # self.hash_str = hash_str
-        # self.hash_debug = hash_values
+        self.hash_str = hash_str
+        self.hash_debug = hash_values
         return hash_str, hash_values
