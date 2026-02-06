@@ -22,6 +22,23 @@ def completer_pipeline(**kwargs) -> list[str]:
     return []
 
 
+def print_load_failures(self, debug=False):
+    manager = cf.get_manager()
+    if len(manager.failed_imports) == 0:
+        return
+
+    console = Console()
+    out_str = ""
+    for failed_module in manager.failed_imports:
+        exception, stack = manager.failed_imports[failed_module]
+        out_str += f'[red]Pipeline module "{failed_module}" failed on import: [/red]{type(exception).__name__}: {exception}\n'
+        # out_str += f"Pipeline module \"{failed_module}\" failed on import: {type(exception).__name__}: {exception}\n"
+        if debug:
+            out_str += stack + "\n"
+        # out_str += "\n".join(stack)
+    console.print(out_str)
+
+
 def main():  # noqa: C901
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument(
@@ -129,8 +146,8 @@ def main():  # noqa: C901
 
         manager = cf.get_manager()
         manager.load_default_pipeline_imports()
-        # remainder = manager.import_pipelines_from_module(parsed.pipeline)
         manager.import_pipelines_from_module(parsed.pipeline)
+        print_load_failures(parsed.debug)
 
         search = parsed.pipeline
         resolved = manager.resolve_reference(search)
@@ -510,13 +527,14 @@ def main():  # noqa: C901
     elif parsed.command == "ls":
         manager = cf.get_manager()
         if parsed.debug:
-            print("Yep it's debug")
             # logging.getLogger("curifactory").setLevel(logging.DEBUG)
             manager.logger.setLevel(logging.DEBUG)
             manager.init_root_logging()
 
         if not parsed.list_runs:
             manager.load_default_pipeline_imports()
+            manager.import_pipelines_from_module(parsed.thing_to_list)
+            print_load_failures(parsed.debug)
 
         search = parsed.thing_to_list
         if search is None:

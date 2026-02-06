@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 import threading
+import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -59,6 +60,8 @@ class Manager:
         """Dictionary of possible names/references to use to refer to specific pipelines."""
         self.imported_module_names = []
         """List of module strings that have been successfully imported and parsed for pipelines."""
+        self.failed_imports = {}
+        """Dictionary of import module strings and tuples of the exceptions that were raised and tracebacks."""
 
         # ---- configuration ----
         self.database_path = database_path
@@ -308,10 +311,14 @@ class Manager:
                 self.import_pipelines_from_module(module)
         self._default_imports = True
 
-    def import_pipelines_from_module(self, module_str: str):
+    def import_pipelines_from_module(self, module_str: str) -> str:
         # try to load the module
         self.logger.debug(f"Attempting to import {module_str}")
-        module = self.quietly_import_module(module_str)
+        try:
+            module = self.quietly_import_module(module_str)
+        except Exception as e:
+            self.failed_imports[module_str] = (e, traceback.format_exc())
+            return ""
         remainder = None
         while module is None:
             if remainder is None:
@@ -324,7 +331,11 @@ class Manager:
                 return remainder
             # keep going "up" a . to try to find a valid module
             module_str = ".".join(module_str.split(".")[:-1])
-            module = self.quietly_import_module(module_str)
+            try:
+                module = self.quietly_import_module(module_str)
+            except Exception as e:
+                self.failed_imports[module_str] = (e, traceback.format_exc())
+                return ""
 
         self.imported_module_names.append(module_str)
 
@@ -401,10 +412,14 @@ class Manager:
         return parts
 
     def quietly_import_module(self, module_str: str):
+        """Doesn't raise an error if the module in module_str isn't found.
+        (All other exceptions will still raise)"""
         module = None
         try:
             module = importlib.import_module(module_str)
-        except ModuleNotFoundError:
+        except ModuleNotFoundError as e:
+            if not module_str.endswith(e.name):
+                raise
             pass
         return module
 
