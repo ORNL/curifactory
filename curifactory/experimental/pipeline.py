@@ -9,6 +9,7 @@ from typing import Any
 from uuid import UUID
 
 import pandas as pd
+from graphviz import ExecutableNotFound
 
 import curifactory.experimental as cf
 
@@ -125,12 +126,20 @@ class Pipeline:
         if manager.jinja_environment is None:
             manager.load_jinja_env()
 
+        try:
+            map = self.visualize().pipe(format="svg", encoding="utf-8")
+        except ExecutableNotFound:
+            manager.logger.warn(
+                "Graphviz executable not found, pipeline maps may not render"
+            )
+            map = "<p style='color: red' class='error graphviz'>No graphviz exeuctable found, cannot render map.</p>"
+
         template = manager.jinja_environment.get_template(template)
         output = template.render(
             reportables=self.reportables,
             pipeline_name=self.name,
             reference_name=self.reference,
-            map=self.visualize().pipe(format="svg", encoding="utf-8"),
+            map=map,
             parameters=html.escape(json.dumps(self.parameters, indent=2, default=str)),
             pipeline_metadata={
                 "Database ID": self.db_id,
