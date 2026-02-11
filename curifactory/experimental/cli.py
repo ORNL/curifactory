@@ -22,7 +22,7 @@ def completer_pipeline(**kwargs) -> list[str]:
     return []
 
 
-def print_load_failures(self, debug=False):
+def print_load_failures(debug=False):
     manager = cf.get_manager()
     if len(manager.failed_imports) == 0:
         return
@@ -195,7 +195,8 @@ def main():  # noqa: C901
 
         manager = cf.get_manager()
         manager.load_default_pipeline_imports()
-        manager.import_pipelines_from_module(parsed.pipeline)
+        if parsed.pipeline is not None:
+            manager.import_pipelines_from_module(parsed.pipeline)
         print_load_failures(parsed.debug)
 
         search = parsed.pipeline
@@ -585,7 +586,8 @@ def main():  # noqa: C901
 
         if not parsed.list_runs:
             manager.load_default_pipeline_imports()
-            manager.import_pipelines_from_module(parsed.thing_to_list)
+            if parsed.thing_to_list is not None:
+                manager.import_pipelines_from_module(parsed.thing_to_list)
             print_load_failures(parsed.debug)
 
         search = parsed.thing_to_list

@@ -266,7 +266,7 @@ class Manager:
 
             resolutions["reference_names"] = references_df.reference.values.tolist()
             if len(resolutions["reference_names"]) == 1:
-                resolutions["reference_instance"] = cf.pipeline.PipelineFromRef(
+                resolutions["reference_instance"] = cf.PipelineFromRef(
                     resolutions["reference_names"][0]
                 )
 
@@ -345,7 +345,7 @@ class Manager:
         # pipeline classes
         for attr in dir(module):
             value = getattr(module, attr)
-            if isinstance(value, cf.pipeline.Pipeline):
+            if isinstance(value, cf.Pipeline):
                 self.add_pipeline_to_ref_names(module_str, attr, value)
             # check for pipeline types
             elif type(value).__name__ == "PipelineFactoryWrapper":

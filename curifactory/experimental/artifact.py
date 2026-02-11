@@ -536,7 +536,7 @@ class Artifact:
             artifact.cacher = cacher
 
         if not pd.isna(artifact_row.stage_id):
-            stage = cf.stage.Stage.load_from_uuid(
+            stage = cf.Stage.load_from_uuid(
                 artifact_row.stage_id,
                 building_stages,
                 building_artifacts,
@@ -826,7 +826,7 @@ class ArtifactList(Artifact):  # , list):
         if artifacts is None:
             artifacts = []
         self.inner_artifact_list = artifacts
-        self.compute = cf.stage.Stage(
+        self.compute = cf.Stage(
             function=_aggregate_artifact_list,
             args=self.inner_artifact_list,
             kwargs={},

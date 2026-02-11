@@ -2,14 +2,21 @@
 
 from typing import Any
 
-from curifactory.experimental import (
+from curifactory.experimental import (  # pipeline,; stage,
     artifact,
     caching,
     manager,
-    pipeline,
     reporting,
-    stage,
     utils,
+)
+from curifactory.experimental.artifact import Artifact, ArtifactList, DBArtifact
+from curifactory.experimental.pipeline import Pipeline, PipelineFromRef, pipeline
+from curifactory.experimental.stage import (
+    ConfigResolve,
+    OutputArtifactPathResolve,
+    Stage,
+    run_as_stage,
+    stage,
 )
 
 # cache statuses
@@ -56,8 +63,8 @@ def global_config() -> dict[str, Any]:
     return manager.Manager.get_manager().additional_configuration
 
 
-def get_output_path(output_artifact_index: int = 0) -> stage.OutputArtifactPathResolve:
-    return stage.OutputArtifactPathResolve(output_artifact_index)
+def get_output_path(output_artifact_index: int = 0) -> OutputArtifactPathResolve:
+    return OutputArtifactPathResolve(output_artifact_index)
 
 
 # https://stackoverflow.com/questions/880530/can-modules-have-properties-the-same-way-that-objects-can
@@ -67,8 +74,8 @@ def __getattr__(name):
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
-@stage.stage(
-    artifact.Artifact("{prior_artifact.name}", caching.FileReferenceCacher()),
+@stage(
+    Artifact("{prior_artifact.name}", caching.FileReferenceCacher()),
     pass_self=True,
 )
 def convert_artifact_to_path(self, prior_artifact):
@@ -76,9 +83,7 @@ def convert_artifact_to_path(self, prior_artifact):
     return self.artifacts[0].get_path()
 
 
-@stage.stage(
-    artifact.Artifact("path_collection", caching.FileReferenceCacher()), pass_self=True
-)
+@stage(Artifact("path_collection", caching.FileReferenceCacher()), pass_self=True)
 def get_artifact_paths(self, *artifacts):
     artifact_list = self.artifacts
     path_list = []

@@ -343,9 +343,7 @@ class Stage:
         if prepopulated_stage is not None:
             stage = prepopulated_stage
         else:
-            stage = cf.stage.Stage(
-                cf.stage.FunctionStub(stage_row.func_name), [], {}, outputs=[]
-            )
+            stage = Stage(FunctionStub(stage_row.func_name), [], {}, outputs=[])
             stage.from_ref = True
             stage.hash_str = stage_row.hash
             stage.hash_debug = stage_row.hash_details
@@ -457,7 +455,7 @@ class Stage:
             return ("SKIPPED: value is None", None)
 
         # 3. if the parameter is an artifact, use its hash
-        if isinstance(param_value, cf.artifact.Artifact):
+        if isinstance(param_value, cf.Artifact):
             # TODO: artifact needs to track the hash_debug and re-include it here.
             param_value.compute_hash()
             return (
@@ -467,7 +465,7 @@ class Stage:
             )
 
         # 4. if the parameter is a stage (e.g. a stage dependency) use its hash
-        if isinstance(param_value, cf.stage.Stage):
+        if isinstance(param_value, Stage):
             hash_str, hash_debug = param_value.compute_hash()
             # return (f"stage {param_value.name}.hash - '{hash_debug}'", hash_str)
             return ({"stage": param_value.name, "hash": hash_debug}, hash_str)
@@ -969,7 +967,7 @@ def stage(
     return decorator
 
 
-def run(output_names: str | list[str], *inputs):
+def run_as_stage(output_names: str | list[str], *inputs):
     outputs = []
     if isinstance(output_names, str):
         outputs.append(cf.artifact.Artifact(output_names))
