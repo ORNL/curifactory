@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 import logging
+import traceback
 from functools import partial
 from uuid import UUID
 
@@ -280,6 +281,10 @@ class Artifact:
         return mapped
 
     def get(self):
+        # reset error state, because this function is only reached if a new
+        # "get" chain is called
+        cf.get_manager().error_state = False
+
         cf.get_manager().logger.debug(
             f"Looking for artifact {self.contextualized_name} - {self.hash_str}"
         )
@@ -319,7 +324,17 @@ class Artifact:
             return self.obj
         except Exception as e:
             e.add_note(f"Was trying to retrieve artifact {self.name}")
-            raise
+            manager = cf.get_manager()
+            stack_str = traceback.format_exc()
+            manager.record_pipeline_failure(e, stack_str)
+            manager.current_pipeline_run_target = None
+            manager.logger.error(
+                f"Failed to retrieve artifact {self.contextualized_name}"
+            )
+            manager.logger.error(e)
+            manager.logger.error(stack_str)
+            manager.error_state = True
+            return None
 
     @property
     def context_name(self):

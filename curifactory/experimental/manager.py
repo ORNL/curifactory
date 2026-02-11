@@ -144,6 +144,8 @@ class Manager:
         self.current_stage = None
         self.currently_recording: bool = False
 
+        self.error_state: bool = False
+
         self.logging_initialized: bool = False
         self._logger = None
 
@@ -499,6 +501,8 @@ class Manager:
                     start_time TIMESTAMP,
                     end_time TIMESTAMP,
                     succeeded BOOL,
+                    exception VARCHAR,
+                    exception_stack VARCHAR,
                     commit VARCHAR,
                     dirty BOOL,
                     hostname VARCHAR,
@@ -845,8 +849,31 @@ class Manager:
         pipeline.end_timestamp = datetime.now()
         with self.db_connection() as db:
             db.sql(
-                """UPDATE cf_run SET end_time = $endtime, WHERE ID = $id""",
+                """UPDATE cf_run SET end_time = $endtime, succeeded = true, WHERE ID = $id""",
                 params=dict(endtime=pipeline.end_timestamp, id=pipeline.db_id),
+            )
+
+    def record_pipeline_failure(self, exception, stack):
+        if self.current_pipeline_run_target is None:
+            return
+
+        pipeline = self.current_pipeline_run_target
+        pipeline.end_timestamp = datetime.now()
+        exception_text = f"{type(exception).__name__}: {exception}"
+        with self.db_connection() as db:
+            db.sql(
+                """UPDATE cf_run SET
+                    end_time = $endtime,
+                    succeeded = false,
+                    exception = $exception,
+                    exception_stack = $exception_stack,
+                WHERE ID = $id""",
+                params=dict(
+                    endtime=pipeline.end_timestamp,
+                    id=pipeline.db_id,
+                    exception=exception_text,
+                    exception_stack=stack,
+                ),
             )
 
     def db_connection(self):

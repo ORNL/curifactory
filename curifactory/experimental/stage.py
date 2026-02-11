@@ -725,7 +725,11 @@ class Stage:
             )
 
         if isinstance(arg, cf.artifact.Artifact):
+            if cf.get_manager().error_state:
+                return None
             obj = arg.get()
+            if cf.get_manager().error_state:
+                return None
             if record_resolution:
                 cf.get_manager().record_stage_artifact_input(
                     self, arg, arg_index, arg_name
@@ -801,6 +805,8 @@ class Stage:
                 implicit_run = True
                 self.context._implicit_run()
 
+            # TODO: all these cf.get_manager.error_state is a mess, clean up?
+
             # make sure any dependencies have run. # TODO: not sure on order of this
             for dependency in self.dependencies:
                 manager.logger.info(
@@ -809,10 +815,16 @@ class Stage:
                 if isinstance(dependency.outputs, list):
                     for output in dependency.outputs:
                         output.get()
+                        if cf.get_manager().error_state:
+                            return None
                 elif isinstance(dependency.outputs, cf.artifact.Artifact):
                     dependency.outputs.get()
+                    if cf.get_manager().error_state:
+                        return None
                 elif not dependency.computed:
                     dependency()
+                    if cf.get_manager().error_state:
+                        return None
 
             manager.record_stage(self)
 
@@ -825,6 +837,8 @@ class Stage:
                 f"..... Beginning resolution for stage {self.contextualized_name} ....."
             )
             passed_args, passed_kwargs = self.resolve_args(record_resolution=True)
+            if cf.get_manager().error_state:
+                return None
 
             manager.logger.info(
                 f"===== Executing stage {self.contextualized_name} ====="

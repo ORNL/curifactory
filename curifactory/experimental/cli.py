@@ -39,6 +39,43 @@ def print_load_failures(self, debug=False):
     console.print(out_str)
 
 
+def open_duckdb_repl():
+    # https://docs.python.org/3/library/code.html
+    # https://stackoverflow.com/questions/1395913/how-to-drop-into-repl-read-eval-print-loop-from-python-code
+
+    help_str = """[blue]==== Entering python REPL ====[/blue]
+Modules:[purple]
+    duckdb
+    curifactory.experimental as cf
+[/purple]------------------------------
+Local objects:[green]
+    db: duckdb connection to curifactory store.db
+    manager: current curifactory manager
+[/green]------------------------------
+Curifactory duckdb tables:[yellow]
+    cf_run
+    cf_stage
+    cf_artifact
+    cf_run_stage
+    cf_stage_input
+    cf_run_artifact
+[/yellow]------------------------------"""
+    console = Console()
+    console.print(help_str)
+
+    import code
+
+    scope = globals()
+    manager = cf.get_manager()
+    db = manager.db_connection()
+    scope["manager"] = manager
+    scope["db"] = db
+    iconsole = code.InteractiveConsole(locals=scope)
+    iconsole.runsource("import duckdb")
+    iconsole.runsource("import curifactory.experimental as cf")
+    iconsole.interact()
+
+
 def main():  # noqa: C901
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument(
@@ -55,6 +92,18 @@ def main():  # noqa: C901
         "config", help="View/edit curifactory configuration"
     )
     conf_parser.add_argument("--debug", "--verbose", action="store_true", dest="debug")
+
+    db_parser = subparsers.add_parser(
+        "db",
+        help="Run database commands or open python terminal with duckdb database loaded",
+    )
+    # db_parser.add_argument(
+    #     "-h",
+    #     "--help",
+    #     action="store_true",
+    #     dest="show_help",
+    #     help="Show this help message",
+    # )
 
     ls_parser = subparsers.add_parser("ls", help="List pipelines")
     ls_parser.add_argument("thing_to_list", nargs="?")
@@ -365,6 +414,9 @@ def main():  # noqa: C901
     elif parsed.command == "config":
         manager = cf.get_manager()
         print(json.dumps(manager.config, indent=4))
+
+    elif parsed.command == "db":
+        open_duckdb_repl()
 
     elif parsed.command == "map":
         manager = cf.get_manager()
