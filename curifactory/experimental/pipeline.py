@@ -8,6 +8,8 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID
 
+import pandas as pd
+
 import curifactory.experimental as cf
 
 
@@ -602,6 +604,8 @@ class PipelineFromRef(Pipeline):
                 .df()
                 .iloc[0]
             )
+            if pd.isna(pipeline_row.target_id):
+                return
             self.target_artifact_row = (
                 db.sql(
                     f"select * from cf_artifact where id = '{pipeline_row.target_id}'"

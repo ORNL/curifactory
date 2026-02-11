@@ -599,10 +599,11 @@ def main():  # noqa: C901
             + artifact_counts["skipped"]
         )
         stage_total = stage_counts["to_compute"] + stage_counts["skipped"]
-        map_str += f"Artifacts to compute: [bold]{artifact_counts["to_compute"]}[/]/{artifact_total} ({artifact_counts["found_in_cache"]} in cache)\n"
-        map_str += (
-            f"Stages to compute: [bold]{stage_counts["to_compute"]}[/]/{stage_total}"
-        )
+        to_compute = artifact_counts["to_compute"]
+        found_in_cache = artifact_counts["found_in_cache"]
+        stages_to_compute = stage_counts["to_compute"]
+        map_str += f"Artifacts to compute: [bold]{to_compute}[/]/{artifact_total} ({found_in_cache} in cache)\n"
+        map_str += f"Stages to compute: [bold]{stages_to_compute}[/]/{stage_total}"
 
         console.print(map_str)
 
