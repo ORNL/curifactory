@@ -2,7 +2,7 @@ import shutil
 
 import pytest
 
-from curifactory.experimental import db_tables
+from curifactory.experimental import db_migrations, db_tables
 from curifactory.experimental.manager import Manager
 
 
@@ -21,7 +21,7 @@ def base_old_manager(clear_filesystem):
     revert_version = db_tables.SCHEMA_VERSION
     revert_schemas = db_tables.SCHEMAS
     db_tables.SCHEMA_VERSION = 0
-    db_tables.SCHEMAS = db_tables._original_schemas
+    db_tables.SCHEMAS = db_migrations._original_schemas
     manager = Manager.from_config(
         {
             "default_pipeline_modules": ["test.experimental.pipelines.example"],

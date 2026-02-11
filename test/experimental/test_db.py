@@ -45,3 +45,14 @@ def test_migrations_run(base_old_manager):
         assert db_tables.get_schema_version(db) == db_tables.SCHEMA_VERSION
         broken, errors = db_tables.verify_schemas(db)
         assert not broken
+
+
+def test_add_missing_columns_intervention(clear_filesystem, test_manager):
+    """Make sure adding missing columns works"""
+    with test_manager.db_connection() as db:
+        db.sql("ALTER TABLE cf_run DROP COLUMN reference")
+        broken, errors = db_tables.verify_schemas(db)
+        assert broken
+        db_tables.intervention_add_missing_columns(db)
+        broken, errors = db_tables.verify_schemas(db)
+        assert not broken

@@ -110,6 +110,12 @@ def main():  # noqa: C901
         "migrate",
         help="Update database from previous version to current",
     )
+    db_fix_subparser = db_subparsers.add_parser(
+        "fix",
+        help="Apply manual fixes",
+    )
+    for fix in cf.db_tables.FIXES:
+        db_fix_subparser.add_argument(f"--{fix}", action="store_true", dest=fix)
 
     ls_parser = subparsers.add_parser("ls", help="List pipelines")
     ls_parser.add_argument("thing_to_list", nargs="?")
@@ -433,6 +439,12 @@ def main():  # noqa: C901
             cf.get_manager().init_root_logging()
             with cf.get_manager().db_connection() as db:
                 print(cf.db_tables.run_migrations(db))
+        elif parsed.sub_command == "fix":
+            with cf.get_manager().db_connection() as db:
+                for fix in cf.db_tables.FIXES:
+                    if getattr(parsed, fix):
+                        print(f"Running {fix}")
+                        cf.db_tables.FIXES[fix](db)
         else:
             open_duckdb_repl()
 
