@@ -5,6 +5,7 @@ from typing import Any
 from curifactory.experimental import (  # pipeline,; stage,
     artifact,
     caching,
+    db_tables,
     manager,
     reporting,
     utils,

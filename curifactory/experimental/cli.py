@@ -97,13 +97,19 @@ def main():  # noqa: C901
         "db",
         help="Run database commands or open python terminal with duckdb database loaded",
     )
-    # db_parser.add_argument(
-    #     "-h",
-    #     "--help",
-    #     action="store_true",
-    #     dest="show_help",
-    #     help="Show this help message",
-    # )
+    db_subparsers = db_parser.add_subparsers(help="Commands:", dest="sub_command")
+    db_subparsers.add_parser(
+        "version",
+        help="Print schema version",
+    )
+    db_subparsers.add_parser(
+        "verify",
+        help="Check the store table schemas for errors",
+    )
+    db_subparsers.add_parser(
+        "migrate",
+        help="Update database from previous version to current",
+    )
 
     ls_parser = subparsers.add_parser("ls", help="List pipelines")
     ls_parser.add_argument("thing_to_list", nargs="?")
@@ -378,9 +384,8 @@ def main():  # noqa: C901
             # if search_parts["artifact_filter"] is None:
             else:
                 if "artifact" in resolved:
-                    manager.logger.debug(
-                        f"Attempting to get Artifact '{resolved["artifact"].name}'"
-                    )
+                    name = resolved["artifact"].name
+                    manager.logger.debug(f"Attempting to get Artifact '{name}'")
                     resolved["artifact"].get()
                 elif "artifact_list" in resolved:
                     manager.logger.debug(
@@ -417,7 +422,19 @@ def main():  # noqa: C901
         print(json.dumps(manager.config, indent=4))
 
     elif parsed.command == "db":
-        open_duckdb_repl()
+        if parsed.sub_command == "version":
+            with cf.get_manager().db_connection() as db:
+                print(f"Manager DB version: {cf.db_tables.get_schema_version(db)}")
+            print(f"Curifactory DB version: {cf.db_tables.SCHEMA_VERSION}")
+        elif parsed.sub_command == "verify":
+            with cf.get_manager().db_connection() as db:
+                print(cf.db_tables.verify_schemas(db))
+        elif parsed.sub_command == "migrate":
+            cf.get_manager().init_root_logging()
+            with cf.get_manager().db_connection() as db:
+                print(cf.db_tables.run_migrations(db))
+        else:
+            open_duckdb_repl()
 
     elif parsed.command == "map":
         manager = cf.get_manager()
