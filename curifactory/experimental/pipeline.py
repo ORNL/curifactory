@@ -281,7 +281,8 @@ class Pipeline:
         self.outputs.get()
 
         manager.current_pipeline_run = None
-        manager.record_pipeline_run_completion(self)
+        if not manager.error_state:
+            manager.record_pipeline_run_completion(self)
         # return returns
         return self.outputs
 
