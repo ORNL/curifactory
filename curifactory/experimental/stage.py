@@ -2,6 +2,7 @@ import copy
 import hashlib
 import inspect
 import os
+import sys
 import threading
 import time
 from collections.abc import Callable
@@ -938,7 +939,8 @@ class Stage:
             self.computed = True
             return returns
         except Exception as e:
-            e.add_note(f"Was trying to run stage {self.contextualized_name}")
+            if sys.version_info >= (3, 11, 0):
+                e.add_note(f"Was trying to run stage {self.contextualized_name}")
             raise
 
     def __repr__(self):

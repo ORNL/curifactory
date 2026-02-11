@@ -2,6 +2,7 @@ import importlib
 import json
 import os
 import pickle
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -508,7 +509,8 @@ class TrackingDBTableCacher(DBTableCacher):
             try:
                 db.sql(query)
             except duckdb.duckdb.ParserException as e:
-                e.add_note(f"Was trying to run query: {query}")
+                if sys.version_info >= (3, 11, 0):
+                    e.add_note(f"Was trying to run query: {query}")
                 raise
 
         # add a metadata row
@@ -552,7 +554,8 @@ class TrackingDBTableCacher(DBTableCacher):
             deletion_query = f"DELETE FROM {self.get_table_name()} USING ({self.get_table_name()} INNER JOIN _cftrack_{self.get_table_name()} ON {self.join_condition()}) AS delete_ref WHERE {self.equals_condition('delete_ref')}"
             db.sql(deletion_query)
         except Exception as e:
-            e.add_note(f"Was running query: {deletion_query}")
+            if sys.version_info >= (3, 11, 0):
+                e.add_note(f"Was running query: {deletion_query}")
             raise
 
         db.sql(
@@ -565,7 +568,8 @@ class TrackingDBTableCacher(DBTableCacher):
         try:
             return db.sql(selection_query)
         except Exception as e:
-            e.add_note(f"Was running selection query: {selection_query}")
+            if sys.version_info >= (3, 11, 0):
+                e.add_note(f"Was running selection query: {selection_query}")
             raise
 
 

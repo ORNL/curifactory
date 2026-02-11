@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 import logging
+import sys
 import traceback
 from functools import partial
 from uuid import UUID
@@ -323,7 +324,8 @@ class Artifact:
             # NOTE: stage handles running cachers
             return self.obj
         except Exception as e:
-            e.add_note(f"Was trying to retrieve artifact {self.name}")
+            if sys.version_info >= (3, 11, 0):
+                e.add_note(f"Was trying to retrieve artifact {self.name}")
             manager = cf.get_manager()
             stack_str = traceback.format_exc()
             manager.record_pipeline_failure(e, stack_str)
