@@ -1,4 +1,4 @@
-from test.experimental.pipelines.example import add_things
+from test.experimental.pipelines.example import add_things, run_w_stage_depends
 
 from curifactory.experimental.artifact import Artifact
 from curifactory.experimental.pipeline import pipeline
@@ -156,3 +156,13 @@ def test_pipeline_that_returns_alists(test_manager):
     assert t.artifacts.things2[0].obj == 9
     assert t.artifacts.things3[0].obj == 5
     assert t.artifacts.things4[0].obj == 11
+
+
+def test_artifacts_from_before_stage_depends_should_show_up(test_manager):
+    """Artifacts from before a stage with stage dependencies should still
+    show up in a pipeline's artifact list."""
+
+    p = run_w_stage_depends("p")
+    print(p.outputs.artifacts)
+    print(p.outputs.artifact_list())
+    assert len(p.artifacts.something) > 0

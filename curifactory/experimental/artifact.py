@@ -565,21 +565,39 @@ class Artifact:
 
     def dependencies(self) -> list["Artifact"]:
         """Gets any input artifacts from the compute stage."""
+        # print(f"Checking dependencies of {self.contextualized_name}")
         artifact_dependencies = []
         if self.compute is not None:
+            # handle inputs (true dependencies)
             for arg in self.compute._combined_args():
                 if isinstance(arg, Artifact):
+                    # print(f"Found dependency: {arg.contextualized_name}")
                     artifact_dependencies.append(arg)
+            # handle outputs (sister artifacts)
+            if isinstance(self.compute.outputs, (tuple, list)):
+                for output in self.compute.outputs:
+                    if output != self:
+                        # print(f"Found sister: {output.contextualized_name}")
+                        artifact_dependencies.append(output)
             for stage in self.compute.dependencies:
                 for arg in stage._combined_args():
                     if isinstance(arg, Artifact):
+                        # print(f"Found stage dependency: {arg.contextualized_name}")
                         artifact_dependencies.append(arg)
+                if isinstance(stage.outputs, (tuple, list)):
+                    for output in stage.outputs:
+                        # print(f"Found sister: {output.contextualized_name}")
+                        artifact_dependencies.append(output)
+                else:
+                    # print(f"Found sister: {stage.outputs.contextualized_name}")
+                    artifact_dependencies.append(stage.outputs)
         return artifact_dependencies
 
     def artifact_list(self, building_list: list = None):
         """Recursively builds a list of _all_ artifacts prior to this one."""
         if building_list is None:
             building_list = []
+        # print(f"Added {self.contextualized_name}")
         building_list.append(self)
 
         # TODO: TODO: TODO: this should be based on .dependencies...right?
@@ -596,6 +614,7 @@ class Artifact:
         #         print(list_artifact)
         #         building_list = list_artifact.artifact_list(building_list)
 
+        # print("Resulting building list:", building_list)
         return building_list
 
     def artifact_list_debug(self):
@@ -628,10 +647,10 @@ class Artifact:
             ):
                 if artifact not in results:
                     results.append(artifact)
-            sub_results = artifact.filter(search_str).artifacts
-            for result in sub_results:
-                if result not in results:
-                    results.append(result)
+                    sub_results = artifact.filter(search_str).artifacts
+                    for result in sub_results:
+                        if result not in results:
+                            results.append(result)
         return ArtifactFilter(results, search_str)
 
     # TODO: make this _ function to indicate shouldn't be called outside of cf

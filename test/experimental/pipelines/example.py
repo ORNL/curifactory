@@ -40,3 +40,23 @@ def add_thingsc(num1: int = 2, num2: int = 7):
     t1 = get_thing1c(num1).outputs
     t2 = get_thing2c(t1, num2).outputs
     return t2
+
+
+@stage(Artifact("something"))
+def a_thing(a):
+    return a + 5
+
+
+@stage(Artifact("somethingB"))
+def b_thing(b):
+    return b + 2
+
+
+@pipeline
+def run_w_stage_depends(num1: int = 2, num2: int = 6):
+    stage1 = a_thing(num1)
+
+    with stage1:
+        b = b_thing(num2).outputs
+
+    return b

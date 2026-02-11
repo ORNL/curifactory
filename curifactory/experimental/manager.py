@@ -160,13 +160,21 @@ class Manager:
 
         with self.db_connection() as db:
             if cf.db_tables.get_schema_version(db) != cf.db_tables.SCHEMA_VERSION:
-                self.init_root_logging()
+                # self.init_root_logging()
+                import warnings
+
+                warnings.warn(
+                    "Curifactory store database is incorrect version, see `cf db version` and `cf db verify`"
+                )
                 self.logger.warn(
                     "Curifactory store database is incorrect version, see `cf db version` and `cf db verify`"
                 )
 
         self._default_imports = False
         # self.load_default_pipeline_imports()
+
+        # self.env_type = None
+        # """Whether this manager is being run from CLI, a python script, etc."""
 
     @property
     def config(self) -> dict[str, Any]:
@@ -192,6 +200,24 @@ class Manager:
             ),
             autoescape=False,
         )
+
+    def get_pipeline(self, module_or_ref: str):
+        self.load_default_pipeline_imports()
+        self.import_pipelines_from_module(module_or_ref)
+        resolved = self.resolve_reference(module_or_ref)
+        if "pipeline_instance" in resolved:
+            return resolved["pipeline_instance"]
+        elif "reference_instance" in resolved:
+            return resolved["reference_instance"]
+        print(module_or_ref, " not found")
+        print("Found pipelines:")
+        print(self.get_pipeline_names())
+
+    def get_pipeline_names(self, module: str = None):
+        self.load_default_pipeline_imports()
+        if module is not None:
+            self.import_pipelines_from_module(module)
+        return list(self.pipeline_ref_names.keys())
 
     def resolve_reference(self, ref_str: str, types: list[str] = None):
         # possible types:
@@ -224,7 +250,7 @@ class Manager:
             or "pipeline_class_list" in types
         ):
             reference_parts = self.divide_reference_parts(ref_str)
-            print("ref parts", reference_parts)
+            # print("ref parts", reference_parts)
             if reference_parts["module"] is not None:
                 if "module" not in resolutions:
                     resolutions["module"] = []
@@ -283,12 +309,7 @@ class Manager:
             ):
                 # if reference_parts["artifact_filter"] is not None:
                 if "." in ref_str:
-                    print("Yep!")
                     filter_str = ref_str[ref_str.index(".") + 1 :]
-                    print(
-                        "looking for artifacts filter string past reference: ",
-                        filter_str,
-                    )
                     resolutions["artifact_list"] = resolutions[
                         "reference_instance"
                     ].artifacts.filter(filter_str)
@@ -427,7 +448,7 @@ class Manager:
         try:
             module = importlib.import_module(module_str)
         except ModuleNotFoundError as e:
-            if not module_str.endswith(e.name):
+            if not module_str.endswith(e.name) and not module_str.startswith(e.name):
                 raise
             pass
         return module
@@ -765,10 +786,10 @@ class Manager:
             )
 
     def record_pipeline_failure(self, exception, stack):
-        if self.current_pipeline_run_target is None:
+        if self.current_pipeline_run_target is None or not self.currently_recording:
             return
 
-        pipeline = self.current_pipeline_run_target
+        pipeline = self.current_pipeline_run
         pipeline.end_timestamp = datetime.now()
         exception_text = f"{type(exception).__name__}: {exception}"
         with self.db_connection() as db:
