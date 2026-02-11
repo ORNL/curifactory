@@ -63,17 +63,31 @@ Curifactory duckdb tables:[yellow]
     console = Console()
     console.print(help_str)
 
-    import code
+    # try to load into ipython first if possible
+    try:
+        import IPython
+        from traitlets.config import Config
 
-    scope = globals()
-    manager = cf.get_manager()
-    db = manager.db_connection()
-    scope["manager"] = manager
-    scope["db"] = db
-    iconsole = code.InteractiveConsole(locals=scope)
-    iconsole.runsource("import duckdb")
-    iconsole.runsource("import curifactory.experimental as cf")
-    iconsole.interact()
+        c = Config()
+        c.InteractiveShellApp.exec_lines = [
+            "import duckdb",
+            "import curifactory.experimental as cf",
+        ]
+        manager = cf.get_manager()
+        db = manager.db_connection()
+        IPython.embed(config=c, colors="neutral")
+    except:  # noqa: E722
+        import code
+
+        scope = globals()
+        manager = cf.get_manager()
+        db = manager.db_connection()
+        scope["manager"] = manager
+        scope["db"] = db
+        iconsole = code.InteractiveConsole(locals=scope)
+        iconsole.runsource("import duckdb")
+        iconsole.runsource("import curifactory.experimental as cf")
+        iconsole.interact()
 
 
 def main():  # noqa: C901
@@ -658,7 +672,8 @@ def main():  # noqa: C901
                     f"(context: {artifact.context_name})".ljust(40),
                 )
         elif "reference_instance" in resolved and search != "":
-            print(f"Artifacts in reference {resolved["reference_instance"].name}:")
+            instance_name = resolved["reference_instance"].name
+            print(f"Artifacts in reference {instance_name}:")
             for artifact in resolved["reference_instance"].artifacts:
                 if artifact.compute is not None:
                     print(

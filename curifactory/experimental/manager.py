@@ -158,6 +158,13 @@ class Manager:
         self.ensure_store_tables()
         self.ensure_sys_path()
 
+        with self.db_connection() as db:
+            if cf.db_tables.get_schema_version(db) != cf.db_tables.SCHEMA_VERSION:
+                self.init_root_logging()
+                self.logger.warn(
+                    "Curifactory store database is incorrect version, see `cf db version` and `cf db verify`"
+                )
+
         self._default_imports = False
         # self.load_default_pipeline_imports()
 

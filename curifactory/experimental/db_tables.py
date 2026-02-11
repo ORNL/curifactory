@@ -84,7 +84,6 @@ def ensure_tables(db):
             );
         """
         )
-    print(get_schema_version(db))
     if get_schema_version(db) == 0:
         db.sql(f"INSERT INTO cf_meta (schema_version) VALUES ({SCHEMA_VERSION})")
 
