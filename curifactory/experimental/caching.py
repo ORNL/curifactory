@@ -554,9 +554,12 @@ class TrackingDBTableCacher(DBTableCacher):
             deletion_query = f"DELETE FROM {self.get_table_name()} USING ({self.get_table_name()} INNER JOIN _cftrack_{self.get_table_name()} ON {self.join_condition()}) AS delete_ref WHERE {self.equals_condition('delete_ref')}"
             db.sql(deletion_query)
         except Exception as e:
-            if sys.version_info >= (3, 11, 0):
-                e.add_note(f"Was running query: {deletion_query}")
-            raise
+            cf.get_manager().logger.warning(f"Unable to clear {self.get_table_name()}: e")
+            cf.get_manager().logger.debug(f"Was running query: {deletion_query}")
+            return
+            # if sys.version_info >= (3, 11, 0):
+            #     e.add_note(f"Was running query: {deletion_query}")
+            # raise
 
         db.sql(
             f"DELETE FROM _cftrack_{self.get_table_name()} WHERE metadata_id = '{stage_id}'"
