@@ -958,3 +958,6 @@ class DBArtifact(Artifact):
         self.hash_str = hash_str
         self.hash_debug = hash_values
         return hash_str, hash_values
+
+    def determine_overwrite(self):
+        return False
