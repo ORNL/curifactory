@@ -5,6 +5,9 @@ This is handled through a base ``Reportable`` class, and each reporter class
 extends it.
 """
 
+import numpy as np
+import pandas as pd
+
 
 class Reportable:
     """The base reporter class, any custom reporter should extend this.
@@ -112,3 +115,58 @@ class HTMLReporter(Reportable):
 
     def get_html(self) -> str | list[str]:
         return self.html_string
+
+
+class DFReporter(Reportable):
+    """Adds an HTML table to the report for the given pandas dataframe.
+
+    Args:
+        df (pd.DataFrame): The pandas dataframe to include in the report.
+        float_prec (int): the floating point precision to round all values to.
+
+    Note:
+        If you need to use any of the pandas stylers, apply them and pass ``df.render()`` to
+        an ``HTMLReporter`` instead.
+    """
+
+    def __init__(
+        self, df: pd.DataFrame, name: str = None, group: str = None, float_prec: int = 4
+    ):
+        self.df = df
+        self.float_prec = float_prec
+        super().__init__(name=name, group=group)
+
+    # def html(self):
+    #     with pd.option_context("display.precision", self.float_prec, 'display.max_columns', 500, 'display.max_columns')
+    #     pd.set_option("display.precision", self.float_prec)
+
+    # def render(self):
+    #     # doing this so easily browsable in excel
+    #     self.df.to_csv(f"{self.path}{self.name}.csv")
+
+    def html(self) -> list[str]:
+        output = ["<table border='1' cellspacing='0'><tr><th></th>"]
+
+        # column row
+        for col in self.df.columns:
+            output.append(f"<th>{col}</th>")
+
+        output.append("</tr>")
+
+        for index, row in self.df.iterrows():
+            output.append("<tr>")
+            output.append(f"<th>{index}</th>")
+
+            for item in row:
+                if isinstance(item, (float, np.float64, np.float32)):
+                    output.append(
+                        "<td align='right'><pre>{0:.{1}f}</pre></td>".format(
+                            item, self.float_prec
+                        )
+                    )
+                else:
+                    output.append(f"<td align='right'><pre>{item}</pre></td>")
+            output.append("</tr>")
+
+        output.append("</table>")
+        return output
