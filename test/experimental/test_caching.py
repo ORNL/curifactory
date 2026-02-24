@@ -1,4 +1,6 @@
-from test.experimental.pipelines.example import add_thingsc
+import os
+from pathlib import Path
+from test.experimental.pipelines.example import add_thingsc, db_pipeline
 
 from curifactory.experimental.pipeline import PipelineFromRef
 
@@ -65,3 +67,18 @@ def test_caching_from_db_ref_works(clear_filesystem, test_manager):
     assert not p2.artifacts.thing1[0].compute.computed
     assert not p2.artifacts.thing2[0].compute.computed
     assert p2.outputs.obj == 7
+
+
+def test_tracking_db_removal_works(clear_filesystem, test_manager):
+    """Clearing an object from a tracking db cacher should correctly remove that object."""
+
+    p1 = db_pipeline("p1", str(Path(test_manager.cache_path) / "db.db"))
+    p1.run()
+
+    assert os.path.exists(str(Path(test_manager.cache_path) / "db.db"))
+
+    db = p1.artifacts.db[0].get()
+    assert len(db.sql("SELECT * FROM something_table").df()) > 0
+
+    p1.artifacts.something_table[0].cacher.clear_obj()
+    assert len(db.sql("SELECT * FROM something_table").df()) == 0

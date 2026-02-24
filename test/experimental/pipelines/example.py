@@ -1,5 +1,5 @@
-from curifactory.experimental.artifact import Artifact
-from curifactory.experimental.caching import JsonCacher
+from curifactory.experimental.artifact import Artifact, DBArtifact
+from curifactory.experimental.caching import JsonCacher, TrackingDBTableCacher
 from curifactory.experimental.pipeline import pipeline
 from curifactory.experimental.stage import stage
 
@@ -60,3 +60,27 @@ def run_w_stage_depends(num1: int = 2, num2: int = 6):
         b = b_thing(num2).outputs
 
     return b
+
+
+@pipeline
+def db_pipeline(db_path: str):
+    db = DBArtifact("db", db_path)
+
+    # a = a_thing(4)
+    # a.outputs[0].cacher = TrackingDBTableCacher(db=db)
+
+    a = a_thing(4).outputs
+
+    @stage(
+        Artifact(
+            "something_table",
+            TrackingDBTableCacher(use_db_arg=0, id_cols={"value": "int"}),
+        )
+    )
+    def db_a_thing(db, a):
+        rel = db.sql(f"SELECT {a} AS value")
+        return rel
+
+    a_db = db_a_thing(db, a).outputs
+
+    return a_db
