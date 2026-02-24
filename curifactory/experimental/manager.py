@@ -884,7 +884,20 @@ class Manager:
 
         if os.path.exists(f"{prefix}{CONFIGURATION_FILE}"):
             with open(f"{prefix}{CONFIGURATION_FILE}") as infile:
-                config = json.load(infile)
+                try:
+                    config = json.load(infile)
+                except json.decoder.JSONDecodeError as e:
+                    print(
+                        f"Failed to load config file at {prefix}{CONFIGURATION_FILE}: {e}"
+                    )
+                    # print(infile.read())
+                    infile.seek(0)
+                    lines = infile.readlines()
+                    for index, line in enumerate(lines):
+                        print(line, end="")
+                        if index == e.lineno - 1:
+                            print(" " * (e.colno - 1) + "^")
+                    exit(1)
 
         return Manager.from_config(config)
 

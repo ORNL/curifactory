@@ -551,6 +551,33 @@ def cmd_ls(parsed, parser, ls_parser):  # noqa: C901
             print(exp_class.__name__)
 
 
+def cmd_clear(parsed, parser, clear_parser):
+    manager = cf.get_manager()
+    manager.load_default_pipeline_imports()
+    manager.import_pipelines_from_module(parsed.pipeline)
+
+    manager.init_root_logging()
+    if parsed.debug:
+        manager.logger.setLevel(logging.DEBUG)
+
+    search = parsed.pipeline
+    resolved = manager.resolve_reference(search)
+
+    pipeline = None
+    if "pipeline_instance" in resolved:
+        pipeline = resolved["pipeline_instance"]
+    elif "reference_instance" in resolved:
+        pipeline = resolved["reference_instance"]
+
+    if pipeline is not None:
+        for artifact in pipeline.artifacts:
+            if artifact.cacher is not None:
+                manager.logger.info(
+                    f"Clearing artifact {artifact.contextualized_name}..."
+                )
+                artifact.cacher.clear()
+
+
 def cmd_reports(parsed, parser, reports_parser):
     import os
 
@@ -602,6 +629,10 @@ def main():  # noqa: C901
     )
     for fix in cf.db_tables.FIXES:
         db_fix_subparser.add_argument(f"--{fix}", action="store_true", dest=fix)
+
+    clear_parser = subparsers.add_parser("clear", help="Clear cache")
+    clear_parser.add_argument("pipeline")
+    clear_parser.add_argument("--debug", "--verbose", action="store_true", dest="debug")
 
     ls_parser = subparsers.add_parser("ls", help="List pipelines")
     ls_parser.add_argument("thing_to_list", nargs="?")
@@ -716,6 +747,8 @@ def main():  # noqa: C901
         cmd_ls(parsed, parser, ls_parser)
     elif parsed.command == "reports":
         cmd_reports(parsed, parser, reports_parser)
+    elif parsed.command == "clear":
+        cmd_clear(parsed, parser, clear_parser)
 
 
 if __name__ == "__main__":

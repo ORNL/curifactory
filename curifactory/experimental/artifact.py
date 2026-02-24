@@ -3,7 +3,6 @@
 import copy
 import hashlib
 import json
-import logging
 import sys
 import traceback
 from functools import partial
@@ -162,11 +161,11 @@ class Artifact:
         """Two artifacts are considered equivalent (can be shared) if their hash and name is the same"""
         # TODO: is it a problem to use hash_str directly instead of compute_hash?
         if self.hash_str is None:
-            logging.warning(
+            cf.get_manager().logger.warning(
                 f"Hash string of None on artifact {self.contextualized_name}"
             )
         if other_artifact.hash_str is None:
-            logging.warning(
+            cf.get_manager().logger.warning(
                 f"Hash string of None on artifact {other_artifact.contextualized_name}"
             )
         if (
@@ -403,7 +402,7 @@ class Artifact:
             and current_context is not None
             and self.context is not None
         ):
-            logging.warning(
+            cf.get_manager().logger.warning(
                 "Context %s is replacing an artifact (%s) owned by a different context %s. Recommend using a .copy()",
                 current_context.name,
                 self.name,
@@ -415,7 +414,7 @@ class Artifact:
 
         if artifact == self:
             self.pointer = None
-            logging.warning("Replacing self with self")
+            cf.get_manager().logger.warning("Replacing self with self")
             return
 
         # TODO: replace all attributes of this artifact with the other one
