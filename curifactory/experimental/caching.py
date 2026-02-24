@@ -487,6 +487,8 @@ class TrackingDBTableCacher(DBTableCacher):
             raise Exception(
                 "TrackingDBTableCacher must be provided with a set of columns to uniquely ID each row."
             )
+        self.cleared_rows = 0
+        """Track the number of rows deleted during the clear_obj call"""
 
     def save_obj(self, relation_object: duckdb.DuckDBPyRelation):
 
@@ -553,10 +555,13 @@ class TrackingDBTableCacher(DBTableCacher):
 
         db = self.get_db()
         try:
+            count_query = f"SELECT COUNT(*) FROM {self.get_table_name()} INNER JOIN _cftrack_{self.get_table_name()} ON {self.join_condition()}"
+            self.cleared_rows = db.sql(count_query).fetchone()[0]
             deletion_query = f"DELETE FROM {self.get_table_name()} USING ({self.get_table_name()} INNER JOIN _cftrack_{self.get_table_name()} ON {self.join_condition()}) AS delete_ref WHERE {self.equals_condition('delete_ref')}"
             cf.get_manager().logger.debug(
                 f"Clearing previous object with query: {deletion_query}"
             )
+            cf.get_manager().logger.debug(f"Removed {self.cleared_rows} rows")
             db.sql(deletion_query)
         except Exception as e:
             if sys.version_info >= (3, 11, 0):

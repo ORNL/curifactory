@@ -82,3 +82,4 @@ def test_tracking_db_removal_works(clear_filesystem, test_manager):
 
     p1.artifacts.something_table[0].cacher.clear_obj()
     assert len(db.sql("SELECT * FROM something_table").df()) == 0
+    assert p1.artifacts.something_table[0].cacher.cleared_rows == 1
