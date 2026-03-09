@@ -77,15 +77,95 @@ class Manager:
         }
 
         self.jinja_templates = {
-            "default.html": """
+            "default_index.html": """
             <html>
                 <head>
                     <style>
-                    {% include "style.css" %}
+                    {% include "common.css" %}
+                    {% include "index_style.css" %}
+                    </style>
+                    <title>Reports Index</title>
+                </head>
+                <body>
+                    <h1 id='title'>Pipeline Reports</h1>
+
+                    <h2>Pipelines</h2>
+                    <ul>
+                        {% for key in sections %}
+                            <li><a href='#{{ key }}'>{{ key }}</a></li>
+                        {% endfor %}
+                        <li><a href='#ALL'>All runs</a></li>
+                    </ul>
+
+                    {% for key, value in sections.items() %}
+                        <a name='{{ key }}'></a>
+                        <h2>{{ key }}</h2>
+                        <ul>
+                        {% for pipeline_run in value %}
+                            <li>{% include "pipeline_run.html" %}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endfor %}
+
+                    <a name='ALL'></a>
+                    <h2>All runs</h2>
+                    {% for pipeline_run in all_runs %}
+                        {% include "pipeline_run.html" %}
+                    {% endfor %}
+                </body>
+            </html>
+            """,
+            "common.css": """
+                #title {
+                    padding: 10px;
+                    border-bottom: 1px solid black;
+                }
+                body {
+                    font-family: Tahoma, sans-serif;
+                }
+                h2 {
+                    border-bottom: 1px solid silver;
+                    padding: 5px;
+                }
+            """,
+            "index_style.css": """
+                .run_color_block_success {
+                    background-color: green;
+                }
+                .run_color_block_error {
+                    background-color: red;
+                }
+                .error_text {
+                    color: red;
+                }
+            """,
+            "pipeline_run.html": """
+                <p>
+                {% if pipeline_run['succeeded'] %}
+                    <span class='run_color_block_success'>
+                {% elif not pipeline_run['succeeded'] %}
+                    <span class='run_color_block_error'>
+                {% endif %}
+                &nbsp;&nbsp;</span>
+
+                <a href='{{ pipeline_run['reference'] }}.html'>{{ pipeline_run['reference'] }}</a> ({{ pipeline_run['pipeline_name'] }}) [{{ pipeline_run['user'] }}@{{ pipeline_run['hostname'] }}]
+
+                {% if not pipeline_run['succeeded'] %}
+                    <span class='error_text'>{{ pipeline_run['exception'] }}</span>
+                {% endif %}
+
+                </p>
+            """,
+            "default_report.html": """
+            <html>
+                <head>
+                    <style>
+                    {% include "common.css" %}
+                    {% include "report_style.css" %}
                     </style>
                 </head>
                 <body>
-                    <h1>{{ reference_name }}</h1>
+                    <h1 id='title'>{{ reference_name }}</h1>
                     <h3>Pipeline: {{ pipeline_name }}</h3>
 
                     {% include "metadata.html" %}
@@ -105,7 +185,7 @@ class Manager:
                 </body>
             </html>
             """,
-            "style.css": """
+            "report_style.css": """
                 .reportable {
                     border: 1px solid gray;
                     display: inline-block;
@@ -113,6 +193,15 @@ class Manager:
                     padding: 5px;
                     padding-top: 0px;
                     padding-bottom: 0px;
+                }
+                .metadata_block {
+                    border-left: 2px solid silver;
+                    background-color: lightgray;
+                    display: inline-block;
+                    padding: 20px;
+                    padding-left: 30px;
+                    padding-right: 30px;
+                    margin: 0px;
                 }
             """,
             "reportable.html": """

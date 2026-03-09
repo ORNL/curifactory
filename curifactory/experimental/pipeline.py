@@ -119,7 +119,7 @@ class Pipeline:
 
         return reportables_list
 
-    def report(self, template="default.html", save: bool = False) -> str:
+    def report(self, template="default_report.html", save: bool = False) -> str:
         manager = cf.get_manager()
         # TODO: prob have a property for this or something in mnaager rather
         # than asking it to load _here_

@@ -5,8 +5,12 @@ This is handled through a base ``Reportable`` class, and each reporter class
 extends it.
 """
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
+
+import curifactory.experimental as cf
 
 
 class Reportable:
@@ -170,3 +174,30 @@ class DFReporter(Reportable):
 
         output.append("</table>")
         return output
+
+
+def generate_index(template="default_index.html", save: bool = False):
+    manager = cf.get_manager()
+    if manager.jinja_environment is None:
+        manager.load_jinja_env()
+
+    with manager.db_connection() as db:
+        df = db.sql("SELECT * FROM cf_run ORDER BY start_time DESC").df()
+
+    classes = {}
+    for group_name, group_df in df.groupby(by="pipeline_class"):
+        classes[group_name] = group_df.to_dict(orient="records")
+
+    all_runs = df.to_dict(orient="records")
+
+    # TODO: check runs to see which reports actually exist
+
+    template = manager.jinja_environment.get_template(template)
+    output = template.render(
+        sections=classes,
+        all_runs=all_runs,
+    )
+    if save:
+        with open(str(Path(manager.reports_path) / "index.html"), "w") as outfile:
+            outfile.write(output)
+    return output

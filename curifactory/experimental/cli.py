@@ -266,6 +266,7 @@ def cmd_run(parsed, parser, run_parser):  # noqa: C901
             # print(pipeline)
             pipeline.run()
             pipeline.report(save=True)
+            cf.reporting.generate_index()
         else:
             if "artifact" in resolved:
                 name = resolved["artifact"].name
@@ -278,6 +279,7 @@ def cmd_run(parsed, parser, run_parser):  # noqa: C901
                 for artifact in resolved["artifact_list"]:
                     artifact.get()
                 artifact.context.report(save=True)
+                cf.reporting.generate_index()
 
 
 def cmd_config(parsed, parser, conf_parser):
@@ -582,6 +584,9 @@ def cmd_reports(parsed, parser, reports_parser):
     import os
 
     manager = cf.get_manager()
+    if parsed.gen_index:
+        cf.reporting.generate_index(save=True)
+
     os.chdir(manager.reports_path)
     cf.utils.run_command(
         ["python", "-m", "http.server", str(parsed.port)]  # , "--bind", args.host]
@@ -703,6 +708,12 @@ def main():  # noqa: C901
 
     reports_parser = subparsers.add_parser("reports", help="Run HTML reports server")
     reports_parser.add_argument("-p", "--port")
+    reports_parser.add_argument(
+        "--gen-index",
+        action="store_true",
+        help="Regenerate the index/list of pipeline reports.",
+        dest="gen_index",
+    )
 
     argcomplete.autocomplete(parser, always_complete_options=False)
     argcomplete.autocomplete(run_parser, always_complete_options=False)
