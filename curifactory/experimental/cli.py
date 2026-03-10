@@ -4,6 +4,8 @@
 
 import argparse
 import logging
+import os
+import shutil
 from dataclasses import MISSING, fields
 
 import argcomplete
@@ -570,6 +572,22 @@ def cmd_clear(parsed, parser, clear_parser):
     if parsed.debug:
         manager.logger.setLevel(logging.DEBUG)
 
+    if parsed.reset:
+        manager.logger.warn(
+            "Running a full reset will entirely remove the curifactory dataset, reports folder, and cache folder."
+        )
+        val = input("Type RESET to confirm this action: ")
+        if val != "RESET":
+            manager.logger.info("Reset canceled")
+            exit(1)
+        manager.logger.info("Clearing reports folder")
+        shutil.rmtree(manager.reports_path)
+        manager.logger.info("Clearing cache folder")
+        shutil.rmtree(manager.cache_path)
+        manager.logger.info("Removing database")
+        os.remove(manager.database_path)
+        return
+
     search = parsed.pipeline
     resolved = manager.resolve_reference(search)
 
@@ -643,9 +661,17 @@ def main():  # noqa: C901
     for fix in cf.db_tables.FIXES:
         db_fix_subparser.add_argument(f"--{fix}", action="store_true", dest=fix)
 
-    clear_parser = subparsers.add_parser("clear", help="Clear cache")
-    clear_parser.add_argument("pipeline")
+    clear_parser = subparsers.add_parser(
+        "clear", help="Clear cache or database entries"
+    )
+    clear_parser.add_argument("pipeline", nargs="?")
     clear_parser.add_argument("--debug", "--verbose", action="store_true", dest="debug")
+    clear_parser.add_argument(
+        "--RESET",
+        action="store_true",
+        dest="reset",
+        help="WARNING: this completely resets the curifactory database and the _entire_ cf cache folder.",
+    )
 
     ls_parser = subparsers.add_parser("ls", help="List pipelines")
     ls_parser.add_argument("thing_to_list", nargs="?")
