@@ -537,20 +537,28 @@ def cmd_ls(parsed, parser, ls_parser):  # noqa: C901
                     f"(context: {artifact.context_name})".ljust(40),
                 )
     else:
-        if search == "":
+        if search == "" and not parsed.debug:
             print("Pipelines:")
+            for key in manager.advertised_pipeline_ref_names:
+                print(
+                    f"{key.ljust(40)} ({manager.advertised_pipeline_ref_names_full[key]}) ({manager.advertised_pipeline_ref_names[key].__class__.__name__})"
+                )
         else:
-            print(f"Pipelines matching '{search}':")
-        for exp_key, exp_val in resolved["pipeline_instance_list"].items():
-            print(f"{exp_key} ({exp_val.name})")
+            if search == "":
+                print("Pipelines:")
+            else:
+                print(f"Pipelines matching '{search}':")
+            for exp_key, exp_val in resolved["pipeline_instance_list"].items():
+                print(f"{exp_key} ({exp_val.name})")
 
-        print("---")
-        if search == "":
-            print("Pipeline classes:")
-        else:
-            print(f"Pipeline classes matching '{search}':")
-        for exp_class in resolved["pipeline_class_list"]:
-            print(exp_class.__name__)
+        if parsed.debug:
+            print("---")
+            if search == "":
+                print("Pipeline classes:")
+            else:
+                print(f"Pipeline classes matching '{search}':")
+            for exp_class in resolved["pipeline_class_list"]:
+                print(exp_class.__name__)
 
 
 def cmd_clear(parsed, parser, clear_parser):

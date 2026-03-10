@@ -22,7 +22,7 @@ def test_broken_pipeline_call(test_manager, capfd):
 def test_non_default_pipeline(test_manager, capfd):
     """Trying to run a pipeline by directly specifying module name (not already included in default imports) should run successfully"""
 
-    sys.argv = ["cf", "run", "test.experimental.pipelines.notindefault.valid"]
+    sys.argv = ["cf", "run", "test.experimental.pipelines.notindefault.valid_default"]
     main()
     out, err = capfd.readouterr()
     print(out)

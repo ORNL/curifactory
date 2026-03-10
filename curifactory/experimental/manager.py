@@ -58,6 +58,10 @@ class Manager:
         """Dictionary of initialized (parameterized) pipelines keyed by dataclass type"""
         self.pipeline_ref_names = {}
         """Dictionary of possible names/references to use to refer to specific pipelines."""
+        self.advertised_pipeline_ref_names = {}
+        """To simplify listing pipeline references, keep track of the "shortest" to resolve for each one."""
+        self.advertised_pipeline_ref_names_full = {}
+        """Track the module associated with the advertised name"""
         self.imported_module_names = []
         """List of module strings that have been successfully imported and parsed for pipelines."""
         self.failed_imports = {}
@@ -474,8 +478,13 @@ class Manager:
                         can_make_default = False
                 if can_make_default:
                     pipeline = value(f"{value.type_name}_default")
+                    # self.add_pipeline_to_ref_names(
+                    #     module_str, value.type_name, pipeline
+                    # )
+                    # NOTE: using value.type_name can sometimes
+                    # cause unnecessary conflicts
                     self.add_pipeline_to_ref_names(
-                        module_str, value.type_name, pipeline
+                        module_str, f"{value.type_name}_default", pipeline
                     )
 
         # return the piece of the module_str that wasn't the module
@@ -483,17 +492,56 @@ class Manager:
 
     def add_pipeline_to_ref_names(self, module_str: str, attr_name: str, pipeline):
         """Add the pipeline to the ref names dictionary under all logical names."""
+        # NOTE: pass None for attr name for things like from list, and then only
+        # the name gets added
         module_pieces = module_str.split(".")
 
         # TODO: handle if name already exists
         for i in range(len(module_pieces) + 1):
+            # the smallest case (just the pipeline/attr name)
             if i == 0:
-                self.pipeline_ref_names[attr_name] = pipeline
-                self.pipeline_ref_names[pipeline.name] = pipeline
+                if attr_name is not None:
+                    # check that it doesn't already exist
+                    if (
+                        attr_name in self.pipeline_ref_names
+                        and pipeline != self.pipeline_ref_names[attr_name]
+                    ):
+                        # CONFLICT, don't add and remove existing to avoid
+                        # ambiguity
+                        del self.pipeline_ref_names[attr_name]
+                        if attr_name in self.advertised_pipeline_ref_names:
+                            del self.advertised_pipeline_ref_names[attr_name]
+                            del self.advertised_pipeline_ref_names_full[attr_name]
+                    else:
+                        self.pipeline_ref_names[attr_name] = pipeline
+                # check for name conflict
+                if (
+                    pipeline.name in self.pipeline_ref_names
+                    and pipeline != self.pipeline_ref_names[pipeline.name]
+                ):
+                    # CONFLICT
+                    del self.pipeline_ref_names[pipeline.name]
+                    if pipeline.name in self.advertised_pipeline_ref_names:
+                        del self.advertised_pipeline_ref_names[pipeline.name]
+                        del self.advertised_pipeline_ref_names_full[pipeline.name]
+                else:
+                    self.pipeline_ref_names[pipeline.name] = pipeline
+                    self.advertised_pipeline_ref_names[pipeline.name] = pipeline
+                    self.advertised_pipeline_ref_names_full[pipeline.name] = module_str
                 continue
+
+            # add refs for with progressively deeper module name attached
             building_module_str = ".".join(module_pieces[-i:])
-            self.pipeline_ref_names[f"{building_module_str}.{attr_name}"] = pipeline
+            if attr_name is not None:
+                self.pipeline_ref_names[f"{building_module_str}.{attr_name}"] = pipeline
             self.pipeline_ref_names[f"{building_module_str}.{pipeline.name}"] = pipeline
+            if pipeline not in self.advertised_pipeline_ref_names.values():
+                self.advertised_pipeline_ref_names[
+                    f"{building_module_str}.{pipeline.name}"
+                ] = pipeline
+                self.advertised_pipeline_ref_names_full[
+                    f"{building_module_str}.{pipeline.name}"
+                ] = module_str
             self.logger.debug(
                 f"Adding pipeline {pipeline.name} at {building_module_str}.{pipeline.name}"
             )
