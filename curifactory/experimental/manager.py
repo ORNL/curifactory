@@ -8,7 +8,9 @@ import sys
 import threading
 import traceback
 from datetime import datetime
+from getpass import getuser
 from pathlib import Path
+from socket import gethostname
 from typing import Any
 from uuid import UUID, uuid4
 
@@ -868,6 +870,9 @@ class Manager:
         pipeline.start_timestamp = datetime.now()
         pipeline.reference = self.get_reference_name(pipeline)
 
+        hostname = gethostname()
+        username = getuser()
+
         hash, _ = pipeline.compute_hash()
 
         cleaned_parameters = pipeline.parameters
@@ -889,9 +894,11 @@ class Manager:
                         run_number,
                         start_time,
                         hash,
-                        params
+                        params,
+                        user,
+                        hostname
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     pipeline_id,
@@ -902,6 +909,8 @@ class Manager:
                     pipeline.start_timestamp,
                     hash,
                     cleaned_parameters,
+                    username,
+                    hostname,
                 ],
             )
 

@@ -5,6 +5,7 @@
 # test outputs
 test/examples/data/*
 test/examples/logs/*
+**/logs/*
 
 # python stuff
 **/*.pyc
