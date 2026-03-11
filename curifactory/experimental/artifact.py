@@ -402,12 +402,13 @@ class Artifact:
             and current_context is not None
             and self.context is not None
         ):
-            cf.get_manager().logger.warning(
-                "Context %s is replacing an artifact (%s) owned by a different context %s. Recommend using a .copy()",
-                current_context.name,
-                self.name,
-                self.context.name,
-            )
+            # cf.get_manager().logger.warning(
+            #     "Context %s is replacing an artifact (%s) owned by a different context %s. Recommend using a .copy()",
+            #     current_context.name,
+            #     self.name,
+            #     self.context.name,
+            # )
+            pass
         # TODO: might be useful to track the frame/line/file that this
         # replacement is called from, could help debugging if spit out in the
         # logs
