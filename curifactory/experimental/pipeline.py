@@ -121,6 +121,7 @@ class Pipeline:
 
     def report(self, template="default_report.html", save: bool = False) -> str:
         manager = cf.get_manager()
+        manager.logger.info("Generating pipeline report")
         # TODO: prob have a property for this or something in mnaager rather
         # than asking it to load _here_
         if manager.jinja_environment is None:
@@ -154,6 +155,8 @@ class Pipeline:
                 str(Path(manager.reports_path) / f"{self.reference}.html"), "w"
             ) as outfile:
                 outfile.write(output)
+            cf.reporting.generate_index(save=True)
+
         return output
 
     def define(self) -> list["cf.artifact.Artifact"]:
@@ -277,6 +280,9 @@ class Pipeline:
 
         manager.logger.info(f"Running pipeline {self.name}")
         manager.record_pipeline_run(self)
+        manager.init_file_logging(self.reference)
+
+        # TODO: would need to start file logging here
 
         # returns = self.outputs.get()
         # if isinstance(self.outputs, list):
@@ -292,6 +298,8 @@ class Pipeline:
         manager.current_pipeline_run = None
         if not manager.error_state:
             manager.record_pipeline_run_completion(self)
+        manager.stop_file_logging()
+
         # return returns
         return self.outputs
 

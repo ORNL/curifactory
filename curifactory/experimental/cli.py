@@ -268,7 +268,7 @@ def cmd_run(parsed, parser, run_parser):  # noqa: C901
             # print(pipeline)
             pipeline.run()
             pipeline.report(save=True)
-            cf.reporting.generate_index()
+            # cf.reporting.generate_index()  # (handled in pipeline.report now)
         else:
             if "artifact" in resolved:
                 name = resolved["artifact"].name
@@ -281,7 +281,7 @@ def cmd_run(parsed, parser, run_parser):  # noqa: C901
                 for artifact in resolved["artifact_list"]:
                     artifact.get()
                 artifact.context.report(save=True)
-                cf.reporting.generate_index()
+                # cf.reporting.generate_index()  # (handled in pipeline.report now)
 
 
 def cmd_config(parsed, parser, conf_parser):

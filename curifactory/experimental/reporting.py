@@ -178,6 +178,7 @@ class DFReporter(Reportable):
 
 def generate_index(template="default_index.html", save: bool = False):
     manager = cf.get_manager()
+    manager.logger.info("Generating report index")
     if manager.jinja_environment is None:
         manager.load_jinja_env()
 

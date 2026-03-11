@@ -46,6 +46,7 @@ class Manager:
         database_path: str = "data/store.db",
         cache_path: str = "data/cache",
         reports_path: str = "reports",
+        logs_path: str = "logs",
         default_pipeline_modules: list[str] = None,
         **additional_configuration,
     ):
@@ -74,6 +75,8 @@ class Manager:
         self.cache_path = cache_path
 
         self.reports_path = reports_path
+
+        self.logs_path = logs_path
 
         self.repr_functions: dict[type, callable] = {
             duckdb.DuckDBPyRelation: lambda obj: f"(duckdb) {len(obj)} rows",
@@ -650,6 +653,7 @@ class Manager:
         database_dir.mkdir(parents=True, exist_ok=True)
         Path(self.cache_path).mkdir(parents=True, exist_ok=True)
         Path(self.reports_path).mkdir(parents=True, exist_ok=True)
+        Path(self.logs_path).mkdir(parents=True, exist_ok=True)
 
     def ensure_store_tables(self):
         with self.db_connection() as db:
@@ -972,11 +976,35 @@ class Manager:
             log_time_format="%X",
             keywords=["-----", "=====", ".....", "#####"],
         )
-
         console_handler.setFormatter(rich_log_formatter)
+
+        # log to file path as well
+
         root_logger.addHandler(console_handler)
 
         cf.utils.set_logging_prefix("")
+
+    def init_file_logging(self, run_name):
+        # TODO: prob don't need run_name, should already have in current pipeline
+        # info
+        self.log_file_handler = logging.FileHandler(
+            str(Path(self.logs_path) / run_name)
+        )
+        plain_log_formatter = logging.Formatter(
+            # "%(asctime)s [%(levelname)s] {PID:%(process)s} - %(prefix)s%(message)s"
+            "%(asctime)s [%(levelname)s] %(prefix)s%(message)s"
+        )
+        self.log_file_handler.setFormatter(plain_log_formatter)
+
+        # NOTE: for now will log everything, possibly add flags later for
+        # controlling if only curifactory stuff gets logged
+        root_logger = logging.getLogger()
+        root_logger.addHandler(self.log_file_handler)
+
+    def stop_file_logging(self):
+        root_logger = logging.getLogger()
+        root_logger.removeHandler(self.log_file_handler)
+        self.log_file_handler = None
 
     def init_cf_logging(self):
         cf_logger = logging.getLogger("curifactory")
