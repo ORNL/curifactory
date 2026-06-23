@@ -78,7 +78,10 @@ class Reportable:
 
     @property
     def html(self):
-        return self.get_html()
+        output = self.get_html()
+        if isinstance(output, str):
+            return output
+        return "".join(output)
 
     def get_html(self) -> str | list[str]:
         """When a report is created, the ``html()`` function for every reportable is
@@ -148,7 +151,7 @@ class DFReporter(Reportable):
     #     # doing this so easily browsable in excel
     #     self.df.to_csv(f"{self.path}{self.name}.csv")
 
-    def html(self) -> list[str]:
+    def get_html(self) -> list[str]:
         output = ["<table border='1' cellspacing='0'><tr><th></th>"]
 
         # column row

@@ -719,7 +719,7 @@ class Stage:
             arg = self.kwargs[arg_name]
 
         if isinstance(arg, Stage):
-            cf.get_manager().logger.warn(
+            cf.get_manager().logger.warning(
                 f"WARNING: Stage argument passed into {self.name}, is there a missing .outputs?"
             )
 

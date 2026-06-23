@@ -665,7 +665,9 @@ def main():  # noqa: C901
         "clear", help="Clear cache or database entries"
     )
     clear_parser.add_argument("pipeline", nargs="?")
-    clear_parser.add_argument("--debug", "--verbose", action="store_true", dest="debug")
+    clear_parser.add_argument(
+        "-v", "--debug", "--verbose", action="store_true", dest="debug"
+    )
     clear_parser.add_argument(
         "--RESET",
         action="store_true",
