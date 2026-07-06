@@ -416,6 +416,9 @@ def init_logging(
     set_logging_prefix("")
 
     if log_path is not None:
+        log_dir = os.path.dirname(log_path)
+        if log_dir and not os.path.exists(log_dir):
+            os.makedirs(log_dir, exist_ok=True)
         file_handler = logging.FileHandler(log_path)
         file_handler.setFormatter(plain_log_formatter)
         root_logger.addHandler(file_handler)
