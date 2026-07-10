@@ -811,7 +811,7 @@ class Stage:
                 manager.logger.info(
                     f"Ensuring {self.name} stage dependency of {dependency.name}"
                 )
-                if isinstance(dependency.outputs, list):
+                if isinstance(dependency.outputs, list) and len(dependency.outputs) > 0:
                     for output in dependency.outputs:
                         output.get()
                         if cf.get_manager().error_state:

@@ -171,6 +171,10 @@ class DFReporter(Reportable):
                             item, self.float_prec
                         )
                     )
+                elif isinstance(item, str):
+                    output.append(
+                        f"<td align='left' style='word-wrap: break-word; max-width: 200px;'><pre style='white-space: pre-wrap;'>{item}</pre></td>"
+                    )
                 else:
                     output.append(f"<td align='right'><pre>{item}</pre></td>")
             output.append("</tr>")

@@ -131,6 +131,7 @@ def cmd_run(parsed, parser, run_parser):  # noqa: C901
         pipeline = resolved["pipeline_class"]
         base_class = True
 
+    # handle pipeline parameters
     if pipeline is not None:
         name = pipeline.name if not base_class else pipeline.__name__
         pipeline_parameter_group = run_parser.add_argument_group(
@@ -139,11 +140,11 @@ def cmd_run(parsed, parser, run_parser):  # noqa: C901
 
         # # TODO: https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser.add_argument
         def list_converter(string):
-            # print("I was called with", string)
+            print("I was called with", string)
             resolved = manager.resolve_reference(string)
-            # print(resolved)
+            print(resolved)
             if "pipeline_instance" in resolved:
-                # print("FOUND!")
+                print("FOUND!")
                 return resolved["pipeline_instance"]
 
             return string
@@ -325,8 +326,92 @@ def cmd_map(parsed, parser, map_parser):  # noqa: C901
     pipeline = None
     if "pipeline_instance" in resolved:
         pipeline = resolved["pipeline_instance"]
+        base_class = False
     elif "reference_instance" in resolved:
         pipeline = resolved["reference_instance"]
+        base_class = False
+    elif "pipeline_class" in resolved:
+        pipeline = resolved["pipeline_class"]
+        base_class = True
+
+    # print("RESOLVED:", resolved)
+
+    # TODO: this is largely duplicated from cmd_run, find way to pull out
+    # handle pipeline parameters
+    if pipeline is not None:
+        name = pipeline.name if not base_class else pipeline.__name__
+        pipeline_parameter_group = map_parser.add_argument_group(
+            f"{name} parameters", pipeline.__doc__
+        )
+
+        # # TODO: https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser.add_argument
+        def list_converter(string):
+            print("I was called with", string)
+            resolved = manager.resolve_reference(string)
+            print(resolved)
+            if "pipeline_instance" in resolved:
+                print("FOUND!")
+                return resolved["pipeline_instance"]
+
+            return string
+
+        # add arguments for the pipeline to the parser
+        names = []
+        for field in fields(pipeline):
+            print("Checking pipeline field", field)
+            if field.name in ["name", "outputs"]:
+                continue
+            names.append(field.name)
+
+            default = None
+            if not base_class:
+                default = getattr(pipeline, field.name)
+            elif field.default_factory != MISSING:
+                default = field.default_factory()
+
+            action = "store"
+            # print(field.name, field.type, field.type.__name__)
+            if field.type.__name__ == "list":
+                # https://stackoverflow.com/questions/47077329/python-get-type-of-typing-list
+                action = "append"
+
+            cleaned_type = field.type
+            if field.type.__name__ == "list":
+                cleaned_type = list_converter
+
+            pipeline_parameter_group.add_argument(
+                f"--{field.name}",
+                type=cleaned_type,
+                dest=field.name,
+                action=action,
+                help=f"Default: {default}",
+            )
+
+        parsed_better, _ = parser.parse_known_args()
+
+        new_args = {}
+        for name in names:
+            if vars(parsed_better)[name] is not None:
+                new_args[name] = vars(parsed_better)[name]
+
+        if len(new_args) > 0:
+            if base_class:
+                # print(new_args)
+                pipeline = pipeline(pipeline.__name__, **new_args)
+            else:
+                pipeline = pipeline.modify(**new_args)
+
+    if parsed.show_help:
+        map_parser.print_help()
+        if pipeline is None:
+            print(f"Pipelines matching '{search}':")
+            for exp_key, exp_val in resolved["pipeline_instance_list"].items():
+                print(f"{exp_key} ({exp_val.name})")
+            print("---")
+            print(f"Pipeline classes matching '{search}':")
+            for exp_class in resolved["pipeline_class_list"]:
+                print(exp_class.__name__)
+        return
 
     if pipeline is not None:
 
@@ -718,9 +803,16 @@ def main():  # noqa: C901
     run_parser.add_argument("--debug", "--verbose", action="store_true", dest="debug")
 
     map_parser = subparsers.add_parser(
-        "map", help="Map out what needs to execute and what doesn't."
+        "map", help="Map out what needs to execute and what doesn't.", add_help=False
     )
     map_parser.add_argument("pipeline")
+    map_parser.add_argument(
+        "-h",
+        "--help",
+        action="store_true",
+        dest="show_help",
+        help="Show this help message",
+    )
     map_parser.add_argument(
         "--ow",
         "--overwrite",
@@ -764,6 +856,10 @@ def main():  # noqa: C901
         if parsed.command == "run":
             if parsed.pipeline is None:
                 run_parser.print_help()
+                return
+        if parsed.command == "map":
+            if parsed.pipeline is None:
+                map_parser.print_help()
                 return
 
     if parsed.command == "run":
