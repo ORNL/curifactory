@@ -1,6 +1,8 @@
+from pathlib import Path
 from test.experimental.pipelines.example import add_things, run_w_stage_depends
 
 from curifactory.experimental.artifact import Artifact
+from curifactory.experimental.caching import JsonCacher
 from curifactory.experimental.pipeline import pipeline
 from curifactory.experimental.staging import stage
 
@@ -196,6 +198,9 @@ def test_context_manager_stage_dependencies(test_manager):
 
 
 def test_context_manager_artifact_dependencies(test_manager):
+    """An artifact listed as a dependency of another by putting it in a context
+    manager should run its' compute stage before the dependent."""
+
     @stage(Artifact("unused_thing"))
     def make_thing():
         return 7
@@ -217,3 +222,21 @@ def test_context_manager_artifact_dependencies(test_manager):
     t.run()
     assert t.artifacts.unused_thing[0].computed
     assert t.artifacts.unused_thing[0].obj == 7
+
+
+def test_cacher_load_stage(test_manager):
+    """It should be possible to get an artifact in a pipeline just by specifying
+    a cacher (e.g. referencing a file that already exists)."""
+    return
+
+    @pipeline
+    def simply_load():
+        thing = JsonCacher(str(Path(test_manager.cache_path) / "test.json")).artifact(
+            "thing"
+        )
+        return thing
+
+    # TODO: create test.json
+    s = simply_load()
+    s.run()
+    assert s.artifacts.thing[0] == dict(hello="world")

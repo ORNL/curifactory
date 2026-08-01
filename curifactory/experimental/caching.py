@@ -206,8 +206,11 @@ class Cacheable:
         #     pass
         return metadata
 
-    def load_artifact(self, path: str) -> "cf.artifact.Artifact":
-        # TODO:
+    # def load_artifact(self, path: str) -> "cf.artifact.Artifact":
+    #     # TODO:
+    #     pass
+    def artifact(self, name: str) -> "cf.staging.Stage":
+        # TODO: see how DBArtifact gets hash stuff
         pass
 
     def clear(self):

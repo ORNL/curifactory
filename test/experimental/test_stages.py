@@ -43,3 +43,7 @@ def test_multiple_of_same_stage_should_return_diff_artifacts(test_manager):
     assert s1.outputs == s1.thing
     assert s2.outputs == s2.thing
     assert s1.outputs != s2.outputs
+
+
+def test_cacher_load_stage(test_manager):
+    """It should be possible to get an artifact in a pipeline just by specifying a cacher (e.g. referencing a file that already exists)"""
