@@ -706,7 +706,7 @@ class Manager:
         else:
             display_str = repr(artifact.obj)
         if len(display_str) >= 100:
-            return display_str[100]
+            return display_str[:100]
         return display_str
 
     def record_artifact(self, artifact):

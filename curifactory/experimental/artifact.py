@@ -149,6 +149,12 @@ class Artifact:
             return cf.get_manager()._pipeline_defining_stack[-1]
         return None
 
+    def __enter__(self):
+        cf.staging.STAGE_CONTEXT.stage_dependencies.append(self.compute)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        cf.staging.STAGE_CONTEXT.stage_dependencies.remove(self.compute)
+
     def compute_hash(self):
         if self.compute is None:
             return "", {}

@@ -1,5 +1,5 @@
 from curifactory.experimental.artifact import Artifact
-from curifactory.experimental.stage import Stage, stage
+from curifactory.experimental.staging import Stage, stage
 
 
 def test_basic_stage_def(test_manager):

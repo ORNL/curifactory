@@ -12,7 +12,7 @@ from curifactory.experimental import (  # pipeline,; stage,
 )
 from curifactory.experimental.artifact import Artifact, ArtifactList, DBArtifact
 from curifactory.experimental.pipeline import Pipeline, PipelineFromRef, pipeline
-from curifactory.experimental.stage import (
+from curifactory.experimental.staging import (
     ConfigResolve,
     OutputArtifactPathResolve,
     Stage,

@@ -5,7 +5,7 @@ import idonotexist
 from curifactory.experimental.artifact import Artifact
 from curifactory.experimental.caching import JsonCacher
 from curifactory.experimental.pipeline import pipeline
-from curifactory.experimental.stage import stage
+from curifactory.experimental.staging import stage
 
 
 @pipeline

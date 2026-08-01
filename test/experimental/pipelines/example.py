@@ -1,7 +1,7 @@
 from curifactory.experimental.artifact import Artifact, DBArtifact
 from curifactory.experimental.caching import JsonCacher, TrackingDBTableCacher
 from curifactory.experimental.pipeline import pipeline
-from curifactory.experimental.stage import stage
+from curifactory.experimental.staging import stage
 
 
 @stage(Artifact("thing1"))

@@ -117,6 +117,25 @@ class Pipeline:
                 reportables_list.extend(artifact.compute.reportables.obj)
                 handled_stages.append(artifact.compute)
 
+            # TODO: test this
+            # check for any stage dependencies of this artifact's stage
+            stage_dependencies = [*artifact.compute.dependencies]
+            # we do this while loop in case there are dependencies of
+            # dependencies etc.
+            while len(stage_dependencies) > 0:
+                dependency = stage_dependencies[0]
+                if (
+                    dependency not in handled_stages
+                    and len(dependency.reportables.obj) > 0
+                ):
+                    reportables_list.extend(dependency.reportables.obj)
+                    handled_stages.append(dependency)
+                stage_dependencies.extend(dependency.dependencies)
+                stage_dependencies.remove(dependency)
+
+        # STRT: need to also check any stages that don't have artifact outputs
+        # (from stage dependencies)
+
         return reportables_list
 
     def report(self, template="default_report.html", save: bool = False) -> str:

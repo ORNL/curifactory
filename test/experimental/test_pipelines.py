@@ -2,7 +2,7 @@ from test.experimental.pipelines.example import add_things, run_w_stage_depends
 
 from curifactory.experimental.artifact import Artifact
 from curifactory.experimental.pipeline import pipeline
-from curifactory.experimental.stage import stage
+from curifactory.experimental.staging import stage
 
 
 def test_basic_pipeline(test_manager):
@@ -166,3 +166,54 @@ def test_artifacts_from_before_stage_depends_should_show_up(test_manager):
     print(p.outputs.artifacts)
     print(p.outputs.artifact_list())
     assert len(p.artifacts.something) > 0
+
+
+def test_context_manager_stage_dependencies(test_manager):
+    """A stage listed as a dependency of another by putting it in a context
+    manager should run before the dependent."""
+
+    @stage(Artifact("unused_thing"))
+    def make_thing():
+        return 7
+
+    @stage(Artifact("thing"))
+    def make_other_thing():
+        return 8
+
+    @pipeline
+    def do_things():
+        stage1 = make_thing()
+
+        with stage1:
+            stage2 = make_other_thing()
+
+        return stage2.outputs
+
+    t = do_things("t")
+    t.run()
+    assert t.artifacts.unused_thing[0].computed
+    assert t.artifacts.unused_thing[0].obj == 7
+
+
+def test_context_manager_artifact_dependencies(test_manager):
+    @stage(Artifact("unused_thing"))
+    def make_thing():
+        return 7
+
+    @stage(Artifact("thing"))
+    def make_other_thing():
+        return 8
+
+    @pipeline
+    def do_things():
+        artifact_1 = make_thing().outputs
+
+        with artifact_1:
+            stage2 = make_other_thing()
+
+        return stage2.outputs
+
+    t = do_things("t")
+    t.run()
+    assert t.artifacts.unused_thing[0].computed
+    assert t.artifacts.unused_thing[0].obj == 7
