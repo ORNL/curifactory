@@ -6,6 +6,7 @@ import argparse
 import logging
 import os
 import shutil
+import sys
 from dataclasses import MISSING, fields
 
 import argcomplete
@@ -830,6 +831,13 @@ def main():  # noqa: C901
         dest="replace",
         help="Replace specific artifacts with other artifacts.",
     )
+    map_parser.add_argument(
+        "-x",
+        "--execute",
+        action="store_true",
+        dest="execute",
+        help="Display the map and then prompt to run the specified command.",
+    )
 
     # diag_parser = subparsers.add_parser("diagram", help="Render pipeline diagram")
     # diag_parser.add_argument("pipeline")
@@ -886,6 +894,24 @@ def main():  # noqa: C901
         cmd_db(parsed, parser, db_parser)
     elif parsed.command == "map":
         cmd_map(parsed, parser, map_parser)
+
+        if parsed.execute:
+            choice = ""
+            while choice not in ["y", "n"]:
+                print("Run mapped pipeline? [y/n] ", end="")
+                choice = input().lower()
+            if choice == "y":
+                new_cmd = [*sys.argv]
+                new_cmd[1] = "run"
+                if "-x" in new_cmd:
+                    new_cmd.remove("-x")
+                if "--execute" in new_cmd:
+                    new_cmd.remove("--execute")
+                print()
+                print(sys.argv[1:])
+                print(new_cmd[1:])
+                parsed, unknown = parser.parse_known_args(new_cmd[1:])
+                cmd_run(parsed, parser, run_parser)
     elif parsed.command == "ls":
         cmd_ls(parsed, parser, ls_parser)
     elif parsed.command == "reports":

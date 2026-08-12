@@ -246,6 +246,19 @@ class Cacheable:
         return cacher_class(**cacher_params)
 
 
+class TextCacher(Cacheable):
+    params = ["extension", "path_override"]
+
+    def __init__(self, path_override: str = None, extension: str = ".txt"):
+        super().__init__(path_override, extension)
+
+    def save_obj(self, obj):
+        Path(self.get_path()).write_text(str(obj))
+
+    def load_obj(self):
+        return Path(self.get_path()).read_text()
+
+
 class JsonCacher(Cacheable):
     params = ["path_override"]
 
