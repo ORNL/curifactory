@@ -20,6 +20,7 @@ from jinja2 import ChoiceLoader, DictLoader, Environment
 from rich import get_console
 from rich.logging import RichHandler
 
+import curifactory
 import curifactory.experimental as cf
 
 
@@ -865,13 +866,29 @@ class Manager:
         pipeline_id = uuid4()  # TODO: should base on reference name?
         run_num = self.get_next_pipeline_run_number(pipeline)
 
+        self.logger.info(f"Collecting environment metadata")
+        hostname = gethostname()
+        username = getuser()
+        commit = cf.utils.get_current_commit()
+        is_dirty = cf.utils.check_git_dirty_workingdir()
+        patch = cf.utils.get_git_dirty_patch()
+        env_info = {
+            "os": cf.utils.get_os(),
+            "cf": curifactory.__version__,
+        }
+        pip_env = cf.utils.get_pip_freeze()
+        conda_env = cf.utils.get_conda_env()
+
         pipeline.db_id = pipeline_id
         pipeline.run_number = run_num
         pipeline.start_timestamp = datetime.now()
         pipeline.reference = self.get_reference_name(pipeline)
-
-        hostname = gethostname()
-        username = getuser()
+        pipeline.commit = commit
+        pipeline.dirty_workdir = is_dirty
+        pipeline.git_diff = patch
+        pipeline.pip_env = pip_env
+        pipeline.conda_env = conda_env
+        pipeline.host_env = env_info
 
         hash, _ = pipeline.compute_hash()
 
@@ -896,9 +913,15 @@ class Manager:
                         hash,
                         params,
                         user,
-                        hostname
+                        hostname,
+                        dirty,
+                        commit,
+                        git_diff,
+                        host_env,
+                        pip_env,
+                        conda_env
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     pipeline_id,
@@ -911,6 +934,12 @@ class Manager:
                     cleaned_parameters,
                     username,
                     hostname,
+                    is_dirty,
+                    commit,
+                    patch,
+                    env_info,
+                    pip_env,
+                    conda_env,
                 ],
             )
 

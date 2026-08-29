@@ -91,7 +91,28 @@ def migration_20260210(db):
     )
 
 
+def migration_20260829(db):
+    db.sql(
+        """
+        ALTER TABLE cf_run
+        ADD COLUMN host_env JSON;
+
+        ALTER TABLE cf_run
+        ADD COLUMN conda_env VARCHAR;
+
+        ALTER TABLE cf_run
+        ADD COLUMN pip_env VARCHAR;
+
+        ALTER TABLE cf_run
+        ADD COLUMN git_diff VARCHAR;
+
+        INSERT INTO cf_meta (schema_version) VALUES (20260829);
+    """
+    )
+
+
 MIGRATIONS = {
     1: original_tables,
     20260210: migration_20260210,
+    20260829: migration_20260829,
 }

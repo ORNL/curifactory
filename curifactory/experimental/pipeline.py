@@ -60,6 +60,12 @@ class Pipeline:
         self.end_timestamp = None
         self.reference: str = None
         self.run_number: int = None
+        self.commit: str = None
+        self.dirty_workdir: bool = False
+        self.git_diff: str = None
+        self.pip_env: str = None
+        self.conda_env: str = None
+        self.host_env: dict = None
 
         # cf.get_manager().parameterized_pipelines[self.__class__].append(self)
 
@@ -394,6 +400,12 @@ class Pipeline:
         pipeline.end_timestamp = pipeline_row.end_time
         pipeline.reference = pipeline_row.reference
         pipeline.run_number = pipeline_row.run_number
+        pipeline.commit = pipeline_row.commit
+        pipeline.dirty_workdir = pipeline_row.dirty
+        pipeline.git_diff = pipeline_row.git_diff
+        pipeline.pip_env = pipeline_row.pip_env
+        pipeline.conda_env = pipeline_row.conda_env
+        pipeline.host_env = pipeline_row.host_env
 
         cf.get_manager()._pipeline_defining_stack.append(pipeline)
         target_artifact = cf.artifact.Artifact.load_From_uuid(target_artifact_row.id)
@@ -660,6 +672,12 @@ class PipelineFromRef(Pipeline):
         self.run_number = pipeline_row.run_number
         self.name = pipeline_row.pipeline_name
         # TODO: should also grab pipeline_class?
+        self.commit = pipeline_row.commit
+        self.dirty_workdir = pipeline_row.dirty
+        self.git_diff = pipeline_row.git_diff
+        self.pip_env = pipeline_row.pip_env
+        self.conda_env = pipeline_row.conda_env
+        self.host_env = pipeline_row.host_env
 
     def define(self):
         target_artifact = cf.artifact.Artifact.load_from_uuid(
