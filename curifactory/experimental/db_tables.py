@@ -30,6 +30,7 @@ SCHEMAS = {
         "conda_env VARCHAR",
         "pip_env VARCHAR",
         "git_diff VARCHAR",
+        "cli VARCHAR",
     ],
     "cf_stage": [
         "id UUID",

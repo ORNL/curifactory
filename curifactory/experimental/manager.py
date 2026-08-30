@@ -192,6 +192,24 @@ class Manager:
                     <pre>
 {{ parameters }}
                     </pre>
+
+                    <h2>Environment</h2>
+                    <details>
+                        <summary>Host Environment</summary>
+                        {{ host_env }}
+                    </details>
+                    <details>
+                        <summary>Pip freeze</summary>
+                        <pre>
+{{ pip_env }}
+                        </pre>
+                    </details>
+                    <details>
+                        <summary>Conda environment</summary>
+                        <pre>
+{{ conda_env }}
+                        </pre>
+                    </details>
                 </body>
             </html>
             """,
@@ -243,6 +261,9 @@ class Manager:
         self.current_stage = None
         self.currently_recording: bool = False
 
+        self.current_cli: str = None
+        """Tracks what the command used to run this was, if pipeline spawned from CLI."""
+
         self.error_state: bool = False
 
         self.logging_initialized: bool = False
@@ -265,7 +286,7 @@ class Manager:
                 warnings.warn(
                     "Curifactory store database is incorrect version, see `cf db version` and `cf db verify`"
                 )
-                self.logger.warn(
+                self.logger.warning(
                     "Curifactory store database is incorrect version, see `cf db version` and `cf db verify`"
                 )
 
@@ -919,9 +940,10 @@ class Manager:
                         git_diff,
                         host_env,
                         pip_env,
-                        conda_env
+                        conda_env,
+                        cli
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     pipeline_id,
@@ -940,6 +962,7 @@ class Manager:
                     env_info,
                     pip_env,
                     conda_env,
+                    self.current_cli,
                 ],
             )
 

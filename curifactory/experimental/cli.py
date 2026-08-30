@@ -116,6 +116,7 @@ def cmd_run(parsed, parser, run_parser):  # noqa: C901
     if parsed.pipeline is not None:
         manager.import_pipelines_from_module(parsed.pipeline)
     print_load_failures(parsed.debug)
+    manager.current_cli = " ".join(["cf"] + sys.argv[1:])
 
     search = parsed.pipeline
     resolved = manager.resolve_reference(search)
@@ -843,7 +844,7 @@ def main():  # noqa: C901
     # diag_parser.add_argument("pipeline")
 
     reports_parser = subparsers.add_parser("reports", help="Run HTML reports server")
-    reports_parser.add_argument("-p", "--port")
+    reports_parser.add_argument("-p", "--port", default=8130)
     reports_parser.add_argument(
         "--gen-index",
         action="store_true",

@@ -155,7 +155,7 @@ class Pipeline:
         try:
             map = self.visualize().pipe(format="svg", encoding="utf-8")
         except ExecutableNotFound:
-            manager.logger.warn(
+            manager.logger.warning(
                 "Graphviz executable not found, pipeline maps may not render"
             )
             map = "<p style='color: red' class='error graphviz'>No graphviz exeuctable found, cannot render map.</p>"
@@ -172,7 +172,12 @@ class Pipeline:
                 "Run number": self.run_number,
                 "Start": self.start_timestamp,
                 "End": self.end_timestamp,
+                "Git commit": self.commit,
             },
+            is_dirty=self.dirty_workdir,
+            host_env=self.host_env,
+            conda_env=self.conda_env,
+            pip_env=self.pip_env,
         )
 
         if save:

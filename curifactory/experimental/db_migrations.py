@@ -106,6 +106,9 @@ def migration_20260829(db):
         ALTER TABLE cf_run
         ADD COLUMN git_diff VARCHAR;
 
+        ALTER TABLE cf_run
+        ADD COLUMN cli VARCHAR;
+
         INSERT INTO cf_meta (schema_version) VALUES (20260829);
     """
     )
