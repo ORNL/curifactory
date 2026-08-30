@@ -21,6 +21,15 @@ if os.name != "nt":
 import curifactory.experimental as cf
 
 
+class ArtifactTuple(tuple):
+    """Represents a tuple of artifacts returned from a single stage."""
+
+    # this is mainly so that pipeline definitions aren't full of
+    def __new__(cls, artifacts: tuple, stage: Stage):
+        cls.stage = stage
+        return super().__new__(cls, tuple(artifacts))
+
+
 class FunctionStub:
     def __init__(self, name, func_module=None):
         self.name = name
@@ -168,7 +177,8 @@ class Stage:
             if output.name is not None:
                 setattr(self, output.name, art)
             artifacts.append(art)
-        self.outputs = artifacts
+        # self.outputs = artifacts
+        self.outputs = ArtifactTuple(artifacts, self)
 
         # unclear if this is the way to go to handle more tuple like returns
         # from pipeline definitions when assigning stage outputs
@@ -962,7 +972,9 @@ def stage(
             stage_obj = Stage(
                 function, list(args), kwargs, outputs, hashing_functions, pass_self
             )
-            return stage_obj
+            # TODO: instead of returning stage_obj itself, return a specialized tuple with stage
+            # return stage_obj
+            return stage_obj.outputs
 
         return wrapper
 

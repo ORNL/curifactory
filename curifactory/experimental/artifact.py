@@ -344,6 +344,12 @@ class Artifact:
             return None
 
     @property
+    def stage(self):
+        """An 'alias' of sorts for .compute, so that it aligns with the custom
+        tuple object when only one artifact is returned from a stage instead of more."""
+        return self.compute
+
+    @property
     def context_name(self):
         current = "None"
         if self.context is not None:
