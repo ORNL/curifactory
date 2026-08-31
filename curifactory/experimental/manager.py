@@ -158,7 +158,7 @@ class Manager:
                 {% endif %}
                 &nbsp;&nbsp;</span>
 
-                <a href='{{ pipeline_run['reference'] }}.html'>{{ pipeline_run['reference'] }}</a> ({{ pipeline_run['pipeline_name'] }}) [{{ pipeline_run['user'] }}@{{ pipeline_run['hostname'] }}]
+                <a href='{{ pipeline_run['reference'] }}/{{ pipeline_run['reference'] }}.html'>{{ pipeline_run['reference'] }}</a> ({{ pipeline_run['pipeline_name'] }}) [{{ pipeline_run['user'] }}@{{ pipeline_run['hostname'] }}]
 
                 {% if not pipeline_run['succeeded'] %}
                     <span class='error_text'>{{ pipeline_run['exception'] }}</span>
@@ -234,8 +234,8 @@ class Manager:
             """,
             "reportable.html": """
                 <div class='reportable'>
-                    <a name='{{ reportable.name }}'></a>
-                    <h3>{{ reportable.name }}</h3>
+                    <a name='{{ reportable.qualified_name }}'></a>
+                    <h3>{{ reportable.qualified_name }}</h3>
                     {{ reportable.html }}
                 </div> <!-- /reportable -->
             """,
@@ -1078,6 +1078,7 @@ class Manager:
         # probably don't add a handler by default?
         # cf_logger.addHandler(logging.StreamHandler())
         self._logger = cf_logger
+        cf.utils.set_logging_prefix("")
 
     def init_logging(self):
         # set up root logging

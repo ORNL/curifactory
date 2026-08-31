@@ -52,7 +52,11 @@ def status(val: int) -> str:
 def report(reportable: reporting.Reportable):
     current_manager = get_manager()
     # TODO: maybe adding a reportable is a function on the stage?
-    current_manager.current_stage.reportables_list.append(reportable)
+    stage = current_manager.current_stage
+    stage.reportables_list.append(reportable)
+    if reportable.name is None:
+        reportable.name = str(len(stage.reportables_list) - 1)
+    reportable.qualified_name = f"{stage.name}_{stage.hash_str[:6]}_{reportable.name}"
     # reportable.stage = current_manager.current_stage
 
 

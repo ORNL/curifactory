@@ -3,6 +3,7 @@ import dataclasses
 import html
 import inspect
 import json
+from contextlib import chdir
 from dataclasses import dataclass, field, make_dataclass
 from pathlib import Path
 from typing import Any
@@ -35,7 +36,11 @@ class Pipeline:
     #     init=False,
     #     repr=False,
     # )
-    outputs: "cf.artifact.ArtifactList" = None
+    outputs: "cf.artifact.ArtifactList" = field(
+        default=None,
+        init=False,
+        repr=False,
+    )
 
     # source: str = None
 
@@ -200,6 +205,17 @@ class Pipeline:
             )
             map = "<p style='color: red' class='error graphviz'>No graphviz exeuctable found, cannot render map.</p>"
 
+        # render any reportables that need to be rendered
+        report_path = Path(manager.reports_path) / self.reference
+        report_path.mkdir()
+
+        for reportable in self.reportables:
+            # TODO: this def won't work because absolute vs relative, going ot
+            # have to os chdir and make a directory per report
+            with chdir(str(report_path)):
+                reportable.path = "."
+                reportable.render()
+
         template = manager.jinja_environment.get_template(template)
         output = template.render(
             reportables=self.reportables,
@@ -222,7 +238,12 @@ class Pipeline:
 
         if save:
             with open(
-                str(Path(manager.reports_path) / f"{self.reference}.html"), "w"
+                str(
+                    Path(manager.reports_path)
+                    / self.reference
+                    / f"{self.reference}.html"
+                ),
+                "w",
             ) as outfile:
                 outfile.write(output)
             cf.reporting.generate_index(save=True)
@@ -353,14 +374,17 @@ class Pipeline:
                 need_to_run = True
                 break
 
-        if not need_to_run:
+        if not need_to_run and len(output_artifacts) > 0:
+            # TODO: output_artifacts length check is because if you only ahve
+            # one leaf stage that's non-output, we can't load stuff
+            # properly...see NOTE: above about targets reportables
             # TODO: this is overly simplistic as multiple leaves could have come
             # from multiple runs
             manager.currently_recording = False
             manager.logger.info("Pipeline outputs already found, re-loading...")
 
             # find the previous run reference
-            metadata = targets[0].cacher.load_metadata()
+            metadata = output_artifacts[0].cacher.load_metadata()
             results = manager.search_for_artifact_generating_run(
                 metadata["artifact_id"]
             )

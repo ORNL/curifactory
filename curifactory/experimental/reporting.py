@@ -5,10 +5,13 @@ This is handled through a base ``Reportable`` class, and each reporter class
 extends it.
 """
 
+import base64
+import io
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import PIL
 
 import curifactory.experimental as cf
 
@@ -96,6 +99,44 @@ class Reportable:
     def render(self):
         """Any file outputs or calculations that should only run once go here."""
         pass
+
+
+class FigureReporter(Reportable):
+    """Adds a passed matplotlib figure to the report.
+
+    Args:
+        fig: A matplotlib figure to render.
+        kwargs: All keywords args are passed to the figures ``savefig()`` call in render.
+    """
+
+    def __init__(self, fig, name: str = None, group: str = None, embed=False, **kwargs):
+        self.kwargs = kwargs
+        """All keywords args are passed to the figures ``savefig()`` call in render."""
+        self.fig = fig
+        self.embed = embed
+        super().__init__(name=name, group=group)
+
+    def render(self):
+        if self.embed:
+            return
+
+        if "format" not in self.kwargs:
+            self.kwargs["format"] = "png"
+        self.fig.savefig(
+            f"{self.path}/{self.qualified_name}.{self.kwargs['format']}", **self.kwargs
+        )
+
+    def get_html(self) -> str:
+        if not self.embed:
+            return (
+                f"<img src='{self.path}/{self.qualified_name}.{self.kwargs['format']}'>"
+            )
+        else:
+            buf = io.BytesIO()
+            self.fig.savefig(buf)
+            buf.seek(0)
+            base64repr = base64.b64encode(buf.getvalue())
+            return f"<img src='data:image/png;base64,{base64repr.decode()}'>"
 
 
 class HTMLReporter(Reportable):
