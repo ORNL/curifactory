@@ -101,7 +101,7 @@ class Stage:
     args: list
     kwargs: dict
 
-    outputs: Union[list["cf.artifact.Artifact"], "cf.artifact.Artifact"]
+    outputs: Union[list["cf.artifact.Artifact"], "cf.artifact.Artifact", ArtifactTuple]
     hashing_functions: dict[str, callable] = None
     pass_self: bool = False
 
@@ -187,6 +187,8 @@ class Stage:
 
         # self._assign_dependents()
         self.context = self._find_context()
+        if self.context is not None:
+            self.context._stages.append(self)
         # TODO: previous context names similar to artifact?
 
         # figure out any dependencies from context managers
@@ -481,11 +483,19 @@ class Stage:
             # return (f"stage {param_value.name}.hash - '{hash_debug}'", hash_str)
             return ({"stage": param_value.name, "hash": hash_debug}, hash_str)
 
-        # 5. use the function name if it's a callable, rather than a pointer address
-        if isinstance(param_value, Callable):
+        # 5. if the thing has a defined _cf_hash (essentially a hashing function
+        # on the object definition side instead of the curifactory stage side),
+        # use that. This is particularly relevant to things that might be
+        # defined with a __call__ but aren't an actual function/don't have a
+        # __qualname__.
+        if hasattr(param_value, "_cf_hash_val"):
+            return (f"{param_name}._cf_hash_val()", param_value._cf_hash_val())
+
+        # 6. use the function name if it's a callable, rather than a pointer address
+        if isinstance(param_value, Callable) and hasattr(param_value, "__qualname__"):
             return (f"{param_name}.__qualname__", param_value.__qualname__)
 
-        # 6. otherwise just use the default representation
+        # 7. otherwise just use the default representation
         return (f"repr({param_name})", repr(param_value))
 
     def resolve_template_string(self, str_to_format: str) -> str:
@@ -618,7 +628,7 @@ class Stage:
 
     def reset_map(self):
         self.map_status = None
-        if isinstance(self.outputs, (list, cf.artifact.ArtifactList)):
+        if isinstance(self.outputs, (list, cf.artifact.ArtifactList, ArtifactTuple)):
             for artifact in self.outputs:
                 artifact.map_status = None
         else:
@@ -633,7 +643,7 @@ class Stage:
     def get_output_list(self):
         """Make it easier to act on outputs without always having to first chekc if it's a list or not."""
         # if isinstance(self.outputs, (list, cf.artifact.ArtifactList)):
-        if isinstance(self.outputs, list):
+        if isinstance(self.outputs, (list, ArtifactTuple)):
             return self.outputs
         return [self.outputs]
 
@@ -821,7 +831,10 @@ class Stage:
                 manager.logger.info(
                     f"Ensuring {self.name} stage dependency of {dependency.name}"
                 )
-                if isinstance(dependency.outputs, list) and len(dependency.outputs) > 0:
+                if (
+                    isinstance(dependency.outputs, (list, ArtifactTuple))
+                    and len(dependency.outputs) > 0
+                ):
                     for output in dependency.outputs:
                         output.get()
                         if cf.get_manager().error_state:
@@ -877,7 +890,7 @@ class Stage:
 
             # check if caching is about to happen
             caching_necessary = False
-            if type(self.outputs) is list:
+            if isinstance(self.outputs, (list, ArtifactTuple)):
                 for artifact in self.outputs:
                     if artifact.cacher is not None:
                         caching_necessary = True
@@ -893,7 +906,7 @@ class Stage:
 
             # TODO: special handling for overwrite for cacher?
             # (e.g. run clear first?)
-            if type(self.outputs) is list:
+            if isinstance(self.outputs, (list, ArtifactTuple)):
                 if len(self.outputs) < 1:
                     returns = None
                 else:

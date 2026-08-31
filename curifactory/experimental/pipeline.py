@@ -30,15 +30,18 @@ class Pipeline:
 
     # TODO: maybe outputs should be redefined to output since that can mean both
     # plural and singular (we auto-flatten in the @experiment dec)
-    outputs: "cf.artifact.ArtifactList" = field(
-        default_factory=lambda: cf.artifact.ArtifactList("outputs", []),
-        init=False,
-        repr=False,
-    )
+    # outputs: "cf.artifact.ArtifactList" = field(
+    #     default_factory=lambda: cf.artifact.ArtifactList("outputs", []),
+    #     init=False,
+    #     repr=False,
+    # )
+    outputs: "cf.artifact.ArtifactList" = None
 
     # source: str = None
 
     def __post_init__(self):
+
+        self._stages = []
 
         cf.get_manager()._pipeline_defining_stack.append(self)
         self.ensure_context_copies()
@@ -99,7 +102,38 @@ class Pipeline:
 
     @property
     def artifacts(self):
-        return cf.artifact.ArtifactFilter(self.outputs.artifact_list())
+        # TODO: may need to base this on _all_ artifacts, not just outputs
+        all_artifacts = []
+        for stage in self.stages:
+            if isinstance(stage.outputs, cf.artifact.Artifact):
+                all_artifacts.append(stage.outputs)
+            else:
+                all_artifacts.extend(stage.outputs)
+        # return cf.artifact.ArtifactFilter(self.outputs.artifact_list())
+        return cf.artifact.ArtifactFilter(all_artifacts)
+
+    @property
+    def stages(self):
+        return self._stages
+
+    @property
+    def leaf_stages(self):
+        leaves = []
+        for stage1 in self.stages:
+            found = False
+            for stage2 in self.stages:
+                if stage1 == stage2:
+                    continue
+                if stage1 in stage2.dependencies:
+                    found = True
+                    break
+                for artifact in stage2.artifacts:
+                    if stage1 == artifact.compute:
+                        found = True
+                        break
+            if not found:
+                leaves.append(stage1)
+        return leaves
 
     @property
     def parameters(self) -> dict[str, Any]:
@@ -112,32 +146,38 @@ class Pipeline:
     @property
     def reportables(self):
         reportables_list = []
-        handled_stages = []
-        for artifact in self.artifacts:
-            if artifact.compute is None:
-                continue
-            if (
-                artifact.compute not in handled_stages
-                and len(artifact.compute.reportables.obj) > 0
-            ):
-                reportables_list.extend(artifact.compute.reportables.obj)
-                handled_stages.append(artifact.compute)
 
-            # TODO: test this
-            # check for any stage dependencies of this artifact's stage
-            stage_dependencies = [*artifact.compute.dependencies]
-            # we do this while loop in case there are dependencies of
-            # dependencies etc.
-            while len(stage_dependencies) > 0:
-                dependency = stage_dependencies[0]
-                if (
-                    dependency not in handled_stages
-                    and len(dependency.reportables.obj) > 0
-                ):
-                    reportables_list.extend(dependency.reportables.obj)
-                    handled_stages.append(dependency)
-                stage_dependencies.extend(dependency.dependencies)
-                stage_dependencies.remove(dependency)
+        for stage in self.stages:
+            if len(stage.reportables.obj) > 0:
+                reportables_list.extend(stage.reportables.obj)
+
+        # reportables_list = []
+        # handled_stages = []
+        # for artifact in self.artifacts:
+        #     if artifact.compute is None:
+        #         continue
+        #     if (
+        #         artifact.compute not in handled_stages
+        #         and len(artifact.compute.reportables.obj) > 0
+        #     ):
+        #         reportables_list.extend(artifact.compute.reportables.obj)
+        #         handled_stages.append(artifact.compute)
+        #
+        #     # TODO: test this
+        #     # check for any stage dependencies of this artifact's stage
+        #     stage_dependencies = [*artifact.compute.dependencies]
+        #     # we do this while loop in case there are dependencies of
+        #     # dependencies etc.
+        #     while len(stage_dependencies) > 0:
+        #         dependency = stage_dependencies[0]
+        #         if (
+        #             dependency not in handled_stages
+        #             and len(dependency.reportables.obj) > 0
+        #         ):
+        #             reportables_list.extend(dependency.reportables.obj)
+        #             handled_stages.append(dependency)
+        #         stage_dependencies.extend(dependency.dependencies)
+        #         stage_dependencies.remove(dependency)
 
         # STRT: need to also check any stages that don't have artifact outputs
         # (from stage dependencies)
@@ -198,6 +238,8 @@ class Pipeline:
 
     def map(self):
         """Assumes define() has already run."""
+        # TODO: should go based on all artifacts, not just outputs? (probably
+        # also needs the leaves first though)
         return self.outputs.map()
 
         # TODO: do any necessary collapsing of sufficiently equivalent artifacts
@@ -240,8 +282,18 @@ class Pipeline:
         manager.current_pipeline_run = None
         manager.record_pipeline_run_completion(self)
 
+    # def visualize(self, dot=None, **kwargs):
+    #     return self.outputs.visualize(dot, leave_out_context=self.name, **kwargs)
+
     def visualize(self, dot=None, **kwargs):
-        return self.outputs.visualize(dot, leave_out_context=self.name, **kwargs)
+        for artifact in self.artifacts:
+            # print(artifact, self.outputs)
+            # if artifact != self.outputs:
+            dot = artifact.visualize(dot, leave_out_context=self.name, **kwargs)
+        # return self.outputs.visualize(dot, leave_out_context=self.name, **kwargs)
+        for stage in self.stages:
+            dot = stage.visualize(dot, leave_out_context=self.name, **kwargs)
+        return dot
 
     def log_verification_checks(self):
         all_good = True
@@ -252,7 +304,7 @@ class Pipeline:
             f"Pre-consolidation checks: {'good' if all_good else 'bad'}"
         )
         if not all_good:
-            cf.get_manager().logger.warn(
+            cf.get_manager().logger.warning(
                 f"Pre-consolidation checks failed:\n {self.pre_consolidation_checks}"
             )
 
@@ -264,14 +316,15 @@ class Pipeline:
             f"Post-consolidation checks: {'good' if all_good else 'bad'}"
         )
         if not all_good:
-            cf.get_manager().logger.warn(
+            cf.get_manager().logger.warning(
                 f"Post-consolidation checks failed:\n {self.post_consolidation_checks}"
             )
 
     def run(self):
         manager = cf.get_manager()
         manager.current_pipeline_run = self
-        manager.current_pipeline_run_target = self.outputs
+        # manager.current_pipeline_run_target = self.outputs
+        manager.current_pipeline_run_target = None
 
         self.log_verification_checks()
 
@@ -282,16 +335,32 @@ class Pipeline:
                 overwrites_found = True
                 break
 
-        if (
-            self.outputs.cacher is not None
-            and self.outputs.cacher.check(silent=True)
-            and not overwrites_found
-        ):
+        targets = self.leaf_stages
+        # TODO: this is probably where we should check for targets reportables
+        # too?
+
+        output_artifacts = []
+        for target in targets:
+            output_artifacts.extend(target.get_output_list())
+
+        need_to_run = False
+        for artifact in output_artifacts:
+            if (
+                artifact.cacher is None
+                or not artifact.cacher.check(silent=True)
+                or overwrites_found
+            ):
+                need_to_run = True
+                break
+
+        if not need_to_run:
+            # TODO: this is overly simplistic as multiple leaves could have come
+            # from multiple runs
             manager.currently_recording = False
             manager.logger.info("Pipeline outputs already found, re-loading...")
 
             # find the previous run reference
-            metadata = self.outputs.cacher.load_metadata()
+            metadata = targets[0].cacher.load_metadata()
             results = manager.search_for_artifact_generating_run(
                 metadata["artifact_id"]
             )
@@ -301,10 +370,42 @@ class Pipeline:
             self.run_number = results["run_number"]
             self.start_timestamp = results["start_time"]
             self.end_timestamp = results["end_time"]
+            self.commit = results["commit"]
+            self.dirty_workdir = results["dirty"]
+            self.git_diff = results["git_diff"]
+            self.pip_env = results["pip_env"]
+            self.conda_env = results["conda_env"]
+            self.host_env = results["host_env"]
 
-            # returns = self.outputs.get()
-            self.outputs.get()
+            for artifact in output_artifacts:
+                artifact.get()
+            # TODO: also run any non-output stages??
             return self.outputs
+
+        # if (
+        #     self.outputs.cacher is not None
+        #     and self.outputs.cacher.check(silent=True)
+        #     and not overwrites_found
+        # ):
+        #     manager.currently_recording = False
+        #     manager.logger.info("Pipeline outputs already found, re-loading...")
+        #
+        #     # find the previous run reference
+        #     metadata = self.outputs.cacher.load_metadata()
+        #     results = manager.search_for_artifact_generating_run(
+        #         metadata["artifact_id"]
+        #     )
+        #     manager.logger.info(f"Collecting outputs from {results['reference']}")
+        #     self.reference = results["reference"]
+        #     self.db_id = results["id"]
+        #     self.run_number = results["run_number"]
+        #     self.start_timestamp = results["start_time"]
+        #     self.end_timestamp = results["end_time"]
+        #
+        #     # returns = self.outputs.get()
+        #     self.outputs.get()
+        #     return self.outputs
+        #     # return self.outputs
 
         manager.currently_recording = True
 
@@ -323,12 +424,23 @@ class Pipeline:
         # else:
         #     returns = self.outputs.compute()
 
-        self.outputs.get()
+        # self.outputs.get()
+        leaves_accounted_for = []
+        for artifact in output_artifacts:
+            artifact.get()
+            if artifact.compute not in leaves_accounted_for:
+                leaves_accounted_for.append(artifact.compute)
+
+        for target in targets:
+            if target not in leaves_accounted_for:
+                target()
 
         manager.current_pipeline_run = None
         if not manager.error_state:
             manager.record_pipeline_run_completion(self)
         manager.stop_file_logging()
+
+        self.report(save=True)
 
         # return returns
         return self.outputs
@@ -533,37 +645,53 @@ def pipeline(function):  # noqa: C901
         # artifacts flow)
         outputs = function(**kwargs)
 
+        if outputs is None:
+            return None
+
         # TODO: use an artifactfilter instead?
-        pipeline_outputs = cf.artifact.ArtifactList("outputs")
+        # pipeline_outputs = cf.artifact.ArtifactList("outputs")
         # pipeline_outputs = cf.artifact.ArtifactFilter(filter_string=f"{self.name}.outputs") # ???
+
+        outputs_list = []
+
         if type(outputs) is tuple:
             # print("IT's A TUPLE")
             for output in outputs:
                 # print(output)
-                if isinstance(output, dict):
-                    for key, value in output.items():
-                        setattr(self, key, value)
-                elif isinstance(output, list):
+                # if isinstance(output, dict):
+                #     for key, value in output.items():
+                #         # TODO: eventually add this functionality back in as a
+                #         # parameter of the pipeline decorator
+                #         setattr(self, key, value)
+                if isinstance(output, list):
                     # print("it's a LIST")
                     for sub_output in output:
-                        pipeline_outputs.append(sub_output)
+                        # pipeline_outputs.append(sub_output)
+                        outputs_list.append(sub_output)
                 elif isinstance(output, cf.artifact.ArtifactList):
                     # print("ITS AN ALIST")
                     for sub_output in output:
-                        pipeline_outputs.append(sub_output)
+                        # pipeline_outputs.append(sub_output)
+                        outputs_list.append(sub_output)
                 else:
-                    pipeline_outputs.append(output)
+                    outputs_list.append(output)
+                    # pipeline_outputs.append(output)
                     # pipeline_outputs.artifacts.append(output)
                     # pipeline_outputs[output.name] = output
         else:
-            pipeline_outputs.append(outputs)
+            outputs_list.append(outputs)
+            # pipeline_outputs.append(outputs)
             # pipeline_outputs.artifacts.append(outputs)
             # pipeline_outputs[outputs.name] = outputs
 
         # flatten if single object
-        if len(pipeline_outputs) == 1:
-            pipeline_outputs = pipeline_outputs[0]
-        return pipeline_outputs
+        if len(outputs_list) == 1:
+            return outputs_list[0]
+        else:
+            pipeline_outputs = cf.artifact.ArtifactList(
+                "outputs", artifacts=outputs_list
+            )
+            return pipeline_outputs
 
     pipeline_dataclass = make_dataclass(
         function.__name__,

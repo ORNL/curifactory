@@ -911,7 +911,7 @@ class Manager:
         pipeline.conda_env = conda_env
         pipeline.host_env = env_info
 
-        hash, _ = pipeline.compute_hash()
+        # hash, _ = pipeline.compute_hash()
 
         cleaned_parameters = pipeline.parameters
         cleaned_parameters_str = json.dumps(cleaned_parameters, default=repr)
@@ -931,7 +931,6 @@ class Manager:
                         pipeline_name,
                         run_number,
                         start_time,
-                        hash,
                         params,
                         user,
                         hostname,
@@ -943,7 +942,7 @@ class Manager:
                         conda_env,
                         cli
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     pipeline_id,
@@ -952,7 +951,6 @@ class Manager:
                     pipeline.name,
                     pipeline.run_number,
                     pipeline.start_timestamp,
-                    hash,
                     cleaned_parameters,
                     username,
                     hostname,
@@ -1059,12 +1057,17 @@ class Manager:
 
         # NOTE: for now will log everything, possibly add flags later for
         # controlling if only curifactory stuff gets logged
+        # TODO: (2026-08-31) not adding to root logger because if you run a
+        # pipeline from a notebook, root logger hasn't been set and log file
+        # handling thus isn't working
         root_logger = logging.getLogger()
         root_logger.addHandler(self.log_file_handler)
+        # self._logger.addHandler(self.log_file_handler)
 
     def stop_file_logging(self):
         root_logger = logging.getLogger()
         root_logger.removeHandler(self.log_file_handler)
+        # self._logger.removeHandler(self.log_file_handler)
         self.log_file_handler = None
 
     def init_cf_logging(self):

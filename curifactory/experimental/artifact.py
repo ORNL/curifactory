@@ -311,7 +311,10 @@ class Artifact:
             # if this artifact is requested and no current target, that means
             # this is the target if a new run has to start
             manager = cf.get_manager()
-            if manager.current_pipeline_run_target is None:
+            if (
+                manager.current_pipeline_run_target is None
+                and manager.current_pipeline_run is None
+            ):
                 manager.current_pipeline_run_target = self
             # (we handle associating the ID with the pipeline run during
             # record_artifact)

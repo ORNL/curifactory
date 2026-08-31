@@ -270,7 +270,7 @@ def cmd_run(parsed, parser, run_parser):  # noqa: C901
         if "artifact" not in resolved and "artifact_list" not in resolved:
             # print(pipeline)
             pipeline.run()
-            pipeline.report(save=True)
+            # pipeline.report(save=True)
             # cf.reporting.generate_index()  # (handled in pipeline.report now)
         else:
             if "artifact" in resolved:
