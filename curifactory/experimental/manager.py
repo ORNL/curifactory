@@ -1008,6 +1008,59 @@ class Manager:
                 ),
             )
 
+    def export_run(self, reference: str, target_loc: str):
+        with self.db_connection() as db:
+            db.execute(f"""ATTACH '{target_loc}/export_store.db' as external""")
+            cf.db_tables.ensure_tables(db, "external.")
+            db.execute(
+                f"""
+                INSERT INTO external.cf_run
+                    SELECT * FROM cf_run
+                    WHERE cf_run.reference = '{reference}'
+            """
+            )
+            db.execute(
+                f"""
+                INSERT INTO external.cf_artifact
+                    SELECT cf_artifact.* FROM cf_artifact
+                    JOIN cf_run ON cf_artifact.run_id = cf_run.id
+                    WHERE cf_run.reference = '{reference}'
+            """
+            )
+            db.execute(
+                f"""
+                INSERT INTO external.cf_stage
+                    SELECT cf_stage.* FROM cf_stage
+                    JOIN cf_run ON cf_stage.run_id = cf_run.id
+                    WHERE cf_run.reference = '{reference}'
+            """
+            )
+            db.execute(
+                f"""
+                INSERT INTO external.cf_stage_input
+                    SELECT cf_stage_input.* FROM cf_stage_input
+                    JOIN cf_stage ON cf_stage_input.stage_id = cf_stage.id
+                    JOIN cf_run ON cf_stage.run_id = cf_run.id
+                    WHERE cf_run.reference = '{reference}'
+            """
+            )
+            db.execute("""DETACH external""")
+
+    def import_run(self, run_loc: str):
+        pass
+
+    def export_db(self, target_loc: str):
+        pass
+
+    def import_db(self, import_db_path: str):
+        with self.db_connection() as db:
+            db.execute(f"""ATTACH '{import_db_path}' as external""")
+            db.execute("""INSERT INTO cf_run FROM external.cf_run""")
+            db.execute("""INSERT INTO cf_stage FROM external.cf_stage""")
+            db.execute("""INSERT INTO cf_artifact FROM external.cf_artifact""")
+            db.execute("""INSERT INTO cf_stage_input FROM external.cf_stage_input""")
+            db.execute("""DETACH external""")
+
     def db_connection(self):
         return duckdb.connect(self.database_path)
 

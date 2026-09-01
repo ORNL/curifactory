@@ -79,12 +79,12 @@ SCHEMAS = {
 }
 
 
-def ensure_tables(db):
+def ensure_tables(db, prefix: str = ""):
     for table, cols in SCHEMAS.items():
         cols_str = ",\n".join(cols)
         db.sql(
             f"""
-            CREATE TABLE IF NOT EXISTS {table} (
+            CREATE TABLE IF NOT EXISTS {prefix}{table} (
                 {cols_str}
             );
         """
