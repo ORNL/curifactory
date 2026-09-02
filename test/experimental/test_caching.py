@@ -59,10 +59,14 @@ def test_caching_from_db_ref_works(clear_filesystem, test_manager):
     """Loading and "running" a reference from db should correctly pick up cache stuff"""
     p1 = add_thingsc("p1", 3, 4)
     p1.run()
+    assert p1.outputs.obj == 7
 
     run_ref = test_manager.runs.reference[0]
+    print("About to create pipelinefromref")
     p2 = PipelineFromRef(run_ref)
     p2.run()
+
+    print(p2.artifacts)
 
     assert not p2.artifacts.thing1[0].compute.computed
     assert not p2.artifacts.thing2[0].compute.computed

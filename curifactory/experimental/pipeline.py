@@ -114,8 +114,16 @@ class Pipeline:
                 all_artifacts.append(stage.outputs)
             else:
                 all_artifacts.extend(stage.outputs)
+        # if self.outputs not in all_artifacts:
+        #     all_artifacts.append(self.outputs)
         # return cf.artifact.ArtifactFilter(self.outputs.artifact_list())
-        return cf.artifact.ArtifactFilter(all_artifacts)
+
+        # recurse through each one of those sub artifacts
+        building_list = []
+        for artifact in all_artifacts:
+            building_list = artifact.artifact_list(building_list)
+
+        return cf.artifact.ArtifactFilter(building_list)
 
     @property
     def stages(self):
@@ -344,8 +352,8 @@ class Pipeline:
     def run(self):
         manager = cf.get_manager()
         manager.current_pipeline_run = self
-        # manager.current_pipeline_run_target = self.outputs
-        manager.current_pipeline_run_target = None
+        manager.current_pipeline_run_target = self.outputs
+        # manager.current_pipeline_run_target = None
 
         self.log_verification_checks()
 
@@ -810,15 +818,18 @@ class PipelineFromRef(Pipeline):
                 .df()
                 .iloc[0]
             )
-            if pd.isna(pipeline_row.target_id):
-                return
-            self.target_artifact_row = (
-                db.sql(
-                    f"select * from cf_artifact where id = '{pipeline_row.target_id}'"
+            self.target_artifact_row = None
+            if not pd.isna(pipeline_row.target_id):
+                self.target_artifact_row = (
+                    db.sql(
+                        f"select * from cf_artifact where id = '{pipeline_row.target_id}'"
+                    )
+                    .df()
+                    .iloc[0]
                 )
-                .df()
-                .iloc[0]
-            )
+            self.artifact_rows = db.sql(
+                f"select * from cf_artifact where run_id = '{pipeline_row.id}'"
+            ).df()
 
         super().__post_init__()
 
@@ -837,27 +848,54 @@ class PipelineFromRef(Pipeline):
         self.host_env = pipeline_row.host_env
 
     def define(self):
-        target_artifact = cf.artifact.Artifact.load_from_uuid(
-            self.target_artifact_row.id
-        )
-        outputs = target_artifact
 
-        pipeline_outputs = cf.artifact.ArtifactList("outputs")
+        # make these here and pass into load_from_uuid so we can share them
+        # across loading all artifacts/stages and not need to rely on the
+        # consolidation step to fix duplicates
+        building_stages = {}
+        building_artifacts = {}
 
-        if type(outputs) is tuple:
-            for output in outputs:
-                if isinstance(output, dict):
-                    for key, value in output.items():
-                        setattr(pipeline, key, value)
-                # elif isinstance(output, cf.artifact.ArtifactList):
-                #     for sub_output in output:
-                #         pipeline_outputs.append(sub_output)
-                else:
-                    pipeline_outputs.append(output)
-        else:
-            pipeline_outputs.append(outputs)
+        artifact_list = []
+        for index, artifact_row in self.artifact_rows.iterrows():
+            artifact = cf.artifact.Artifact.load_from_uuid(
+                artifact_row.id, building_stages, building_artifacts
+            )
+            artifact_list.append(artifact)
 
-        # flatten if single object
-        if len(pipeline_outputs) == 1:
-            pipeline_outputs = pipeline_outputs[0]
-        return pipeline_outputs
+        # get the outputs if relevant?
+        # outputs = None
+        # print("Checking for outputs")
+        # for artifact in artifact_list:
+        #     print(artifact)
+        #     if artifact.name == "outputs" and artifact.compute in self.leaf_stages:
+        #         outputs = artifact
+        #         break
+        #
+        # return outputs
+
+        if self.target_artifact_row is not None:
+            target_artifact = cf.artifact.Artifact.load_from_uuid(
+                self.target_artifact_row.id, building_stages, building_artifacts
+            )
+            outputs = target_artifact
+
+            pipeline_outputs = cf.artifact.ArtifactList("outputs")
+
+            if type(outputs) is tuple:
+                for output in outputs:
+                    if isinstance(output, dict):
+                        for key, value in output.items():
+                            setattr(pipeline, key, value)
+                    # elif isinstance(output, cf.artifact.ArtifactList):
+                    #     for sub_output in output:
+                    #         pipeline_outputs.append(sub_output)
+                    else:
+                        pipeline_outputs.append(output)
+            else:
+                pipeline_outputs.append(outputs)
+
+            # flatten if single object
+            if len(pipeline_outputs) == 1:
+                pipeline_outputs = pipeline_outputs[0]
+            return pipeline_outputs
+        return None

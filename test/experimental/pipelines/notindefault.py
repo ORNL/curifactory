@@ -18,9 +18,9 @@ def get_invalid_number(start: int = 6):
 
 @pipeline
 def valid(start: int = 2):
-    return get_number(start).outputs
+    return get_number(start)
 
 
 @pipeline
 def invalid(start: int = 2):
-    return get_invalid_number(start).outputs
+    return get_invalid_number(start)

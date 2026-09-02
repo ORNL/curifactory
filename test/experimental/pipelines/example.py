@@ -16,8 +16,8 @@ def get_thing2(thing1, next_num: int = 3):
 
 @pipeline
 def add_things(num1: int = 2, num2: int = 7):
-    t1 = get_thing1(num1).outputs
-    t2 = get_thing2(t1, num2).outputs
+    t1 = get_thing1(num1)
+    t2 = get_thing2(t1, num2)
     return t2
 
 
@@ -37,8 +37,8 @@ def get_thing2c(thing1, next_num: int = 3):
 
 @pipeline
 def add_thingsc(num1: int = 2, num2: int = 7):
-    t1 = get_thing1c(num1).outputs
-    t2 = get_thing2c(t1, num2).outputs
+    t1 = get_thing1c(num1)
+    t2 = get_thing2c(t1, num2)
     return t2
 
 
@@ -57,7 +57,7 @@ def run_w_stage_depends(num1: int = 2, num2: int = 6):
     stage1 = a_thing(num1)
 
     with stage1:
-        b = b_thing(num2).outputs
+        b = b_thing(num2)
 
     return b
 
@@ -69,7 +69,7 @@ def db_pipeline(db_path: str):
     # a = a_thing(4)
     # a.outputs[0].cacher = TrackingDBTableCacher(db=db)
 
-    a = a_thing(4).outputs
+    a = a_thing(4)
 
     @stage(
         Artifact(
@@ -81,6 +81,6 @@ def db_pipeline(db_path: str):
         rel = db.sql(f"SELECT {a} AS value")
         return rel
 
-    a_db = db_a_thing(db, a).outputs
+    a_db = db_a_thing(db, a)
 
     return a_db

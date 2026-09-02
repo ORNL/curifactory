@@ -57,7 +57,7 @@ def test_pipeline_of_pipelines_makes_artifact_copies(test_manager):
     @pipeline
     def add_another_thing(prev_pipe, new_num: int = 11):
         prev = prev_pipe.outputs
-        final = final_add(prev, new_num).outputs
+        final = final_add(prev, new_num)
         return final
 
     p1 = add_things("p1", num1=2, num2=7)
@@ -135,7 +135,7 @@ def test_pipeline_of_pipelines_first_stage_consolidation(test_manager):
 
 
 def test_pipeline_that_returns_alists(test_manager):
-    """A pipeline that returns a tuple of .outputs should work."""
+    """A pipeline that returns a artifact tuples should work."""
 
     @stage(Artifact("things1"), Artifact("things2"))
     def do_multiple_things(a: int = 4):
@@ -150,7 +150,7 @@ def test_pipeline_that_returns_alists(test_manager):
         stage1 = do_multiple_things(a)
         stage2 = do_more_things(b)
 
-        return stage1.outputs, stage2.outputs
+        return stage1, stage2
 
     t = things("t", 4, 5)
     t.run()
@@ -187,7 +187,7 @@ def test_context_manager_stage_dependencies(test_manager):
         stage1 = make_thing()
 
         with stage1:
-            stage2 = make_other_thing()
+            stage2 = make_other_thing().stage
 
         return stage2.outputs
 
@@ -211,12 +211,12 @@ def test_context_manager_artifact_dependencies(test_manager):
 
     @pipeline
     def do_things():
-        artifact_1 = make_thing().outputs
+        artifact_1 = make_thing()
 
         with artifact_1:
-            stage2 = make_other_thing()
+            artifact_2 = make_other_thing()
 
-        return stage2.outputs
+        return artifact_2
 
     t = do_things("t")
     t.run()

@@ -563,7 +563,10 @@ class Artifact:
             if artifact_row.is_list:
                 artifact.inner_artifact_list = stage.args
             else:
-                stage.outputs.append(artifact)
+                stage.outputs = cf.staging.ArtifactTuple(
+                    [*stage.outputs, artifact], stage=stage
+                )
+                # stage.outputs.append(artifact)
                 artifact.compute = stage
 
         building_artifacts[uuid] = artifact
@@ -573,7 +576,7 @@ class Artifact:
     def verify(self):
         if self.compute is None:
             return True
-        if isinstance(self.compute.outputs, list):
+        if isinstance(self.compute.outputs, (list, tuple, cf.staging.ArtifactTuple)):
             return self in self.compute.outputs
         return self == self.compute.outputs
 

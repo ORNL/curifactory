@@ -9,7 +9,7 @@ def test_basic_stage_def(test_manager):
     def do_nothing():
         return None
 
-    s = do_nothing()
+    s = do_nothing().stage
     assert isinstance(s, Stage)
     s()
 
@@ -21,7 +21,7 @@ def test_stage_with_return(test_manager):
     def return_thing():
         return 5
 
-    s1 = return_thing()
+    s1 = return_thing().stage
     assert hasattr(s1, "thing")
     assert isinstance(s1.thing, Artifact)
     output = s1()
@@ -36,8 +36,8 @@ def test_multiple_of_same_stage_should_return_diff_artifacts(test_manager):
     def return_thing():
         return 5
 
-    s1 = return_thing()
-    s2 = return_thing()
+    s1 = return_thing().stage
+    s2 = return_thing().stage
 
     assert s1.thing != s2.thing
     assert s1.outputs == s1.thing

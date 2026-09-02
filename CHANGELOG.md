@@ -5,6 +5,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.20.3] - 2026-09-02
+
+### Added
+* Environment metadata saved along with each run in the db (`curifactory.experimental`)
+* Figure reporters (`curifactory.experimental`)
+* Artifact context managers to allow implicit stage dependencies
+
+### Changed
+* Calling a stage in a pipeline returns an `ArtifactTuple`, a normal tuple but
+with the ability to access the stage object through `.stage`. This reduces the
+amount of `.outputs` everywhere in a pipeline (`curifactory.experimental`)
+* Running a pipeline runs to all leaf nodes in the DAG rather than just the
+explicitly specified outputs. This allows analysis stages that return no
+artifacts, and also not requiring pipelines to have a return. (`curifactory.experimental`)
+
+
+
+
 ## [0.20.2] - 2026-06-23
 
 ### Added
