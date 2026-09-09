@@ -3,6 +3,7 @@ import json
 import os
 import pickle
 import sys
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -57,6 +58,15 @@ class Cacheable:
             path = self.artifact.compute.resolve_template_string(path)
         path = path.format(**format_dict)
         return path
+
+    def __deepcopy__(self, memo):
+        param_copies = {}
+        for param in self.params:
+            param_copies[param] = deepcopy(getattr(self, param), memo)
+
+        # TODO: how to get specific subclass I am?
+        cls = type(self)
+        return cls(**param_copies)
 
     def _resolve_suffix(
         self, path: str, suffix: str, add_extension: bool = True

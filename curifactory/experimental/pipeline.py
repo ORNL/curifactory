@@ -741,6 +741,8 @@ def pipeline(function):  # noqa: C901
     # return wrapper
 
     class PipelineFactoryWrapper:
+        __name__ = "Pipeline"
+
         def __init__(
             self,
             pipeline_type_name,

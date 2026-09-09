@@ -584,13 +584,19 @@ def cmd_ls(parsed, parser, ls_parser):  # noqa: C901
 
     if parsed.list_paths:
         resolved = manager.resolve_reference(search)
-        for artifact in resolved["artifact_list"]:
+        artifact_list = []
+        if "artifact_list" in resolved:
+            artifact_list = resolved["artifact_list"]
+        elif "pipeline_instance" in resolved:
+            artifact_list = resolved["pipeline_instance"].artifacts
+        elif "reference_instance" in resolved and search != "":
+            artifact_list = resolved["reference_instance"].artifacts
+        for artifact in artifact_list:
             if artifact.cacher is not None:
                 print(artifact.cacher.load_paths())
         exit()
 
     resolved = manager.resolve_reference(search)
-    # print(resolved)
     if (
         "artifact_list" in resolved and len(resolved["artifact_list"]) > 0
     ):  # TODO: why is a blank artifact_list sometimes being added?
