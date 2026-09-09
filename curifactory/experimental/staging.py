@@ -10,7 +10,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import wraps
-from typing import Any, Union
+from typing import Any
 from uuid import UUID
 
 import pandas as pd

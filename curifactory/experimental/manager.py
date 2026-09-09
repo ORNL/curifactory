@@ -890,7 +890,7 @@ class Manager:
         pipeline_id = uuid4()  # TODO: should base on reference name?
         run_num = self.get_next_pipeline_run_number(pipeline)
 
-        self.logger.info(f"Collecting environment metadata")
+        self.logger.info("Collecting environment metadata")
         hostname = gethostname()
         username = getuser()
         commit = cf.utils.get_current_commit()
