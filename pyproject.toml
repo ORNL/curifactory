@@ -2,7 +2,7 @@
 profile = "black"
 
 [tool.setuptools]
-packages = ["curifactory"]
+packages = ["curifactory", "curifactory.experimental"]
 
 [tool.setuptools.dynamic]
 version = {attr = "curifactory.__version__"}

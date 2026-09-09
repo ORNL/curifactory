@@ -32,4 +32,4 @@ from curifactory.staging import (
     stage,
 )
 
-__version__ = "0.20.3"
+__version__ = "0.20.4"
