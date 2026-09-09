@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import importlib
 import json
 import os
@@ -219,7 +221,7 @@ class Cacheable:
     # def load_artifact(self, path: str) -> "cf.artifact.Artifact":
     #     # TODO:
     #     pass
-    def artifact(self, name: str) -> "cf.staging.Stage":
+    def artifact(self, name: str) -> cf.Stage:
         # TODO: see how DBArtifact gets hash stuff
         pass
 
@@ -246,7 +248,7 @@ class Cacheable:
     @staticmethod
     def get_from_db_metadata(
         cacher_module: str, cacher_type: str, cacher_params: dict[str, Any]
-    ):
+    ) -> Cacheable:
         cf.get_manager().logger.debug(
             f"Instantiating cacher from module '{cacher_module}' of type '{cacher_type}' with params {cacher_params}"
         )
@@ -813,7 +815,7 @@ class ReportablesCacher(FileReferenceCacher):
         super().__init__(*args, **kwargs)
         self.extension = None
 
-    def save_obj(self, reportables_list: list["cf.reporting.Reportable"]):
+    def save_obj(self, reportables_list: list[cf.reporting.Reportable]):
         paths = []
         for i, reportable in enumerate(reportables_list):
             name = reportable.name if reportable.name is not None else str(i)
@@ -822,7 +824,7 @@ class ReportablesCacher(FileReferenceCacher):
             paths.append(path)
         super().save_obj(paths)
 
-    def load_obj(self) -> list["cf.reporting.Reportable"]:
+    def load_obj(self) -> list[cf.reporting.Reportable]:
         reportables = []
         paths = super().load_obj()
         for path in paths:

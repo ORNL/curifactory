@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import dataclasses
 import html
@@ -36,7 +38,7 @@ class Pipeline:
     #     init=False,
     #     repr=False,
     # )
-    outputs: "cf.artifact.ArtifactList" = field(
+    outputs: cf.ArtifactList = field(
         default=None,
         init=False,
         repr=False,
@@ -93,16 +95,16 @@ class Pipeline:
         in gets automatically copied instead."""
 
         for name, value in self.parameters.items():
-            if isinstance(value, (Pipeline, cf.artifact.Artifact)):
+            if isinstance(value, (Pipeline, cf.Artifact)):
                 # print(f"Copying {name}...")
                 setattr(self, name, value.copy())
             elif isinstance(value, list):
                 for index, item in enumerate(value):
-                    if isinstance(item, (Pipeline, cf.artifact.Artifact)):
+                    if isinstance(item, (Pipeline, cf.Artifact)):
                         value[index] = item.copy()
             elif isinstance(value, dict):
                 for key, value_j in value.items():
-                    if isinstance(value_j, (Pipeline, cf.artifact.Artifact)):
+                    if isinstance(value_j, (Pipeline, cf.Artifact)):
                         value[key] = value_j.copy()
 
     @property
@@ -110,7 +112,7 @@ class Pipeline:
         # TODO: may need to base this on _all_ artifacts, not just outputs
         all_artifacts = []
         for stage in self.stages:
-            if isinstance(stage.outputs, cf.artifact.Artifact):
+            if isinstance(stage.outputs, cf.Artifact):
                 all_artifacts.append(stage.outputs)
             else:
                 all_artifacts.extend(stage.outputs)
@@ -126,11 +128,11 @@ class Pipeline:
         return cf.artifact.ArtifactFilter(building_list)
 
     @property
-    def stages(self):
+    def stages(self) -> list[cf.Stage]:
         return self._stages
 
     @property
-    def leaf_stages(self):
+    def leaf_stages(self) -> list[cf.Stage]:
         leaves = []
         for stage1 in self.stages:
             found = False
@@ -258,7 +260,7 @@ class Pipeline:
 
         return output
 
-    def define(self) -> list["cf.artifact.Artifact"]:
+    def define(self) -> list[cf.Artifact]:
         pass
 
     # TODO: require new name to be passed?
@@ -512,9 +514,9 @@ class Pipeline:
 
     def _inner_copy(
         self,
-        building_stages: dict["cf.stage.Stage", "cf.stage.Stage"] = None,
-        building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
-    ):
+        building_stages: dict[cf.Stage, cf.Stage] = None,
+        building_artifacts: dict[cf.Artifact, cf.Artifact] = None,
+    ) -> cf.Pipeline:
         new_pipeline = self.modify()
         # if building_stages is None:
         #     building_stages = {}
@@ -528,7 +530,7 @@ class Pipeline:
         return self._inner_copy(None, None)
 
     @staticmethod
-    def load_from_refname(refname: str):
+    def load_from_refname(refname: str) -> cf.Pipeline:
         with cf.get_manager().db_connection() as db:
             pipeline_row = (
                 db.sql(f"select * from cf_run where reference = '{refname}'")

@@ -5,6 +5,8 @@ This is handled through a base ``Reportable`` class, and each reporter class
 extends it.
 """
 
+from __future__ import annotations
+
 import base64
 import io
 from pathlib import Path
@@ -73,7 +75,7 @@ class Reportable:
         # self.stage: str = ""
         # """The name of the stage this reportable comes from, used as part of the title."""
         # self.stage = None
-        self.artifact = None
+        self.artifact: cf.Artifact = None
 
     def __getstate__(self):
         # avoid pickling the container artifact and stage etc.

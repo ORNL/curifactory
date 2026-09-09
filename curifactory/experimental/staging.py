@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import hashlib
 import inspect
@@ -101,7 +103,7 @@ class Stage:
     args: list
     kwargs: dict
 
-    outputs: Union[list["cf.artifact.Artifact"], "cf.artifact.Artifact", ArtifactTuple]
+    outputs: list[cf.artifact.Artifact] | cf.artifact.Artifact | ArtifactTuple
     hashing_functions: dict[str, callable] = None
     pass_self: bool = False
 
@@ -110,7 +112,7 @@ class Stage:
 
     db_id: UUID = None
 
-    dependencies: list["Stage"] = field(default_factory=list)
+    dependencies: list[Stage] = field(default_factory=list)
     """Explicit stage dependencies that don't have outputs used in this stage
     but are still required to run first. (Either set explicitly or use
     within a context manager)"""
@@ -202,7 +204,7 @@ class Stage:
         self._reportables: cf.artifact.StageReportables = None
         self._reportables_ready: bool = False
 
-    def _find_context(self) -> "cf.pipeline.Pipeline":
+    def _find_context(self) -> cf.Pipeline:
         if len(cf.get_manager()._pipeline_defining_stack) > 0:
             # self.context = cf.get_manager()._pipeline_defining_stack[-1]
             return cf.get_manager()._pipeline_defining_stack[-1]
@@ -267,9 +269,9 @@ class Stage:
     def _inner_copy(
         self,
         # TODO: types below are wrong
-        building_stages: dict["cf.stage.Stage", "cf.stage.Stage"] = None,
-        building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
-    ) -> tuple["Stage", bool]:
+        building_stages: dict[cf.Stage, cf.Stage] = None,
+        building_artifacts: dict[cf.Artifact, cf.Artifact] = None,
+    ) -> tuple[Stage, bool]:
         """Returns the created (or prev) stage and whether it was indeed created or not."""
         if building_stages is None:
             building_stages = {}
@@ -335,7 +337,7 @@ class Stage:
         building_stages: dict = None,
         building_artifacts: dict = None,
         prepopulated_stage=None,
-    ):
+    ) -> Stage:
         """Recurisvely load all input artifacts and their dependencies and then return the stage they feed into. Note that function stubs are used by default."""
         if building_stages is None:
             building_stages = {}
@@ -559,10 +561,10 @@ class Stage:
         # overwrite eachother in the tree dict. Will need to handle auto array
         # logic for ArtifactLists? Or make everything be a list of dicts instead
         for arg in self.args:
-            if isinstance(arg, cf.artifact.Artifact):
+            if isinstance(arg, cf.Artifact):
                 tree[arg.name] = arg.compute._artifact_tree()
         for kwarg in self.kwargs:
-            if isinstance(self.kwargs[kwarg], cf.artifact.Artifact):
+            if isinstance(self.kwargs[kwarg], cf.Artifact):
                 tree[arg.name] = arg.compute._artifact_tree()
 
         if len(tree.keys()) == 0:
@@ -717,7 +719,7 @@ class Stage:
         return self.function.__name__
 
     @property
-    def artifacts(self):
+    def artifacts(self) -> cf.artifact.ArtifactFilter:
         artifact_list = []
         for arg in self._combined_args():
             if isinstance(arg, cf.artifact.Artifact):
@@ -918,7 +920,7 @@ class Stage:
                             art.cacher.save(art.obj)
                     returns = self.outputs
             else:
-                art: "cf.artifact.Artifact" = self.outputs
+                art: cf.artifact.Artifact = self.outputs
                 art.computed = True
                 art.obj = function_outputs
                 manager.record_artifact(art)
@@ -972,7 +974,7 @@ class Stage:
 
 
 def stage(
-    *outputs: list["cf.artifact.Artifact"],
+    *outputs: list[cf.Artifact],
     hashing_functions: dict[str, callable] = None,
     pass_self: bool = False,
 ):

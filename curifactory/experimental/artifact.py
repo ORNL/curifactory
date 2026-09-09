@@ -1,5 +1,5 @@
-# from simplification.experiment import Experiment
-# from simplification.stage import Stage
+from __future__ import annotations
+
 import copy
 import hashlib
 import json
@@ -9,6 +9,7 @@ from functools import partial
 from uuid import UUID
 
 import pandas as pd
+from graphviz import Digraph
 
 import curifactory.experimental as cf
 
@@ -108,12 +109,12 @@ class Artifact:
         self._hash_str_val = None
         self._hash_debug_val = None
 
-        self._compute: cf.stage.Stage = None
+        self._compute: cf.Stage = None
 
         # previous context names means every time we copy an artifact into a
         # new context, we assign the
         self._previous_context_names: list[str] = []
-        self._context: cf.pipeline.Pipeline = None
+        self._context: cf.Pipeline = None
 
         self.context = self._find_context()
 
@@ -144,7 +145,7 @@ class Artifact:
         return self.internal_id == o.internal_id
 
     # TODO: do we actually need to add every context on the stack?
-    def _find_context(self) -> "cf.pipeline.Pipeline":
+    def _find_context(self) -> cf.Pipeline:
         if len(cf.get_manager()._pipeline_defining_stack) > 0:
             return cf.get_manager()._pipeline_defining_stack[-1]
         return None
@@ -163,7 +164,7 @@ class Artifact:
         self.hash_str, self.hash_debug = self.compute.compute_hash()
         return self.hash_str_val, self.hash_debug_val
 
-    def check_shared_artifact(self, other_artifact):
+    def check_shared_artifact(self, other_artifact: Artifact):
         """Two artifacts are considered equivalent (can be shared) if their hash and name is the same"""
         # TODO: is it a problem to use hash_str directly instead of compute_hash?
         if self.hash_str is None:
@@ -347,13 +348,13 @@ class Artifact:
             return None
 
     @property
-    def stage(self):
+    def stage(self) -> cf.Stage:
         """An 'alias' of sorts for .compute, so that it aligns with the custom
         tuple object when only one artifact is returned from a stage instead of more."""
         return self.compute
 
     @property
-    def context_name(self):
+    def context_name(self) -> str:
         current = "None"
         if self.context is not None:
             current = f"({','.join([self.context.name] + self.previous_context_names)})"
@@ -363,7 +364,7 @@ class Artifact:
         return current
 
     @property
-    def contextualized_name(self):
+    def contextualized_name(self) -> str:
         return f"{self.context_name}.{self.name}"
 
     def context_names_minus(self, minus: str):
@@ -376,13 +377,13 @@ class Artifact:
         return context_names
 
     @property
-    def _hash_str(self):
+    def _hash_str(self) -> str:
         if self.hash_str_val is None:
             self.compute_hash()
         return self.hash_str_val
 
     @_hash_str.setter
-    def _hash_str(self, value):
+    def _hash_str(self, value: str):
         self.hash_str_val = value
 
     @property
@@ -396,14 +397,14 @@ class Artifact:
         self.hash_debug_val = value
 
     @property
-    def artifacts(self):
+    def artifacts(self) -> ArtifactFilter:
         # TODO: not sure which of these is more correct
         # return ArtifactFilter(self.artifact_list())
         return ArtifactFilter([self])
 
     # def replace(self, artifact):
     #     self.pointer = artifact
-    def replace(self, artifact):
+    def replace(self, artifact: Artifact):
         # TODO: check for differing contexts and warn as applicable
         # hmm so this only makes sense if we know what the actual "current"
         # context is, we don't want to replace another context's artifact
@@ -461,9 +462,9 @@ class Artifact:
 
     def _inner_copy(
         self,
-        building_stages: dict["cf.stage.Stage", "cf.stage.Stage"] = None,
-        building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
-    ):
+        building_stages: dict[cf.Stage, cf.Stage] = None,
+        building_artifacts: dict[cf.Artifact, cf.Artifact] = None,
+    ) -> Artifact:
         if building_stages is None:
             building_stages = {}
         if building_artifacts is None:
@@ -515,7 +516,7 @@ class Artifact:
     @staticmethod
     def load_from_uuid(
         uuid, building_stages: dict = None, building_artifacts: dict = None
-    ):
+    ) -> Artifact:
         """Recurisvely load the full DAG prior to this artifact and then return this artifact."""
         if building_stages is None:
             building_stages = {}
@@ -573,17 +574,17 @@ class Artifact:
 
         return artifact
 
-    def verify(self):
+    def verify(self) -> bool:
         if self.compute is None:
             return True
         if isinstance(self.compute.outputs, (list, tuple, cf.staging.ArtifactTuple)):
             return self in self.compute.outputs
         return self == self.compute.outputs
 
-    def artifact_tree(self):
+    def artifact_tree(self) -> dict[str, dict]:
         return self.compute._artifact_tree()
 
-    def dependencies(self) -> list["Artifact"]:
+    def dependencies(self) -> list[Artifact]:
         """Gets any input artifacts from the compute stage."""
         # print(f"Checking dependencies of {self.contextualized_name}")
         artifact_dependencies = []
@@ -613,7 +614,7 @@ class Artifact:
                     artifact_dependencies.append(stage.outputs)
         return artifact_dependencies
 
-    def artifact_list(self, building_list: list = None):
+    def artifact_list(self, building_list: list[Artifact] = None) -> list[Artifact]:
         """Recursively builds a list of _all_ artifacts prior to this one."""
         if building_list is None:
             building_list = []
@@ -652,7 +653,7 @@ class Artifact:
             print(artifact.hash_debug)
 
     # def filter(self, artifact_name=None, context_name=None, stage_name=None) -> list["Artifact"]:
-    def filter(self, search_str: str) -> "ArtifactFilter":
+    def filter(self, search_str: str) -> ArtifactFilter:
         results = []
         for artifact in self.dependencies():
             if (
@@ -743,7 +744,7 @@ class Artifact:
             fillcolor=fillcolor,
         )
 
-    def visualize(self, g=None, **kwargs):
+    def visualize(self, g=None, **kwargs) -> Digraph:
         if g is None:
             g = cf.utils.init_graphviz_graph()
 
@@ -759,7 +760,9 @@ class Artifact:
 
 
 class ArtifactFilter:
-    def __init__(self, starting_artifacts=None, filter_string=""):
+    def __init__(
+        self, starting_artifacts: list[Artifact] = None, filter_string: str = ""
+    ):
         if starting_artifacts is None:
             starting_artifacts = []
         self.artifacts = starting_artifacts
@@ -770,7 +773,7 @@ class ArtifactFilter:
         # list
         return repr(self.artifacts)
 
-    def replace(self, new_artifact):
+    def replace(self, new_artifact: Artifact):
         # TODO: more complex logic for if self is list and artifact is list etc
         for artifact in self.artifacts:
             if artifact != new_artifact:
@@ -779,7 +782,7 @@ class ArtifactFilter:
     def _inner_copy():
         pass
 
-    def copy(self):
+    def copy(self) -> ArtifactFilter:
         # ArtifactFilter()
         copied_artifacts = []
         building_artifacts = {}
@@ -791,7 +794,7 @@ class ArtifactFilter:
         return ArtifactFilter(copied_artifacts)
 
     # TODO: if the starting_artifacts is a single artifact, just call filter on
-    def filter(self, search_str: str) -> "ArtifactFilter":
+    def filter(self, search_str: str) -> ArtifactFilter:
         results = []
 
         while "." in search_str:
@@ -828,7 +831,7 @@ class ArtifactFilter:
             dot = artifact._visualize(dot)
         return dot
 
-    def resolve(self) -> "Artifact":
+    def resolve(self) -> Artifact:
         if len(self.artifacts) == 1:
             return self.artifacts[0]
         else:
@@ -860,7 +863,7 @@ class ArtifactFilter:
 # filter out weird "aggregate_artifact_list" names in list of executed stages.
 # (making it almost an implicit stage)
 class ArtifactList(Artifact):  # , list):
-    def __init__(self, name: str = None, artifacts=None):
+    def __init__(self, name: str = None, artifacts: list[Artifact] = None):
         super().__init__(name)
         if artifacts is None:
             artifacts = []
@@ -893,9 +896,9 @@ class ArtifactList(Artifact):  # , list):
 
     def _inner_copy(
         self,
-        building_stages: dict["cf.stage.Stage", "cf.stage.Stage"] = None,
-        building_artifacts: dict["cf.artifact.Artifact", "cf.artifact.Artifact"] = None,
-    ):
+        building_stages: dict[cf.Stage, cf.Stage] = None,
+        building_artifacts: dict[cf.Artifact, cf.Artifact] = None,
+    ) -> ArtifactList:
         if building_stages is None:
             building_stages = {}
         if building_artifacts is None:

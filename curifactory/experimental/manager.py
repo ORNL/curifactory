@@ -1,5 +1,7 @@
 """Pipeline and artifact manager"""
 
+from __future__ import annotations
+
 import importlib
 import json
 import logging
@@ -256,9 +258,9 @@ class Manager:
         """Anything in additional configuration can be accessed/referenced in stages"""
         # ---- /configuration ----
 
-        self.current_pipeline_run = None
-        self.current_pipeline_run_target = None
-        self.current_stage = None
+        self.current_pipeline_run: cf.Pipeline = None
+        self.current_pipeline_run_target: cf.Artifact = None
+        self.current_stage: cf.Stage = None
         self.currently_recording: bool = False
 
         self.current_cli: str = None
@@ -321,7 +323,7 @@ class Manager:
             autoescape=False,
         )
 
-    def get_pipeline(self, module_or_ref: str):
+    def get_pipeline(self, module_or_ref: str) -> cf.Pipeline:
         self.load_default_pipeline_imports()
         self.import_pipelines_from_module(module_or_ref)
         resolved = self.resolve_reference(module_or_ref)
@@ -333,7 +335,7 @@ class Manager:
         print("Found pipelines:")
         print(self.get_pipeline_names())
 
-    def get_pipeline_names(self, module: str = None):
+    def get_pipeline_names(self, module: str = None) -> list[str]:
         self.load_default_pipeline_imports()
         if module is not None:
             self.import_pipelines_from_module(module)
@@ -517,7 +519,9 @@ class Manager:
         # return the piece of the module_str that wasn't the module
         return remainder
 
-    def add_pipeline_to_ref_names(self, module_str: str, attr_name: str, pipeline):
+    def add_pipeline_to_ref_names(
+        self, module_str: str, attr_name: str, pipeline: cf.Pipeline
+    ):
         """Add the pipeline to the ref names dictionary under all logical names."""
         # NOTE: pass None for attr name for things like from list, and then only
         # the name gets added
@@ -624,7 +628,7 @@ class Manager:
     # def check_for_existing_run_in_db(self, target_artifact):
     #     pass
 
-    def search_for_db_artifact(self, artifact):
+    def search_for_db_artifact(self, artifact: cf.Artifact) -> pd.DataFrame:
         with self.db_connection() as db:
             results = db.sql(
                 "SELECT * FROM cf_artifact WHERE name = $artifact_name AND hash = $artifact_hash",
@@ -635,7 +639,7 @@ class Manager:
             ).df()
         return results
 
-    def search_for_artifact_generating_run(self, artifact_id):
+    def search_for_artifact_generating_run(self, artifact_id) -> pd.DataFrame:
         with self.db_connection() as db:
             results = (
                 db.sql(
@@ -689,9 +693,7 @@ class Manager:
     #         return None
     #     return artifact.cacher.get_path(dry=True)
 
-    def load_artifact_metadata_by_id(
-        self, db_id: UUID, artifact: "cf.artifact.Artifact"
-    ) -> bool:
+    def load_artifact_metadata_by_id(self, db_id: UUID, artifact: cf.Artifact) -> bool:
         # returns False if didn't find
         pass
 
@@ -709,7 +711,7 @@ class Manager:
             f"{pipeline.name}_{pipeline.run_number}_{self.get_str_timestamp(pipeline)}"
         )
 
-    def get_next_pipeline_run_number(self, pipeline) -> int:
+    def get_next_pipeline_run_number(self, pipeline: cf.Pipeline) -> int:
         with self.db_connection() as db:
             num = db.sql(
                 "SELECT MAX(run_number) FROM cf_run WHERE pipeline_name = $pipelinename",
@@ -719,7 +721,7 @@ class Manager:
                 num = 0
             return num + 1
 
-    def get_artifact_obj_repr(self, artifact) -> str:
+    def get_artifact_obj_repr(self, artifact: cf.Artifact) -> str:
         if artifact.obj is None:
             return ""
         display_str = ""
@@ -731,7 +733,7 @@ class Manager:
             return display_str[:100]
         return display_str
 
-    def record_artifact(self, artifact):
+    def record_artifact(self, artifact: cf.Artifact):
         if not self.currently_recording:
             return
 
@@ -789,7 +791,9 @@ class Manager:
                 ],
             )
 
-    def record_stage_artifact_input(self, stage, artifact, arg_index, arg_name):
+    def record_stage_artifact_input(
+        self, stage: cf.Stage, artifact: cf.Artifact, arg_index: int, arg_name: str
+    ):
         if not self.currently_recording:
             return
 
@@ -807,7 +811,7 @@ class Manager:
                 [stage.db_id, artifact.db_id, arg_index, arg_name],
             )
 
-    def record_stage_dependency(self, stage, dependency_stage):
+    def record_stage_dependency(self, stage: cf.Stage, dependency_stage: cf.Stage):
         if not self.currently_recording:
             return
 
@@ -823,7 +827,7 @@ class Manager:
                 [stage.db_id, dependency_stage.db_id],
             )
 
-    def record_stage(self, stage):
+    def record_stage(self, stage: cf.Stage):
         if not self.currently_recording:
             return
 
@@ -856,7 +860,7 @@ class Manager:
                 [stage_id, run_id, func_name, func_module, hash, hash_debug],
             )
 
-    def record_stage_start(self, stage):
+    def record_stage_start(self, stage: cf.Stage):
         if not self.currently_recording:
             return
 
@@ -879,8 +883,7 @@ class Manager:
             )
 
     # TODO: is it worth having an pipeline_run object?
-    # TODO: rename to record_pipeline_run
-    def record_pipeline_run(self, pipeline):
+    def record_pipeline_run(self, pipeline: cf.Pipeline):
         if not self.currently_recording:
             return
 
@@ -964,7 +967,7 @@ class Manager:
                 ],
             )
 
-    def record_pipeline_run_target(self, pipeline, target):
+    def record_pipeline_run_target(self, pipeline: cf.Pipeline, target: cf.Artifact):
         if not self.currently_recording:
             return
 
@@ -974,7 +977,7 @@ class Manager:
                 params=dict(target_id=target.db_id, id=pipeline.db_id),
             )
 
-    def record_pipeline_run_completion(self, pipeline):
+    def record_pipeline_run_completion(self, pipeline: cf.Pipeline):
         if not self.currently_recording:
             return
 
