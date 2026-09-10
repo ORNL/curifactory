@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import base64
 import io
+import json
 from pathlib import Path
 
 import numpy as np
@@ -164,6 +165,27 @@ class HTMLReporter(Reportable):
 
     def get_html(self) -> str | list[str]:
         return self.html_string
+
+
+class JsonReporter(Reportable):
+    """Adds an indented JSON dump in a ``<pre>`` tag for a passed dictionary.
+
+    Args:
+        dictionary (Dict): The python dictionary to write to a JSON string. Technically
+            this can be anything json-serializable, so this includes single values and
+            lists.
+    """
+
+    def __init__(self, dictionary, name: str = None, group: str = None):
+        self.data = dictionary
+        super().__init__(name=name, group=group)
+
+    def get_html(self) -> str | list[str]:
+        return [
+            "<pre>",
+            json.dumps(self.data, indent=4, default=lambda x: str(x)),
+            "</pre>",
+        ]
 
 
 class DFReporter(Reportable):

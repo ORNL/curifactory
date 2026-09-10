@@ -254,7 +254,7 @@ class Cacheable:
         )
         module = importlib.import_module(cacher_module)
         cacher_class = getattr(module, cacher_type)
-        print(type(cacher_params), cacher_params)
+        # print(type(cacher_params), cacher_params)
         return cacher_class(**cacher_params)
 
 

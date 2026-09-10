@@ -991,6 +991,10 @@ def stage(
             # return stage_obj
             return stage_obj.outputs
 
+        # this is a very hacky way to determine if a function is a @cf.stage or not,
+        # allows determining if a function needs to be "turned into" a stage in
+        # other integrations.
+        wrapper._decorated_stage = True
         return wrapper
 
     return decorator

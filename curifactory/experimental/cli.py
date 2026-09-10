@@ -142,11 +142,11 @@ def cmd_run(parsed, parser, run_parser):  # noqa: C901
 
         # # TODO: https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser.add_argument
         def list_converter(string):
-            print("I was called with", string)
+            # print("I was called with", string)
             resolved = manager.resolve_reference(string)
-            print(resolved)
+            # print(resolved)
             if "pipeline_instance" in resolved:
-                print("FOUND!")
+                # print("FOUND!")
                 return resolved["pipeline_instance"]
 
             return string
@@ -348,11 +348,11 @@ def cmd_map(parsed, parser, map_parser):  # noqa: C901
 
         # # TODO: https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser.add_argument
         def list_converter(string):
-            print("I was called with", string)
+            # print("I was called with", string)
             resolved = manager.resolve_reference(string)
-            print(resolved)
+            # print(resolved)
             if "pipeline_instance" in resolved:
-                print("FOUND!")
+                # print("FOUND!")
                 return resolved["pipeline_instance"]
 
             return string
@@ -360,7 +360,7 @@ def cmd_map(parsed, parser, map_parser):  # noqa: C901
         # add arguments for the pipeline to the parser
         names = []
         for field in fields(pipeline):
-            print("Checking pipeline field", field)
+            # print("Checking pipeline field", field)
             if field.name in ["name", "outputs"]:
                 continue
             names.append(field.name)
