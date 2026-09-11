@@ -85,6 +85,7 @@ def __getattr__(name):
 )
 def convert_artifact_to_path(self, prior_artifact):
     # TODO: ability to remove obj from memory
+    # TODO: this should be calling get_path on cacher right?
     return self.artifacts[0].get_path()
 
 

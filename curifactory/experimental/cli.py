@@ -290,8 +290,16 @@ def cmd_run(parsed, parser, run_parser):  # noqa: C901
 def cmd_config(parsed, parser, conf_parser):
     import json
 
-    manager = cf.get_manager()
-    print(json.dumps(manager.config, indent=4))
+    if parsed.sub_command == "create":
+        manager = cf.get_manager()
+        with open(cf.manager.CONFIGURATION_FILE, "w") as outfile:
+            current_config = manager.config
+            if current_config["default_pipeline_modules"] is None:
+                current_config["default_pipeline_modules"] = []
+            json.dump(current_config, outfile, indent=4)
+    else:
+        manager = cf.get_manager()
+        print(json.dumps(manager.config, indent=4))
 
 
 def cmd_db(parsed, parser, db_parser):
@@ -728,7 +736,11 @@ def main():  # noqa: C901
     conf_parser = subparsers.add_parser(
         "config", help="View/edit curifactory configuration"
     )
-    conf_parser.add_argument("--debug", "--verbose", action="store_true", dest="debug")
+    # conf_parser.add_argument("--debug", "--verbose", action="store_true", dest="debug")
+    conf_subparsers = conf_parser.add_subparsers(help="Commands:", dest="sub_command")
+    conf_subparsers.add_parser(
+        "create", help="Set up a new curifactory_config.json file"
+    )
 
     db_parser = subparsers.add_parser(
         "db",
