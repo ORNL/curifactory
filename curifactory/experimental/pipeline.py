@@ -77,6 +77,14 @@ class Pipeline:
         self.conda_env: str = None
         self.host_env: dict = None
 
+        self.succeeded: bool = None
+        self.exception: str = None
+        self.exception_stack: str = None
+
+        self.cli: str = None
+        self.user: str = None
+        self.host: str = None
+
         # cf.get_manager().parameterized_pipelines[self.__class__].append(self)
 
         self.pre_consolidation_checks = self.verify()
@@ -226,24 +234,46 @@ class Pipeline:
                 reportable.path = "."
                 reportable.render()
 
+        if self.succeeded is None:
+            status = "<b style='color: darkgrey'>None</b>"
+        elif self.succeeded:
+            status = "<b style='color: green'>Complete</b>"
+        elif self.succeeded is not None and not self.succeeded:
+            status = "<b style='color: red'>Failed</b>"
+
+        commit = self.commit
+        if self.dirty_workdir:
+            commit += "<b style='color: orange'>*</b>"
+
         template = manager.jinja_environment.get_template(template)
         output = template.render(
             reportables=self.reportables,
+            pipeline_class_name=self.__class__.__name__,
             pipeline_name=self.name,
             reference_name=self.reference,
             map=map,
             parameters=html.escape(json.dumps(self.parameters, indent=2, default=str)),
             pipeline_metadata={
-                "Database ID": self.db_id,
+                "Pipeline class": self.__class__.__name__,
+                "Pipeline name": self.name,
                 "Run number": self.run_number,
-                "Start": self.start_timestamp,
-                "End": self.end_timestamp,
-                "Git commit": self.commit,
+                "Reference": self.reference,
+                "Start": self.start_timestamp.strftime("%m/%d/%Y %H:%M:%S"),
+                "End": self.end_timestamp.strftime("%m/%d/%Y %H:%M:%S"),
+                "Database ID": self.db_id,
+                "User": self.user,
+                "Host": self.host,
+                "Git commit": commit,
+                "Status": status,
             },
             is_dirty=self.dirty_workdir,
             host_env=self.host_env,
             conda_env=self.conda_env,
             pip_env=self.pip_env,
+            pipeline_succeeded=self.succeeded,
+            pipeline_exception=self.exception,
+            pipeline_exception_stack=self.exception_stack,
+            cli=self.cli,
         )
 
         if save:
@@ -850,6 +880,13 @@ class PipelineFromRef(Pipeline):
         self.pip_env = pipeline_row.pip_env
         self.conda_env = pipeline_row.conda_env
         self.host_env = pipeline_row.host_env
+
+        self.succeeded = pipeline_row.succeeded
+        self.exception = pipeline_row.exception
+        self.exception_stack = pipeline_row.exception_stack
+        self.cli = pipeline_row.cli
+        self.user = pipeline_row.user
+        self.host = pipeline_row.hostname
 
     def define(self):
 

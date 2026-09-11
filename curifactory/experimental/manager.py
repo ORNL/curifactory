@@ -178,9 +178,20 @@ class Manager:
                 </head>
                 <body>
                     <h1 id='title'>{{ reference_name }}</h1>
-                    <h3>Pipeline: {{ pipeline_name }}</h3>
+                    <!-- <h3>Pipeline: {{ pipeline_name }} ({{ pipeline_class_name }})</h3> -->
 
                     {% include "metadata.html" %}
+
+                    {% if pipeline_succeeded == False %}
+                        <p class='error_msg'>{{ pipeline_exception }}</p>
+                        <pre class='error_stack'>
+{{ pipeline_exception_stack }}
+                        </pre>
+                    {% endif %}
+
+                    {% if cli %}
+                    <p class='cli_command'>Run command was: <pre>{{ cli }}</pre></p>
+                    {% endif %}
 
                     <h2>Reportables</h2>
                     {% for reportable in reportables %}
@@ -226,12 +237,26 @@ class Manager:
                 }
                 .metadata_block {
                     border-left: 2px solid silver;
-                    background-color: lightgray;
+                    background-color: #E5E5E5;
                     display: inline-block;
                     padding: 20px;
                     padding-left: 30px;
                     padding-right: 30px;
                     margin: 0px;
+                    font-family: monospace;
+                    font-size: 12pt;
+                }
+                .error_stack {
+                    border-left: 2px solid red;
+                    background-color: #FFDDDD;
+                    display: inline-block;
+                    padding: 20px;
+                    padding-left: 30px;
+                    padding-right: 30px;
+                    margin: 0px;
+                }
+                .error_msg {
+                    color: red;
                 }
             """,
             "reportable.html": """
@@ -243,13 +268,22 @@ class Manager:
             """,
             "metadata.html": """
                 <div class='metadata_block'>
-                    <ul>
+                    <table>
                     {% for key, value in pipeline_metadata.items() %}
-                        <li><b>{{ key }}</b> - {{ value }}</li>
+                        <tr><td>{{ key }}: </td><td><b>{{ value }}</b></td></tr>
                     {% endfor %}
-                    </ul>
+                    </table>
                 </div>
             """,
+            # "metadata.html": """
+            #     <div class='metadata_block'>
+            #         <ul>
+            #         {% for key, value in pipeline_metadata.items() %}
+            #             <li>{{ key }}: <b>{{ value }}</b></li>
+            #         {% endfor %}
+            #         </ul>
+            #     </div>
+            # """,
         }
 
         self.default_pipeline_modules: list[str] = default_pipeline_modules
@@ -913,6 +947,9 @@ class Manager:
         pipeline.pip_env = pip_env
         pipeline.conda_env = conda_env
         pipeline.host_env = env_info
+        pipeline.cli = self.current_cli
+        pipeline.user = username
+        pipeline.host = hostname
 
         # hash, _ = pipeline.compute_hash()
 
@@ -982,6 +1019,7 @@ class Manager:
             return
 
         pipeline.end_timestamp = datetime.now()
+        pipeline.succeeded = True
         with self.db_connection() as db:
             db.sql(
                 """UPDATE cf_run SET end_time = $endtime, succeeded = true, WHERE ID = $id""",
@@ -995,6 +1033,9 @@ class Manager:
         pipeline = self.current_pipeline_run
         pipeline.end_timestamp = datetime.now()
         exception_text = f"{type(exception).__name__}: {exception}"
+        pipeline.succeeded = False
+        pipeline.exception = exception_text
+        pipeline.exception_stack = stack
         with self.db_connection() as db:
             db.sql(
                 """UPDATE cf_run SET
