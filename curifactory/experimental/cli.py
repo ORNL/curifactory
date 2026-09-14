@@ -325,6 +325,15 @@ def cmd_db(parsed, parser, db_parser):
         open_duckdb_repl()
 
 
+def cmd_history(parsed, parser, hist_parser):
+    manager = cf.get_manager()
+    # for index, row in manager.runs.sort_index(ascending=False).iterrows():
+    for index, row in manager.runs.sort_values(
+        "start_time", ascending=False
+    ).iterrows():
+        print(f"{row["reference"]}\t{row["cli"]}")
+
+
 def cmd_map(parsed, parser, map_parser):  # noqa: C901
     manager = cf.get_manager()
     manager.load_default_pipeline_imports()
@@ -742,6 +751,8 @@ def main():  # noqa: C901
         "create", help="Set up a new curifactory_config.json file"
     )
 
+    hist_parser = subparsers.add_parser("history", help="View previous runs")
+
     db_parser = subparsers.add_parser(
         "db",
         help="Run database commands or open python terminal with duckdb database loaded",
@@ -909,6 +920,8 @@ def main():  # noqa: C901
     #         subprocess.run(["/usr/bin/kitty", "icat"], input=dot.pipe(format="kitty"))
     elif parsed.command == "config":
         cmd_config(parsed, parser, conf_parser)
+    elif parsed.command == "history":
+        cmd_history(parsed, parser, hist_parser)
     elif parsed.command == "db":
         cmd_db(parsed, parser, db_parser)
     elif parsed.command == "map":

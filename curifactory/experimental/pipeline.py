@@ -250,6 +250,7 @@ class Pipeline:
             reportables=self.reportables,
             pipeline_class_name=self.__class__.__name__,
             pipeline_name=self.name,
+            pipeline_run_num=self.run_number,
             reference_name=self.reference,
             map=map,
             parameters=html.escape(json.dumps(self.parameters, indent=2, default=str)),

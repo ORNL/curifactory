@@ -171,6 +171,7 @@ class Manager:
             "default_report.html": """
             <html>
                 <head>
+                    <title>{{ pipeline_name }}/{{ pipeline_run_num }}</title>
                     <style>
                     {% include "common.css" %}
                     {% include "report_style.css" %}
