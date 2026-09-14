@@ -189,7 +189,8 @@ class Stage:
 
         # self._assign_dependents()
         self.context = self._find_context()
-        if self.context is not None:
+        # print(f"looking for context stage {self.name} - {self.context}")
+        if self.context is not None and self not in self.context._stages:
             self.context._stages.append(self)
         # TODO: previous context names similar to artifact?
 

@@ -209,6 +209,10 @@ class Manager:
 
                     <h2>Environment</h2>
                     <details>
+                        <summary>Global configuration</summary>
+                        {{ global_config }}
+                    </details>
+                    <details>
                         <summary>Host Environment</summary>
                         {{ host_env }}
                     </details>
@@ -981,9 +985,10 @@ class Manager:
                         host_env,
                         pip_env,
                         conda_env,
-                        cli
+                        cli,
+                        global_config
                     )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 [
                     pipeline_id,
@@ -1002,6 +1007,7 @@ class Manager:
                     pip_env,
                     conda_env,
                     self.current_cli,
+                    self.additional_configuration,
                 ],
             )
 

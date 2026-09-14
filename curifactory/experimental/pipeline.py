@@ -49,6 +49,7 @@ class Pipeline:
     def __post_init__(self):
 
         self._stages = []
+        self._pipelines = []
 
         cf.get_manager()._pipeline_defining_stack.append(self)
         self.ensure_context_copies()
@@ -118,12 +119,20 @@ class Pipeline:
     @property
     def artifacts(self):
         # TODO: may need to base this on _all_ artifacts, not just outputs
+        # print("GETTING PIPELINE ARTIFACTS")
+        # print(f"Length of stages at start: {len(self.stages)}")
         all_artifacts = []
+        # for stage in self._stages:
         for stage in self.stages:
             if isinstance(stage.outputs, cf.Artifact):
-                all_artifacts.append(stage.outputs)
+                if stage.outputs not in all_artifacts:
+                    all_artifacts.append(stage.outputs)
             else:
-                all_artifacts.extend(stage.outputs)
+                for out in stage.outputs:
+                    # not doing extend in case there's somehow already that
+                    # artifact in it?
+                    if out not in all_artifacts:
+                        all_artifacts.append(out)
         # if self.outputs not in all_artifacts:
         #     all_artifacts.append(self.outputs)
         # return cf.artifact.ArtifactFilter(self.outputs.artifact_list())
@@ -131,13 +140,44 @@ class Pipeline:
         # recurse through each one of those sub artifacts
         building_list = []
         for artifact in all_artifacts:
-            building_list = artifact.artifact_list(building_list)
+            # print(f"Upper iteration of artifacts in .artifacts, {artifact.contextualized_name}, {artifact.internal_id}")
+            # print(f"(Artifact list at this point in .artifacts is")
+            # print([artifact.internal_id for artifact in building_list])
+            if artifact not in building_list:
+                building_list = artifact.artifact_list(building_list)
+            # else:
+            #     print("PSYCHE, already found")
 
+        # print(f"Length of stages at end: {len(self.stages)}")
         return cf.artifact.ArtifactFilter(building_list)
 
     @property
     def stages(self) -> list[cf.Stage]:
+        # __stages = [*self._stages]
+        # for pipeline in self.pipelines:
+        #     for stage in pipeline.stages:
+        #         if stage not in __stages:
+        #             __stages.append(stage)
+        # return __stages
         return self._stages
+
+    @property
+    def all_stages(self) -> list[cf.Stage]:
+        __stages = [*self._stages]
+        for pipeline in self.pipelines:
+            for stage in pipeline.stages:
+                if stage not in __stages:
+                    __stages.append(stage)
+        return __stages
+
+    @property
+    def pipelines(self) -> list[cf.Pipeline]:
+        __pipelines = [*self._pipelines]
+        for pipeline in self._pipelines:
+            for subpipeline in pipeline.pipelines:
+                if subpipeline not in __pipelines:
+                    __pipelines.append(subpipeline)
+        return __pipelines
 
     @property
     def leaf_stages(self) -> list[cf.Stage]:
@@ -166,13 +206,40 @@ class Pipeline:
                 params[parameter.name] = getattr(self, parameter.name)
         return params
 
+    # NOTE: not a good IDEA:, see
+    # test_pipelines.test_two_pipelines_with_same_params_are_eq
+    # def __eq__(self, obj: Pipeline) -> bool:
+    #     # commenting out because pipelinefromref??
+    #     # if obj.__class__ != self.__class__:
+    #     #     return False
+    #     covered_params = []
+    #     for param1 in self.parameters:
+    #         # if the other pipeline doesn't have this parameter, something is
+    #         # very wrong
+    #         if param1 not in obj.parameters:
+    #             return False
+    #         # if the parameter doesn't match, obv not the same
+    #         if obj.parameters[param1] != self.parameters[param1]:
+    #             return False
+    #         covered_params.append(param1)
+    #
+    #     # if the other obj has a parameter that we don't, obv not the same
+    #     for param2 in obj.parameters:
+    #         if param2 not in covered_params:
+    #             return False
+    #     return True
+
     @property
     def reportables(self):
         reportables_list = []
 
-        for stage in self.stages:
+        for stage in self.all_stages:
+            # if len(stage.reportables.obj) > 0 and stage.computed:
             if len(stage.reportables.obj) > 0:
-                reportables_list.extend(stage.reportables.obj)
+                for reportable in stage.reportables.obj:
+                    if reportable not in reportables_list:
+                        reportables_list.append(reportable)
+                # reportables_list.extend(stage.reportables.obj)
 
         # reportables_list = []
         # handled_stages = []
@@ -228,8 +295,6 @@ class Pipeline:
         report_path.mkdir()
 
         for reportable in self.reportables:
-            # TODO: this def won't work because absolute vs relative, going ot
-            # have to os chdir and make a directory per report
             with chdir(str(report_path)):
                 reportable.path = "."
                 reportable.render()
@@ -275,6 +340,7 @@ class Pipeline:
             pipeline_exception=self.exception,
             pipeline_exception_stack=self.exception_stack,
             cli=self.cli,
+            global_config=manager.additional_configuration,
         )
 
         if save:
@@ -518,6 +584,7 @@ class Pipeline:
         """Checks if any involved artifacts are in any way shared/can be explicitly pointed to, one from the other."""
         # TODO: if any artifact contexts are different here, warn?
         replaced = []
+        old_compute_stages = []
         # TODO: not sure if this is the correct place to do this, but ensure
         # that every artifact has a hash_str
         for artifact1 in self.artifacts:
@@ -535,6 +602,7 @@ class Pipeline:
                             and context_name != artifact1.context.name
                         ):
                             artifact1.previous_context_names.append(context_name)
+                    old_compute_stages.append(artifact2.compute)
                     artifact2.replace(artifact1)
                     # shared = artifact1.copy()
                     # # artifact2.replace(artifact1.copy())
@@ -542,6 +610,14 @@ class Pipeline:
                     # artifact2.replace(shared)
                     # replaced.append(artifact1)
                     replaced.append(artifact2)
+
+        # now go through and ensure old stages are removed?
+        for stage in old_compute_stages:
+            # TODO: what if there's another artifact that _wasn't_ replaced,
+            # still needed from the old one?
+            if stage in self._stages:
+                self._stages.remove(stage)
+            # del stage
 
     def _inner_copy(
         self,
@@ -555,6 +631,12 @@ class Pipeline:
         #     building_artifacts = {}
         #
         # new_pipeline.outputs = new_pipeline.outputs.copy()
+
+        if len(cf.get_manager()._pipeline_defining_stack) > 0:
+            cf.get_manager()._pipeline_defining_stack[-1]._pipelines.append(
+                new_pipeline
+            )
+
         return new_pipeline
 
     def copy(self):

@@ -12,6 +12,7 @@ import pandas as pd
 from graphviz import Digraph
 
 import curifactory.experimental as cf
+from curifactory.experimental.staging import ArtifactTuple
 
 
 def pointer_based_property_getter(self, name):
@@ -595,7 +596,7 @@ class Artifact:
                     # print(f"Found dependency: {arg.contextualized_name}")
                     artifact_dependencies.append(arg)
             # handle outputs (sister artifacts)
-            if isinstance(self.compute.outputs, (tuple, list)):
+            if isinstance(self.compute.outputs, (tuple, list, ArtifactTuple)):
                 for output in self.compute.outputs:
                     if output != self:
                         # print(f"Found sister: {output.contextualized_name}")
@@ -605,7 +606,7 @@ class Artifact:
                     if isinstance(arg, Artifact):
                         # print(f"Found stage dependency: {arg.contextualized_name}")
                         artifact_dependencies.append(arg)
-                if isinstance(stage.outputs, (tuple, list)):
+                if isinstance(stage.outputs, (tuple, list, ArtifactTuple)):
                     for output in stage.outputs:
                         # print(f"Found sister: {output.contextualized_name}")
                         artifact_dependencies.append(output)
@@ -619,10 +620,13 @@ class Artifact:
         if building_list is None:
             building_list = []
         # print(f"Added {self.contextualized_name}")
+        # print(f"{self.contextualized_name} ({self.internal_id}) not in list!")
+        # print([artifact.internal_id for artifact in building_list])
         building_list.append(self)
 
         # TODO: TODO: TODO: this should be based on .dependencies...right?
         for artifact in self.dependencies():
+            # print(f"Looking at dependency of {self.contextualized_name} ({self.internal_id}): {artifact.contextualized_name}, {artifact.internal_id}")
             if artifact not in building_list:
                 building_list = artifact.artifact_list(building_list)
             # if isinstance(arg, Artifact) and arg not in building_list:

@@ -1,16 +1,20 @@
+from curifactory.experimental import report
 from curifactory.experimental.artifact import Artifact, DBArtifact
 from curifactory.experimental.caching import JsonCacher, TrackingDBTableCacher
 from curifactory.experimental.pipeline import pipeline
+from curifactory.experimental.reporting import JsonReporter
 from curifactory.experimental.staging import stage
 
 
 @stage(Artifact("thing1"))
 def get_thing1(start_num: int = 5):
+    report(JsonReporter({"start_num": start_num}))
     return start_num
 
 
 @stage(Artifact("thing2"))
 def get_thing2(thing1, next_num: int = 3):
+    report(JsonReporter({"next_num": next_num}))
     return thing1 + next_num
 
 

@@ -114,8 +114,20 @@ def migration_20260829(db):
     )
 
 
+def migration_20260914(db):
+    db.sql(
+        """
+        ALTER TABLE cf_run
+        ADD COLUMN global_config JSON;
+
+        INSERT INTO cf_meta (schema_version) VALUES (20260914);
+    """
+    )
+
+
 MIGRATIONS = {
     1: original_tables,
     20260210: migration_20260210,
     20260829: migration_20260829,
+    20260914: migration_20260914,
 }

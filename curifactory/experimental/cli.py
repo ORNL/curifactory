@@ -16,6 +16,9 @@ import curifactory.experimental as cf
 CONSOLE = None
 
 
+GLOBAL_CONFIG = None
+
+
 def completer_pipeline(**kwargs) -> list[str]:
     # manager = cf.get_manager()
     # prefix = kwargs["prefix"]
@@ -92,6 +95,7 @@ Curifactory duckdb tables:[yellow]
             "import curifactory.experimental as cf",
         ]
         manager = cf.get_manager()
+        manager.additional_configuration.update(GLOBAL_CONFIG)
         db = manager.db_connection()
         IPython.embed(config=c, colors="neutral")
     except:  # noqa: E722
@@ -99,6 +103,7 @@ Curifactory duckdb tables:[yellow]
 
         scope = globals()
         manager = cf.get_manager()
+        manager.additional_configuration.update(GLOBAL_CONFIG)
         db = manager.db_connection()
         scope["manager"] = manager
         scope["db"] = db
@@ -112,6 +117,7 @@ def cmd_run(parsed, parser, run_parser):  # noqa: C901
     pipeline = None
 
     manager = cf.get_manager()
+    manager.additional_configuration.update(GLOBAL_CONFIG)
     manager.load_default_pipeline_imports()
     if parsed.pipeline is not None:
         manager.import_pipelines_from_module(parsed.pipeline)
@@ -292,6 +298,7 @@ def cmd_config(parsed, parser, conf_parser):
 
     if parsed.sub_command == "create":
         manager = cf.get_manager()
+        manager.additional_configuration.update(GLOBAL_CONFIG)
         with open(cf.manager.CONFIGURATION_FILE, "w") as outfile:
             current_config = manager.config
             if current_config["default_pipeline_modules"] is None:
@@ -299,11 +306,13 @@ def cmd_config(parsed, parser, conf_parser):
             json.dump(current_config, outfile, indent=4)
     else:
         manager = cf.get_manager()
+        manager.additional_configuration.update(GLOBAL_CONFIG)
         print(json.dumps(manager.config, indent=4))
 
 
 def cmd_db(parsed, parser, db_parser):
     manager = cf.get_manager()
+    manager.additional_configuration.update(GLOBAL_CONFIG)
     if parsed.sub_command == "version":
         with manager.db_connection() as db:
             print(f"Manager DB version: {cf.db_tables.get_schema_version(db)}")
@@ -327,6 +336,7 @@ def cmd_db(parsed, parser, db_parser):
 
 def cmd_history(parsed, parser, hist_parser):
     manager = cf.get_manager()
+    manager.additional_configuration.update(GLOBAL_CONFIG)
     # for index, row in manager.runs.sort_index(ascending=False).iterrows():
     for index, row in manager.runs.sort_values(
         "start_time", ascending=False
@@ -336,6 +346,7 @@ def cmd_history(parsed, parser, hist_parser):
 
 def cmd_map(parsed, parser, map_parser):  # noqa: C901
     manager = cf.get_manager()
+    manager.additional_configuration.update(GLOBAL_CONFIG)
     manager.load_default_pipeline_imports()
     manager.import_pipelines_from_module(parsed.pipeline)
 
@@ -579,6 +590,7 @@ def cmd_map(parsed, parser, map_parser):  # noqa: C901
 
 def cmd_ls(parsed, parser, ls_parser):  # noqa: C901
     manager = cf.get_manager()
+    manager.additional_configuration.update(GLOBAL_CONFIG)
     if parsed.debug:
         manager.logger.setLevel(logging.DEBUG)
         manager.init_root_logging()
@@ -675,6 +687,7 @@ def cmd_ls(parsed, parser, ls_parser):  # noqa: C901
 
 def cmd_clear(parsed, parser, clear_parser):
     manager = cf.get_manager()
+    manager.additional_configuration.update(GLOBAL_CONFIG)
     manager.load_default_pipeline_imports()
     manager.import_pipelines_from_module(parsed.pipeline)
 
@@ -720,6 +733,7 @@ def cmd_reports(parsed, parser, reports_parser):
     import os
 
     manager = cf.get_manager()
+    manager.additional_configuration.update(GLOBAL_CONFIG)
     if parsed.gen_index:
         cf.reporting.generate_index(save=True)
 
@@ -731,6 +745,8 @@ def cmd_reports(parsed, parser, reports_parser):
 
 
 def main():  # noqa: C901
+    global GLOBAL_CONFIG
+
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument(
         "-h",
@@ -740,10 +756,26 @@ def main():  # noqa: C901
         help="Show this help message",
     )
 
+    # https://stackoverflow.com/questions/29986185/python-argparse-dict-arg
+    parser.add_argument(
+        "--global",
+        action="append",
+        dest="global_config_key_values",
+        help="Additional configuration key=value pairs to add to global config",
+        type=lambda kv: kv.split("="),
+    )
+
     subparsers = parser.add_subparsers(help="Commands:", dest="command")
 
     conf_parser = subparsers.add_parser(
         "config", help="View/edit curifactory configuration"
+    )
+    conf_parser.add_argument(
+        "--global",
+        action="append",
+        dest="global_config_key_values",
+        help="Additional configuration key=value pairs to add to global config",
+        type=lambda kv: kv.split("="),
     )
     # conf_parser.add_argument("--debug", "--verbose", action="store_true", dest="debug")
     conf_subparsers = conf_parser.add_subparsers(help="Commands:", dest="sub_command")
@@ -752,10 +784,24 @@ def main():  # noqa: C901
     )
 
     hist_parser = subparsers.add_parser("history", help="View previous runs")
+    hist_parser.add_argument(
+        "--global",
+        action="append",
+        dest="global_config_key_values",
+        help="Additional configuration key=value pairs to add to global config",
+        type=lambda kv: kv.split("="),
+    )
 
     db_parser = subparsers.add_parser(
         "db",
         help="Run database commands or open python terminal with duckdb database loaded",
+    )
+    db_parser.add_argument(
+        "--global",
+        action="append",
+        dest="global_config_key_values",
+        help="Additional configuration key=value pairs to add to global config",
+        type=lambda kv: kv.split("="),
     )
     db_subparsers = db_parser.add_subparsers(help="Commands:", dest="sub_command")
     db_subparsers.add_parser(
@@ -790,6 +836,13 @@ def main():  # noqa: C901
         dest="reset",
         help="WARNING: this completely resets the curifactory database and the _entire_ cf cache folder.",
     )
+    clear_parser.add_argument(
+        "--global",
+        action="append",
+        dest="global_config_key_values",
+        help="Additional configuration key=value pairs to add to global config",
+        type=lambda kv: kv.split("="),
+    )
 
     ls_parser = subparsers.add_parser("ls", help="List pipelines")
     ls_parser.add_argument("thing_to_list", nargs="?")
@@ -804,6 +857,13 @@ def main():  # noqa: C901
         "--paths", dest="list_paths", action="store_true", help="List artifact paths"
     )
     ls_parser.add_argument("--debug", "--verbose", action="store_true", dest="debug")
+    ls_parser.add_argument(
+        "--global",
+        action="append",
+        dest="global_config_key_values",
+        help="Additional configuration key=value pairs to add to global config",
+        type=lambda kv: kv.split("="),
+    )
 
     run_parser = subparsers.add_parser("run", help="Run an pipeline", add_help=False)
     run_parser.add_argument("pipeline").completer = completer_pipeline
@@ -813,6 +873,13 @@ def main():  # noqa: C901
         action="store_true",
         dest="show_help",
         help="Show this help message",
+    )
+    run_parser.add_argument(
+        "--global",
+        action="append",
+        dest="global_config_key_values",
+        help="Additional configuration key=value pairs to add to global config",
+        type=lambda kv: kv.split("="),
     )
     run_parser.add_argument(
         "--ow",
@@ -843,6 +910,13 @@ def main():  # noqa: C901
         action="store_true",
         dest="show_help",
         help="Show this help message",
+    )
+    map_parser.add_argument(
+        "--global",
+        action="append",
+        dest="global_config_key_values",
+        help="Additional configuration key=value pairs to add to global config",
+        type=lambda kv: kv.split("="),
     )
     map_parser.add_argument(
         "--ow",
@@ -880,6 +954,13 @@ def main():  # noqa: C901
         help="Regenerate the index/list of pipeline reports.",
         dest="gen_index",
     )
+    reports_parser.add_argument(
+        "--global",
+        action="append",
+        dest="global_config_key_values",
+        help="Additional configuration key=value pairs to add to global config",
+        type=lambda kv: kv.split("="),
+    )
 
     argcomplete.autocomplete(parser, always_complete_options=False)
     argcomplete.autocomplete(run_parser, always_complete_options=False)
@@ -899,6 +980,11 @@ def main():  # noqa: C901
             if parsed.pipeline is None:
                 map_parser.print_help()
                 return
+
+    global_additional_config = {}
+    if parsed.global_config_key_values is not None:
+        global_additional_config = dict(parsed.global_config_key_values)
+    GLOBAL_CONFIG = global_additional_config
 
     if parsed.command == "run":
         cmd_run(parsed, parser, run_parser)

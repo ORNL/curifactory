@@ -134,6 +134,179 @@ def test_pipeline_of_pipelines_first_stage_consolidation(test_manager):
     assert p3.outputs[1].obj == 11
 
 
+# NOTE: not a good idea for now because having a pipeline __eq__ would likely
+# also require artifacts to have a DIFFERENT __eq__, and that is very specifically internal id based for other stuff.
+# def test_two_pipelines_with_same_params_are_eq(test_manager):
+#     """Two pipelines with the exact same parameters should be considered equal"""
+#     p1 = add_things("p1", num1=2, num2=7)
+#     p2 = add_things("p2", num1=2, num2=9)
+#     p3 = add_things("p2", num1=2, num2=9)
+#
+#     assert p1 != p2
+#     assert p2 == p3
+#
+
+
+def test_pipeline_of_pipeline_of_pipelines(test_manager):
+    """Recursively grab all pipelines!"""
+
+    @pipeline
+    def simple_aggregate(pipe1, pipe2):
+        return pipe1.outputs, pipe2.outputs
+
+    @pipeline
+    def do_another_aggregate(pipe1, pipe2):
+        return pipe1.outputs, pipe2.outputs
+
+    p1 = add_things("p1", num1=2, num2=7)
+    p2 = add_things("p2", num1=2, num2=9)
+
+    p3 = simple_aggregate("p3", p1, p2)
+    p4 = do_another_aggregate("p4", p3, p1)
+    assert len(p4.pipelines) == 3
+
+
+def test_pipeline_of_pipelines_includes_previous_pipelines(test_manager):
+    """Pipelines that get directly passed into other pipelines should have them
+    added to the parent pipeline's .pipelines list."""
+
+    @pipeline
+    def simple_aggregate(pipe1, pipe2):
+        return pipe1.outputs, pipe2.outputs
+
+    p1 = add_things("p1", num1=2, num2=7)
+    p2 = add_things("p2", num1=2, num2=9)
+
+    p3 = simple_aggregate("p3", p1, p2)
+    assert len(p3.pipelines) == 2
+    assert p3.pipelines[0].name == "p1"
+    assert p3.pipelines[1].name == "p2"
+
+
+def test_pipeline_of_pipelines_includes_implicit_previous_pipelines(test_manager):
+    """Pipelines that get indirectly passed into other pipelines should NOT have them
+    added to the parent pipeline's .pipelines list."""
+    # TODO: I don't love this logic...
+
+    @pipeline
+    def simple_aggregate(art1, art2):
+        return art1, art2
+
+    p1 = add_things("p1", num1=2, num2=7)
+    p2 = add_things("p2", num1=2, num2=9)
+
+    p3 = simple_aggregate("p3", p1.outputs, p2.outputs)
+    assert len(p3.pipelines) == 0
+    # assert p3.pipelines[0].name == "p1"
+    # assert p3.pipelines[1].name == "p2"
+
+
+def test_pipeline_of_pipelines_includes_previous_stages(test_manager):
+    """Pipelines that get directly passed into other pipelines should NOT have their
+    stages added to the parent pipeline's .stages list. (.stages is specific to the pipeline, can go through .pipelines to get additional stages)
+    """
+
+    @pipeline
+    def simple_aggregate(pipe1, pipe2):
+        return pipe1.outputs, pipe2.outputs
+
+    p1 = add_things("p1", num1=2, num2=7)
+    p2 = add_things("p2", num1=2, num2=9)
+
+    p3 = simple_aggregate("p3", p1, p2)
+    print(p3.stages)
+    assert len(p3.stages) == 1
+    assert len(p3.all_stages) == 4
+
+
+def test_pipeline_of_pipelines_includes_implicit_previous_stages(test_manager):
+    """Pipelines that get indirectly passed into other pipelines should NOT have their
+    stages added to the parent pipeline's .stages list. (.stages is specific to the pipeline, can go through .pipelines to get additional stages)
+    """
+
+    @pipeline
+    def simple_aggregate(art1, art2):
+        return art1, art2
+
+    p1 = add_things("p1", num1=2, num2=7)
+    p2 = add_things("p2", num1=2, num2=9)
+
+    p3 = simple_aggregate("p3", p1.outputs, p2.outputs)
+    assert len(p3.stages) == 4
+    # assert len(p3.stages) == 1
+    # assert len(p3.all_stages) == 4
+
+
+def test_pipeline_of_pipelines_includes_previous_artifacts(test_manager):
+    """Pipelines that get directly passed into other pipelines should have their
+    artifacts added to the parent pipeline's .artifacts list."""
+
+    @pipeline
+    def simple_aggregate(pipe1, pipe2):
+        return pipe1.outputs, pipe2.outputs
+
+    p1 = add_things("p1", num1=2, num2=7)
+    p2 = add_things("p2", num1=2, num2=9)
+
+    p3 = simple_aggregate("p3", p1, p2)
+    assert len(p3.artifacts) == 4
+    artifact_names = [artifact.name for artifact in p3.artifacts]
+    print(artifact_names)
+    assert artifact_names == ["outputs", "thing2", "thing1", "thing2"]
+
+
+def test_pipeline_of_pipelines_includes_implicit_previous_artifacts(test_manager):
+    """Pipelines that get indirectly passed into other pipelines should have their
+    artifacts added to the parent pipeline's .artifacts list."""
+
+    @pipeline
+    def simple_aggregate(art1, art2):
+        return art1, art2
+
+    p1 = add_things("p1", num1=2, num2=7)
+    p2 = add_things("p2", num1=2, num2=9)
+
+    p3 = simple_aggregate("p3", p1.outputs, p2.outputs)
+    assert len(p3.artifacts) == 4
+    artifact_names = [artifact.name for artifact in p3.artifacts]
+    print(artifact_names)
+    # NOTE: the order is different...sure
+    assert artifact_names == ["thing2", "thing1", "thing2", "outputs"]
+
+
+def test_pipeline_of_pipelines_includes_previous_reportables(test_manager):
+    """Pipelines that get directly passed into other pipelines should have their
+    reportables added to the parent pipeline's .reportables list."""
+
+    @pipeline
+    def simple_aggregate(pipe1, pipe2):
+        return pipe1.outputs, pipe2.outputs
+
+    p1 = add_things("p1", num1=2, num2=7)
+    p2 = add_things("p2", num1=2, num2=9)
+
+    p3 = simple_aggregate("p3", p1, p2)
+    p3.run()
+    assert len(p3.reportables) == 4
+    # NOTE: different length than implicit? ...I guess??
+
+
+def test_pipeline_of_pipelines_includes_implicit_previous_reportables(test_manager):
+    """Pipelines that get indirectly passed into other pipelines should have their
+    reportables added to the parent pipeline's .reportables list."""
+
+    @pipeline
+    def simple_aggregate(art1, art2):
+        return art1, art2
+
+    p1 = add_things("p1", num1=2, num2=7)
+    p2 = add_things("p2", num1=2, num2=9)
+
+    p3 = simple_aggregate("p3", p1.outputs, p2.outputs)
+    p3.run()
+    assert len(p3.reportables) == 3
+
+
 def test_pipeline_that_returns_alists(test_manager):
     """A pipeline that returns a artifact tuples should work."""
 

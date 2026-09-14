@@ -4,7 +4,7 @@ import duckdb
 
 import curifactory.experimental as cf
 
-SCHEMA_VERSION = 20260829
+SCHEMA_VERSION = 20260914
 
 SCHEMAS = {
     "cf_run": [
@@ -31,6 +31,7 @@ SCHEMAS = {
         "pip_env VARCHAR",
         "git_diff VARCHAR",
         "cli VARCHAR",
+        "global_config JSON",
     ],
     "cf_stage": [
         "id UUID",
