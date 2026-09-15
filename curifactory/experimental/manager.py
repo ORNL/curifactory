@@ -1039,7 +1039,7 @@ class Manager:
 
         pipeline = self.current_pipeline_run
         pipeline.end_timestamp = datetime.now()
-        exception_text = f"{type(exception).__name__}: {exception}"
+        exception_text = f"{type(exception).__name__}: {str(exception)[:200]}"
         pipeline.succeeded = False
         pipeline.exception = exception_text
         pipeline.exception_stack = stack

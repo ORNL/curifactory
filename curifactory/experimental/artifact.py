@@ -343,7 +343,7 @@ class Artifact:
             manager.logger.error(
                 f"Failed to retrieve artifact {self.contextualized_name}"
             )
-            manager.logger.error(e)
+            manager.logger.error(str(e)[:200])
             manager.logger.error(stack_str)
             manager.error_state = True
             return None
