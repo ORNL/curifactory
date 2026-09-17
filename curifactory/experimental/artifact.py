@@ -596,11 +596,11 @@ class Artifact:
                     # print(f"Found dependency: {arg.contextualized_name}")
                     artifact_dependencies.append(arg)
             # handle outputs (sister artifacts)
-            if isinstance(self.compute.outputs, (tuple, list, ArtifactTuple)):
-                for output in self.compute.outputs:
-                    if output != self:
-                        # print(f"Found sister: {output.contextualized_name}")
-                        artifact_dependencies.append(output)
+            # if isinstance(self.compute.outputs, (tuple, list, ArtifactTuple)):
+            #     for output in self.compute.outputs:
+            #         if output != self:
+            #             # print(f"Found sister: {output.contextualized_name}")
+            #             artifact_dependencies.append(output)
             for stage in self.compute.dependencies:
                 for arg in stage._combined_args():
                     if isinstance(arg, Artifact):
@@ -658,8 +658,12 @@ class Artifact:
 
     # def filter(self, artifact_name=None, context_name=None, stage_name=None) -> list["Artifact"]:
     def filter(self, search_str: str) -> ArtifactFilter:
+        # print("Filter search string:", search_str)
+        # print("(Running this on artifact ", self)
         results = []
         for artifact in self.dependencies():
+            # print("Checking artifact ", artifact, " from ", self.dependencies())
+            # print("Check involves", artifact.name, artifact.context)
             if (
                 artifact.name == search_str
                 or (
@@ -670,12 +674,15 @@ class Artifact:
                 )
                 or search_str in artifact.previous_context_names
             ):
+                # print("first checks pass, is it in results yet?")
                 if artifact not in results:
+                    # print("Nope, added! Looking for subresults!")
                     results.append(artifact)
                     sub_results = artifact.filter(search_str).artifacts
                     for result in sub_results:
                         if result not in results:
                             results.append(result)
+                    # print("We're done with subresults!")
         return ArtifactFilter(results, search_str)
 
     # TODO: make this _ function to indicate shouldn't be called outside of cf

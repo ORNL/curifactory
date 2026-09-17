@@ -53,7 +53,13 @@ class Pipeline:
 
         cf.get_manager()._pipeline_defining_stack.append(self)
         self.ensure_context_copies()
-        definition_outputs = self.define()
+        try:
+            definition_outputs = self.define()
+        except Exception as e:
+            e.add_note(
+                f"Failed trying to define pipeline '{self.__class__.__name__}: {self.name}'"
+            )
+            raise e
         cf.get_manager()._pipeline_defining_stack.pop()
 
         # TODO: I don't actually think outputs needs to be an artifact list
@@ -364,11 +370,46 @@ class Pipeline:
     def modify(self, **modifications):
         return dataclasses.replace(self, **modifications)
 
+    def spanning_output_artifact_and_stage_set(
+        self,
+    ) -> tuple[list[cf.Artifact], list[cf.Stage]]:
+        """Get every target artifact from leaf stages, as well as any output-less leaf stages."""
+        # TODO: also need to check for target reportables?
+        # TODO: this should eventually replace the beginning logic in run()
+        targets = self.leaf_stages
+        # TODO: this is probably where we should check for targets reportables
+        # too?
+
+        output_artifacts = []
+        for target in targets:
+            output_artifacts.extend(target.get_output_list())
+
+        leaves_accounted_for = []
+        for artifact in output_artifacts:
+            if artifact.compute not in leaves_accounted_for:
+                leaves_accounted_for.append(artifact.compute)
+
+        remaining_leaf_stages = []
+        for target in targets:
+            if target not in leaves_accounted_for:
+                remaining_leaf_stages.append(target)
+
+        return output_artifacts, remaining_leaf_stages
+
     def map(self):
         """Assumes define() has already run."""
         # TODO: should go based on all artifacts, not just outputs? (probably
         # also needs the leaves first though)
-        return self.outputs.map()
+
+        out_artifacts, remaining_stages = self.spanning_output_artifact_and_stage_set()
+        mapped = None
+        for output in out_artifacts:
+            mapped = output.map(mapped)
+        for stage in remaining_stages:
+            mapped = stage.map(mapped)
+        return mapped
+
+        # return self.outputs.map()
 
         # TODO: do any necessary collapsing of sufficiently equivalent artifacts
 
@@ -471,6 +512,8 @@ class Pipeline:
         for target in targets:
             output_artifacts.extend(target.get_output_list())
 
+        # TODO: this should be replaced with
+        # spanning_output_artifact_and_stage_set?
         need_to_run = False
         for artifact in output_artifacts:
             if (

@@ -507,7 +507,6 @@ def cmd_map(parsed, parser, map_parser):  # noqa: C901
             mapped = None
             for artifact in resolved["artifact_list"]:
                 mapped = artifact.map(mapped)
-        # print(resolved)
 
     artifact_counts = {
         "to_compute": 0,

@@ -962,6 +962,8 @@ class Manager:
         cleaned_parameters_str = json.dumps(cleaned_parameters, default=repr)
         cleaned_parameters = json.loads(cleaned_parameters_str)
 
+        self.logger.info(f"Pipeline run reference name is '{pipeline.reference}'")
+
         # for parameter in pipeline.parameters:
         #     if isinstance(pipeline.parameter, cf.pipeline.Experiment):
         #         pipeline.parameters[parameter] =
