@@ -4,7 +4,7 @@ import duckdb
 
 import curifactory.experimental as cf
 
-SCHEMA_VERSION = 20260914
+SCHEMA_VERSION = 20260918
 
 SCHEMAS = {
     "cf_run": [
@@ -15,11 +15,11 @@ SCHEMAS = {
         "run_number INTEGER",
         "start_time TIMESTAMP",
         "end_time TIMESTAMP",
-        "succeeded BOOL",
+        "succeeded BOOLEAN",
         "exception VARCHAR",
         "exception_stack VARCHAR",
         "commit VARCHAR",
-        "dirty BOOL",
+        "dirty BOOLEAN",
         "hostname VARCHAR",
         "user VARCHAR",
         "notes VARCHAR",
@@ -41,7 +41,7 @@ SCHEMAS = {
         "end_time TIMESTAMP",
         "params JSON",
         "hash VARCHAR",
-        "hash_details JSON",
+        "hash_details VARCHAR",
         "func_module VARCHAR",
         "docstring VARCHAR",
     ],
@@ -56,10 +56,10 @@ SCHEMAS = {
         "cacher_type VARCHAR",
         "cacher_module VARCHAR",
         "cacher_params JSON",
-        "reportable BOOL",
+        "reportable BOOLEAN",
         "extra_metadata JSON",
         "repr VARCHAR",
-        "is_list BOOL",
+        "is_list BOOLEAN",
     ],
     "cf_run_stage": [
         "run_id UUID",
@@ -99,22 +99,35 @@ def verify_schemas(db):
     errors = {}
     for table, cols in SCHEMAS.items():
         existing_cols = (
-            db.sql(f"SELECT column_name FROM (DESCRIBE {table})")
-            .df()
-            .column_name.values
+            db.sql(f"SELECT column_name, column_type FROM (DESCRIBE {table})").df()
+            # .column_name.values
         )
+        existing_col_names = existing_cols.column_name.tolist()
+        existing_col_types = existing_cols.column_type.tolist()
         for col in cols:
             col_name = col[: col.index(" ")]
-            if col_name not in existing_cols:
+            col_type = col[col.index(" ") + 1 :]
+            if col_name not in existing_col_names:
                 if table not in errors:
                     errors[table] = []
                 errors[table].append((col_name, "missing"))
                 broken = True
+            else:
+                current_type = existing_col_types[existing_col_names.index(col_name)]
+                if col_type != current_type:
+                    if table not in errors:
+                        errors[table] = []
+                    errors[table].append(
+                        (col_name, "type_mismatch", f"{current_type}!={col_type}")
+                    )
+                    broken = True
     return broken, errors
 
 
 def intervention_add_missing_columns(db):
     broken, errors = verify_schemas(db)
+    if not broken:
+        return
     for table in errors:
         for error in errors[table]:
             if error[1] == "missing":
@@ -124,6 +137,20 @@ def intervention_add_missing_columns(db):
                     if col[: col.index(" ")] == col_name:
                         print(f"\tAdding missing column {col}")
                         db.sql(f"ALTER TABLE {table} ADD COLUMN {col}")
+
+
+def intervention_update_incorrect_types(db):
+    broken, errors = verify_schemas(db)
+    if not broken:
+        return
+    for table in errors:
+        for error in errors[table]:
+            if error[1] == "type_mismatch":
+                col_name = error[0]
+                type_switcher = error[2]
+                target_type = type_switcher[type_switcher.index("!=") + 2 :]
+                print(f"\tCasting column {col_name} type to {target_type}")
+                db.sql(f"ALTER TABLE {table} ALTER {col_name} TYPE {target_type}")
 
 
 def get_schema_version(db) -> int:
@@ -146,4 +173,7 @@ def run_migrations(db):
             migration(db)
 
 
-FIXES = {"add_missing_columns": intervention_add_missing_columns}
+FIXES = {
+    "add_missing_columns": intervention_add_missing_columns,
+    "update_incorrect_types": intervention_update_incorrect_types,
+}

@@ -883,6 +883,8 @@ class Manager:
 
         func_module = stage.function.__module__
 
+        hash_debug = json.dumps(hash_debug)
+
         with self.db_connection() as db:
             db.execute(
                 """

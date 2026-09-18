@@ -1,3 +1,7 @@
+# NOTE: obviously, do not modify _original_schemas.
+# In theory you should be able to have a database created with
+# these original schemas, and then running all migrations would
+# get you to an equivalent set of schemas to SCHEMAS in db_tables.
 _original_schemas = {
     "cf_run": [
         "id UUID",
@@ -78,6 +82,8 @@ def original_tables(db):
 
 
 def migration_20260210(db):
+    """Add columns to the run table to record exception information, so they can
+    be added to reports etc."""
     db.sql(
         """
         ALTER TABLE cf_run
@@ -92,6 +98,8 @@ def migration_20260210(db):
 
 
 def migration_20260829(db):
+    """Add columns to track a bunch of run environment information, e.g. the git
+    status, pip/conda packages, etc.."""
     db.sql(
         """
         ALTER TABLE cf_run
@@ -115,6 +123,8 @@ def migration_20260829(db):
 
 
 def migration_20260914(db):
+    """Add a column to track any global config settings, since those can be
+    modified via CLI now."""
     db.sql(
         """
         ALTER TABLE cf_run
@@ -125,9 +135,26 @@ def migration_20260914(db):
     )
 
 
+def migration_20260918(db):
+    """There seems to be weird typecasting happening sometimes for certain stages
+    when adding the hash_debug information, as though it's trying to use a strict
+    struct datatype instead of JSON. The hash_details are really only used for
+    manual debugging and there's no need to _store_ as JSON, so just switching it
+    to a string."""
+    db.sql(
+        """
+        ALTER TABLE cf_stage
+        ALTER hash_details TYPE VARCHAR;
+
+        INSERT INTO cf_meta (schema_version) VALUES (20260918);
+    """
+    )
+
+
 MIGRATIONS = {
     1: original_tables,
     20260210: migration_20260210,
     20260829: migration_20260829,
     20260914: migration_20260914,
+    20260918: migration_20260918,
 }

@@ -58,3 +58,14 @@ def test_add_missing_columns_intervention(clear_filesystem, test_manager):
         db_tables.intervention_add_missing_columns(db)
         broken, errors = db_tables.verify_schemas(db)
         assert not broken
+
+
+def test_update_col_types_intervention(clear_filesystem, test_manager):
+    """Make sure updating columns works"""
+    with test_manager.db_connection() as db:
+        db.sql("ALTER TABLE cf_stage ALTER hash_details TYPE JSON")
+        broken, errors = db_tables.verify_schemas(db)
+        assert broken
+        db_tables.intervention_update_incorrect_types(db)
+        broken, errors = db_tables.verify_schemas(db)
+        assert not broken

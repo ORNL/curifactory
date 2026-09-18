@@ -319,11 +319,39 @@ def cmd_db(parsed, parser, db_parser):
         print(f"Curifactory DB version: {cf.db_tables.SCHEMA_VERSION}")
     elif parsed.sub_command == "verify":
         with manager.db_connection() as db:
-            print(cf.db_tables.verify_schemas(db))
+            broken, errors = cf.db_tables.verify_schemas(db)
+            if not broken:
+                print("Database schemas correct!")
+            else:
+                print("Found problems in following table schemas:")
+                for table in errors:
+                    print(f"-- table:{table} --")
+                    for error in errors[table]:
+                        if error[1] == "missing":
+                            print(f"Missing column {error[0]}")
+                        elif error[1] == "type_mismatch":
+                            print(f"Column {error[0]} has incorrect type: {error[2]}")
+                exit(1)
     elif parsed.sub_command == "migrate":
         manager.init_root_logging()
         with manager.db_connection() as db:
             print(cf.db_tables.run_migrations(db))
+    elif parsed.sub_command == "schema":
+        with manager.db_connection() as db:
+            for table in [
+                "cf_run",
+                "cf_stage",
+                "cf_artifact",
+                "cf_run_stage",
+                "cf_stage_input",
+                "cf_run_artifact",
+            ]:
+                print(table)
+                cols = db.sql(
+                    f"SELECT column_name, column_type FROM (DESCRIBE {table})"
+                ).df()
+                for _, col in cols.iterrows():
+                    print(f"\t{col.column_name} {col.column_type}")
     elif parsed.sub_command == "fix":
         with manager.db_connection() as db:
             for fix in cf.db_tables.FIXES:
@@ -815,9 +843,14 @@ def main():  # noqa: C901
         "migrate",
         help="Update database from previous version to current",
     )
+    db_subparsers.add_parser(
+        "schema",
+        help="Print out the current database schema for each table",
+    )
     db_fix_subparser = db_subparsers.add_parser(
         "fix",
         help="Apply manual fixes",
+        description="WARNING: Do not try to run fixes before attempting normal migrations via 'cf db migrate'. These fixes are manual interventions only intended for when something breaks during migration or a database is unintentionally altered in some other way.",
     )
     for fix in cf.db_tables.FIXES:
         db_fix_subparser.add_argument(f"--{fix}", action="store_true", dest=fix)
