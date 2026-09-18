@@ -126,7 +126,7 @@ class Stage:
     function may not exist or be accessible if True"""
 
     hash_str: str = None
-    hash_debug: dict[str, dict[str, Any]] = None
+    hash_debug: dict[str, dict[str, Any]] = field(default=None, init=True, repr=False)
 
     def __post_init__(self):
         # create a dictionary with the names of all the function arguments and
@@ -143,7 +143,10 @@ class Stage:
 
         if not isinstance(self.function, FunctionStub):
             parameters = inspect.signature(self.function).parameters
-            for i, key in enumerate(parameters.keys()):
+            i = 0
+            for key in parameters.keys():
+                if self.pass_self and key == "self":
+                    continue
                 # self._parameters[key] = {"default": parameters[key].default, "kind": parameters[key].kind}
                 self.parameter_kinds[key] = parameters[key].kind
                 self.parameter_positions[key] = i
@@ -151,6 +154,7 @@ class Stage:
                     self.parameter_defaults[key] = parameters[key].default
                 else:
                     self.parameter_defaults[key] = None
+                i += 1
 
         artifacts = []
         if not isinstance(self.outputs, list):

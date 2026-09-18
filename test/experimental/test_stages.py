@@ -1,4 +1,5 @@
 from curifactory.experimental.artifact import Artifact
+from curifactory.experimental.pipeline import pipeline
 from curifactory.experimental.staging import Stage, stage
 
 
@@ -43,3 +44,41 @@ def test_multiple_of_same_stage_should_return_diff_artifacts(test_manager):
     assert s1.outputs == s1.thing
     assert s2.outputs == s2.thing
     assert s1.outputs != s2.outputs
+
+
+def test_stage_that_passes_self(test_manager):
+    """Having a stage that passes self should work and not break hashing/input parameters
+    (specifically during hashing, the stage parameters doesn't line up with args because of
+    first self param that isn't passed by user directly (which is what fills args))
+    """
+
+    @stage(Artifact("thing"), pass_self=True)
+    def selfish(self, t1, t2):
+        assert isinstance(self, Stage)
+        assert self.artifacts[0].name == "thing1"
+        assert self.artifacts[1].name == "thing2"
+        assert self.outputs.name == "thing"
+        return t1 + t2
+
+    @stage(Artifact("thing1"))
+    def gett1():
+        return 1
+
+    @stage(Artifact("thing2"))
+    def gett2():
+        return 2
+
+    @pipeline
+    def getallthings():
+        t1 = gett1()
+        t2 = gett2()
+        s3 = selfish(t1, t2).stage
+
+        assert list(s3.parameter_kinds.keys())[0] != "self"
+        assert list(s3.parameter_defaults.keys())[0] != "self"
+        assert list(s3.parameter_positions.keys())[0] != "self"
+        assert s3.parameter_positions[list(s3.parameter_positions.keys())[0]] == 0
+        assert list(s3.parameter_positions.keys())[0] == "t1"
+
+    test = getallthings("test")
+    test.run()
