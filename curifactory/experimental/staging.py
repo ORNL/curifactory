@@ -598,6 +598,9 @@ class Stage:
                 g._edges.append((str(id(stage)), str(id(self))))
             g = stage.visualize(g, **kwargs)
 
+        for output in self.get_output_list():
+            g = output.visualize(g, **kwargs)
+
         return g
 
     def _edge_from_artifact(self, g, artifact, **kwargs):

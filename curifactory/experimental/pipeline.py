@@ -154,6 +154,12 @@ class Pipeline:
             # else:
             #     print("PSYCHE, already found")
 
+        for pipeline in self.pipelines:
+            for artifact in pipeline.artifacts:
+                if artifact not in building_list:
+                    building_list.append(artifact)
+            # building_list.extend(pipeline.artifacts)
+
         # print(f"Length of stages at end: {len(self.stages)}")
         return cf.artifact.ArtifactFilter(building_list)
 

@@ -759,7 +759,10 @@ class Artifact:
         if g is None:
             g = cf.utils.init_graphviz_graph()
 
+        if str(id(self)) in g._nodes:
+            return g
         self._node(g, **kwargs)
+        g._nodes.append(str(id(self)))
 
         if self.compute is not None:
             self.compute.visualize(g, **kwargs)

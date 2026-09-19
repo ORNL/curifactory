@@ -60,6 +60,7 @@ def init_graphviz_graph():
         graph_attr={"nodesep": ".05", "ranksep": ".09"}, edge_attr={"arrowsize": "0.5"}
     )
     dot._edges = []
+    dot._nodes = []
     return dot
 
 
