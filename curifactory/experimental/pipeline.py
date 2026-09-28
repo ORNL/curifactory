@@ -242,7 +242,25 @@ class Pipeline:
     #     return True
 
     @property
-    def reportables(self):
+    def grouped_reportables(self) -> dict[str, cf.reporting.Reportable]:
+        groups = {}
+        for reportable in self.reportables:
+            if reportable.group is None:
+                continue
+            if reportable.group not in groups:
+                groups[reportable.group] = []
+            groups[reportable.group].append(reportable)
+        return groups
+
+    @property
+    def ungrouped_reportables(self) -> list[cf.reporting.Reportable]:
+        ungrouped = [
+            reportable for reportable in self.reportables if reportable.group is None
+        ]
+        return ungrouped
+
+    @property
+    def reportables(self) -> list[cf.reporting.Reportable]:
         reportables_list = []
 
         for stage in self.all_stages:
@@ -325,6 +343,8 @@ class Pipeline:
         template = manager.jinja_environment.get_template(template)
         output = template.render(
             reportables=self.reportables,
+            reportable_groups=self.grouped_reportables,
+            ungrouped_reportables=self.ungrouped_reportables,
             pipeline_class_name=self.__class__.__name__,
             pipeline_name=self.name,
             pipeline_run_num=self.run_number,

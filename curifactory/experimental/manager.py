@@ -194,20 +194,56 @@ class Manager:
                     <p class='cli_command'>Run command was: <pre>{{ cli }}</pre></p>
                     {% endif %}
 
+                    <a name='top'></a>
+                    <h2>Table of Contents</h2>
+                    <ul id='toc'>
+                        <li><a href='#reportables'>Reportables</a></li>
+                        <li><a href='#map'>Map</a></li>
+                        <li><a href='#params'>Parameters</a></li>
+                        <li><a href='#env'>Environment</a></li>
+                    </ul>
+
+                    <a name='reportables'></a>
                     <h2>Reportables</h2>
-                    {% for reportable in reportables %}
+                    <p><a href='#top'>back to top</a></p>
+                    <ul id='reportables-list'>
+                    {% for group in reportable_groups %}
+                        <li>{{ group }}<ul>
+                        {% for reportable in reportable_groups[group] %}
+                            <li><a href='#{{ reportable.qualified_name }}'>{{ reportable.qualified_name }}</a></li>
+                        {% endfor %}</ul></li>
+                    {% endfor %}
+                    {% for reportable in ungrouped_reportables %}
+                        <li><a href='#{{ reportable.qualified_name }}'>{{ reportable.qualified_name }}</a></li>
+                    {% endfor %}
+                    </ul>
+
+                    {% for group in reportable_groups %}
+                        <h3 class='reportable-group-title'>{{ group }}</h3>
+                        {% for reportable in reportable_groups[group] %}
+                            {% include "reportable.html" %}
+                        {% endfor %}</ul></li>
+                    {% endfor %}
+
+                    {% for reportable in ungrouped_reportables %}
                         {% include "reportable.html" %}
                     {% endfor %}
 
+                    <a name='map'></a>
                     <h2>Pipeline map</h2>
+                    <p><a href='#top'>back to top</a></p>
                     {{ map }}
 
+                    <a name='params'></a>
                     <h2>Parameters</h2>
+                    <p><a href='#top'>back to top</a></p>
                     <pre>
 {{ parameters }}
                     </pre>
 
+                    <a name='env'></a>
                     <h2>Environment</h2>
+                    <p><a href='#top'>back to top</a></p>
                     <details>
                         <summary>Global configuration</summary>
                         {{ global_config }}
@@ -269,6 +305,7 @@ class Manager:
                     <a name='{{ reportable.qualified_name }}'></a>
                     <h3>{{ reportable.qualified_name }}</h3>
                     {{ reportable.html }}
+                    <p><a href='#reportables'>back to reportables</a></p>
                 </div> <!-- /reportable -->
             """,
             "metadata.html": """
