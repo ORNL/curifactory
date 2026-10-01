@@ -175,10 +175,10 @@ An example might look like:
     class UsesExtraMetadataCacher(Cacheable):
         def save(self, obj):
             self.extra_metadata["the_best_number"] = 13
-            JsonCacher(self.geet_path()).save(obj)
+            JsonCacher(self.get_path()).save(obj)
 
         def load(self):
-            assert self.extra_metadata["best_number"] == 13
+            assert self.extra_metadata["the_best_number"] == 13
             return JsonCacher(self.get_path()).load()
 
 The curifactory stage decorator automatically handles calling ``save_metadata()`` and ``load_metadata()`` at
@@ -197,7 +197,7 @@ explicit save/load metadata calls in the save/load functions:
 
         def load(self):
             self.load_metadata()
-            assert self.extra_metadata["best_number"] == 13
+            assert self.extra_metadata["the_best_number"] == 13
             return JsonCacher(self.get_path()).load()
 
 
