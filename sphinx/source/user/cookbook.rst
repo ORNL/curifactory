@@ -4,6 +4,33 @@ Curifactory Cookbook
 This page contains a set of recipes or solutions to challenges we've encountered.
 
 
+Reuse one output from a partially cached stage
+==============================================
+
+A stage with multiple cached outputs only skips execution when all its outputs
+are available. If one output is missing, the entire stage runs again. Prefer
+separate stages when the outputs can be computed independently. When keeping
+them in one stage is useful, ``record.stage_cachers`` provides the instantiated
+cachers in output order while the stage function runs.
+
+This example reuses the first output if it is still cached and computes the
+second output normally. The expensive computation is only an illustrative
+function; replace it with your own operation.
+
+.. literalinclude:: ../../../examples/partial_stage_cache.py
+   :language: python
+
+If ``other_result`` is removed from the cache after a first run, the next call
+loads ``expensive_result`` rather than recomputing it. If both files are missing,
+both computations run. Once both outputs are present, the normal stage cache
+check skips the function entirely.
+
+Only reuse an output when its cached value is valid for the current record.
+For example, do not reuse it if it depends on another output being regenerated.
+``stage_cachers`` is intended for use inside the stage function; it is cleared
+when the stage completes.
+
+
 Distributed ``torchrun`` via external stage
 ===========================================
 
