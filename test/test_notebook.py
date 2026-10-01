@@ -1,8 +1,51 @@
+import json
 import os
+
+import pytest
 
 import curifactory as cf
 from curifactory.experiment import run_experiment
 from curifactory.notebook import write_experiment_notebook
+
+
+@pytest.mark.parametrize(
+    "selection",
+    [
+        {"param_set_names": ["thing1", "thing2"]},
+        {"param_set_names": ["thing2"]},
+        {"param_set_indices": ["1"]},
+        {"global_param_set_indices": ["1"]},
+        {
+            "param_set_names": ["thing2"],
+            "param_set_indices": ["1"],
+            "global_param_set_indices": ["0"],
+        },
+    ],
+)
+def test_notebook_preserves_parameter_selection(
+    configured_test_manager, tmp_path, selection
+):
+    """Re-running a generated notebook should use the original parameter subset."""
+    _, manager = run_experiment("simple_cache", ["simple_cache"], **selection)
+    expected = [(record.params.name, record.params.hash) for record in manager.records]
+
+    path = tmp_path / "selected"
+    write_experiment_notebook(manager, str(path))
+    with path.with_suffix(".ipynb").open() as infile:
+        notebook = json.load(infile)
+    code = "\n".join(
+        "".join(cell["source"])
+        for cell in notebook["cells"]
+        if cell["cell_type"] == "code"
+    ).replace("%cd ../..", "")
+    namespace = {}
+    exec(code, None, namespace)
+
+    actual = [
+        (record.params.name, record.params.hash)
+        for record in namespace["manager"].records
+    ]
+    assert actual == expected
 
 
 def test_experiment_cli_creates_notebook(configured_test_manager):

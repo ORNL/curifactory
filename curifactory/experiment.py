@@ -402,6 +402,16 @@ def run_experiment(  # noqa: C901 -- TODO: this does need to be broken up at som
             "Full store was requested for a distributed run - full store has been disabled on all non-rank-zero processes to prevent data duplication. Ensure that any necessary data for a full store is handled in rank zero."
         )
 
+    mngr.parameter_selection = {
+        key: list(value)
+        for key, value in (
+            ("param_set_names", param_set_names),
+            ("param_set_indices", param_set_indices),
+            ("global_param_set_indices", global_param_set_indices),
+        )
+        if value is not None
+    }
+
     # load params files
     final_param_sets = collect_parameter_sets(
         mngr,

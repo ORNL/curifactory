@@ -107,6 +107,8 @@ class ArtifactManager:
         """The run counter for experiments with the given name."""
         self.parameter_files: list[str] = []
         """The list of parameter file names to be used in the experiment."""
+        self.parameter_selection: dict[str, list[str]] = {}
+        """Parameter filters used to reproduce this run in generated notebooks."""
         self.param_file_param_sets: dict[str, list[list[str, str]]] = {}
         """A dictionary of parameter file names for keys, where each value is an array of arrays,
         each inner array containing the parameter set name and the parameter set hash, for the

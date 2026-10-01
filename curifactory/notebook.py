@@ -104,6 +104,10 @@ def write_experiment_notebook(
             ]
         )
 
+    selection_args = "".join(
+        f"{key}={value!r}, " for key, value in manager.parameter_selection.items()
+    )
+
     # imports and logger lines
     output_lines.extend(
         [
@@ -120,7 +124,7 @@ def write_experiment_notebook(
             "",
             f"# %%{dry_warning}",
             f'manager = ArtifactManager("{experiment_name}", {cache_dir_arg} dry=True)',
-            f'experiment.run_experiment("{experiment_name}", {str(param_files)}, dry=True, mngr=manager, no_dag=False)',
+            f'experiment.run_experiment("{experiment_name}", {str(param_files)}, {selection_args}dry=True, mngr=manager, no_dag=False)',
             "# Set `no_dag=True` in the above `run_experiment` function if need access to every artifact.",
             "# Set `dry=False` on both of the above calls if any Lazy artifacts need to be computed and are erroring.",
             "",
