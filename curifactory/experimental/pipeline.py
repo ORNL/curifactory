@@ -165,6 +165,11 @@ class Pipeline:
 
     @property
     def stages(self) -> list[cf.Stage]:
+        """Get the set of stages only defined as part of _this_ pipeline.
+
+        (Does not include those of pipelines/dependencies prior to this one.
+        See all_stages for that.)
+        """
         # __stages = [*self._stages]
         # for pipeline in self.pipelines:
         #     for stage in pipeline.stages:
@@ -175,6 +180,7 @@ class Pipeline:
 
     @property
     def all_stages(self) -> list[cf.Stage]:
+        """Get all stages from this and all prior pipelines."""
         __stages = [*self._stages]
         for pipeline in self.pipelines:
             for stage in pipeline.stages:
@@ -184,6 +190,7 @@ class Pipeline:
 
     @property
     def pipelines(self) -> list[cf.Pipeline]:
+        """Get the set of pipelines involved in dependencies of this one."""
         __pipelines = [*self._pipelines]
         for pipeline in self._pipelines:
             for subpipeline in pipeline.pipelines:
@@ -193,10 +200,34 @@ class Pipeline:
 
     @property
     def leaf_stages(self) -> list[cf.Stage]:
+        """Get the set of stages from this pipeline that are the "ends" of the
+        compute graphs, where their outputs aren't dependencies anywhere else.
+        This is used for mapping a run backwards from the end.
+        """
         leaves = []
         for stage1 in self.stages:
             found = False
             for stage2 in self.stages:
+                if stage1 == stage2:
+                    continue
+                if stage1 in stage2.dependencies:
+                    found = True
+                    break
+                for artifact in stage2.artifacts:
+                    if stage1 == artifact.compute:
+                        found = True
+                        break
+            if not found:
+                leaves.append(stage1)
+        return leaves
+
+    @property
+    def all_leaf_stages(self) -> list[cf.Stage]:
+        """Get the "ends" of all involved pipelines, this one and prior."""
+        leaves = []
+        for stage1 in self.all_stages:
+            found = False
+            for stage2 in self.all_stages:
                 if stage1 == stage2:
                     continue
                 if stage1 in stage2.dependencies:
@@ -397,12 +428,12 @@ class Pipeline:
         return dataclasses.replace(self, **modifications)
 
     def spanning_output_artifact_and_stage_set(
-        self,
+        self, all_leaves: bool = False
     ) -> tuple[list[cf.Artifact], list[cf.Stage]]:
         """Get every target artifact from leaf stages, as well as any output-less leaf stages."""
         # TODO: also need to check for target reportables?
         # TODO: this should eventually replace the beginning logic in run()
-        targets = self.leaf_stages
+        targets = self.leaf_stages if not all_leaves else self.all_leaf_stages
         # TODO: this is probably where we should check for targets reportables
         # too?
 
@@ -422,12 +453,14 @@ class Pipeline:
 
         return output_artifacts, remaining_leaf_stages
 
-    def map(self):
+    def map(self, all_leaves: bool = False):
         """Assumes define() has already run."""
         # TODO: should go based on all artifacts, not just outputs? (probably
         # also needs the leaves first though)
 
-        out_artifacts, remaining_stages = self.spanning_output_artifact_and_stage_set()
+        out_artifacts, remaining_stages = self.spanning_output_artifact_and_stage_set(
+            all_leaves
+        )
         mapped = None
         for output in out_artifacts:
             mapped = output.map(mapped)
@@ -515,7 +548,7 @@ class Pipeline:
                 f"Post-consolidation checks failed:\n {self.post_consolidation_checks}"
             )
 
-    def run(self):
+    def run(self, all_leaves: bool = False):
         manager = cf.get_manager()
         manager.current_pipeline_run = self
         manager.current_pipeline_run_target = self.outputs
@@ -530,18 +563,16 @@ class Pipeline:
                 overwrites_found = True
                 break
 
-        targets = self.leaf_stages
-        # TODO: this is probably where we should check for targets reportables
-        # too?
+        output_artifacts, remaining_stages = (
+            self.spanning_output_artifact_and_stage_set(all_leaves)
+        )
 
-        output_artifacts = []
-        for target in targets:
-            output_artifacts.extend(target.get_output_list())
+        check_cacher_artifacts = [*output_artifacts]
+        for stage in remaining_stages:
+            check_cacher_artifacts.extend(stage.get_output_list())
 
-        # TODO: this should be replaced with
-        # spanning_output_artifact_and_stage_set?
         need_to_run = False
-        for artifact in output_artifacts:
+        for artifact in check_cacher_artifacts:
             if (
                 artifact.cacher is None
                 or not artifact.cacher.check(silent=True)
@@ -631,7 +662,7 @@ class Pipeline:
             if artifact.compute not in leaves_accounted_for:
                 leaves_accounted_for.append(artifact.compute)
 
-        for target in targets:
+        for target in remaining_stages:
             if target not in leaves_accounted_for:
                 target()
 

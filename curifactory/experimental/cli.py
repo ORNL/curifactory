@@ -275,7 +275,7 @@ def cmd_run(parsed, parser, run_parser):  # noqa: C901
 
         if "artifact" not in resolved and "artifact_list" not in resolved:
             # print(pipeline)
-            pipeline.run()
+            pipeline.run(parsed.all_leaves)
             # pipeline.report(save=True)
             # cf.reporting.generate_index()  # (handled in pipeline.report now)
         else:
@@ -528,7 +528,7 @@ def cmd_map(parsed, parser, map_parser):  # noqa: C901
                 artifact.overwrite = True
 
         if "artifact" not in resolved and "artifact_list" not in resolved:
-            mapped = pipeline.map()
+            mapped = pipeline.map(parsed.all_leaves)
         elif "artifact" in resolved:
             mapped = resolved["artifact"].map()
         elif "artifact_list" in resolved:
@@ -930,6 +930,13 @@ def main():  # noqa: C901
         dest="replace",
         help="Replace specific artifacts with other artifacts.",
     )
+    run_parser.add_argument(
+        "-a",
+        "--all-leaves",
+        action="store_true",
+        dest="all_leaves",
+        help="Include all leaf stages from dependent pipelines in pipeline targets.",
+    )
     run_parser.add_argument("--debug", "--verbose", action="store_true", dest="debug")
 
     map_parser = subparsers.add_parser(
@@ -966,6 +973,13 @@ def main():  # noqa: C901
         action="append",
         dest="replace",
         help="Replace specific artifacts with other artifacts.",
+    )
+    map_parser.add_argument(
+        "-a",
+        "--all-leaves",
+        action="store_true",
+        dest="all_leaves",
+        help="Include all leaf stages from dependent pipelines in pipeline targets.",
     )
     map_parser.add_argument(
         "-x",
