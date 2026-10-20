@@ -513,7 +513,7 @@ class Stage:
         * {[PARAMETER_NAME].name} - the name of the PARAMETER artifact (if it is in fact an artifact)
         """
         format_dict = cf.utils.FailsafeDict(
-            hash=self.compute_hash(), stage_name=self.name
+            hash=self.compute_hash()[0], stage_name=self.name
         )
         # for i in range(len(self.parameter_positions)):
         #     arg = None
@@ -538,7 +538,11 @@ class Stage:
                 format_dict[f"{parameter}.name"] = val.name
 
         # https://stackoverflow.com/questions/36780729/what-is-difference-between-str-format-mapmapping-and-str-format
-        return str_to_format.format_map(format_dict)
+        # print(format_dict)
+        # print("pre: ", str_to_format)
+        new_str = str_to_format.format_map(format_dict)
+        # print("post: ", new_str)
+        return new_str
         # return str_to_format.format(**format_dict)
         # return Template(str_to_format).safe_substitute(**format_dict)
 
