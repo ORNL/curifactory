@@ -537,7 +537,9 @@ class Stage:
             if isinstance(val, cf.artifact.Artifact):
                 format_dict[f"{parameter}.name"] = val.name
 
-        return str_to_format.format(**format_dict)
+        # https://stackoverflow.com/questions/36780729/what-is-difference-between-str-format-mapmapping-and-str-format
+        return str_to_format.format_map(format_dict)
+        # return str_to_format.format(**format_dict)
         # return Template(str_to_format).safe_substitute(**format_dict)
 
     def get_parameter_value_by_name(self, parameter_name: str):

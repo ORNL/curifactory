@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from test.experimental.pipelines.example import add_thingsc, db_pipeline
 
+import curifactory.experimental as cf
 from curifactory.experimental.pipeline import PipelineFromRef
 
 
@@ -87,3 +88,13 @@ def test_tracking_db_removal_works(clear_filesystem, test_manager):
     p1.artifacts.something_table[0].cacher.clear_obj()
     assert len(db.sql("SELECT * FROM something_table").df()) == 0
     assert p1.artifacts.something_table[0].cacher.cleared_rows == 1
+
+
+def test_cache_path_override_formatting(clear_filesystem, test_manager):
+
+    @cf.stage(cf.Artifact("test", cf.caching.JsonCacher("{cache}/{the_param}.json")))
+    def do_test_thing(the_param: str):
+        return {"thing": the_param}
+
+    do_test_thing("abc123").stage()
+    assert (Path(test_manager.cache_path) / "abc123.json").exists()

@@ -862,7 +862,12 @@ class ArtifactFilter:
     # so (tell to use .replace instead)
 
     def __getitem__(self, key):
-        return self.artifacts[key]
+        if isinstance(key, int):
+            return self.artifacts[key]
+        elif isinstance(key, str):
+            for artifact in self.artifacts:
+                if artifact.hash_str.startswith(key):
+                    return artifact
 
     def __setitem__(self, key, item):
         self.artifacts[key] = item

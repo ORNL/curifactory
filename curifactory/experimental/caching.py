@@ -44,21 +44,31 @@ class Cacheable:
         Possible keyword replacement fields:
         * `{hash}` - the hash of the stage.
         * `{stage_name}` - the name of the stage that produces this artifact
+        * `{pipeline_name}` - the name of the pipeline that produces this artifact
         * `{[STAGE_ARG_NAME]}` - any argument name from the stage itself
         * `{artifact_name}` - the name of this output object.
         * `{artifact_filename}` - the normal filename for this cacher (doesn't include dir path etc.)
+        * `{cache}` - the normal cache directory for the current manager
         """
         # * `{cache}` - the path to the manager's cache directory (does not include final '/')
         # * `{stage_arg_[INDEX]}`
         # TODO: some of this doesn't work if artifact is None
         format_dict = cf.utils.FailsafeDict()
         if self.artifact is not None:
+            pipeline_name = "none"
+            if self.artifact.context is not None:
+                pipeline_name = self.artifact.context.name
             format_dict = cf.utils.FailsafeDict(
                 artifact_name=self.artifact.name,
                 artifact_filename=f"{self.artifact.compute_hash()[0]}_{self._resolve_suffix(self.artifact.name, None)}",
+                pipeline_name=pipeline_name,
+                cache=cf.get_manager().cache_path,
             )
             path = self.artifact.compute.resolve_template_string(path)
-        path = path.format(**format_dict)
+        # https://stackoverflow.com/questions/36780729/what-is-difference-between-str-format-mapmapping-and-str-format
+        path = path.format_map(format_dict)
+        # path = path.format(**format_dict)
+        # path = Template(path).safe_substitute(**format_dict)
         return path
 
     def __deepcopy__(self, memo):

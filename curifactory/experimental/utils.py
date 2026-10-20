@@ -8,6 +8,7 @@ from graphviz import Digraph
 
 
 # https://stackoverflow.com/questions/28094590/ignore-str-formatfoo-if-key-doesnt-exist-in-foo
+# https://stackoverflow.com/questions/36780729/what-is-difference-between-str-format-mapmapping-and-str-format
 class FailsafeDict(dict):
     def __getitem__(self, item):
         try:
